@@ -28,7 +28,10 @@ const ROOT_PATH = RootRoute.path;
 
 //update-begin---author:wangshuai ---date:20220629  for：[issues/I5BG1I]vue3不支持auth2登录------------
 //update-begin---author:wangshuai ---date:20221111  for: [VUEN-2472]分享免登录------------
-const whitePathList: PageEnum[] = [LOGIN_PATH, OAUTH2_LOGIN_PAGE_PATH,SYS_FILES_PATH, TOKEN_LOGIN ];
+// open home path
+const OPEN_HOME = PageEnum.OPEN_HOME;
+
+const whitePathList: PageEnum[] = [LOGIN_PATH, OAUTH2_LOGIN_PAGE_PATH,SYS_FILES_PATH, TOKEN_LOGIN, OPEN_HOME ];
 //update-end---author:wangshuai ---date:20221111  for: [VUEN-2472]分享免登录------------
 //update-end---author:wangshuai ---date:20220629  for：[issues/I5BG1I]vue3不支持auth2登录------------
 
@@ -59,12 +62,12 @@ export function createPermissionGuard(router: Router) {
     if (whitePathList.includes(to.path as PageEnum)) {
       if (to.path === LOGIN_PATH && token) {
         const isSessionTimeout = userStore.getSessionTimeout;
-        
+
         //update-begin---author:scott ---date:2023-04-24  for：【QQYUN-4713】登录代码调整逻辑有问题，改造待观察--
         //TODO vben默认写法，暂时不知目的，有问题暂时先注释掉
         //await userStore.afterLoginAction();
         //update-end---author:scott ---date::2023-04-24  for：【QQYUN-4713】登录代码调整逻辑有问题，改造待观察--
-        
+
         try {
           if (!isSessionTimeout) {
             next((to.query?.redirect as string) || '/');
@@ -98,6 +101,7 @@ export function createPermissionGuard(router: Router) {
 
       //update-begin---author:wangshuai ---date:20220629  for：[issues/I5BG1I]vue3 Auth2未实现------------
       let path = LOGIN_PATH;
+      // let path = OPEN_HOME;
       if (whitePathList.includes(to.path as PageEnum)) {
         // 在免登录白名单，如果进入的页面是login页面并且当前是OAuth2app环境，就进入OAuth2登录页面
         if (to.path === LOGIN_PATH && isOAuth2AppEnv()) {
@@ -137,13 +141,13 @@ export function createPermissionGuard(router: Router) {
       if (to.fullPath) {
         console.log("to.fullPath 1",to.fullPath)
         console.log("to.path 2",to.path)
-        
+
         let getFullPath = to.fullPath;
         if(getFullPath=='/' || getFullPath=='/500' || getFullPath=='/400' || getFullPath=='/login?redirect=/' || getFullPath=='/login?redirect=/login?redirect=/'){
           return;
         }
       //update-end---author:scott ---date:2023-04-24  for：【QQYUN-4713】登录代码调整逻辑有问题，改造待观察--
-        
+
         redirectData.query = {
           ...redirectData.query,
           // update-begin-author:sunjianlei date:20230306 for: 修复登录成功后，没有正确重定向的问题

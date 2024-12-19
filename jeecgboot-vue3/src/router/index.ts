@@ -12,7 +12,7 @@ const getRouteNames = (array: any[]) =>
     getRouteNames(item.children || []);
   });
 getRouteNames(basicRoutes);
-
+console.log('>>>>>>>>>>>>>>>WHITE_NAME_LIST', WHITE_NAME_LIST);
 /**
  * 创建路由实例
  */

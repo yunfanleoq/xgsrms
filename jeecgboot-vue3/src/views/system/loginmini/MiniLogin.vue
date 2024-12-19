@@ -6,6 +6,7 @@
       <div>
         <h3>
           <img :src="logoImg" alt="jeecg" />
+<!--          <span class="aui-title">{{ t('sys.login.title') }}hahahahahhaah</span>-->
         </h3>
       </div>
     </div>
@@ -144,7 +145,7 @@
     </div>
     <!-- 第三方登录相关弹框 -->
     <ThirdModal ref="thirdModalRef"></ThirdModal>
-    
+
     <!-- 图片验证码弹窗 -->
     <CaptchaModal @register="captchaRegisterModal" @ok="getLoginCode" />
   </div>
@@ -561,7 +562,7 @@ html[data-theme='dark'] {
     -webkit-text-fill-color: #c9d1d9 !important;
     box-shadow: inherit !important;
   }
-  
+
   .ant-divider-inner-text {
     font-size: 12px !important;
     color: @text-color-secondary !important;

@@ -20,4 +20,16 @@ export const AI_ROUTE: AppRouteRecordRaw = {
   ],
 };
 
-export const staticRoutesList = [AI_ROUTE];
+export const home: AppRouteRecordRaw[] = [
+  {
+    path: '/',
+    name: 'home',
+    component: () => import('/@/home/index.vue'),
+    meta: {
+      title: '首页',
+      ignoreAuth: true,
+      ignoreMenu: true,
+    },
+  },
+];
+export const staticRoutesList = [AI_ROUTE, home];
