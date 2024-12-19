@@ -22,10 +22,12 @@ export const asyncRoutes = [PAGE_NOT_FOUND_ROUTE, ...routeModuleList];
 export const RootRoute: AppRouteRecordRaw = {
   path: '/',
   name: 'Root',
-  redirect: PageEnum.BASE_HOME,
+  // redirect: PageEnum.BASE_HOME,
+  redirect: '/dashboard/home/index',
   meta: {
     title: 'Root',
   },
+
 };
 
 export const LoginRoute: AppRouteRecordRaw = {
@@ -64,5 +66,17 @@ export const TokenLoginRoute: AppRouteRecordRaw = {
     ignoreAuth: true,
   },
 };
+
+export const dashboardhomeindex: AppRouteRecordRaw =
+  {
+    path: '/dashboard/home/index',
+    name: 'dashboardhomeindex',
+    component: () => import('/@/views/dashboard/home/index.vue'),
+    meta: {
+      title: '首页',
+      ignoreAuth: true,
+      ignoreMenu: true,
+    },
+  };
 // Basic routing without permission
-export const basicRoutes = [LoginRoute, RootRoute, ...mainOutRoutes, REDIRECT_ROUTE, PAGE_NOT_FOUND_ROUTE, TokenLoginRoute, Oauth2LoginRoute];
+export const basicRoutes = [LoginRoute, RootRoute, ...mainOutRoutes, REDIRECT_ROUTE, PAGE_NOT_FOUND_ROUTE, TokenLoginRoute, Oauth2LoginRoute, dashboardhomeindex];
