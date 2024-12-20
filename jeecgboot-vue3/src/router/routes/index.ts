@@ -23,7 +23,7 @@ export const RootRoute: AppRouteRecordRaw = {
   path: '/',
   name: 'Root',
   // redirect: PageEnum.BASE_HOME,
-  redirect: '/dashboard/home/index',
+  redirect: PageEnum.HOME_INDEX,
   meta: {
     title: 'Root',
   },
@@ -67,16 +67,41 @@ export const TokenLoginRoute: AppRouteRecordRaw = {
   },
 };
 
-export const dashboardhomeindex: AppRouteRecordRaw =
+export const homeindex: AppRouteRecordRaw =
   {
-    path: '/dashboard/home/index',
-    name: 'dashboardhomeindex',
-    component: () => import('/@/views/dashboard/home/index.vue'),
+    path: '/home/index',
+    name: 'homeindex',
+    component: () => import('/@/views/home/index.vue'),
     meta: {
       title: '首页',
       ignoreAuth: true,
       ignoreMenu: true,
     },
   };
+
+export const homehome: AppRouteRecordRaw =
+  {
+    path: '/home/home',
+    name: 'homehome',
+    component: () => import('/@/views/home/home.vue'),
+    meta: {
+      title: '首页',
+      ignoreAuth: true,
+      ignoreMenu: true,
+    },
+  };
+export const homeyjsk: AppRouteRecordRaw =
+  {
+    path: '/home/yjsk',
+    name: 'homeyjsk',
+    component: () => import('/@/views/home/yjsk.vue'),
+    meta: {
+      title: '研究所况',
+      ignoreAuth: true,
+      ignoreMenu: true,
+    },
+  };
+
 // Basic routing without permission
-export const basicRoutes = [LoginRoute, RootRoute, ...mainOutRoutes, REDIRECT_ROUTE, PAGE_NOT_FOUND_ROUTE, TokenLoginRoute, Oauth2LoginRoute, dashboardhomeindex];
+export const basicRoutes = [LoginRoute, RootRoute, ...mainOutRoutes, REDIRECT_ROUTE, PAGE_NOT_FOUND_ROUTE, TokenLoginRoute, Oauth2LoginRoute,
+  homeindex, homehome, homeyjsk];
