@@ -67,20 +67,20 @@ export const TokenLoginRoute: AppRouteRecordRaw = {
   },
 };
 
-export const homeindex: AppRouteRecordRaw =
-  {
-    path: '/home/index',
-    name: 'homeindex',
-    component: () => import('/@/views/home/index.vue'),
-    meta: {
-      title: '首页',
-      ignoreAuth: true,
-      ignoreMenu: true,
-    },
-  };
+// export const homeindex: AppRouteRecordRaw =
+//   {
+//     path: '/home/index',
+//     name: 'homeindex',
+//     component: () => import('/@/views/home/index.vue'),
+//     meta: {
+//       title: '首页',
+//       ignoreAuth: true,
+//       ignoreMenu: true,
+//     },
+//   };
 
 export const homeIndexRoute: AppRouteRecordRaw = {
-  path: '/home/index',
+  path: '/home',
   name: 'homeIndex',
   component: () => import('/@/views/home/index.vue'),
   meta: {
@@ -94,7 +94,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeHome',
       component: () => import('/@/views/home/home.vue'),
       meta: {
-        title: '首页',
+        title: '招聘首页',
         ignoreAuth: true,
         ignoreMenu: true,
       },
@@ -109,10 +109,20 @@ export const homeIndexRoute: AppRouteRecordRaw = {
         ignoreMenu: true,
       },
     },
+    {
+      path: 'positions',
+      name: 'homePositions',
+      component: () => import('/@/views/home/positions.vue'),
+      meta: {
+        title: '招聘岗位',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
     // 添加其他子路由
   ],
 };
 
 // Basic routing without permission
 export const basicRoutes = [LoginRoute, RootRoute, ...mainOutRoutes, REDIRECT_ROUTE, PAGE_NOT_FOUND_ROUTE, TokenLoginRoute, Oauth2LoginRoute,
-  homeindex, homeIndexRoute];
+   homeIndexRoute];

@@ -1,8 +1,8 @@
 <template>
   <div id="app">
-    <header>
-      <h1>中国科学院信息工程研究所</h1>
-    </header>
+<!--    <header>-->
+<!--      <h1>中国科学院信息工程研究所</h1>-->
+<!--    </header>-->
     <main>
       <aside>
         <ul>

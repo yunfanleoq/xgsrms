@@ -1,5 +1,7 @@
 import { isRef, unref, watch, Ref, ComputedRef } from 'vue';
-import Clipboard from 'clipboard';
+// import Clipboard from 'clipboard';
+import { Clipboard } from 'clipboard';
+
 import { ModalOptionsEx, useMessage } from '/@/hooks/web/useMessage';
 
 /** 带复制按钮的弹窗 */

@@ -7,7 +7,7 @@
         <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink>
         <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>
         <RouterLink to="/scientific-development">科研发展</RouterLink>
-        <RouterLink to="/recruitment-information">招聘信息</RouterLink>
+        <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>
         <RouterLink to="/contact-us">联系我们</RouterLink>
         <button @click="goToLoginPage" class="login"> 登录 </button>
         <button class="register">注册</button>
@@ -19,26 +19,20 @@
   </div>
 </template>
 
-<script lang="ts" name="HomeIndex">
-import { defineComponent } from 'vue';
+
+
+<script setup lang="ts" name="HomeIndex">
+
 import { useRouter } from 'vue-router';
 
-export default defineComponent({
-  name: 'HomePage',
-  setup() {
-    const router = useRouter();
+const router = useRouter();
 
-    const goToLoginPage = () => {
-      router.push({ name: 'Login' });
-    };
+const goToLoginPage = () => {
+  router.push({ name: 'Login' });
+};
 
-    return {
-      goToLoginPage,
-    };
-  },
-});
+
 </script>
-
 
 <style>
 /* 全局样式 */
