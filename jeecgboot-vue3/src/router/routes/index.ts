@@ -79,29 +79,40 @@ export const homeindex: AppRouteRecordRaw =
     },
   };
 
-export const homehome: AppRouteRecordRaw =
-  {
-    path: '/home/home',
-    name: 'homehome',
-    component: () => import('/@/views/home/home.vue'),
-    meta: {
-      title: '首页',
-      ignoreAuth: true,
-      ignoreMenu: true,
+export const homeIndexRoute: AppRouteRecordRaw = {
+  path: '/home/index',
+  name: 'homeIndex',
+  component: () => import('/@/views/home/index.vue'),
+  meta: {
+    title: '人才招聘',
+    ignoreAuth: true,
+    ignoreMenu: true,
+  },
+  children: [
+    {
+      path: '',
+      name: 'homeHome',
+      component: () => import('/@/views/home/home.vue'),
+      meta: {
+        title: '首页',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
     },
-  };
-export const homeyjsk: AppRouteRecordRaw =
-  {
-    path: '/home/yjsk',
-    name: 'homeyjsk',
-    component: () => import('/@/views/home/yjsk.vue'),
-    meta: {
-      title: '研究所况',
-      ignoreAuth: true,
-      ignoreMenu: true,
+    {
+      path: 'yjsk',
+      name: 'homeYjsk',
+      component: () => import('/@/views/home/yjsk.vue'),
+      meta: {
+        title: '研究所况',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
     },
-  };
+    // 添加其他子路由
+  ],
+};
 
 // Basic routing without permission
 export const basicRoutes = [LoginRoute, RootRoute, ...mainOutRoutes, REDIRECT_ROUTE, PAGE_NOT_FOUND_ROUTE, TokenLoginRoute, Oauth2LoginRoute,
-  homeindex, homehome, homeyjsk];
+  homeindex, homeIndexRoute];

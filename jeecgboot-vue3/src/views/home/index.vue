@@ -4,8 +4,8 @@
     <header>
       <div class="logo">中科院信工所人才招聘管理系统</div>
       <nav>
-        <RouterLink :to="{ name: 'homehome' }">首页</RouterLink>
-        <RouterLink to="yjsk">研究所况</RouterLink>
+        <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink>
+        <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>
         <RouterLink to="/scientific-development">科研发展</RouterLink>
         <RouterLink to="/recruitment-information">招聘信息</RouterLink>
         <RouterLink to="/contact-us">联系我们</RouterLink>
@@ -19,9 +19,24 @@
   </div>
 </template>
 
-<script  lang="ts" >
+<script lang="ts" name="HomeIndex">
+import { defineComponent } from 'vue';
+import { useRouter } from 'vue-router';
 
+export default defineComponent({
+  name: 'HomePage',
+  setup() {
+    const router = useRouter();
 
+    const goToLoginPage = () => {
+      router.push({ name: 'Login' });
+    };
+
+    return {
+      goToLoginPage,
+    };
+  },
+});
 </script>
 
 
