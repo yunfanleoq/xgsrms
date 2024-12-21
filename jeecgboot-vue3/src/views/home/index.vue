@@ -16,6 +16,19 @@
     <main>
       <RouterView />
     </main>
+    <!-- 友情链接 -->
+    <div class="friend-links" >
+      <h3>友情链接</h3>
+      <div class="friend-link"> <a href="https://www.cas.cn">中国科学院</a>
+        --
+      <a href="http://www.iie.cas.cn/">中科院信工所</a>
+
+      </div>
+    </div>
+    <footer >
+      <br>
+      <p>© 2024 中科院信工所人才招聘管理系统. All rights reserved.</p>
+    </footer>
   </div>
 </template>
 
@@ -36,6 +49,33 @@ const goToLoginPage = () => {
 
 <style>
 /* 全局样式 */
+.friend-link {
+  display: flex;
+  /*justify-content: space-between;*/
+  align-items: center;
+  width: 100%;
+  height: 50px;
+  border-radius: 5px;
+  background-color: #7fa5e0;
+  /*text-align: center;*/
+  padding: 10px;
+}
+.friend-links {
+  /*display: flex;*/
+  /*justify-content: space-between;*/
+  align-items: center;
+  width: 100%;
+  /*height: 50px;*/
+  border-radius: 8px;
+  /*background-color: #7fa5e0;*/
+  /*text-align: center;*/
+  padding: 10px;
+}
+footer {
+  text-align: center;
+  padding: 10px;
+}
+
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;

@@ -23,7 +23,7 @@ export const RootRoute: AppRouteRecordRaw = {
   path: '/',
   name: 'Root',
   // redirect: PageEnum.BASE_HOME,
-  redirect: PageEnum.HOME_INDEX,
+  redirect: '/home',
   meta: {
     title: 'Root',
   },

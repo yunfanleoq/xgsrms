@@ -17,5 +17,5 @@ export enum PageEnum {
 
   // open home path
   HOME_INDEX = '/home/index',
-  HOME_YJSK = '/home/yjsk',
+  // HOME_YJSK = '/home/yjsk',
 }

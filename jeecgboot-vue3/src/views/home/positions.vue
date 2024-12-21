@@ -102,7 +102,7 @@ const fetchJobs = () => {
 };
 
 onMounted(fetchJobs);
-
+//
 // 响应式数据
 const categories = ref(["Java开发", "C++开发", "前端开发", "后端开发", "大数据开发", "测试开发", "PHP开发"]);
 // 响应式数据
