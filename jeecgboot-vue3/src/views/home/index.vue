@@ -4,14 +4,17 @@
     <header>
       <div class="logo">中科院信工所人才招聘管理系统</div>
       <nav>
-        <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink>
-        <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>
-        <RouterLink to="/scientific-development">科研发展</RouterLink>
-        <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>
+        <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink>|
+        <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>|
+        <RouterLink to="/scientific-development">科研发展</RouterLink>|
+        <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>|
         <RouterLink to="/contact-us">联系我们</RouterLink>
-        <button @click="goToLoginPage" class="login"> 登录 </button>
-        <button class="register">注册</button>
+
       </nav>
+      <div  >
+        <button @click="goToLoginPage" class="login" > 登录 </button>
+        <button class="register">注册</button>
+      </div>
     </header>
     <main>
       <RouterView />
@@ -91,7 +94,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  background: linear-gradient(90deg, #3d54a7, #3d54a7);
   color: white;
   padding: 10px 20px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
@@ -105,6 +108,8 @@ header .logo {
 header nav {
   display: flex;
   align-items: center;
+  justify-content: center; /* 居中导航区内容 */
+
 }
 
 header nav a {
@@ -113,27 +118,26 @@ header nav a {
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: bold;
 }
 
-header nav .login,
-header nav .register {
+header  .login,
+header  .register {
   margin-left: 15px;
   padding: 5px 15px;
   border-radius: 5px;
-  cursor: pointer;
-  border: none;
-  font-size: 14px;
-}
+  margin-right: 15px;
 
-header nav .login {
-  background-color: white;
-  color: #6a11cb;
-}
-
-header nav .register {
-  background-color: #ff7eb3;
+  background-color: transparent;
   color: white;
+  font-size: 20px;
+  cursor: pointer;
+  font-weight: bold;
 }
+
+
 
 /* 横幅 */
 .banner img {

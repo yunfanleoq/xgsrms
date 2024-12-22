@@ -3,7 +3,8 @@
 
     <!-- 横幅 -->
     <section class="banner">
-    <img src="https://via.placeholder.com/1200x300" alt="招聘横幅" />
+<!--    <img src="http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg" alt="招聘横幅" />-->
+      <img src="http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg" alt="招聘横幅" />
     </section>
 
     <!-- 分类和搜索框 -->
@@ -84,6 +85,20 @@ const searchJobs = () => {
 </script>
 
 <style scoped>
+
+.banner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* 确保banner区域有固定高度 */
+  height: 600px;
+}
+
+.banner img {
+  height: 100%;
+  width: 70%;
+}
+
 /* 添加样式以美化首页 */
 h1 {
   color: #42b983;
