@@ -4,7 +4,7 @@
     <div class="!my-4 enter-y">
       <a-card :loading="loading" :class="{ 'anty-list-cust': true }" :bordered="false">
         <a-tabs v-model:activeKey="indexBottomTab" size="large" :tab-bar-style="{ marginBottom: '24px', paddingLeft: '16px' }">
-          <a-tab-pane tab="岗位申请" key="1">
+          <a-tab-pane tab="我申请的岗位" key="1">
             <a-table
               :dataSource="dataSource"
               size="default"
@@ -26,7 +26,24 @@
             </a-table>
           </a-tab-pane>
 
-          <a-tab-pane loading="true" tab="我的简历" key="2">
+          <a-tab-pane loading="true" tab="我的面试" key="2">
+            <a-table
+              :dataSource="dataSource1"
+              size="default"
+              rowKey="reBizCode"
+              :columns="table1.columns"
+              :pagination="ipagination1"
+              @change="tableChange1"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'flowRate'">
+                  <span style="color: red">{{ record.flowRate }}小时</span>
+                </template>
+              </template>
+            </a-table>
+          </a-tab-pane>
+
+          <a-tab-pane loading="true" tab="我的简历" key="3">
             <a-table
               :dataSource="dataSource1"
               size="default"
