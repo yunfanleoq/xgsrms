@@ -14,11 +14,11 @@
   import { ImageProps } from '/@/components/Preview/src/typing';
 
   const imgList: ImageProps[] = [
-    { src: 'https://jeecgos.oss-cn-beijing.aliyuncs.com/upload/test/login_1658829954004.png', width: 300 },
-    { src: 'https://jeecgos.oss-cn-beijing.aliyuncs.com/upload/test/home_index_1658830084684.png', width: 300 },
-    { src: 'https://jeecgos.oss-cn-beijing.aliyuncs.com/upload/test/design_1658830200539.png', width: 300 },
-    { src: 'https://static.jeecg.com/upload/test/13_1592320121058.png', width: 300 },
-    { src: 'https://static.jeecg.com/upload/test/16_1592320251436.png', width: 300 },
+    { src: '/upload/test/login_1658829954004.png', width: 300 },
+    { src: '/upload/test/home_index_1658830084684.png', width: 300 },
+    { src: '/upload/test/design_1658830200539.png', width: 300 },
+    { src: '/upload/test/13_1592320121058.png', width: 300 },
+    { src: '/upload/test/16_1592320251436.png', width: 300 },
   ];
   export default defineComponent({
     components: { PageWrapper, ImagePreview },

@@ -8,7 +8,7 @@ import { setAuthCache } from '/@/utils/auth';
 import { TOKEN_KEY } from '/@/enums/cacheEnum';
 import { router } from '/@/router';
 import { PageEnum } from '/@/enums/pageEnum';
-import { ExceptionEnum } from "@/enums/exceptionEnum";
+import { ExceptionEnum } from '@/enums/exceptionEnum';
 
 const { createErrorModal } = useMessage();
 enum Api {

@@ -45,14 +45,14 @@ export const growCardList: GrowCardItem[] = [
 
 export const chartCardList: GrowCardItem[] = [
   {
-    title: '总销售额',
-    icon: 'visit-count|svg',
-    total: 126560,
+    title: '岗位数量',
+    icon: 'total-sales|svg',
+    total: 560,
     value: 234.56,
     footer: '日均销售额',
   },
   {
-    title: '订单量',
+    title: '招聘数量',
     icon: 'total-sales|svg',
     value: 1234,
     total: 8846,
@@ -60,29 +60,29 @@ export const chartCardList: GrowCardItem[] = [
     footer: '日订单量',
   },
   {
-    title: '支付笔数',
-    icon: 'download-count|svg',
+    title: '审核数量',
+    icon: 'total-sales|svg',
     value: 60,
     total: 6560,
     color: 'orange',
     footer: '转化率',
   },
   {
-    title: '运营活动效果',
-    icon: 'transaction|svg',
+    title: '简历数量',
+    icon: 'total-sales|svg',
     total: 78,
   },
 ];
 export const bdcCardList: GrowCardItem[] = [
   {
-    title: '受理量',
+    title: '申请数量',
     icon: 'ant-design:info-circle-outlined',
     total: 100,
     value: 60,
     footer: '今日受理量',
   },
   {
-    title: '办结量',
+    title: '岗位数量',
     icon: 'ant-design:info-circle-outlined',
     value: 54,
     total: 87,
@@ -90,7 +90,7 @@ export const bdcCardList: GrowCardItem[] = [
     footer: '今日办结量',
   },
   {
-    title: '用户受理量',
+    title: '提交审核数量',
     icon: 'ant-design:info-circle-outlined',
     value: 13,
     total: 15,
@@ -98,7 +98,7 @@ export const bdcCardList: GrowCardItem[] = [
     footer: '用户今日受理量',
   },
   {
-    title: '用户办结量',
+    title: '我的简历数量',
     icon: 'ant-design:info-circle-outlined',
     total: 9,
     value: 7,

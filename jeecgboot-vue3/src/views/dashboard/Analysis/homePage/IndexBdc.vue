@@ -1,72 +1,56 @@
 <template>
   <div class="p-4">
     <ChartGroupCard class="enter-y" :loading="loading" type="bdc" />
-    <BdcTabCard class="!my-4 enter-y" :loading="loading" />
-    <a-row>
-      <a-col :span="24">
-        <a-card :loading="loading" :class="{ 'anty-list-cust': true }" :bordered="false">
-          <a-tabs v-model:activeKey="indexBottomTab" size="large" :tab-bar-style="{ marginBottom: '24px', paddingLeft: '16px' }">
-            <template #rightExtra>
-              <div class="extra-wrapper">
-                <a-radio-group v-model:value="indexRegisterType" @change="changeRegisterType">
-                  <a-radio-button value="转移登记">转移登记</a-radio-button>
-                  <a-radio-button value="抵押登记">抵押登记</a-radio-button>
-                  <a-radio-button value="">所有</a-radio-button>
-                </a-radio-group>
-              </div>
-            </template>
-
-            <a-tab-pane tab="业务流程限时监管" key="1">
-              <a-table
-                :dataSource="dataSource"
-                size="default"
-                rowKey="reBizCode"
-                :columns="table.columns"
-                :pagination="ipagination"
-                @change="tableChange"
-              >
-                <template #bodyCell="{ column, record }">
-                  <template v-if="column.dataIndex === 'flowRate'">
-                    <Progress
-                      :strokeColor="getPercentColor(record.flowRate)"
-                      :format="getPercentFormat"
-                      :percent="getFlowRateNumber(record.flowRate)"
-                      style="width: 80px"
-                    />
-                  </template>
+    <div class="!my-4 enter-y">
+      <a-card :loading="loading" :class="{ 'anty-list-cust': true }" :bordered="false">
+        <a-tabs v-model:activeKey="indexBottomTab" size="large" :tab-bar-style="{ marginBottom: '24px', paddingLeft: '16px' }">
+          <a-tab-pane tab="岗位申请" key="1">
+            <a-table
+              :dataSource="dataSource"
+              size="default"
+              rowKey="reBizCode"
+              :columns="table.columns"
+              :pagination="ipagination"
+              @change="tableChange"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'flowRate'">
+                  <Progress
+                    :strokeColor="getPercentColor(record.flowRate)"
+                    :format="getPercentFormat"
+                    :percent="getFlowRateNumber(record.flowRate)"
+                    style="width: 80px"
+                  />
                 </template>
-              </a-table>
-            </a-tab-pane>
+              </template>
+            </a-table>
+          </a-tab-pane>
 
-            <a-tab-pane loading="true" tab="业务节点限时监管" key="2">
-              <a-table
-                :dataSource="dataSource1"
-                size="default"
-                rowKey="reBizCode"
-                :columns="table1.columns"
-                :pagination="ipagination1"
-                @change="tableChange1"
-              >
-                <template #bodyCell="{ column, record }">
-                  <template v-if="column.dataIndex === 'flowRate'">
-                    <span style="color: red">{{ record.flowRate }}小时</span>
-                  </template>
+          <a-tab-pane loading="true" tab="我的简历" key="2">
+            <a-table
+              :dataSource="dataSource1"
+              size="default"
+              rowKey="reBizCode"
+              :columns="table1.columns"
+              :pagination="ipagination1"
+              @change="tableChange1"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'flowRate'">
+                  <span style="color: red">{{ record.flowRate }}小时</span>
                 </template>
-              </a-table>
-            </a-tab-pane>
-          </a-tabs>
-        </a-card>
-      </a-col>
-    </a-row>
+              </template>
+            </a-table>
+          </a-tab-pane>
+        </a-tabs>
+      </a-card>
+    </div>
   </div>
 </template>
 <script lang="ts" setup>
   import { ref, unref } from 'vue';
   import { Progress } from 'ant-design-vue';
   import ChartGroupCard from '../components/ChartGroupCard.vue';
-  import BdcTabCard from '../components/BdcTabCard.vue';
-  import LineMulti from '/@/components/chart/LineMulti.vue';
-  import HeadInfo from '/@/components/chart/HeadInfo.vue';
   import { table, table1 } from '../data';
 
   const loading = ref(true);
@@ -150,8 +134,9 @@
 
 <style lang="less" scoped>
   .ant-table-wrapper {
-    :deep(.ant-table){
-      td,th {
+    :deep(.ant-table) {
+      td,
+      th {
         padding: 10px;
       }
     }

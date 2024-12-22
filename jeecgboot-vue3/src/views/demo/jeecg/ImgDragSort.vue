@@ -29,11 +29,11 @@
   import { defineComponent, ref, unref } from 'vue';
 
   const mockData = [
-    { id: '000', sort: 0, filePath: 'https://static.jeecg.com/upload/test/1_1588149743473.jpg' },
-    { id: '111', sort: 1, filePath: 'https://static.jeecg.com/upload/test/u27356337152749454924fm27gp0_1588149731821.jpg' },
-    { id: '222', sort: 2, filePath: 'https://static.jeecg.com/upload/test/u24454681402491956848fm27gp0_1588149712663.jpg' },
-    { id: '333', sort: 3, filePath: 'https://static.jeecg.com/temp/国炬软件logo_1606575029126.png' },
-    { id: '444', sort: 4, filePath: 'https://static.jeecg.com/upload/test/u8891206113801177793fm27gp0_1588149704459.jpg' },
+    { id: '000', sort: 0, filePath: '/upload/test/1_1588149743473.jpg' },
+    { id: '111', sort: 1, filePath: '/upload/test/u27356337152749454924fm27gp0_1588149731821.jpg' },
+    { id: '222', sort: 2, filePath: '/upload/test/u24454681402491956848fm27gp0_1588149712663.jpg' },
+    { id: '333', sort: 3, filePath: '/temp/国炬软件logo_1606575029126.png' },
+    { id: '444', sort: 4, filePath: '/upload/test/u8891206113801177793fm27gp0_1588149704459.jpg' },
   ];
 
   //数据集

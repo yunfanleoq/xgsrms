@@ -2,18 +2,7 @@
   <a-card :loading="loading" :bordered="false" :body-style="{ padding: '0' }">
     <div class="salesCard">
       <a-tabs default-active-key="1" size="large" :tab-bar-style="{ marginBottom: '24px', paddingLeft: '16px' }">
-        <template #rightExtra>
-          <div class="extra-wrapper">
-            <div class="extra-item">
-              <a>今日</a>
-              <a>本周</a>
-              <a>本月</a>
-              <a>本年</a>
-            </div>
-            <a-range-picker :style="{ width: '256px' }" />
-          </div>
-        </template>
-        <a-tab-pane loading="true" tab="受理监管" key="1">
+        <a-tab-pane loading="true" tab="岗位信息" key="1">
           <a-row>
             <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24">
               <Bar :chartData="barData" :option="{ title: { text: '', textStyle: { fontWeight: 'lighter' } } }" height="40vh" :seriesColor="seriesColor" />
@@ -23,7 +12,7 @@
             </a-col>
           </a-row>
         </a-tab-pane>
-        <a-tab-pane tab="交互监管" key="2">
+        <a-tab-pane tab="简历申请信息" key="2">
           <a-row>
             <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24">
               <BarMulti
@@ -38,7 +27,7 @@
             </a-col>
           </a-row>
         </a-tab-pane>
-        <a-tab-pane tab="存储监管" key="3">
+        <a-tab-pane tab="审核信息" key="3">
           <a-row>
             <a-col :xl="16" :lg="12" :md="12" :sm="24" :xs="24" style="display: flex">
               <Gauge :seriesColor="seriesColor" :chartData="{ name: 'C盘', value: 70 }" height="30vh"></Gauge>

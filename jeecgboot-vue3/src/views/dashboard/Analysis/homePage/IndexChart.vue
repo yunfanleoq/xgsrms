@@ -1,29 +1,73 @@
 <template>
   <div class="p-4">
     <ChartGroupCard class="enter-y" :loading="loading" type="chart" />
-    <SaleTabCard class="!my-4 enter-y" :loading="loading" />
+    <div class="!my-4 enter-y">
+      <a-card :loading="loading" :class="{ 'anty-list-cust': true }" :bordered="false">
+        <a-tabs v-model:activeKey="indexBottomTab" size="large" :tab-bar-style="{ marginBottom: '24px', paddingLeft: '16px' }">
+          <a-tab-pane tab="已发布岗位" key="1">
+            <a-table
+              :dataSource="dataSource"
+              size="default"
+              rowKey="reBizCode"
+              :columns="table.columns"
+              :pagination="ipagination"
+              @change="tableChange"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'flowRate'">
+                  <Progress
+                    :strokeColor="getPercentColor(record.flowRate)"
+                    :format="getPercentFormat"
+                    :percent="getFlowRateNumber(record.flowRate)"
+                    style="width: 80px"
+                  />
+                </template>
+              </template>
+            </a-table>
+          </a-tab-pane>
+
+          <a-tab-pane loading="true" tab="未发布岗位" key="2">
+            <a-table
+              :dataSource="dataSource1"
+              size="default"
+              rowKey="reBizCode"
+              :columns="table1.columns"
+              :pagination="ipagination1"
+              @change="tableChange1"
+            >
+              <template #bodyCell="{ column, record }">
+                <template v-if="column.dataIndex === 'flowRate'">
+                  <span style="color: red">{{ record.flowRate }}小时</span>
+                </template>
+              </template>
+            </a-table>
+          </a-tab-pane>
+        </a-tabs>
+      </a-card>
+    </div>
     <a-row>
       <a-col :span="24">
         <a-card :loading="loading" :bordered="false" title="最近一周访问量统计">
           <div class="infoArea">
-            <HeadInfo title="今日IP" :iconColor="ipColor" :content="loginfo.todayIp" icon="environment"></HeadInfo>
-            <HeadInfo title="今日访问" :iconColor="visitColor" :content="loginfo.todayVisitCount" icon="team"></HeadInfo>
-            <HeadInfo title="总访问量" :iconColor="seriesColor" :content="loginfo.totalVisitCount" icon="rise"></HeadInfo>
+            <HeadInfo title="今日IP" :iconColor="ipColor" :content="loginfo.todayIp" icon="environment" />
+            <HeadInfo title="今日访问" :iconColor="visitColor" :content="loginfo.todayVisitCount" icon="team" />
+            <HeadInfo title="总访问量" :iconColor="seriesColor" :content="loginfo.totalVisitCount" icon="rise" />
           </div>
-          <LineMulti :chartData="lineMultiData" height="33vh" type="line" :option="{ legend: { top: 'bottom' } }"></LineMulti>
+          <LineMulti :chartData="lineMultiData" height="33vh" type="line" :option="{ legend: { top: 'bottom' } }" />
         </a-card>
       </a-col>
     </a-row>
   </div>
 </template>
 <script lang="ts" setup>
-  import { ref, watch } from 'vue';
+  import { ref, unref, watch } from 'vue';
   import ChartGroupCard from '../components/ChartGroupCard.vue';
-  import SaleTabCard from '../components/SaleTabCard.vue';
   import LineMulti from '/@/components/chart/LineMulti.vue';
   import HeadInfo from '/@/components/chart/HeadInfo.vue';
   import { getLoginfo, getVisitInfo } from '../api.ts';
   import { useRootSetting } from '/@/hooks/setting/useRootSetting';
+  import { table, table1 } from '@/views/dashboard/Analysis/data';
+  import { Progress } from 'ant-design-vue';
 
   const loading = ref(true);
   const { getThemeColor } = useRootSetting();
@@ -68,19 +112,68 @@
     },
     { immediate: true }
   );
-
-  function getRandomColor() {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
+  function tableChange(pagination) {
+    ipagination.value.current = pagination.current;
+    ipagination.value.pageSize = pagination.pageSize;
+    loadDataSource();
   }
+
+  function tableChange1(pagination) {
+    ipagination1.value.current = pagination.current;
+    ipagination1.value.pageSize = pagination.pageSize;
+    loadDataSource1();
+  }
+  function getFlowRateNumber(value) {
+    return +value;
+  }
+
+  function getPercentFormat(value) {
+    if (value == 100) {
+      return '超时';
+    } else {
+      return value + '%';
+    }
+  }
+  function getPercentColor(value) {
+    let p = +value;
+    if (p >= 90 && p < 100) {
+      return 'rgb(244, 240, 89)';
+    } else if (p >= 100) {
+      return 'red';
+    } else {
+      return 'rgb(16, 142, 233)';
+    }
+  }
+  const indexBottomTab = ref('1');
+  const indexRegisterType = ref('转移登记');
+  const dataSource = ref([]);
+  const dataSource1 = ref([]);
+  const ipagination = ref(table.ipagination);
+  const ipagination1 = ref(table1.ipagination);
+  function loadDataSource() {
+    dataSource.value = table.dataSource.filter((item) => {
+      if (!unref(indexRegisterType)) {
+        return true;
+      }
+      return item.type == unref(indexRegisterType);
+    });
+  }
+
+  function loadDataSource1() {
+    dataSource1.value = table1.dataSource.filter((item) => {
+      if (!unref(indexRegisterType)) {
+        return true;
+      }
+      return item.type == unref(indexRegisterType);
+    });
+  }
+
+  loadDataSource();
+  loadDataSource1();
 </script>
 
 <style lang="less" scoped>
-   .infoArea {
+  .infoArea {
     display: flex;
     justify-content: space-between;
     padding: 0 10%;
