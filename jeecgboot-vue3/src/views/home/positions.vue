@@ -9,12 +9,18 @@
     <!-- 分类和搜索框 -->
     <section class="filters">
     <div class="categories">
-      <button v-for="(dept, index) in depts" :key="index" @click="filterDept(dept)">
+      <button
+        v-for="(dept, index) in depts"
+        :key="index"
+        @click="filterDept(dept)"
+        class="category-button"
+      >
         {{ dept }}
       </button>
     </div>
     <div class="search">
       <input v-model="searchQuery" placeholder="请输入职位名称" />
+      <button @click="resetDept">重置</button>
       <button @click="searchJobs">搜索</button>
     </div>
     </section>
@@ -22,12 +28,12 @@
     <!-- 职位列表 -->
     <section class="job-list">
     <div v-for="(job, index) in filteredJobs" :key="index" class="job-card">
-      <h3>{{ job.title }}</h3>
-      <p>职位数量：<strong>{{ job.count }}</strong></p>
-      <p>工作地点：<strong>{{ job.location }}</strong></p>
-      <p>薪资：<span class="salary">{{ job.salary }}</span></p>
-      <p>{{ job.description }}</p>
-      <p>{{ job.dept }}</p>
+      <h3>{{ job.positionName }}</h3>
+      <p>职位数量：<strong>{{ job.personCount }}</strong></p>
+      <p>招聘部门：<strong>{{ job.dept_dictText }}</strong></p>
+      <p>工作年限：<span class="salary">{{ job.workYears }}</span></p>
+      <p>招聘状态：<span class="status-filter">{{ job.status }}</span></p>
+      <p><span>{{ job.dept_dictText }} </span></p>
     </div>
     </section>
   </div>
@@ -46,40 +52,49 @@ const selectedDept = ref('');
 
   // /online/cgformList/a03837d0fbfc4c49a3392672d3bdc570
     // jobs = '/online/cgform/api/getData/a03837d0fbfc4c49a3392672d3bdc570?hasQuery=true&column=slot_number&order=asc&pageNo=1&pageSize=100',
-const  jobListUrl = '/online/cgform/api/getData/a03837d0fbfc4c49a3392672d3bdc570?hasQuery=true&column=status&order=asc&pageNo=1&pageSize=100'
+const  jobListUrl = '/positions/xgsPositions/list'
+const  deptListUrl = '/sys/sysDepart/listAll'
+
     // batChargingList = '/online/cgreport/api/getData/1855806234161901570?hasQuery=true&pageNo=1&pageSize=100',
 
 
 const getJobList = (params) => defHttp.get({ url:jobListUrl, params }, { isTransformResponse: false });
+const getDeptList = (params) => defHttp.get({ url:deptListUrl, params }, { isTransformResponse: false });
+
  // const batChargingList = (params) => defHttp.get({ url: Api.batChargingList, params }, { isTransformResponse: false });
 const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
 
 const depts = ref([
   "密码理论与技术研究室",
   "体系结构安全研究室",
-  "体系结构安全研究室",
-  "体系结构安全研究室",
-  "体系结构安全研究室",
-  "体系结构安全研究室",
-  "体系结构安全研究室",
-  "数据安全研究室",
-  "数据安全研究室",
-  "数据安全研究室",
   "数据安全研究室"
+
 ]);
 
-const getRandomDept = () => {
-  const randomIndex = Math.floor(Math.random() * depts.value.length);
-  return depts.value[randomIndex];
-};
 
 
 const jobs = ref([
-  { title: "Java工程师", count: 336, location: "北京市", salary: "7000-12000", description: "熟悉RPC框架，具备分布式开发经验", category: "Java开发", dept: getRandomDept() },
-  { title: "C++工程师", count: 13, location: "南京市", salary: "5000-8000", description: "可独立编写驱动程序", category: "C++开发", dept: getRandomDept() },
-  { title: "PHP工程师", count: 307, location: "北京市", salary: "7000-12000", description: "熟悉PHP框架，如Laravel等", category: "PHP开发", dept: getRandomDept() },
-  { title: "Python开发", count: 178, location: "天津市", salary: "14000-16000", description: "熟悉AI框架，算法优先", category: "大数据开发", dept: getRandomDept() },
-  { title: "前端开发", count: 215, location: "杭州市", salary: "15000-20000", description: "熟悉Vue.js框架", category: "前端开发", dept: getRandomDept() },
+  {
+    id: "1870026492048125964",
+    sysOrgCode: "A01",
+    dept: "1870023309355724801",
+    ktz: "1870023433565843457",
+    telphone: "010-82345271",
+    email: "mima@iie.ac.cn",
+    positionName: "工程师",
+    researchDirection: "安全测评，密码开发",
+    personCount: "1",
+    duty: "安全测评工作，安全系统研发",
+    xlxw: "硕士研究生及以上",
+    professional: "计算机、电子信息、网络空间安全相关专业",
+    workYears: "2年及以上",
+    memo: null,
+    status: "招聘中",
+    dept_dictText: "密码理论与技术研究室",
+    ktz_dictText: "密码测评研究组",
+    status_dictText: "招聘中",
+  },
+
 ]);
 
 
@@ -90,21 +105,48 @@ const fetchJobs = () => {
     status: statusFilter.value // 将状态参数添加到请求参数中
   };
 
+
   getJobList(params)
     .then((res) => {
       if (res.success) {
         let list = res.result.records;
         // jobs.value = underlineToCamelCase(list);
         jobs.value = list;
-
+        console.log('getJobList>>>>>>>>>>>',list,depts.value)
       }
     })
 };
 
-onMounted(fetchJobs);
+const resetDept = () => {
+  selectedDept.value = null;
+};
+
+const fetchDepts = () => {
+  console.log('fetchDepts>>>>>>>>>>>BEGIN')
+  const params = {
+    orgType: 1 // 只获取一级部门
+  };
+
+  getDeptList(params)
+    .then((res) => {
+      if (res.success) {
+        console.log('fetchDepts>>>>>>>>>>>',res)
+        let list = res.result;
+        // 提取 list 中的 dept 字段形成数组，并赋值给 depts.value
+        list = list.map((item) => item.departName);
+
+        depts.value = list;
+
+        console.log('getDeptList>>>>>>>>>>>',list,depts.value)
+      }
+    })
+};
+
+onMounted(fetchDepts );
+onMounted(fetchJobs );
 //
 // 响应式数据
-const categories = ref(["Java开发", "C++开发", "前端开发", "后端开发", "大数据开发", "测试开发", "PHP开发"]);
+// const categories = ref(["Java开发", "C++开发", "前端开发", "后端开发", "大数据开发", "测试开发", "PHP开发"]);
 // 响应式数据
 
 
@@ -114,16 +156,16 @@ const categories = ref(["Java开发", "C++开发", "前端开发", "后端开发
 const filteredJobs = computed(() => {
   let filtered = jobs.value;
 
-  if (selectedCategory.value) {
-    filtered = filtered.filter((job) => job.category === selectedCategory.value);
-  }
+  // if (selectedCategory.value) {
+  //   filtered = filtered.filter((job) => job.category === selectedCategory.value);
+  // }
 
   if (searchQuery.value) {
-    filtered = filtered.filter((job) => job.title.includes(searchQuery.value));
+    filtered = filtered.filter((job) => job.positionName.includes(searchQuery.value));
   }
 
   if (selectedDept.value) {
-    filtered = filtered.filter((job) => job.dept === selectedDept.value);
+    filtered = filtered.filter((job) => job.dept_dictText === selectedDept.value);
   }
 
   return filtered;
@@ -157,6 +199,20 @@ h1 {
   color: #42b983;
 }
 
+.status-filter {
+  /*display: flex;*/
+  /*justify-content: space-between;*/
+  /*align-items: center;*/
+  /*padding: 20px;*/
+  /*background-color: white;*/
+  /*border-radius: 10px;*/
+  /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+  /*margin: 20px;*/
+  font-size: 16px;
+  font-weight: bold;
+  color: #2e9232;
+}
+
 /* 分类和搜索 */
 .filters {
   display: flex;
@@ -167,6 +223,26 @@ h1 {
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin: 20px;
+}
+
+.categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* 按钮之间的间距 */
+}
+
+.category-button {
+  padding: 8px 16px; /* 按钮内边距 */
+  background-color: #007bff; /* 背景颜色 */
+  color: white; /* 文字颜色 */
+  border: none; /* 去掉边框 */
+  border-radius: 4px; /* 圆角 */
+  cursor: pointer; /* 鼠标悬停时显示为指针 */
+  transition: background-color 0.3s; /* 背景颜色过渡效果 */
+}
+
+.category-button:hover {
+  background-color: #0056b3; /* 悬停时的背景颜色 */
 }
 
 .filters .categories button {
@@ -196,7 +272,7 @@ h1 {
 
 .filters .search button {
   padding: 10px 20px;
-  background-color: #ff7eb3;
+  background-color: #1c4997;
   color: white;
   border: none;
   border-radius: 20px;
@@ -206,7 +282,7 @@ h1 {
 }
 
 .filters .search button:hover {
-  background-color: #ff5177;
+  background-color: #a52542;
 }
 
 /* 职位列表 */
@@ -235,7 +311,7 @@ h1 {
 }
 
 .job-card .salary {
-  color: #ff5177;
+  color: #17449e;
   font-weight: bold;
 }
 </style>
