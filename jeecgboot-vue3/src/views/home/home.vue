@@ -100,8 +100,8 @@ const searchJobs = () => {
 }
 
 .banner img {
-  height: 100%;
-  width: 70%;
+  height: 70%;
+  width: 50%;
 }
 
 /* 添加样式以美化首页 */

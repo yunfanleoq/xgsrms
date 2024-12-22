@@ -3,6 +3,8 @@ package org.jeecg.modules.system.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -18,6 +20,7 @@ import org.jeecg.common.util.ImportExcelUtil;
 import org.jeecg.common.util.YouBianCodeUtil;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.system.entity.SysDepart;
 import org.jeecg.modules.system.entity.SysUser;
 import org.jeecg.modules.system.model.DepartIdModel;
@@ -55,6 +58,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/sys/sysDepart")
 @Slf4j
+@Api(tags = "部门管理")
 public class SysDepartController {
 
 	@Autowired
@@ -495,6 +499,8 @@ public class SysDepartController {
 	 * @return
 	 */
 	@GetMapping("listAll")
+	@ApiOperation(value = "查询所有部门信息", notes = "查询所有部门信息")
+	@IgnoreAuth
 	public Result<List<SysDepart>> listAll(@RequestParam(name = "id", required = false) String id) {
 		Result<List<SysDepart>> result = new Result<>();
 		LambdaQueryWrapper<SysDepart> query = new LambdaQueryWrapper<SysDepart>();
