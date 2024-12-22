@@ -2,7 +2,7 @@
   <div id="app">
     <div class="banner">
       <img src="@/assets/images/xgs_logo_.png" alt="Banner Image" class="banner-image">
-<!--      <img src="@/assets/images/xgs_logo01.png" alt="" class="banner-image">-->
+      <img src="@/assets/images/xgs_logo01.png" alt="" class="banner-image">
 
     </div>
 
@@ -20,7 +20,7 @@
       <div  >
         <button @click="goToLoginPage" class="login" > 登录 </button>
         |
-        <button class="register">注册</button>
+        <button @click="goToRegisterPage" class="register">注册</button>
       </div>
     </header>
     <main class="main-content">
@@ -57,6 +57,9 @@ const router = useRouter();
 
 const goToLoginPage = () => {
   router.push({ name: 'Login' });
+};
+const goToRegisterPage = () => {
+  router.push({ name: 'Login', query: { tab: 'register' } });
 };
 
 

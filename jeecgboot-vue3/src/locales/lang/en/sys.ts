@@ -71,7 +71,7 @@ export default {
 
     signInTitle: 'Backstage management system',
     signInDesc: 'Enter your personal details and get started!',
-    policy: 'I agree to the xxx Privacy Policy',
+    policy: 'I agree to the Privacy Policy',
     scanSign: `scanning the code to complete the login`,
 
     loginButton: 'Sign in',
