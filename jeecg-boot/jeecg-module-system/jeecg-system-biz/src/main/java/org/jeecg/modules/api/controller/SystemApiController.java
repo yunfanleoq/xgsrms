@@ -2,6 +2,7 @@ package org.jeecg.modules.api.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.dto.DataLogDTO;
 import org.jeecg.common.api.dto.OnlineAuthDTO;
 import org.jeecg.common.api.dto.message.*;
@@ -10,6 +11,7 @@ import org.jeecg.common.desensitization.util.SensitiveInfoUtil;
 import org.jeecg.common.system.vo.*;
 import org.jeecg.modules.system.service.ISysUserService;
 import org.jeecg.modules.system.service.impl.SysBaseApiImpl;
+import org.jeecg.modules.system.util.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -455,6 +457,16 @@ public class SystemApiController {
     @GetMapping("/queryUserRoles")
     public Set<String> queryUserRoles(@RequestParam("username") String username){
         return sysUserService.getUserRolesSet(username);
+    }
+
+    /**
+     * 查询用户角色信息 登录用户角色
+     * @return
+     */
+    @GetMapping("/queryLoginUserRoles")
+    public Set<String> queryLoginUserRoles(){
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        return sysUserService.getUserRolesSet(sysUser.getUsername());
     }
     
     /**
