@@ -2,6 +2,7 @@
   <div :class="prefixCls" class="login-background-img">
     <AppLocalePicker class="absolute top-4 right-4 enter-x xl:text-gray-600" :showText="false"/>
     <AppDarkModeToggle class="absolute top-3 right-7 enter-x" />
+    <span @click="goHome">← 返回首页</span>
     <div class="aui-logo" v-if="!getIsMobile">
       <div>
         <h3>
@@ -173,6 +174,7 @@
   import CaptchaModal from '@/components/jeecg/captcha/CaptchaModal.vue';
   import { useModal } from "@/components/Modal";
   import { ExceptionEnum } from "@/enums/exceptionEnum";
+  import {useRouter} from "vue-router";
 
   const IconFont = createFromIconfontCN({
     scriptUrl: '//at.alicdn.com/t/font_2316098_umqusozousr.js',
@@ -430,6 +432,14 @@
     //加载验证码
     handleChangeCheckCode();
   });
+
+  /*
+  返回首页
+   */
+  const router = useRouter();
+  const goHome = () => {
+    router.push({name: 'homeIndex'});
+  }
 </script>
 
 <style lang="less" scoped>
