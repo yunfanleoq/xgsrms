@@ -1,18 +1,25 @@
 <template>
   <div id="app">
+    <div class="banner">
+      <img src="@/assets/images/xgs_logo_.png" alt="Banner Image" class="banner-image">
+      <img src="@/assets/images/xgs_logo01.png" alt="" class="banner-image">
+
+    </div>
+
     <!-- 顶部导航栏 -->
     <header>
       <div class="logo">中科院信工所人才招聘管理系统</div>
       <nav>
         <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink>|
         <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>|
-        <RouterLink to="/scientific-development">科研发展</RouterLink>|
+        <RouterLink :to="{ name: 'homeNews' }">科研发展</RouterLink>|
         <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>|
         <RouterLink to="/contact-us">联系我们</RouterLink>
 
       </nav>
       <div  >
         <button @click="goToLoginPage" class="login" > 登录 </button>
+        |
         <button class="register">注册</button>
       </div>
     </header>
@@ -21,9 +28,14 @@
     </main>
     <!-- 友情链接 -->
     <div class="friend-links" >
-      <h3>友情链接</h3>
+<!--      <h3>友情链接</h3>-->
       <div class="friend-link"> <a href="https://www.cas.cn">中国科学院</a>
-        --
+        |
+        <a href="http://www.nsfc.gov.cn/">国家自然科学基金</a>
+        |
+        <a href="https://www.casjob.com/">中科人才网</a>
+        |
+
       <a href="http://www.iie.cas.cn/">中科院信工所</a>
 
       </div>
@@ -50,18 +62,30 @@ const goToLoginPage = () => {
 
 </script>
 
-<style>
+<style >
 /* 全局样式 */
 .friend-link {
   display: flex;
-  /*justify-content: space-between;*/
+  justify-content: space-around; /* 或者使用 space-between 根据需要 */
   align-items: center;
   width: 100%;
   height: 50px;
   border-radius: 5px;
   background-color: #7fa5e0;
-  /*text-align: center;*/
   padding: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+}
+
+.link-item {
+  color: white; /* 文字颜色与背景颜色对比 */
+  text-decoration: none; /* 去掉下划线 */
+  font-family: Arial, sans-serif; /* 清晰易读的字体 */
+  font-size: 16px;
+  transition: color 0.3s ease; /* 添加过渡效果 */
+}
+
+.link-item:hover {
+  color: #ffcc00; /* 悬停时的文字颜色 */
 }
 .friend-links {
   /*display: flex;*/
@@ -137,7 +161,20 @@ header  .register {
   font-weight: bold;
 }
 
+.banner {
+  background-image: url('@/assets/images/xgs_topbg.png'); /* 替换为你的背景图URL */
+  background-size: cover;
+  display: flex;
+  align-items: center;
+}
 
+.banner-image {
+  height: 100px;
+  width: 80%;
+  border-radius: 7px;
+  object-fit: contain; /* 保持图像的宽高比 */
+  margin-right: 10px; /* 可选：设置图像之间的间距 */
+}
 
 /* 横幅 */
 .banner img {
@@ -146,85 +183,85 @@ header  .register {
   margin: 20px 0;
 }
 
-/* 分类和搜索 */
-.filters {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin: 20px;
-}
+/*!* 分类和搜索 *!*/
+/*.filters {*/
+/*  display: flex;*/
+/*  justify-content: space-between;*/
+/*  align-items: center;*/
+/*  padding: 20px;*/
+/*  background-color: white;*/
+/*  border-radius: 10px;*/
+/*  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+/*  margin: 20px;*/
+/*}*/
 
-.filters .categories button {
-  margin-right: 10px;
-  padding: 8px 15px;
-  border-radius: 20px;
-  border: none;
-  background-color: #eef2f7;
-  color: #6a11cb;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s;
-}
+/*.filters .categories button {*/
+/*  margin-right: 10px;*/
+/*  padding: 8px 15px;*/
+/*  border-radius: 20px;*/
+/*  border: none;*/
+/*  background-color: #eef2f7;*/
+/*  color: #6a11cb;*/
+/*  cursor: pointer;*/
+/*  font-weight: bold;*/
+/*  transition: all 0.3s;*/
+/*}*/
 
-.filters .categories button:hover {
-  background-color: #6a11cb;
-  color: white;
-}
+/*.filters .categories button:hover {*/
+/*  background-color: #6a11cb;*/
+/*  color: white;*/
+/*}*/
 
-.filters .search input {
-  padding: 10px;
-  border-radius: 20px;
-  border: 1px solid #ddd;
-  width: 250px;
-  margin-right: 10px;
-}
+/*.filters .search input {*/
+/*  padding: 10px;*/
+/*  border-radius: 20px;*/
+/*  border: 1px solid #ddd;*/
+/*  width: 250px;*/
+/*  margin-right: 10px;*/
+/*}*/
 
-.filters .search button {
-  padding: 10px 20px;
-  background-color: #ff7eb3;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s;
-}
+/*.filters .search button {*/
+/*  padding: 10px 20px;*/
+/*  background-color: #ff7eb3;*/
+/*  color: white;*/
+/*  border: none;*/
+/*  border-radius: 20px;*/
+/*  cursor: pointer;*/
+/*  font-weight: bold;*/
+/*  transition: all 0.3s;*/
+/*}*/
 
-.filters .search button:hover {
-  background-color: #ff5177;
-}
+/*.filters .search button:hover {*/
+/*  background-color: #ff5177;*/
+/*}*/
 
-/* 职位列表 */
-.job-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-}
+/*!* 职位列表 *!*/
+/*.job-list {*/
+/*  display: grid;*/
+/*  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));*/
+/*  gap: 20px;*/
+/*  padding: 20px;*/
+/*}*/
 
-.job-card {
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  transition: transform 0.2s;
-}
+/*.job-card {*/
+/*  background-color: white;*/
+/*  border-radius: 10px;*/
+/*  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
+/*  padding: 20px;*/
+/*  transition: transform 0.2s;*/
+/*}*/
 
-.job-card:hover {
-  transform: translateY(-5px);
-}
+/*.job-card:hover {*/
+/*  transform: translateY(-5px);*/
+/*}*/
 
-.job-card h3 {
-  font-size: 20px;
-  color: #6a11cb;
-}
+/*.job-card h3 {*/
+/*  font-size: 20px;*/
+/*  color: #6a11cb;*/
+/*}*/
 
-.job-card .salary {
-  color: #ff5177;
-  font-weight: bold;
-}
+/*.job-card .salary {*/
+/*  color: #ff5177;*/
+/*  font-weight: bold;*/
+/*}*/
 </style>

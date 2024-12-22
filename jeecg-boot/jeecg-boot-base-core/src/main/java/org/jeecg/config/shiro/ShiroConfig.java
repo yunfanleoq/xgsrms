@@ -83,6 +83,14 @@ public class ShiroConfig {
         }
 
         // 配置不会被拦截的链接 顺序判断
+
+//      xgsJournalism/xgsJournalism
+        filterChainDefinitionMap.put("/xgsJournalism/xgsJournalism/list", "anon");
+
+        filterChainDefinitionMap.put("/sys/dict/getDictItems/*", "anon");
+        // 添加新的匿名访问配置
+//        filterChainDefinitionMap.put("/jeecg-boot/sys/dict/getDictItems/**", "anon");
+
         filterChainDefinitionMap.put("/sys/cas/client/validateLogin", "anon"); //cas验证登录
         filterChainDefinitionMap.put("/sys/randomImage/**", "anon"); //登录验证码接口排除
         filterChainDefinitionMap.put("/sys/checkCaptcha", "anon"); //登录验证码接口排除

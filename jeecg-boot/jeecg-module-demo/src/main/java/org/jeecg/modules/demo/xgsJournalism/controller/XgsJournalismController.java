@@ -14,6 +14,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.demo.xgsJournalism.entity.XgsJournalism;
 import org.jeecg.modules.demo.xgsJournalism.service.IXgsJournalismService;
 
@@ -65,6 +66,7 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 	//@AutoLog(value = "新闻内容-分页列表查询")
 	@ApiOperation(value="新闻内容-分页列表查询", notes="新闻内容-分页列表查询")
 	@GetMapping(value = "/list")
+	@IgnoreAuth
 	public Result<IPage<XgsJournalism>> queryPageList(XgsJournalism xgsJournalism,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

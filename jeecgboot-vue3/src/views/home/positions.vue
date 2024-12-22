@@ -156,4 +156,86 @@ const searchJobs = () => {
 h1 {
   color: #42b983;
 }
+
+/* 分类和搜索 */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 20px;
+}
+
+.filters .categories button {
+  margin-right: 10px;
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: none;
+  background-color: #eef2f7;
+  color: #6a11cb;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.filters .categories button:hover {
+  background-color: #6a11cb;
+  color: white;
+}
+
+.filters .search input {
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  width: 250px;
+  margin-right: 10px;
+}
+
+.filters .search button {
+  padding: 10px 20px;
+  background-color: #ff7eb3;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.filters .search button:hover {
+  background-color: #ff5177;
+}
+
+/* 职位列表 */
+.job-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.job-card {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: transform 0.2s;
+}
+
+.job-card:hover {
+  transform: translateY(-5px);
+}
+
+.job-card h3 {
+  font-size: 20px;
+  color: #6a11cb;
+}
+
+.job-card .salary {
+  color: #ff5177;
+  font-weight: bold;
+}
 </style>
