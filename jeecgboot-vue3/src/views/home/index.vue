@@ -23,7 +23,7 @@
         <button class="register">注册</button>
       </div>
     </header>
-    <main>
+    <main class="main-content">
       <RouterView />
     </main>
     <!-- 友情链接 -->
@@ -63,6 +63,13 @@ const goToLoginPage = () => {
 </script>
 
 <style >
+
+.main-content {
+  min-height: 75%; /* 设置最小高度为1000像素 */
+  padding: 20px; /* 可选：添加内边距 */
+  background-color: #f9f9f9; /* 可选：添加背景颜色 */
+}
+
 /* 全局样式 */
 .friend-link {
   display: flex;

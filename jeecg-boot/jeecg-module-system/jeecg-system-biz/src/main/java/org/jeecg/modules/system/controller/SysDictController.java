@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -23,6 +25,7 @@ import org.jeecg.common.system.vo.DictQuery;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.*;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.config.shiro.ShiroRealm;
 import org.jeecg.modules.system.entity.SysDict;
 import org.jeecg.modules.system.entity.SysDictItem;
@@ -63,6 +66,7 @@ import java.util.*;
 @RestController
 @RequestMapping("/sys/dict")
 @Slf4j
+@Api(tags="数据字典")
 public class SysDictController {
 
 	@Autowired
@@ -181,6 +185,8 @@ public class SysDictController {
 	 * @return
 	 */
 	@RequestMapping(value = "/getDictItems/{dictCode}", method = RequestMethod.GET)
+	@ApiOperation(value="数据字典-根据字典编码查询字典项", notes="数据字典-根据字典编码查询字典项")
+	@IgnoreAuth
 	public Result<List<DictModel>> getDictItems(@PathVariable("dictCode") String dictCode, @RequestParam(value = "sign",required = false) String sign,HttpServletRequest request) {
 		log.info(" dictCode : "+ dictCode);
 		Result<List<DictModel>> result = new Result<List<DictModel>>();

@@ -120,6 +120,16 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       },
     },
     {
+      path: '/job/:id',
+      name: 'JobDetail',
+      component: import('/@/views/home/JobDetail.vue'),
+      meta: {
+        title: '招聘岗位',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
       path: 'news',
       name: 'homeNews',
       component: () => import('/@/views/home/news.vue'),

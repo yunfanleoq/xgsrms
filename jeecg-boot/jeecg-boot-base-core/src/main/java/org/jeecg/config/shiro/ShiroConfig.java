@@ -87,6 +87,10 @@ public class ShiroConfig {
 //      xgsJournalism/xgsJournalism
         filterChainDefinitionMap.put("/xgsJournalism/xgsJournalism/list", "anon");
 
+        filterChainDefinitionMap.put("/positions/xgsPositions/list", "anon");
+
+        filterChainDefinitionMap.put("/online/cgform/api/getData/*", "anon");
+
         filterChainDefinitionMap.put("/sys/dict/getDictItems/*", "anon");
         // 添加新的匿名访问配置
 //        filterChainDefinitionMap.put("/jeecg-boot/sys/dict/getDictItems/**", "anon");
