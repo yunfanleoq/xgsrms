@@ -42,7 +42,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
  /**
  * @Description: 机构概况
  * @Author: jeecg-boot
- * @Date:   2024-12-22
+ * @Date:   2024-12-23
  * @Version: V1.0
  */
 @Api(tags="机构概况")

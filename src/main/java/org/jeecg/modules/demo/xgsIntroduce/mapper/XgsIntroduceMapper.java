@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 /**
  * @Description: 机构概况
  * @Author: jeecg-boot
- * @Date:   2024-12-22
+ * @Date:   2024-12-23
  * @Version: V1.0
  */
 public interface XgsIntroduceMapper extends BaseMapper<XgsIntroduce> {
