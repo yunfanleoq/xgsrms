@@ -13,7 +13,7 @@ export const columns: BasicColumn[] = [
    {
     title: '概况内容',
     align:"center",
-    dataIndex: 'text'
+    dataIndex: 'text',
    },
    {
     title: '图片',
@@ -43,7 +43,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '概况内容',
     field: 'text',
-    component: 'InputTextArea',
+    component: 'JEditor',
   },
   {
     label: '图片',
@@ -70,7 +70,7 @@ export const formSchema: FormSchema[] = [
 // 高级查询数据
 export const superQuerySchema = {
   type: {title: '概况类型',order: 0,view: 'list', type: 'string',dictCode: 'introduce_type',},
-  text: {title: '概况内容',order: 1,view: 'textarea', type: 'string',},
+  text: {title: '概况内容',order: 1,view: 'umeditor', type: 'string',},
   picture: {title: '图片',order: 2,view: 'image', type: 'string',},
   pictureText: {title: '图片附文',order: 3,view: 'text', type: 'string',},
 };

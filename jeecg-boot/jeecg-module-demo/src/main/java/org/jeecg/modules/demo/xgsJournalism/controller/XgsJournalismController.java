@@ -48,7 +48,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
  */
 @Api(tags="新闻内容")
 @RestController
-@RequestMapping("//xgsJournalism/xgsJournalism")
+@RequestMapping("/xgsJournalism/xgsJournalism")
 @Slf4j
 public class XgsJournalismController extends JeecgController<XgsJournalism, IXgsJournalismService> {
 	@Autowired

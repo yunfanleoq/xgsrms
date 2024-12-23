@@ -14,6 +14,7 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.demo.xgsIntroduce.entity.XgsIntroduce;
 import org.jeecg.modules.demo.xgsIntroduce.service.IXgsIntroduceService;
 
@@ -38,8 +39,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import springfox.documentation.annotations.ApiIgnore;
 
- /**
+/**
  * @Description: 机构概况
  * @Author: jeecg-boot
  * @Date:   2024-12-22
