@@ -23,7 +23,7 @@ spring:
   # flyway配置
   flyway:
     # 是否启用flyway
-    enabled: true
+    enabled: false
     # 编码格式，默认UTF-8
     encoding: UTF-8
     # 迁移sql脚本文件存放路径，官方默认db/migration
@@ -51,8 +51,8 @@ spring:
     # 定时任务发送邮件
     timeJobSend: false
     host: smtp.163.com
-    username: jeecgos@163.com
-    password: ??
+    username: 13717793116@163.com
+    password: BZwUGdE2Yvu7riJK
     properties:
       mail:
         smtp:
@@ -183,7 +183,7 @@ spring:
     database: 0
     host: 127.0.0.1
     port: 6379
-#    password: 'wzspwzsp'
+    password: 'terrybao'
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml

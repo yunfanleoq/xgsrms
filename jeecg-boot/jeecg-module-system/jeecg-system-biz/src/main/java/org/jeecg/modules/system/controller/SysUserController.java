@@ -966,10 +966,11 @@ public class SysUserController {
 	public Result<JSONObject> userRegister(@RequestBody JSONObject jsonObject, SysUser user) {
 		Result<JSONObject> result = new Result<JSONObject>();
 		String phone = jsonObject.getString("phone");
+        String email = jsonObject.getString("email");
 		String smscode = jsonObject.getString("smscode");
 
         //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-		String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+phone;
+		String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+email;
 		Object code = redisUtil.get(redisKey);
         //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
 
@@ -983,7 +984,6 @@ public class SysUserController {
 		if(oConvertUtils.isEmpty(password)){
             password = RandomUtil.randomString(8);
         }
-		String email = jsonObject.getString("email");
 		SysUser sysUser1 = sysUserService.getUserByName(username);
 		if (sysUser1 != null) {
 			result.setMessage("用户名已注册");
@@ -1034,7 +1034,7 @@ public class SysUserController {
 			user.setStatus(CommonConstant.USER_UNFREEZE);
 			user.setDelFlag(CommonConstant.DEL_FLAG_0);
 			user.setActivitiSync(CommonConstant.ACT_SYNC_1);
-			sysUserService.addUserWithRole(user,"");//默认临时角色 test
+			sysUserService.addUserWithRole(user,"1871213595289501698");//注册用户角色
 			result.success("注册成功");
 		} catch (Exception e) {
 			result.error500("注册失败");

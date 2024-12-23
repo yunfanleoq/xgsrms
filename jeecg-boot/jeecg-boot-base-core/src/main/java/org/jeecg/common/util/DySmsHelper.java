@@ -15,7 +15,11 @@ import org.jeecg.config.JeecgSmsTemplateConfig;
 import org.jeecg.config.StaticConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import java.util.Map;
 
 /**
@@ -58,7 +62,6 @@ public class DySmsHelper {
     public static String getAccessKeySecret() {
         return accessKeySecret;
     }
-    
     
     public static boolean sendSms(String phone, JSONObject templateParamJson, DySmsEnum dySmsEnum) throws ClientException {
     	//可自助调整超时时间
@@ -128,6 +131,28 @@ public class DySmsHelper {
         }
         return result;
         
+    }
+
+    public static boolean sendEmailCode(String email, JSONObject templateParamJson, DySmsEnum dySmsEnum) throws ClientException {
+        boolean result = false;
+        try {
+            JavaMailSender mailSender = (JavaMailSender) SpringContextUtils.getBean("mailSender");
+            MimeMessage message = mailSender.createMimeMessage();
+            StaticConfig staticConfig = SpringContextUtils.getBean(StaticConfig.class);
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            // 设置发送方邮箱地址
+            helper.setFrom(staticConfig.getEmailFrom());
+            helper.setTo(email);
+            helper.setSubject("邮箱验证码");
+            helper.setText(templateParamJson.getString("code"), true);
+            mailSender.send(message);
+            result = true;
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        logger.info("邮箱接口返回的数据----------------");
+        return result;
+
     }
     
     private static void validateParam(JSONObject templateParamJson,DySmsEnum dySmsEnum) {
