@@ -1,11 +1,11 @@
 import { defHttp } from '/@/utils/http/axios';
-import {LoginParams, LoginResultModel} from "@/api/sys/model/userModel";
-import {ErrorMessageMode} from "#/axios";
+
 
 enum Api {
-   jobListUrl = '/positions/xgsPositions/list',
    jobByIdUrl = '/positions/xgsPositions/list',
    deptListUrl = '/sys/sysDepart/listAll',
+   DictItemsUrl = '/sys/dict/getDictItems',
+   jobListUrl = '/positions/xgsPositions/list',
 
 }
 
@@ -14,14 +14,18 @@ enum Api {
  */
 
 
-export function getJobList(params) {
-  return defHttp.get({ url: Api.jobListUrl, params }, { isTransformResponse: false });
+export function  getJobList  (params) {
+  return defHttp.get({ url:Api.jobListUrl, params }, { isTransformResponse: false });
+}
+
+export function  getDeptList  (params) {
+  return defHttp.get({ url:Api.deptListUrl, params }, { isTransformResponse: false });
 }
 
 export function getJobById(params) {
   return defHttp.get({ url: Api.jobByIdUrl, params }, { isTransformResponse: false });
 }
 
-export function getDeptList(params) {
-  return defHttp.get({ url: Api.deptListUrl, params }, { isTransformResponse: false });
+export function getDictItems(params) {
+  return defHttp.get({ url: Api.DictItemsUrl+'/'+params.dictCode, params }, { isTransformResponse: false });
 }

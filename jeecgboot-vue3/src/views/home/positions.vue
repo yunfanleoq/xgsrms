@@ -1,85 +1,97 @@
 <template>
-  <div>
+  <div id="app" class = 'positionContainer'>
+      <aside class="sidebar">
+       <ul >
+        <li  v-for="(category, index) in jobCategories"
+             :key="index"
+             @click="filterJobCategory(category)"
+             :class="{ active: selectedCategory === category }">
 
-<!--    &lt;!&ndash; 横幅 &ndash;&gt;-->
-<!--    <section class="banner">-->
-<!--    <img src="https://via.placeholder.com/1200x300" alt="招聘横幅" />-->
-<!--    </section>-->
+          {{ category }}
+        </li>
+      </ul>
+      </aside>
+      <main class='content'>
+        <div>
+        <section class="filters">
+          <div class="categories">
+            <button
+              v-for="(dept, index) in depts"
+              :key="index"
+              @click="filterDept(dept)"
+              class="dept-button"
+            >
+              {{ dept }}
+            </button>
+          </div>
+          <div class="search">
+            <input v-model="searchQuery" placeholder="请输入职位名称" />
+            <button @click="reset">重置</button>
+            <button @click="searchJobs">搜索</button>
+          </div>
+        </section>
 
-    <!-- 分类和搜索框 -->
-    <section class="filters">
-    <div class="categories">
-      <button
-        v-for="(dept, index) in depts"
-        :key="index"
-        @click="filterDept(dept)"
-        class="category-button"
-      >
-        {{ dept }}
-      </button>
-    </div>
+              <div class="job-list-container">
+                <!-- 职位列表 -->
+                <section class="job-list">
+                  <div v-for="(job, index) in paginatedJobs" :key="index" class="job-card" @click="goToJobDetail(job.id)">
+                    <h3>{{ job.positionName }}</h3>
+                    <p>职位数量：<strong>{{ job.personCount }}</strong></p>
+                    <p>招聘部门：<strong>{{ job.dept_dictText }}</strong></p>
+                    <p>工作年限：<span class="salary">{{ job.workYears }}</span></p>
+                    <p>招聘状态：<span class="status-filter">{{ job.status }}</span></p>
+                    <p><span>{{ job.dept_dictText }} </span></p>
+                  </div>
+                </section>
+                <!-- 分页控件 -->
+                <div class="pagination">
+                  <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+                  <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+                  <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+                  <!--        <div class="jobs-per-page">-->
+                  <label for="jobs-per-page">每页：</label>
+                  <select id="jobs-per-page" v-model.number ="jobsPerPage" @change="changeJobsPerPage">
+                    <option value=5>5</option>
+                    <option value=10>10</option>
+                    <option value=20>20</option>
+                    <option value=50>50</option>
+                    <option value=100>100</option>
+                  </select>
+                  <!--        </div>-->
+                </div>
+              </div>
 
-    <div class="search">
-      <input v-model="searchQuery" placeholder="请输入职位名称" />
-      <button @click="resetDept">重置</button>
-      <button @click="searchJobs">搜索</button>
-    </div>
-    </section>
 
-    <!-- 职位列表 -->
-    <section class="job-list">
-      <div v-for="(job, index) in paginatedJobs" :key="index" class="job-card" @click="goToJobDetail(job.id)">
-        <h3>{{ job.positionName }}</h3>
-        <p>职位数量：<strong>{{ job.personCount }}</strong></p>
-        <p>招聘部门：<strong>{{ job.dept_dictText }}</strong></p>
-        <p>工作年限：<span class="salary">{{ job.workYears }}</span></p>
-        <p>招聘状态：<span class="status-filter">{{ job.status }}</span></p>
-        <p><span>{{ job.dept_dictText }} </span></p>
       </div>
-    </section>
-    <!-- 分页控件 -->
-    <div class="pagination">
-      <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
-      <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-      <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-    </div>
-
-    <!-- 每页显示条数选择 -->
-    <div class="jobs-per-page">
-      <label for="jobs-per-page">每页显示：</label>
-      <select id="jobs-per-page" v-model="jobsPerPage" @change="changeJobsPerPage">
-        <option value=5>5</option>
-        <option value=10>10</option>
-        <option value=20>20</option>
-        <option value=50>50</option>
-        <option value=100>100</option>
-      </select>
-    </div>
+      </main>
   </div>
+
 </template>
 
 <script setup  lang="ts" name="positions">
 // 无需额外脚本内容
-import {ref, computed, onMounted} from 'vue';
+import {ref, computed, onMounted, reactive} from 'vue';
 import { useRouter } from 'vue-router';
 import {defHttp}   from "../../utils/http/axios";
 
+import { getDictItems,getJobList,getDeptList } from "@/api/xgsrms/home";
 
+const jobCategories = ref( []);
+//
 const goToJobDetail = (jobId: number) => {
   router.push({ name: 'JobDetail', params: { id: jobId } });
 };
 
+const filterJobCategory = (category) =>{
+  // 根据选择的岗位分类进行过滤的逻辑
+  console.log('Selected job category:', category);
+  selectedCategory.value = category;
+  // 这里可以添加具体的过滤逻辑
+};
 
 const searchQuery = ref("");
 const selectedCategory = ref(null);
 const selectedDept = ref('');
-
-const  jobListUrl = '/positions/xgsPositions/list'
-const  deptListUrl = '/sys/sysDepart/listAll'
-
-
-const getJobList = (params) => defHttp.get({ url:jobListUrl, params }, { isTransformResponse: false });
-const getDeptList = (params) => defHttp.get({ url:deptListUrl, params }, { isTransformResponse: false });
 
 const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
 
@@ -138,6 +150,7 @@ const jobs = ref([
   {
     id: "1870026492048125964",
     sysOrgCode: "A01",
+    category: "普通岗位",
     dept: "1870023309355724801",
     ktz: "1870023433565843457",
     telphone: "010-82345271",
@@ -191,8 +204,10 @@ const fetchJobs = () => {
     })
 };
 
-const resetDept = () => {
+const reset = () => {
   selectedDept.value = null;
+  searchQuery.value = "";
+  selectedCategory.value = null;
 };
 
 const fetchDepts = () => {
@@ -216,13 +231,30 @@ const fetchDepts = () => {
     })
 };
 
+const fetchCategorys = () => {
+  console.log('fetchCategorys>>>>>>>>>>>BEGIN')
+  const params = {
+    dictCode: '岗位分类' // 只获取一级部门
+  };
+  getDictItems(params)
+    .then((res) => {
+      if (res.success) {
+        console.log('getDictItems>>>>>>>>>>>',res)
+        let list = res.result;
+        // 提取 list 中的 dept 字段形成数组，并赋值给 depts.value
+        list = list.map((item) => item.title);
+
+        jobCategories.value = list;
+
+        console.log('fetchCategorys>>>>>>>>>>>',list,jobCategories.value)
+      }
+  })
+};
+
+
 onMounted(fetchDepts );
 onMounted(fetchJobs );
-//
-// 响应式数据
-// const categories = ref(["Java开发", "C++开发", "前端开发", "后端开发", "大数据开发", "测试开发", "PHP开发"]);
-// 响应式数据
-
+onMounted(fetchCategorys );
 
 
 
@@ -230,9 +262,9 @@ onMounted(fetchJobs );
 const filteredJobs = computed(() => {
   let filtered = jobs.value;
 
-  // if (selectedCategory.value) {
-  //   filtered = filtered.filter((job) => job.category === selectedCategory.value);
-  // }
+  if (selectedCategory.value) {
+    filtered = filtered.filter((job) => job.category === selectedCategory.value);
+  }
 
   if (searchQuery.value) {
     filtered = filtered.filter(
@@ -271,7 +303,36 @@ const searchJobs = () => {
 };
 </script>
 
+
 <style scoped>
+
+.positionContainer {
+  display: flex;
+  /*height: 100vh; !* 填充整个视口高度 *!*/
+}
+
+.job-categories {
+  /*width: 20vw; !* 设置宽度为视口宽度的 20% *!*/
+  padding: 20px; /* 可选：添加内边距 */
+  background-color: #f9f9f9; /* 可选：添加背景颜色 */
+  border-right: 1px solid #ddd; /* 可选：添加右侧边框 */
+}
+
+.category-button {
+  display: block; /* 可选：使按钮垂直排列 */
+  width: 100%; /* 可选：使按钮宽度占满容器 */
+  margin-bottom: 10px; /* 可选：添加按钮之间的间距 */
+}
+.dept-button {
+  display: flex;
+}
+
+.job-list-container {
+  /*width: 80vw; !* 设置宽度为视口宽度的 80% *!*/
+  /*flex  : 1 1 auto;*/
+  padding: 20px;
+}
+
 /* 添加样式以美化首页 */
 h1 {
   color: #42b983;
@@ -294,6 +355,7 @@ h1 {
 /* 分类和搜索 */
 .filters {
   display: flex;
+  flex: 1 1 auto ;
   justify-content: space-between;
   align-items: center;
   padding: 20px;
@@ -429,4 +491,64 @@ h1 {
   border: 1px solid #ccc;
   border-radius: 5px;
 }
+
+#app {
+  display: flex;
+  flex-direction: row; /* 设置为行方向 */
+  flex: 1;
+  padding: 20px;
+  /*flex-direction: column;*/
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+}
+
+main {
+  flex-grow: 1; /* 让 main 占据剩余空间 */
+  padding: 15px; /* 可选：设置内边距 */
+}
+
+.sidebar {
+  width: 250px;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-right: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 10px 0;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.sidebar li:hover {
+  background-color: #f0f0f0;
+}
+
+.sidebar li.active {
+  background-color: #3d54a7;
+  color: #fff;
+}
+
+.content {
+  flex: 1;
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.content h2 {
+  margin-bottom: 20px;
+  color: #3d54a7;
+}
+
+
 </style>
+

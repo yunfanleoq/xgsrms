@@ -67,17 +67,6 @@ export const TokenLoginRoute: AppRouteRecordRaw = {
   },
 };
 
-// export const homeindex: AppRouteRecordRaw =
-//   {
-//     path: '/home/index',
-//     name: 'homeindex',
-//     component: () => import('/@/views/home/index.vue'),
-//     meta: {
-//       title: '首页',
-//       ignoreAuth: true,
-//       ignoreMenu: true,
-//     },
-//   };
 
 export const homeIndexRoute: AppRouteRecordRaw = {
   path: '/home',
@@ -139,6 +128,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
         ignoreMenu: true,
       },
     },
+
     // 添加其他子路由
   ],
 };
@@ -153,4 +143,6 @@ export const basicRoutes = [
   TokenLoginRoute,
   Oauth2LoginRoute,
   homeIndexRoute,
+
+
 ];

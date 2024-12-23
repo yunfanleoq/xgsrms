@@ -17,11 +17,20 @@
         <RouterLink to="/contact-us">联系我们</RouterLink>
 
       </nav>
-      <div  >
-        <button @click="goToLoginPage" class="login" > 登录 </button>
-        |
-        <button @click="goToRegisterPage" class="register">注册</button>
+      <div>
+        <div v-if="!isLoggedIn">
+          <button @click="goToLoginPage" class="login">登录</button>
+          |
+          <button @click="goToRegisterPage" class="register">注册</button>
+        </div>
+        <div v-else>
+          <span class="user-info">欢迎, {{ loggedInUser.realname }}</span>
+
+          <button @click="logout" class="logout">退出</button>
+          <button @click="goToUserCenter" class="user-center">个人中心</button>
+        </div>
       </div>
+
     </header>
     <main class="main-content">
       <RouterView />
@@ -52,12 +61,34 @@
 <script setup lang="ts" name="HomeIndex">
 
 import { useRouter } from 'vue-router';
+import {computed, reactive, ref} from "vue";
+import {useUserStore} from "@/store/modules/user";
+import {doLogout} from "@/api/sys/user";
 
 const router = useRouter();
+const userStore = useUserStore();
+
+const isLoggedIn = computed(() => !!userStore.userInfo?.username);
+const loggedInUser = computed(() => userStore.userInfo);
+
+
+const logout = () => {
+
+  doLogout().then(() => {
+    router.push({ name: 'Login' });
+  });
+};
+
+const goToUserCenter = () => {
+  router.push({ path: '/dashboard/analysis' });
+};
+
+
 
 const goToLoginPage = () => {
   router.push({ name: 'Login' });
 };
+
 const goToRegisterPage = () => {
   router.push({ name: 'Login', query: { tab: 'register' } });
 };
@@ -68,6 +99,7 @@ const goToRegisterPage = () => {
 <style >
 
 .main-content {
+  flex: 1; /* 允许容器根据内容自动扩展 */
   min-height: 75%; /* 设置最小高度为1000像素 */
   padding: 20px; /* 可选：添加内边距 */
   background-color: #f9f9f9; /* 可选：添加背景颜色 */
@@ -192,86 +224,34 @@ header  .register {
   border-radius: 10px;
   margin: 20px 0;
 }
+.logout {
+  margin-left: 15px;
+  padding: 5px 15px;
+  border-radius: 5px;
+  margin-right: 15px;
 
-/*!* 分类和搜索 *!*/
-/*.filters {*/
-/*  display: flex;*/
-/*  justify-content: space-between;*/
-/*  align-items: center;*/
-/*  padding: 20px;*/
-/*  background-color: white;*/
-/*  border-radius: 10px;*/
-/*  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
-/*  margin: 20px;*/
-/*}*/
+  background-color: #7b467f;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
 
-/*.filters .categories button {*/
-/*  margin-right: 10px;*/
-/*  padding: 8px 15px;*/
-/*  border-radius: 20px;*/
-/*  border: none;*/
-/*  background-color: #eef2f7;*/
-/*  color: #6a11cb;*/
-/*  cursor: pointer;*/
-/*  font-weight: bold;*/
-/*  transition: all 0.3s;*/
-/*}*/
+.user-center {
+  margin-left: 15px;
+  padding: 5px 15px;
+  border-radius: 5px;
+  margin-right: 15px;
 
-/*.filters .categories button:hover {*/
-/*  background-color: #6a11cb;*/
-/*  color: white;*/
-/*}*/
-
-/*.filters .search input {*/
-/*  padding: 10px;*/
-/*  border-radius: 20px;*/
-/*  border: 1px solid #ddd;*/
-/*  width: 250px;*/
-/*  margin-right: 10px;*/
-/*}*/
-
-/*.filters .search button {*/
-/*  padding: 10px 20px;*/
-/*  background-color: #ff7eb3;*/
-/*  color: white;*/
-/*  border: none;*/
-/*  border-radius: 20px;*/
-/*  cursor: pointer;*/
-/*  font-weight: bold;*/
-/*  transition: all 0.3s;*/
-/*}*/
-
-/*.filters .search button:hover {*/
-/*  background-color: #ff5177;*/
-/*}*/
-
-/*!* 职位列表 *!*/
-/*.job-list {*/
-/*  display: grid;*/
-/*  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));*/
-/*  gap: 20px;*/
-/*  padding: 20px;*/
-/*}*/
-
-/*.job-card {*/
-/*  background-color: white;*/
-/*  border-radius: 10px;*/
-/*  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
-/*  padding: 20px;*/
-/*  transition: transform 0.2s;*/
-/*}*/
-
-/*.job-card:hover {*/
-/*  transform: translateY(-5px);*/
-/*}*/
-
-/*.job-card h3 {*/
-/*  font-size: 20px;*/
-/*  color: #6a11cb;*/
-/*}*/
-
-/*.job-card .salary {*/
-/*  color: #ff5177;*/
-/*  font-weight: bold;*/
-/*}*/
+  background-color: #74c25e;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+.user-info {
+  margin-left: 15px;
+  padding: 5px 15px;
+  border-radius: 5px;
+  /*background-color: #0c8fcf;*/
+  font-size: 20px;
+}
 </style>

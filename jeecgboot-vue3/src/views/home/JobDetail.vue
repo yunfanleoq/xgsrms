@@ -1,7 +1,12 @@
 <template>
   <div class="job-detail">
     <h2>职位详情</h2>
-    <button @click="goBack" class="back-button">返回</button>
+    <div class="button-container">
+      <button @click="goBack" class="back-button">返回</button>
+      <button @click="positionApply" class="apply-button">在线申请</button>
+      <button @click="positionApply" class="favorite-button">收藏职位</button>
+    </div>
+
     <div v-if="job" class="job-info">
       <div class="job-field">
         <strong>职位名称:</strong> {{ job.positionName }}
@@ -63,6 +68,14 @@ const goBack = () => {
   router.go(-1); // 返回上一页
 };
 
+const positionApply = () => {
+  let token = localStorage.getItem('token');
+  if (token === null || token === '') {
+    router.push({ name: 'Login' });
+    return;
+  }
+  router.push({ name: 'PositionApply', params: { id: jobId } });
+}
 
 const fetchJob = async () => {
   try {
@@ -124,7 +137,15 @@ p {
 strong {
   font-weight: bold;
 }
-.back-button {
+
+.button-container {
+  display: flex;
+  justify-content: space-between; /* 将按钮分别放置在左右两边 */
+  margin-top: 20px; /* 可选：添加顶部间距 */
+}
+
+
+.back-button, .apply-button {
   margin-bottom: 20px;
   padding: 10px 20px;
   background-color: #4a90e2;
@@ -134,10 +155,26 @@ strong {
   cursor: pointer;
   font-size: 16px;
 }
+.favorite-button {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  background-color: #e8b7ac;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
 
-.back-button:hover {
+}
+
+.back-button:hover, .apply-button:hover{
   background-color: #357ab8;
 }
+
+.favorite-button:hover {
+  background-color: #b84035;
+}
+
 
 pre {
   margin: 0;

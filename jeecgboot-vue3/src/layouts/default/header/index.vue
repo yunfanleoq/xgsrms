@@ -12,6 +12,9 @@
       <LayoutBreadcrumb v-if="getShowContent && getShowBread" :theme="getHeaderTheme" />
       <!-- 欢迎语 -->
       <span v-if="getShowContent && getShowBreadTitle && !getIsMobile" :class="[prefixCls, `${prefixCls}--${getHeaderTheme}`,'headerIntroductionClass']"> {{t('layout.header.welcomeIn')}} {{ title }} </span>
+
+      <button class="home-btn" @click="gotoHome"> 返回首页</button>
+
     </div>
     <!-- left end -->
 
@@ -75,6 +78,7 @@
   import { useUserStore } from '/@/store/modules/user';
   import { useI18n } from '/@/hooks/web/useI18n';
   import Aide from "@/views/dashboard/ai/components/aide/index.vue"
+  import {router} from "@/router";
   const { t } = useI18n();
 
   export default defineComponent({
@@ -165,6 +169,9 @@
         return unref(getSplit) ? MenuModeEnum.HORIZONTAL : null;
       });
 
+      const gotoHome = () => {
+        router.push('/home');
+      };
       /**
        * 首页多租户部门弹窗逻辑
        */
@@ -215,6 +222,7 @@
         loginSelectOk,
         loginSelectRef,
         title,
+        gotoHome,
         t
       };
     },
@@ -225,7 +233,24 @@
   //update-begin---author:scott ---date:2022-09-30  for：默认隐藏顶部菜单面包屑-----------
   //顶部欢迎语展示样式
   @prefix-cls: ~'@{namespace}-layout-header';
-  
+
+  .home-btn {
+    display: flex;
+    align-items: center;
+    background-color: #40aede;
+    border-radius: 6px;
+    height: 45px;
+    padding: 0 8px;
+    font-weight: bold ;
+    font-size: 20px;
+    color: #9ff36c;
+  }
+  .home-btn:hover {
+    color: #fff;
+    background-color: #9ff36c;
+  }
+
+
   .ant-layout .@{prefix-cls} {
     display: flex;
     padding: 0 8px;
@@ -233,14 +258,14 @@
     height: @header-height;
     // update-end--author:liaozhiyang---date:20240407---for：【QQYUN-8762】顶栏高度
     align-items: center;
-    
+
     .headerIntroductionClass {
       margin-right: 4px;
       margin-bottom: 2px;
       border-bottom: 0px;
       border-left: 0px;
     }
-    
+
     &--light {
       .headerIntroductionClass {
         color: #000;
