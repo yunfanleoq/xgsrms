@@ -23,7 +23,7 @@ import lombok.experimental.Accessors;
 /**
  * @Description: 新闻内容
  * @Author: jeecg-boot
- * @Date:   2024-12-21
+ * @Date:   2024-12-23
  * @Version: V1.0
  */
 @Data
@@ -69,7 +69,7 @@ public class XgsJournalism implements Serializable {
 	@Excel(name = "新闻类型", width = 15, dicCode = "jour_type")
 	@Dict(dicCode = "jour_type")
     @ApiModelProperty(value = "新闻类型")
-    private java.lang.String tyep;
+    private java.lang.String type;
 	/**新闻状态*/
 	@Excel(name = "新闻状态", width = 15, dicCode = "jour_state")
 	@Dict(dicCode = "jour_state")

@@ -123,7 +123,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeNews',
       component: () => import('/@/views/home/news.vue'),
       meta: {
-        title: '科研动态',
+        title: '科研发展',
         ignoreAuth: true,
         ignoreMenu: true,
       },

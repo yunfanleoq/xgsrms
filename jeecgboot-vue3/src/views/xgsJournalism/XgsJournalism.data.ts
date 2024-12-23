@@ -18,7 +18,7 @@ export const columns: BasicColumn[] = [
    {
     title: '新闻类型',
     align:"center",
-    dataIndex: 'tyep_dictText'
+    dataIndex: 'type_dictText'
    },
    {
     title: '新闻状态',
@@ -43,7 +43,7 @@ export const formSchema: FormSchema[] = [
   },
   {
     label: '新闻类型',
-    field: 'tyep',
+    field: 'type',
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"jour_type"
@@ -70,7 +70,7 @@ export const formSchema: FormSchema[] = [
 export const superQuerySchema = {
   journalismHead: {title: '新闻标题',order: 0,view: 'text', type: 'string',},
   journalismText: {title: '新闻内容',order: 1,view: 'umeditor', type: 'string',},
-  tyep: {title: '新闻类型',order: 2,view: 'list', type: 'string',dictCode: 'jour_type',},
+  type: {title: '新闻类型',order: 2,view: 'list', type: 'string',dictCode: 'jour_type',},
   state: {title: '新闻状态',order: 3,view: 'list', type: 'string',dictCode: 'jour_state',},
 };
 

@@ -23,7 +23,7 @@
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">新闻类型：</text></view>
-                  <input  placeholder="请输入新闻类型" v-model="model.tyep"/>
+                  <input  placeholder="请输入新闻类型" v-model="model.type"/>
                 </view>
               </view>
               <view class="cu-form-group">

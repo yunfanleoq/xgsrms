@@ -11,8 +11,8 @@
       <section class="content">
         <h2>{{ typeY }}</h2>
         <ul class="job-list">
-          <li v-for="job in jobList" :key="job.type">
-            <div v-if="job.type === typeY" v-html="job.text" v-show="shouldRender(job.type)"></div>
+          <li v-for="job in filterJobList" :key="job.type">
+            <div v-if="job.type === typeY" v-html="job.text" v-show="shouldRender(job.type)" class="top-border"></div>
           </li>
         </ul>
         <div class="pagination" v-if="typeFirst">
@@ -44,6 +44,7 @@ const jobList = ref([
   { type: "院所风貌", picture: "图片地址", pictureText: "图片名称", text: "文本信息" },
 ])
 
+
 const typeY = ref("")
 const typeFirst = ref(true)
 
@@ -53,9 +54,13 @@ const totalPages = computed(() => Math.ceil(jobList.value.length / itemsPerPage.
 
 const listUrl = "/xgsIntroduce/xgsIntroduce/list"
 
-const dictCode = "introduce_type"
+// const dictCode = "introduce_type"
 const listTypeUrl = (dictCode: string) =>
   `/sys/dict/getDictItems/${dictCode}`
+
+const filterJobList = computed(() => {
+  return jobList.value.filter((job) => job.type === typeY.value);
+});
 
 const changePage = (page: number) => {
   if (page > 0 && page <= totalPages.value) {
@@ -64,12 +69,10 @@ const changePage = (page: number) => {
 }
 
 function byType(thisTypeY) {
-  typeFirst.value = true
   typeY.value = thisTypeY
 }
 
 const selectTypeList = () => {
-  const params = { dictCode: "introduce_type" }
   const dictCode = "introduce_type"
 
   const url = listTypeUrl(dictCode)
@@ -97,7 +100,6 @@ const selectY = () => {
   getList(params).then((res) => {
     try {
       if (res.success) {
-        console.log('res654665>>>>>>>>>>>', res)
         jobList.value = res.result.records
       }
     } catch (e) {
@@ -123,16 +125,15 @@ const renderedFirst = ref(false)
 const shouldRender = (inType) => {
 
   if (inType === jobTypeList.value[0].value && !renderedFirst.value) {
-    console.log("zzzzz")
     renderedFirst.value = true
+    typeFirst.value = false
     return true
   } else if (inType !== jobTypeList.value[0].value) {
-    console.log("zz22=-zz")
-    renderedFirst.value = true
+    renderedFirst.value = false
+    typeFirst.value = true
     return true
   }
-  console.log("fffff==")
-  renderedFirst.value = true
+  renderedFirst.value = false
   return false
 }
 </script>
@@ -196,7 +197,8 @@ main {
 
 .job-list {
   list-style: none;
-  padding: 0;
+  padding-left: 50px;
+  padding-right: 50px;
 }
 
 .job-list li {
@@ -231,5 +233,11 @@ main {
 
 .pagination-button i {
   margin: 0 5px;
+}
+
+.top-border {
+  border-top: 1px solid #3d54a7;
+  padding-bottom: 20px;
+  padding-top: 20px;
 }
 </style>
