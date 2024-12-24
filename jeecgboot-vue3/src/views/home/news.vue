@@ -10,26 +10,50 @@
       </aside>
       <section class="content">
         <h2>{{ activeMenu }}</h2>
-        <ul class="job-list">
-          <li v-for="news in filterNewsList" :key="news.type">
+
+<!--        主要新闻-->
+        <ul class="job-list" v-if="activeMenu === firstType">
+          <li v-for="news in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
             <div class="top-border">
               <div>
                 <div class="head">{{news.journalismHead}}</div>
                 <br>
                 <div class="news-text" v-html="truncatedText(news.journalismText)"></div>
-                <span class="date-time">{{news.updateTime}}</span>
+                <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>
+                <span class="date-time" v-if="!news.updateTime">{{news.createTime}}</span>
               </div>
             </div>
           </li>
         </ul>
+
+<!--        其他新闻-->
+        <ul class="job-list-2" v-if="activeMenu != firstType">
+          <li v-for="(news, index) in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
+            <br v-if="index % 5 == 0">
+            <div class="top-border-2" v-if="activeMenu != firstType">
+              <div class="head">{{news.journalismHead}}</div>
+              <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>
+              <span class="date-time" v-if="!news.updateTime">{{news.createTime}}</span>
+            </div>
+
+          </li>
+        </ul>
+
+        <!-- 分页控件 -->
         <div class="pagination">
-          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-button">
-            <i class="fas fa-angle-left"></i> 上一页
-          </button>
-          <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
-          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-button">
-            下一页 <i class="fas fa-angle-right"></i>
-          </button>
+          <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+          <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+          <!--        <div class="jobs-per-page">-->
+          <label for="jobs-per-page">每页：</label>
+          <select id="jobs-per-page" v-model.number ="jobsPerPage" @change="changeJobsPerPage">
+            <option value=5>5</option>
+            <option value=10>10</option>
+            <option value=20>20</option>
+            <option value=50>50</option>
+            <option value=100>100</option>
+          </select>
+          <!--        </div>-->
         </div>
       </section>
     </main>
@@ -38,26 +62,16 @@
 <script setup  lang="ts">
 import {onMounted, ref, computed} from 'vue';
 import {defHttp} from "@/utils/http/axios";
+import { useRouter } from 'vue-router';
 
-const filterNewsList = computed(() => {
-  return newsList.value.filter((news) => news.type === activeMenu.value);
-});
-
-const activeMenu = ref("头条新闻");
+const activeMenu = ref("");
 const menuList = ref([
   {
     value: "头条新闻",
     icon: "icon-    ",
   },
-  {
-    value: "社会新闻",
-    icon: "icon-    ",
-  },
-  {
-    value: "科技新闻",
-    icon: "icon-    ",
-  },
  ])
+const firstType = ref("")
 
 const newsList = ref([
   {
@@ -68,48 +82,56 @@ const newsList = ref([
     url: "https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg",
     type: "头条新闻",
     journalismText: "【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊",
-  },
-  {
-    id: 2,
-    journalismHead: "信工所召开党委理论学习中心组专题学习会",
-    updateTime: "2024-11-19",
-    image: "path-to-image-2.jpg",
-    url: "https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg",
-    type: "科技新闻",
-    journalismText: "",
-  },
-  {
-    id: 3,
-    journalismHead: "信工所召开2024年度“信工党校”专题报告会",
-    updateTime: "2024-11-19",
-    image: "path-to-image-3.jpg",
-    url: "https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg",
-    type: "头条新闻",
-    journalismText: "【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊",
-  },
-  {
-    id: 4,
-    journalismHead: "网络空间安全的职业体验活动",
-    updateTime: "2024-11-15",
-    image: "path-to-image-4.jpg",
-    url: "https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg",
-    type: "头条新闻",
-    journalismText: "【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊",
-  },
-  {
-    id: 5,
-    journalismHead: "陈恺研究员入选2024年度国联优秀青年领军者",
-    updateTime: "2024-11-14",
-    image: "path-to-image-5.jpg",
-    url: "https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg",
-    type: "头条新闻",
-    journalismText: "【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊",
+    createTime:""
   },
 ]);
 
+
+//分页
 const currentPage = ref(1)
 const itemsPerPage = ref(100)
-const totalPages = computed(() => Math.ceil(newsList.value.length / itemsPerPage.value))
+const jobsPerPage = ref(10); // 每页显示的条数
+
+const paginatedNews = computed(() => {
+  const start = (currentPage.value - 1) * jobsPerPage.value;
+  const end = start + jobsPerPage.value;
+  const result = filteredJobs.value.slice(start, end);
+  return result;
+});
+
+// 计算总页数
+const totalPages = computed(() => {
+  const total = Math.ceil(filteredJobs.value.length / jobsPerPage.value);
+  return total;
+});
+
+// 分页控制函数
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+const changeJobsPerPage = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value;
+  console.log('Changing Jobs Per Page to:', value);
+  jobsPerPage.value = parseInt(value, 10);
+  currentPage.value = 1; // 重置到第一页
+};
+
+// 计算属性：过滤后的列表
+const filteredJobs = computed(() => {
+  let filtered = newsList.value;
+  filtered = filtered.filter((news) => news.type === activeMenu.value);
+  return filtered;
+});
+
 
 //更改类型
 const setActiveMenu = (menu) => {
@@ -128,12 +150,11 @@ const selectTypeList = () => {
       .then((res) => {
         try {
           if (res.success) {
-            console.log('res>>>>>>>>>>>', res)
             menuList.value = res.result
+            firstType.value = res.result[0].value
             setActiveMenu(res.result[0].value)
           }
         } catch (e) {
-          console.log('e>>>>>>>>>>>', e)
         }
       })
 }
@@ -146,11 +167,9 @@ const selectY = () => {
   getList(params).then((res) => {
     try {
       if (res.success) {
-        console.log("res===============", res)
         newsList.value = res.result.records
       }
     } catch (e) {
-      console.log('e>>>>>>>>>>>', e)
     }
   })
 }
@@ -174,6 +193,14 @@ function truncatedText(htmlText) {
   }
   return htmlText;
 }
+
+/*
+跳转到目标新闻页面
+ */
+const router = useRouter();
+const goToNewsDetail = (newsId: string) => {
+  router.push({ name: 'newsDetail', params: { id: newsId } });
+};
 </script>
 
 <style scoped>
@@ -243,6 +270,15 @@ main {
   margin-bottom: 20px;
 }
 
+.job-list-2 {
+  list-style: none;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.job-list-2 li {
+}
+
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -277,23 +313,81 @@ main {
   border-top: 1px solid #3d54a7;
   padding-bottom: 20px;
   padding-top: 20px;
+  cursor: pointer;
 }
 
 .top-border * .head {
   font-weight: bold; /* 加粗 */
-  color: #3d54a7; /* 红色 */
+  color: #3d54a7; /* #3d54a7 */
+  font-size: 20px;
+}
+
+.top-border * .head:hover {
+  font-weight: bold; /* 加粗 */
+  color: #7188da; /* #3d54a7 */
   font-size: 20px;
 }
 
 .top-border * .date-time {
-  color: #aaa; /* 红色 */
+  color: #aaa; /* #aaa */
   font-size: 15px;
 }
 
 .top-border * .news-text {
   max-width: 1000px;
-  //white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.top-border * .news-text:hover {
+  max-width: 1000px;
+  color: #5578e7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.top-border-2 {
+  padding-bottom: 20px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between; /* 两端对齐 */
+  align-items: center; /* 可选，用于垂直居中对齐 */
+}
+
+.top-border-2 .head {
+  font-weight: bold; /* 加粗 */
+  color: #3d54a7; /* #3d54a7 */
+  font-size: 15px;
+}
+
+.top-border-2 .head:hover {
+  font-weight: bold; /* 加粗 */
+  color: #7188da; /* #3d54a7 */
+  font-size: 15px;
+}
+
+.top-border-2 .date-time {
+  color: #aaa; /* #aaa */
+  font-size: 10px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 10px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
 }
 </style>

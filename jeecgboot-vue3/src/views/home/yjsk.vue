@@ -11,18 +11,27 @@
       <section class="content">
         <h2>{{ typeY }}</h2>
         <ul class="job-list">
-          <li v-for="job in filterJobList" :key="job.type">
+          <li v-for="job in paginatedNews" :key="job.type">
             <div v-if="job.type === typeY" v-html="job.text" v-show="shouldRender(job.type)" class="top-border"></div>
           </li>
         </ul>
+
+
+        <!-- 分页控件 -->
         <div class="pagination" v-if="typeFirst">
-          <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="pagination-button">
-            <i class="fas fa-angle-left"></i> 上一页
-          </button>
-          <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
-          <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages" class="pagination-button">
-            下一页 <i class="fas fa-angle-right"></i>
-          </button>
+          <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+          <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+          <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+          <!--        <div class="jobs-per-page">-->
+<!--          <label for="jobs-per-page">每页：</label>-->
+<!--          <select id="jobs-per-page" v-model.number ="jobsPerPage" @change="changeJobsPerPage">-->
+<!--            <option value=5>5</option>-->
+<!--            <option value=10>10</option>-->
+<!--            <option value=20>20</option>-->
+<!--            <option value=50>50</option>-->
+<!--            <option value=100>100</option>-->
+<!--          </select>-->
+          <!--        </div>-->
         </div>
       </section>
     </main>
@@ -48,13 +57,54 @@ const jobList = ref([
 const typeY = ref("")
 const typeFirst = ref(true)
 
+//分页
 const currentPage = ref(1)
 const itemsPerPage = ref(100)
-const totalPages = computed(() => Math.ceil(jobList.value.length / itemsPerPage.value))
+const jobsPerPage = ref(1); // 每页显示的条数
+const paginatedNews = computed(() => {
+  const start = (currentPage.value - 1) * jobsPerPage.value;
+  const end = start + jobsPerPage.value;
+  const result = filteredJobs.value.slice(start, end);
+  return result;
+});
+
+// 计算总页数
+const totalPages = computed(() => {
+  const total = Math.ceil(filteredJobs.value.length / jobsPerPage.value);
+  return total;
+});
+
+
+// 分页控制函数
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+  }
+};
+
+const changeJobsPerPage = (event: Event) => {
+  const value = (event.target as HTMLSelectElement).value;
+  console.log('Changing Jobs Per Page to:', value);
+  jobsPerPage.value = parseInt(value, 10);
+  currentPage.value = 1; // 重置到第一页
+};
+
+// 计算属性：过滤后的列表
+const filteredJobs = computed(() => {
+  let filtered = jobList.value;
+  filtered = filtered.filter((job) => job.type === typeY.value);
+  return filtered;
+});
+
 
 const listUrl = "/xgsIntroduce/xgsIntroduce/list"
 
-// const dictCode = "introduce_type"
 const listTypeUrl = (dictCode: string) =>
   `/sys/dict/getDictItems/${dictCode}`
 
@@ -80,12 +130,10 @@ const selectTypeList = () => {
     .then((res) => {
       try {
         if (res.success) {
-          console.log('res>>>>>>>>>>>', res)
           jobTypeList.value = res.result
           byType(res.result[0].value)
         }
       } catch (e) {
-        console.log('e>>>>>>>>>>>', e)
       }
     })
 }
@@ -103,7 +151,6 @@ const selectY = () => {
         jobList.value = res.result.records
       }
     } catch (e) {
-      console.log('e>>>>>>>>>>>', e)
     }
   })
 }
@@ -239,5 +286,26 @@ main {
   border-top: 1px solid #3d54a7;
   padding-bottom: 20px;
   padding-top: 20px;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination button {
+  margin: 0 10px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
 }
 </style>

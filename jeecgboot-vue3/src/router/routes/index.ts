@@ -128,6 +128,16 @@ export const homeIndexRoute: AppRouteRecordRaw = {
         ignoreMenu: true,
       },
     },
+    {
+      path: '/news/:id',
+      name: 'newsDetail',
+      component: () => import('/@/views/home/newsDetail.vue'),
+      meta: {
+        title: '科研发展',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
 
     // 添加其他子路由
   ],
