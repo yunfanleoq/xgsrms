@@ -1035,6 +1035,7 @@ public class SysUserController {
 			user.setDelFlag(CommonConstant.DEL_FLAG_0);
 			user.setActivitiSync(CommonConstant.ACT_SYNC_1);
 			sysUserService.addUserWithRole(user,"1871213595289501698");//注册用户角色
+            sysUserService.addUserWithDepart(user, "1871563410263289857");//注册人员默认部门
 			result.success("注册成功");
 		} catch (Exception e) {
 			result.error500("注册失败");
