@@ -19,8 +19,8 @@
                 <div class="head">{{news.journalismHead}}</div>
                 <br>
                 <div class="news-text" v-html="truncatedText(news.journalismText)"></div>
-                <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>
-                <span class="date-time" v-if="!news.updateTime">{{news.createTime}}</span>
+<!--                <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>-->
+                <span class="date-time">{{news.createTime}}</span>
               </div>
             </div>
           </li>
@@ -32,8 +32,8 @@
             <br v-if="index % 5 == 0">
             <div class="top-border-2" v-if="activeMenu != firstType">
               <div class="head">{{news.journalismHead}}</div>
-              <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>
-              <span class="date-time" v-if="!news.updateTime">{{news.createTime}}</span>
+<!--              <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>-->
+              <span class="date-time">{{news.createTime}}</span>
             </div>
 
           </li>
@@ -59,7 +59,7 @@
     </main>
   </div>
 </template>
-<script setup  lang="ts">
+<script setup lang="ts">
 import {onMounted, ref, computed} from 'vue';
 import {defHttp} from "@/utils/http/axios";
 import { useRouter } from 'vue-router';
@@ -82,7 +82,8 @@ const newsList = ref([
     url: "https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg",
     type: "头条新闻",
     journalismText: "【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊",
-    createTime:""
+    createTime:"",
+    state:"",
   },
 ]);
 
@@ -96,7 +97,7 @@ const paginatedNews = computed(() => {
   const start = (currentPage.value - 1) * jobsPerPage.value;
   const end = start + jobsPerPage.value;
   const result = filteredJobs.value.slice(start, end);
-  return result;
+  return result.reverse();
 });
 
 // 计算总页数
@@ -129,6 +130,7 @@ const changeJobsPerPage = (event: Event) => {
 const filteredJobs = computed(() => {
   let filtered = newsList.value;
   filtered = filtered.filter((news) => news.type === activeMenu.value);
+  filtered = filtered.filter((news) => news.state === "已发布");
   return filtered;
 });
 
@@ -177,17 +179,11 @@ const selectY = () => {
 onMounted(selectTypeList)
 onMounted(selectY)
 
-const changePage = (page: number) => {
-  if (page > 0 && page <= totalPages.value) {
-    currentPage.value = page
-  }
-}
-
 /*
 优化新闻内容信息
  */
 function truncatedText(htmlText) {
-  const maxLength = 150;
+  const maxLength = 120;
   if (htmlText.length > maxLength) {
     return htmlText.slice(0, maxLength) + '...';
   }

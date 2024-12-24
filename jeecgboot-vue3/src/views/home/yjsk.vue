@@ -22,16 +22,6 @@
           <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
           <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
           <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-          <!--        <div class="jobs-per-page">-->
-<!--          <label for="jobs-per-page">每页：</label>-->
-<!--          <select id="jobs-per-page" v-model.number ="jobsPerPage" @change="changeJobsPerPage">-->
-<!--            <option value=5>5</option>-->
-<!--            <option value=10>10</option>-->
-<!--            <option value=20>20</option>-->
-<!--            <option value=50>50</option>-->
-<!--            <option value=100>100</option>-->
-<!--          </select>-->
-          <!--        </div>-->
         </div>
       </section>
     </main>
@@ -39,7 +29,7 @@
 </template>
 
 
-<script setup lang="ts" name="HomeYjsk">
+<script setup lang="ts" name="homeYjsk">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { defHttp } from "@/utils/http/axios"
@@ -99,7 +89,7 @@ const changeJobsPerPage = (event: Event) => {
 const filteredJobs = computed(() => {
   let filtered = jobList.value;
   filtered = filtered.filter((job) => job.type === typeY.value);
-  return filtered;
+  return filtered.reverse();
 });
 
 
@@ -107,10 +97,6 @@ const listUrl = "/xgsIntroduce/xgsIntroduce/list"
 
 const listTypeUrl = (dictCode: string) =>
   `/sys/dict/getDictItems/${dictCode}`
-
-const filterJobList = computed(() => {
-  return jobList.value.filter((job) => job.type === typeY.value);
-});
 
 const changePage = (page: number) => {
   if (page > 0 && page <= totalPages.value) {
@@ -120,6 +106,7 @@ const changePage = (page: number) => {
 
 function byType(thisTypeY) {
   typeY.value = thisTypeY
+  currentPage.value = 1; // 重置到第一页
 }
 
 const selectTypeList = () => {
@@ -308,4 +295,5 @@ main {
   background-color: #ddd;
   cursor: not-allowed;
 }
+
 </style>

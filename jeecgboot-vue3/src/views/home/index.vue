@@ -14,7 +14,7 @@
         <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>|
         <RouterLink :to="{ name: 'homeNews' }">科研发展</RouterLink>|
         <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>|
-        <RouterLink to="/contact-us">联系我们</RouterLink>
+        <RouterLink :to="{ name: 'contactUs'}">联系我们</RouterLink>
 
       </nav>
       <div>
