@@ -18,7 +18,13 @@
                   <a-form-item>
                     <div class="aui-input-line">
                       <Icon class="aui-icon" icon="ant-design:user-outlined" />
-                      <a-input class="fix-auto-fill" type="text" :placeholder="t('sys.login.userName')" v-model:value="formData.username" />
+                      <a-input class="fix-auto-fill" type="text" placeholder="姓名" v-model:value="formData.realname" />
+                    </div>
+                  </a-form-item>
+                  <a-form-item>
+                    <div class="aui-input-line">
+                      <Icon class="aui-icon" icon="ant-design:user-outlined" />
+                      <a-input class="fix-auto-fill" type="text" placeholder="登录账号" v-model:value="formData.username" />
                     </div>
                   </a-form-item>
                   <a-form-item>
@@ -181,6 +187,10 @@
   }
 
   function registerHandleClick() {
+    if (!formData.realname) {
+      createMessage.warn('请输入姓名');
+      return;
+    }
     if (!formData.username) {
       createMessage.warn(t('sys.login.accountPlaceholder'));
       return;
@@ -223,6 +233,7 @@
     try {
       const resultInfo = await register(
         toRaw({
+          realname: formData.realname,
           username: formData.username,
           password: formData.password,
           phone: formData.mobile,
