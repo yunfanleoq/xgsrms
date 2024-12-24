@@ -94,8 +94,10 @@ const searchJobs = () => {
   /*display: flex;*/
   justify-content: center;
   /*align-items: center;*/
-  width: 100%; /* 确保banner区域有固定高度 */
+  /*width: 100%; !* 确保banner区域有固定高度 *!*/
   height: 40%;
+  margin: 10px;
+  padding: 20px;
 
 }
 

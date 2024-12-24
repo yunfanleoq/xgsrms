@@ -4,7 +4,11 @@
     <div class="button-container">
       <button @click="goBack" class="back-button">返回</button>
       <button @click="positionApply" class="apply-button">在线申请</button>
-      <button @click="positionApply" class="favorite-button">收藏职位</button>
+      <div>
+        <button v-if="!isCollected" class="favorite-button" @click="markFavoriteJob">收藏职位</button>
+        <button v-else class="marked-favorite-button" @click="delFavoriteJob"   >
+          已收藏</button>
+      </div>
     </div>
 
     <div v-if="job" class="job-info">
@@ -55,26 +59,138 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import {ref, onMounted, computed} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getJobById } from '@/api/xgsrms/home'; // 假设你有一个 API 来获取职位信息
+import { getJobById } from '@/api/xgsrms/home';
+import {xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList} from "@/api/xgsrms/positions";
+import {useUserStore} from "@/store/modules/user";
+import {useMessage} from "@/hooks/web/useMessage"; // 假设你有一个 API 来获取职位信息
 
 const route = useRoute();
 const router = useRouter();
 const jobId = route.params.id as string;
 const job = ref(null);
+// const favoriteButtonHover = ref(true);
+//
+// const buttonText = computed(() =>{
+//   return favoriteButtonHover ? '取消收藏' : '收藏';
+// });
+// const buttonTitle = computed(() =>{
+//   return favoriteButtonHover ? '取消收藏' : '收藏';
+// });
 
+const userStore = useUserStore();
 const goBack = () => {
-  router.go(-1); // 返回上一页
+  // router.go(-1); // 返回上一页
+  router.push({ name: 'homePositions' });
+};
+
+console.log(jobId);
+const createMessage = useMessage();
+
+const isCollected = ref(false);
+const favoriteJob = ref({});
+const userId = ref('');
+
+const fetchFavoriteJob = () => {
+  // 判断 userStore.userInfo 是否为 null，为null则赋值为 false，不为 null 则赋值 true
+  let curUserId = '';
+  if (userStore.userInfo === null) {
+    curUserId = '';
+  } else {
+    curUserId = userStore.userInfo.username;
+  }
+
+
+  xgsFavoriteJobList({userId:curUserId, positionId: jobId}).then(res => {
+      console.log('xgsFavoriteJobList', res);
+      if (res.result.records.length > 0) {
+        isCollected.value = true;
+        favoriteJob.value = res.result.records[0];
+        console.log('favoriteJob', favoriteJob.value);
+      }
+
+  });
+};
+
+onMounted(fetchFavoriteJob);
+
+import { message } from 'ant-design-vue';
+
+const markFavoriteJob = () => {
+
+  // 判断 userStore.userInfo 是否为 null，为null则提示用户登录，不为 null 则赋值 true
+  if (userStore.userInfo === null) {
+    // 使用 message.warning
+    message.warning('请先登录');
+    console.log('请先登录');
+    return;
+  }
+  // TODO: 实现收藏职位的功能
+  let params = {
+    id: jobId,
+    userId: userStore.userInfo.username ,
+    userName: userStore.userInfo.realname ,
+    positionId: jobId,
+    positionName: job.value.positionName,
+    positionDept: job.value.dept_dictText,
+    positionKtz: job.value.ktz_dictText,
+    positionCount: job.value.personCount,
+
+
+  };
+
+
+
+  xgsFavoriteJobAdd(params).then(res => {
+    if (res.code == 200) {
+
+      isCollected.value = true;
+      // 使用 message.warning
+      message.success(`收藏职位成功`);
+      console.log(`${res.message}`);
+    } else {
+      message.error(`${res.message}`);
+      console.log(`${res.message}`);
+    }
+  });
+
+}
+
+// 取消收藏职位的功能
+const delFavoriteJob = () => {
+  // TODO: 实现取消收藏职位的功能
+  let params = {
+    id: favoriteJob.value.id,
+  };
+  console.log('delFavoriteJob', params);
+
+  xgsFavoriteJobDel(params).then(res => {
+    if (res.code === 200) {
+
+      isCollected.value = false;
+
+      message.success(`取消收藏职位成功`);
+      console.log(`${res.message}`,isCollected.value);
+    } else {
+      message.error(`取消收藏职位失败`);
+      console.log(`${res.message}`);
+    }
+  });
 };
 
 const positionApply = () => {
-  let token = localStorage.getItem('token');
-  if (token === null || token === '') {
-    router.push({ name: 'Login' });
+  if (userStore.userInfo === null) {
+    // 使用 message.warning
+    message.warning('请先登录');
+    console.log('请先登录');
     return;
+  } else {
+    message.success('正在跳转至申请页面');
+    router.push({ name: 'PositionApply', params: { id: jobId } });
+
   }
-  router.push({ name: 'PositionApply', params: { id: jobId } });
+
 }
 
 const fetchJob = async () => {
@@ -158,7 +274,19 @@ strong {
 .favorite-button {
   margin-bottom: 20px;
   padding: 10px 20px;
-  background-color: #e8b7ac;
+  background-color: #c47e6e;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+
+}
+
+.marked-favorite-button {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  background-color: #b84035;
   color: white;
   border: none;
   border-radius: 5px;
@@ -172,9 +300,12 @@ strong {
 }
 
 .favorite-button:hover {
-  background-color: #b84035;
+  background-color: #ba372a;
 }
+.marked-favorite-button:hover {
+  background-color: #52130d;
 
+}
 
 pre {
   margin: 0;

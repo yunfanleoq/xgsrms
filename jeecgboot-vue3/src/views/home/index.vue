@@ -2,7 +2,7 @@
   <div id="app">
     <div class="banner">
       <img src="@/assets/images/xgs_logo_.png" alt="Banner Image" class="banner-image">
-<!--      <img src="@/assets/images/xgs_logo01.png" alt="" class="banner-image">-->
+      <img src="@/assets/images/xgs_logo01.png" alt="" class="banner-image">
 
     </div>
 

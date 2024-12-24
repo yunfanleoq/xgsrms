@@ -24,10 +24,12 @@
               {{ dept }}
             </button>
           </div>
-          <div class="search">
-            <input v-model="searchQuery" placeholder="请输入职位名称" />
-            <button @click="reset">重置</button>
-            <button @click="searchJobs">搜索</button>
+          <div class="search-container">
+            <input v-model="searchQuery" placeholder="请输入职位名称" class="search-input" />
+            <div class="search-buttons">
+              <button @click="reset" class="search-button">重置</button>
+              <button @click="searchJobs" class="search-button">搜索</button>
+            </div>
           </div>
         </section>
 
@@ -72,9 +74,21 @@
 // 无需额外脚本内容
 import {ref, computed, onMounted, reactive} from 'vue';
 import { useRouter } from 'vue-router';
-import {defHttp}   from "../../utils/http/axios";
+import {xgsFavoriteJobList} from "@/api/xgsrms/positions";
 
 import { getDictItems,getJobList,getDeptList } from "@/api/xgsrms/home";
+
+// const xgsFavoriteJobList = ref([]);
+// xgsFavoriteJobList({userId: userStore.userInfo.username}).then(res => {
+//   // console.log('xgsFavoriteJobList', res);
+//   if (res.result.records.length > 0) {
+//     xgsFavoriteJobList.value = res.result.records;
+//     console.log('xgsFavoriteJobList', xgsFavoriteJobList.value);
+//   }
+//
+// });
+//
+// onMounted(xgsFavoriteJobList);
 
 const jobCategories = ref( []);
 //
@@ -114,7 +128,12 @@ const paginatedJobs = computed(() => {
   const end = start + jobsPerPage.value;
   console.log('Start Index:', start, 'End Index:', end);
   const result = filteredJobs.value.slice(start, end);
-  console.log('Paginated Jobs:', result);
+  // 遍历结果，为每个职位添加一个isFavorite属性
+  // result.forEach((job) => {
+  //   // job.isFavorite = xgsFavoriteJobList.value.some((favJob) => favJob.positionId === job.id);
+  //   pass;
+  // });
+  console.log('>>>>>Paginated Jobs:', result);
   return result;
 });
 
@@ -185,11 +204,11 @@ const jobs = ref([
 // });
 
 const fetchJobs = () => {
-
+  console.log('fetchJobs>>>>>>>>>>>BEGIN')
   const params = {
     status: statusFilter.value, // 将状态参数添加到请求参数中
     pageNo: 1,
-    pageSize: 100
+    pageSize: 1000
   };
 
 
@@ -198,6 +217,30 @@ const fetchJobs = () => {
       if (res.success) {
         let list = res.result.records;
         // jobs.value = underlineToCamelCase(list);
+        // 只获取需要的字段，并赋值给 jobs.value
+        list = list.map((item) => {
+          return {
+            id: item.id,
+            // sysOrgCode: item.sysOrgCode,
+            category: item.category,
+            dept: item.dept,
+            ktz: item.ktz,
+            // telphone: item.telphone,
+            // email: item.email,
+            positionName: item.positionName,
+            // researchDirection: item.researchDirection,
+            personCount: item.personCount,
+            // duty: item.duty,
+            // xlxw: item.xlxw,
+            // professional: item.professional,
+            workYears: item.workYears,
+            // memo: item.memo,
+            status: item.status,
+            dept_dictText: item.dept_dictText,
+            ktz_dictText: item.ktz_dictText,
+            status_dictText: item.status_dictText,
+          }
+        })
         jobs.value = list;
         console.log('getJobList>>>>>>>>>>>',list,depts.value)
       }
@@ -428,6 +471,8 @@ h1 {
 /* 职位列表 */
 .job-list {
   display: grid;
+  justify-content: space-between;
+
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
   padding: 20px;
@@ -549,6 +594,45 @@ main {
   color: #3d54a7;
 }
 
+.search-container {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  /*padding: 10px;*/
+  align-items: center;
+  /*margin-bottom: 20px;*/
+}
 
+.search-input {
+  flex: 1;
+  padding: 10px;
+  /*margin-right: 10px;*/
+  margin: 5px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-buttons {
+  display: flex;
+  margin: 5px 20px;
+  margin: 5px 20px;
+  align-items: center
+}
+
+.search-button {
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+}
+
+.search-button:hover {
+  background-color: #0056b3;
+}
 </style>
 

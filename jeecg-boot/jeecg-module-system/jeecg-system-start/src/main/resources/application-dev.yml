@@ -23,7 +23,7 @@ spring:
   # flyway配置
   flyway:
     # 是否启用flyway
-    enabled: false
+    enabled: true
     # 编码格式，默认UTF-8
     encoding: UTF-8
     # 迁移sql脚本文件存放路径，官方默认db/migration
@@ -51,8 +51,8 @@ spring:
     # 定时任务发送邮件
     timeJobSend: false
     host: smtp.163.com
-    username: 13717793116@163.com
-    password: BZwUGdE2Yvu7riJK
+    username: zktvbj@163.com
+    password: JJSNHZCJEFUVAYFX
     properties:
       mail:
         smtp:
@@ -183,7 +183,7 @@ spring:
     database: 0
     host: 127.0.0.1
     port: 6379
-    password: 'terrybao'
+    password: 'wzspwzsp'
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
@@ -261,7 +261,7 @@ jeecg:
   #大屏报表参数设置
   jmreport:
     #多租户模式，默认值为空(created:按照创建人隔离、tenant:按照租户隔离) (v1.6.2+ 新增)
-    saasMode: 
+    saasMode:
     # 平台上线安全配置(v1.6.2+ 新增)
     firewall:
       # 数据源安全 (开启后，不允许使用平台数据源、SQL解析加签并且不允许查询数据库)
