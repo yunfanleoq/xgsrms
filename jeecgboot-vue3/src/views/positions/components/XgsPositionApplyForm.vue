@@ -4,31 +4,13 @@
       <template #detail>
         <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="XgsPositionApplyForm">
           <a-row>
-						<a-col :span="12" v-if = "false">
-							<a-form-item label="申请人ID" v-bind="validateInfos.userId" id="XgsPositionApplyForm-userId" name="userId">
-								<a-input v-model:value="formData.userId" placeholder="请输入申请人ID"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
+
 						<a-col :span="12">
-							<a-form-item label="申请人姓名" v-bind="validateInfos.userName" id="XgsPositionApplyForm-userName" name="userName">
+							<a-form-item label="申请人" v-bind="validateInfos.userName" id="XgsPositionApplyForm-userName" name="userName">
 								<a-input v-model:value="formData.userName" placeholder="请输入申请人姓名"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
-						<a-col :span="12">
-							<a-form-item label="简历ID" v-bind="validateInfos.resumeId" id="XgsPositionApplyForm-resumeId" name="resumeId">
-								<a-input v-model:value="formData.resumeId" placeholder="请输入简历ID"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
-								<a-input v-model:value="formData.resumeName" placeholder="请输入简历名称"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="岗位ID" v-bind="validateInfos.positionId" id="XgsPositionApplyForm-positionId" name="positionId">
-								<a-input v-model:value="formData.positionId" placeholder="请输入岗位ID"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
+
 						<a-col :span="12">
 							<a-form-item label="岗位名称" v-bind="validateInfos.positionName" id="XgsPositionApplyForm-positionName" name="positionName">
 								<a-input v-model:value="formData.positionName" placeholder="请输入岗位名称"  allow-clear ></a-input>
@@ -44,43 +26,44 @@
 								<a-input v-model:value="formData.positionType" placeholder="请输入岗位类型"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
-						<a-col :span="12">
+						<a-col :span="12" v-if="false">
 							<a-form-item label="申请状态" v-bind="validateInfos.status" id="XgsPositionApplyForm-status" name="status">
-								<a-input-number v-model:value="formData.status" placeholder="请输入申请状态" style="width: 100%" />
+								<a-input v-model:value="formData.status" placeholder="请输入申请状态" style="width: 100%" disabled />
 							</a-form-item>
 						</a-col>
-						<a-col :span="12">
-							<a-form-item label="申请备注" v-bind="validateInfos.mark" id="XgsPositionApplyForm-mark" name="mark">
-								<a-input v-model:value="formData.mark" placeholder="请输入申请备注"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="申请标签" v-bind="validateInfos.tagIds" id="XgsPositionApplyForm-tagIds" name="tagIds">
-								<a-input v-model:value="formData.tagIds" placeholder="请输入申请标签"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="创建者" v-bind="validateInfos.creator" id="XgsPositionApplyForm-creator" name="creator">
-								<a-input v-model:value="formData.creator" placeholder="请输入创建者"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="更新者" v-bind="validateInfos.updater" id="XgsPositionApplyForm-updater" name="updater">
-								<a-input v-model:value="formData.updater" placeholder="请输入更新者"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="是否删除" v-bind="validateInfos.deleted" id="XgsPositionApplyForm-deleted" name="deleted">
-								<a-input v-model:value="formData.deleted" placeholder="请输入是否删除"  allow-clear ></a-input>
-							</a-form-item>
-						</a-col>
-						<a-col :span="12">
-							<a-form-item label="租户编号" v-bind="validateInfos.tenantId" id="XgsPositionApplyForm-tenantId" name="tenantId">
-								<a-input-number v-model:value="formData.tenantId" placeholder="请输入租户编号" style="width: 100%" />
-							</a-form-item>
-						</a-col>
+
+            <a-col :span="12">
+              <a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
+                <!--								<a-input v-model:value="formData.resumeName" placeholder="请输入简历名称"  allow-clear ></a-input>-->
+                <a-select v-model:value="formData.resumeName" placeholder="请选择简历名称" allow-clear>
+                  <a-select-option v-for="resume in resumeOptions" :key="resume.value" :value="resume.value">
+                    {{ resume.label }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+
+            <a-col :span="12">
+              <a-form-item label="备注" v-bind="validateInfos.mark" id="XgsPositionApplyForm-mark" name="mark" :label-col="{ span: 2 }" :wrapper-col="{ span: 22 }">
+                <a-textarea v-model:value="formData.mark" placeholder="请输入申请备注" allow-clear :auto-size="{ minRows: 1, maxRows: 10 }" style="width: 93%;" />
+              </a-form-item>
+            </a-col>
+
+
+
           </a-row>
         </a-form>
+<!--        //此处引入简历组件，展示简历填报页面-->
+        <div>
+          <XgsResumeForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <XgsResumeForm2 v-else-if="formData.positionType === 'type2'" :form-data="formData" :form-bpm="formBpm" />
+          <XgsResumeForm3 v-else-if="formData.positionType === 'type3'" :form-data="formData" :form-bpm="formBpm" />
+          <div v-else>
+            <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
+            未知的 positionType
+          </div>
+        </div>
+<!--        <component :is="currentComponent" :form-data="formData" :form-bpm="formBpm" />-->
       </template>
     </JFormContainer>
   </a-spin>
@@ -88,16 +71,46 @@
 
 <script lang="ts" setup>
   import { ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted } from 'vue';
+  import XgsResumeForm from '/@/views/xgsResume/components/xgsResumeBaseForm.vue';
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { getValueType } from '/@/utils';
   import { saveOrUpdate } from '../XgsPositionApply.api';
   import { Form } from 'ant-design-vue';
+  // 使用 defineComponent 注册组件（可选）
+  import { defineComponent } from 'vue';
+
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
   const props = defineProps({
     formDisabled: { type: Boolean, default: false },
     formData: { type: Object, default: () => ({})},
     formBpm: { type: Boolean, default: true }
+  });
+
+  // const currentComponent = computed(() => {
+  //   switch (formData.positionType) {
+  //     case '普通岗位':
+  //       return 'XgsResumeForm';
+  //     case '普通岗位':
+  //       return 'XgsResumeForm';
+  //     case '普通岗位':
+  //       return 'XgsResumeForm';
+  //     default:
+  //       return 'XgsResumeForm'; // 默认组件
+  //   }
+  // });
+
+  const resumeOptions = computed(() => {
+    // return props.formData.resumeOptions;
+    return [
+      { value: '1', label: '1' },
+      { value: '2', label: '2' },
+      { value: '3', label: '3' },
+      { value: '4', label: '4' },
+      { value: '5', label: '5' },
+      { value: '6', label: '6' },
+
+    ];
   });
   const formRef = ref();
   const useForm = Form.useForm;
@@ -112,7 +125,7 @@
     positionName: '',
     positionDept: '',
     positionType: '',
-    status: undefined,
+    status: '申请中',
     mark: '',
     tagIds: '',
     creator: '',
@@ -225,5 +238,18 @@
 <style lang="less" scoped>
   .antd-modal-form {
     padding: 14px;
+  }
+  .form-item-full-width .ant-form-item {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .form-item-full-width .ant-form-item-label {
+    width: auto;
+  }
+
+  .form-item-full-width .ant-form-item-control-wrapper {
+    flex: 1;
   }
 </style>

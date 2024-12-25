@@ -136,6 +136,7 @@ import {ref, reactive, computed} from 'vue';
   function handleAdd() {
     registerModal.value.disableSubmit = false;
     registerModal.value.add();
+
   }
 
   /**

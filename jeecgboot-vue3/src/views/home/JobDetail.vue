@@ -186,11 +186,15 @@ const positionApply = () => {
     console.log('请先登录');
     return;
   } else {
+
+    let queryObj = job.value|| {applyStatus: '申请中'};
+    queryObj.applyStatus = '申请中';
+
     message.success('正在跳转至申请页面');
-    console.log('>>>>>>job.value', job.value);
+    console.log('>>>>>>job.value', queryObj);
     router.push({
       name: 'positions-XgsPositionApplyList',
-      query: job.value
+      query: queryObj
     });
 
   }

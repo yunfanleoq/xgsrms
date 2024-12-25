@@ -73,7 +73,7 @@ public class XgsPositionApply implements Serializable {
 	/**申请状态*/
 	@Excel(name = "申请状态", width = 15)
     @ApiModelProperty(value = "申请状态")
-    private java.lang.Integer status;
+    private java.lang.String status;
 	/**申请备注*/
 	@Excel(name = "申请备注", width = 15)
     @ApiModelProperty(value = "申请备注")
@@ -85,7 +85,7 @@ public class XgsPositionApply implements Serializable {
 	/**创建者*/
 	@Excel(name = "创建者", width = 15)
     @ApiModelProperty(value = "创建者")
-    private java.lang.String creator;
+    private java.lang.String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -94,7 +94,7 @@ public class XgsPositionApply implements Serializable {
 	/**更新者*/
 	@Excel(name = "更新者", width = 15)
     @ApiModelProperty(value = "更新者")
-    private java.lang.String updater;
+    private java.lang.String updateBy;
 	/**更新时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
