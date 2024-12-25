@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts" name="positions-xgsPositionApply" setup>
-  import { ref, reactive } from 'vue';
+import {ref, reactive, computed} from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useListPage } from '/@/hooks/system/useListPage';
   import { columns, superQuerySchema } from './XgsPositionApply.data';
@@ -51,12 +51,34 @@
   import { downloadFile } from '/@/utils/common/renderUtils';
   import XgsPositionApplyModal from './components/XgsPositionApplyModal.vue'
   import { useUserStore } from '/@/store/modules/user';
+  import {useRoute} from "vue-router";
+
 
   const formRef = ref();
   const queryParam = reactive<any>({});
   const toggleSearchStatus = ref<boolean>(false);
   const registerModal = ref();
   const userStore = useUserStore();
+  const route = useRoute();
+  const job =route.query;
+  console.log('>>>>>>>>>job',job);
+  const record = ref({
+    userId: userStore.getUserInfo.username,
+    userName: userStore.getUserInfo.realname,
+    positionId: job.id,
+    positionName: job.positionName,
+    positionDept: job.dept_dictText,
+    positionType: job.category,
+
+  });
+
+  // 页面加载完成后，等待3秒钟 点击 新增按钮 并将 job数据传给 新增窗口。
+  setTimeout(() => {
+    //
+    registerModal.value.add(record.value  );
+  }, 1000);
+
+
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {

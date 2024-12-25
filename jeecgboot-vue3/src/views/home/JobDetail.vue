@@ -187,7 +187,11 @@ const positionApply = () => {
     return;
   } else {
     message.success('正在跳转至申请页面');
-    router.push({ name: 'PositionApply', params: { id: jobId } });
+    console.log('>>>>>>job.value', job.value);
+    router.push({
+      name: 'positions-XgsPositionApplyList',
+      query: job.value
+    });
 
   }
 

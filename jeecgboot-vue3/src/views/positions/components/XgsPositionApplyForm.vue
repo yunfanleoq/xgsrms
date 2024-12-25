@@ -4,7 +4,7 @@
       <template #detail>
         <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="XgsPositionApplyForm">
           <a-row>
-						<a-col :span="12">
+						<a-col :span="12" v-if = "false">
 							<a-form-item label="申请人ID" v-bind="validateInfos.userId" id="XgsPositionApplyForm-userId" name="userId">
 								<a-input v-model:value="formData.userId" placeholder="请输入申请人ID"  allow-clear ></a-input>
 							</a-form-item>
@@ -145,8 +145,8 @@
   /**
    * 新增
    */
-  function add() {
-    edit({});
+  function add(record) {
+    edit(record);
   }
 
   /**
