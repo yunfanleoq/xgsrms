@@ -67,6 +67,7 @@ public class XgsIntroduceController extends JeecgController<XgsIntroduce, IXgsIn
 	//@AutoLog(value = "机构概况-分页列表查询")
 	@ApiOperation(value="机构概况-分页列表查询", notes="机构概况-分页列表查询")
 	@GetMapping(value = "/list")
+	@IgnoreAuth
 	public Result<IPage<XgsIntroduce>> queryPageList(XgsIntroduce xgsIntroduce,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

@@ -66,6 +66,7 @@ public class XgsContactUsController extends JeecgController<XgsContactUs, IXgsCo
 	//@AutoLog(value = "联系我们-分页列表查询")
 	@ApiOperation(value="联系我们-分页列表查询", notes="联系我们-分页列表查询")
 	@GetMapping(value = "/list")
+	@IgnoreAuth
 	public Result<IPage<XgsContactUs>> queryPageList(XgsContactUs xgsContactUs,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,

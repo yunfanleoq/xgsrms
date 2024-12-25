@@ -138,6 +138,16 @@ export const homeIndexRoute: AppRouteRecordRaw = {
         ignoreMenu: true,
       },
     },
+    {
+      path: 'contactUs',
+      name: 'contactUs',
+      component: () => import('/@/views/home/contactUs.vue'),
+      meta: {
+        title: '联系我们',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
 
     // 添加其他子路由
   ],
