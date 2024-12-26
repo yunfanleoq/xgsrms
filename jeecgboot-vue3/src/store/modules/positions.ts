@@ -53,9 +53,8 @@ export const usePositionStore = defineStore('Position', {
           });
         }
 
-      }).catch(err => {
-        console.log(err)
-      });
+      }).catch(err => { console.log(err) });
+      //
     }
   }
 })

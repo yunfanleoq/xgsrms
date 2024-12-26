@@ -106,18 +106,6 @@
     formBpm: { type: Boolean, default: true }
   });
 
-  // const currentComponent = computed(() => {
-  //   switch (formData.positionType) {
-  //     case '普通岗位':
-  //       return 'XgsResumeForm';
-  //     case '普通岗位':
-  //       return 'XgsResumeForm';
-  //     case '普通岗位':
-  //       return 'XgsResumeForm';
-  //     default:
-  //       return 'XgsResumeForm'; // 默认组件
-  //   }
-  // });
 
   const resumeOptions = computed(() => {
     // return props.formData.resumeOptions;
