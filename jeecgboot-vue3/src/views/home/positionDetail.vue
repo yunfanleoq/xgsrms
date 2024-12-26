@@ -64,7 +64,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getJobById } from '@/api/xgsrms/home';
 import {xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList} from "@/api/xgsrms/positions";
 import {useUserStore} from "@/store/modules/user";
-import {usePositionStoreWithOut} from "@/store/modules/positions"
+import {usePositionApplyStoreWithOut} from "@/store/modules/positionApply"
 import {useMessage} from "@/hooks/web/useMessage"; // 假设你有一个 API 来获取职位信息
 
 const route = useRoute();
@@ -202,7 +202,7 @@ const positionApply = () => {
 
 }
 
-const fetchJob = async () => {
+const fetchCurrApplyPosition = async () => {
   try {
     let params = {
       id: jobId,
@@ -211,18 +211,18 @@ const fetchJob = async () => {
     job.value = response.result.records[0];
     // 将job存pinia
     // 获取 Pinia store 实例
-    const positionStore = usePositionStoreWithOut();
+    const positionApplyStore = usePositionApplyStoreWithOut();
 
-    console.log('>>>>>>usePositionStore.currApplyPosition', positionStore.currApplyPosition);
-    positionStore.setCurrApplyPosition( response.result.records[0]);
-    console.log('>>>>>>usePositionStore.currApplyPosition', positionStore.currApplyPosition);
+    console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
+    positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
+    console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
   } catch (error) {
     console.error('获取职位信息失败:', error);
   }
 };
 
 onMounted(() => {
-  fetchJob();
+  fetchCurrApplyPosition();
 });
 </script>
 

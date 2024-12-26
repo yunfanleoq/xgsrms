@@ -34,12 +34,12 @@
 
             <a-col :span="12">
               <a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
-                <!--								<a-input v-model:value="formData.resumeName" placeholder="请输入简历名称"  allow-clear ></a-input>-->
-                <a-select v-model:value="formData.resumeName" placeholder="请选择简历名称" allow-clear>
-                  <a-select-option v-for="resume in resumeOptions" :key="resume.value" :value="resume.value">
-                    {{ resume.label }}
-                  </a-select-option>
-                </a-select>
+                								<a-input v-model:value="formData.resumeName" placeholder="请输入简历名称"  allow-clear ></a-input>
+<!--                <a-select v-model:value="formData.resumeName" placeholder="请选择简历名称" allow-clear>-->
+<!--                  <a-select-option v-for="resume in resumeOptions" :key="resume.value" :value="resume.value">-->
+<!--                    {{ resume.label }}-->
+<!--                  </a-select-option>-->
+<!--                </a-select>-->
               </a-form-item>
             </a-col>
 
@@ -86,7 +86,7 @@
   import { saveOrUpdate } from '../XgsPositionApply.api';
   import { Form } from 'ant-design-vue';
   import { usePositionStoreWithOut} from "@/store/modules/positions";
-  const positionStore = usePositionStoreWithOut();
+  const positionStore = usePositionApplyStoreWithOut();
 
 
 
@@ -100,6 +100,7 @@
   import { defineComponent } from 'vue';
 
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
+  import {usePositionApplyStore} from "@/store/modules/positionApply";
   const props = defineProps({
     formDisabled: { type: Boolean, default: false },
     formData: { type: Object, default: () => ({})},

@@ -69,6 +69,7 @@ import {ref, reactive, computed} from 'vue';
     positionName: job.positionName,
     positionDept: job.dept_dictText,
     positionType: job.category,
+    resumeName:userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.dept_dictText+job.positionName,
 
   });
 

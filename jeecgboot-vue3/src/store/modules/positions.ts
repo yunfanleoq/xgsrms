@@ -1,60 +1,77 @@
 import { defineStore } from 'pinia'
 import { store } from '/@/store';
-import {useDefIndexStore} from "@/store/modules/defIndex";
-import {defHttp} from "@/utils/http/axios";
-import {xgsPositionApplyList} from "@/api/xgsrms/positions";
+import { xgsPositionsList} from "@/api/xgsrms/positions";
 
-export const usePositionStore = defineStore('Position', {
-  id: 'Position',
+
+interface Position {
+  id: string;
+  create_by: string;
+  create_time: Date;
+  update_by: string;
+  update_time: Date;
+  sys_org_code: string;
+  dept: string;
+  ktz: string;
+  telphone: string;
+  email: string;
+  position_name: string;
+  research_direction: string;
+  person_count: string;
+  duty: string;
+  xlxw: string;
+  professional: string;
+  work_years: string;
+  memo: string;
+  status: string;
+  category: string;
+}
+
+export const usePositionStore = defineStore('usePositionStore', {
+
   state: () => {
     return {
-      // 定义状态
-
-      currApplyPosition: {
-        createBy: "",
-        createTime: "",
-        deleted: "",
-        id: null,
-        mark: "",
-        positionDept: "",
-        positionId: "",
-        positionName: "",
-        positionType: "",
-        resumeId: "",
-        resumeName: "",
-        status: "",
-        tagIds: "",
-        tenantId: null,
-        updateBy: "",
-        updateTime: "",
-        userId: "",
-        userName: ""
-
-      }
+      currPosition : {} as Position,
+      positions: [] as Position[],
     }
   },
+
   // 定义getter
   getters: {
-    getCurrApplyPosition: (state) => {
 
-      return state.currApplyPosition
+    getCurrPosition: (state) => {
+      return state.currPosition;
+    }
+    ,
+    getPositions: (state) => {
+      return state.positions;
     }
   },
   // 定义方法
   actions: {
-    setCurrApplyPosition(position) {
-      this.currApplyPosition = position;
-      xgsPositionApplyList(this.currApplyPosition).then(res => {
-        if (res.success) {
-          console.log('>>>>>>>>>xgsPositionApplyList',res);
-          // 遍历res.result.records[0] 将 所有字段赋值给currApplyPosition
-          Object.keys(res.result.records[0]).forEach(key => {
-            this.currApplyPosition[key] = res.result.records[0][key];
-          });
-        }
 
-      }).catch(err => { console.log(err) });
-      //
+    async fetchPositions(params: any) {
+
+      const res = await xgsPositionsList(params);
+      if (res.success) {
+        const list = res.result.records.map((item: any) => ({
+          id: item.id,
+          category: item.category,
+          dept: item.dept,
+          ktz: item.ktz,
+          positionName: item.positionName,
+          personCount: item.personCount,
+          workYears: item.workYears,
+          status: item.status,
+          dept_dictText: item.dept_dictText,
+          ktz_dictText: item.ktz_dictText,
+          status_dictText: item.status_dictText,
+        }));
+        this.positions = list;
+      }
+    },
+
+    setCurrPosition(position) {
+      this.currPosition = position;
     }
   }
 })

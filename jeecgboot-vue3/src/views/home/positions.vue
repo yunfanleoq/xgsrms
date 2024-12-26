@@ -28,7 +28,7 @@
             <input v-model="searchQuery" placeholder="请输入职位名称" class="search-input" />
             <div class="search-buttons">
               <button @click="reset" class="search-button">重置</button>
-              <button @click="searchJobs" class="search-button">搜索</button>
+              <button @click="searchPositions" class="search-button">搜索</button>
             </div>
           </div>
         </section>
@@ -36,7 +36,7 @@
               <div class="job-list-container">
                 <!-- 职位列表 -->
                 <section class="job-list">
-                  <div v-for="(job, index) in paginatedJobs" :key="index" class="job-card" @click="goToJobDetail(job.id)">
+                  <div v-for="(job, index) in paginatedPositions" :key="index" class="job-card" @click="goToPositionDetail(job.id)">
                     <h3>{{ job.positionName }}</h3>
                     <p>职位数量：<strong>{{ job.personCount }}</strong></p>
                     <p>招聘部门：<strong>{{ job.dept_dictText }}</strong></p>
@@ -50,9 +50,9 @@
                   <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
                   <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
                   <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-                  <!--        <div class="jobs-per-page">-->
-                  <label for="jobs-per-page">每页：</label>
-                  <select id="jobs-per-page" v-model.number ="jobsPerPage" @change="changeJobsPerPage">
+                  <!--        <div class="positions-per-page">-->
+                  <label for="positions-per-page">每页：</label>
+                  <select id="positions-per-page" v-model.number ="positionsPerPage" @change="changePositionsPerPage">
                     <option value=5>5</option>
                     <option value=10>10</option>
                     <option value=20>20</option>
@@ -72,28 +72,17 @@
 
 <script setup  lang="ts" name="positions">
 // 无需额外脚本内容
-import {ref, computed, onMounted, reactive} from 'vue';
+import {ref, computed, onMounted, reactive, watch} from 'vue';
 import { useRouter } from 'vue-router';
-import {xgsFavoriteJobList} from "@/api/xgsrms/positions";
-
+import { usePositionStore } from '@/store/modules/positions';
 import { getDictItems,getJobList,getDeptList } from "@/api/xgsrms/home";
 
-// const xgsFavoriteJobList = ref([]);
-// xgsFavoriteJobList({userId: userStore.userInfo.username}).then(res => {
-//   // console.log('xgsFavoriteJobList', res);
-//   if (res.result.records.length > 0) {
-//     xgsFavoriteJobList.value = res.result.records;
-//     console.log('xgsFavoriteJobList', xgsFavoriteJobList.value);
-//   }
-//
-// });
-//
-// onMounted(xgsFavoriteJobList);
+const positionStore = usePositionStore();
 
 const jobCategories = ref( []);
 //
-const goToJobDetail = (jobId: number) => {
-  router.push({ name: 'JobDetail', params: { id: jobId } });
+const goToPositionDetail = (positionId: number) => {
+  router.push({ name: 'positionDetail', params: { id: positionId } });
 };
 
 const filterJobCategory = (category) =>{
@@ -103,9 +92,9 @@ const filterJobCategory = (category) =>{
   // 这里可以添加具体的过滤逻辑
 };
 
-const searchQuery = ref("");
+const searchQuery = ref(null);
 const selectedCategory = ref(null);
-const selectedDept = ref('');
+const selectedDept = ref(null);
 
 const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
 
@@ -118,29 +107,24 @@ const depts = ref([
 
 // 分页相关的响应式数据
 const currentPage = ref(1);
-const jobsPerPage = ref(10); // 每页显示的条数
+const positionsPerPage = ref(10); // 每页显示的条数
 
 // 计算分页后的职位列表
-const paginatedJobs = computed(() => {
+const paginatedPositions = computed(() => {
   console.log('Current Page:', currentPage.value);
-  console.log('Jobs Per Page:', jobsPerPage.value);
-  const start = (currentPage.value - 1) * jobsPerPage.value;
-  const end = start + jobsPerPage.value;
+  console.log('Positions Per Page:', positionsPerPage.value);
+  const start = (currentPage.value - 1) * positionsPerPage.value;
+  const end = start + positionsPerPage.value;
   console.log('Start Index:', start, 'End Index:', end);
-  const result = filteredJobs.value.slice(start, end);
-  // 遍历结果，为每个职位添加一个isFavorite属性
-  // result.forEach((job) => {
-  //   // job.isFavorite = xgsFavoriteJobList.value.some((favJob) => favJob.positionId === job.id);
-  //   pass;
-  // });
-  console.log('>>>>>Paginated Jobs:', result);
+  const result = filteredPositions.value.slice(start, end);
+
+  console.log('>>>>>Paginated Positions:', result);
   return result;
 });
 
-
 // 计算总页数
 const totalPages = computed(() => {
-  const total = Math.ceil(filteredJobs.value.length / jobsPerPage.value);
+  const total = Math.ceil(filteredPositions.value.length / positionsPerPage.value);
   console.log('Total Pages:', total);
   return total;
 });
@@ -158,93 +142,54 @@ const nextPage = () => {
   }
 };
 
-const changeJobsPerPage = (event: Event) => {
+const changePositionsPerPage = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  console.log('Changing Jobs Per Page to:', value);
-  jobsPerPage.value = parseInt(value, 10);
+  console.log('Changing Positions Per Page to:', value);
+  positionsPerPage.value = parseInt(value, 10);
   currentPage.value = 1; // 重置到第一页
 };
 
-const jobs = ref([
-  {
-    id: "1870026492048125964",
-    sysOrgCode: "A01",
-    category: "普通岗位",
-    dept: "1870023309355724801",
-    ktz: "1870023433565843457",
-    telphone: "010-82345271",
-    email: "mima@iie.ac.cn",
-    positionName: "工程师",
-    researchDirection: "安全测评，密码开发",
-    personCount: "1",
-    duty: "安全测评工作，安全系统研发",
-    xlxw: "硕士研究生及以上",
-    professional: "计算机、电子信息、网络空间安全相关专业",
-    workYears: "2年及以上",
-    memo: null,
-    status: "招聘中",
-    dept_dictText: "密码理论与技术研究室",
-    ktz_dictText: "密码测评研究组",
-    status_dictText: "招聘中",
-  },
+interface Position {
+  id: string;
+  create_by: string;
+  create_time: Date;
+  update_by: string;
+  update_time: Date;
+  sys_org_code: string;
+  dept: string;
+  ktz: string;
+  telphone: string;
+  email: string;
+  position_name: string;
+  research_direction: string;
+  person_count: string;
+  duty: string;
+  xlxw: string;
+  professional: string;
+  work_years: string;
+  memo: string;
+  status: string;
+  category: string;
+}
 
-]);
-
-// const filteredJobs = computed(() => {
-//   if (selectedDept.value) {
-//     return jobs.value.filter((job) => job.dept_dictText === selectedDept.value);
-//   } else if (searchQuery.value !== "") {
-//     return jobs.value.filter(
-//       (job) =>
-//         job.positionName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-//         job.dept_dictText.toLowerCase().includes(searchQuery.value.toLowerCase()),
-//     );
-//   }
-//
-// });
-
-const fetchJobs = () => {
-  console.log('fetchJobs>>>>>>>>>>>BEGIN')
-  const params = {
-    status: statusFilter.value, // 将状态参数添加到请求参数中
-    pageNo: 1,
-    pageSize: 1000
-  };
+// let positions = reactive([] as  Position[])
+let positions = reactive([] as Position[])// 确保 positions 是响应式引用
 
 
-  getJobList(params)
-    .then((res) => {
-      if (res.success) {
-        let list = res.result.records;
-        // jobs.value = underlineToCamelCase(list);
-        // 只获取需要的字段，并赋值给 jobs.value
-        list = list.map((item) => {
-          return {
-            id: item.id,
-            // sysOrgCode: item.sysOrgCode,
-            category: item.category,
-            dept: item.dept,
-            ktz: item.ktz,
-            // telphone: item.telphone,
-            // email: item.email,
-            positionName: item.positionName,
-            // researchDirection: item.researchDirection,
-            personCount: item.personCount,
-            // duty: item.duty,
-            // xlxw: item.xlxw,
-            // professional: item.professional,
-            workYears: item.workYears,
-            // memo: item.memo,
-            status: item.status,
-            dept_dictText: item.dept_dictText,
-            ktz_dictText: item.ktz_dictText,
-            status_dictText: item.status_dictText,
-          }
-        })
-        jobs.value = list;
-        console.log('getJobList>>>>>>>>>>>',list,depts.value)
-      }
-    })
+const fetchPositions = () => {
+  console.log('fetchPositions>>>>>>>>>>>BEGIN')
+
+  if (positionStore.positions.length > 0) {
+    positions = positionStore.positions;
+  } else {
+    positionStore.fetchPositions({
+      pageNo: 1,
+      pageSize: 1000
+    });
+    console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
+    positions = positionStore.positions;
+  }
+  console.log('fetchPositions>>>>>>>>>>>positions', positions, depts.value);
 };
 
 const reset = () => {
@@ -296,14 +241,31 @@ const fetchCategorys = () => {
 
 
 onMounted(fetchDepts );
-onMounted(fetchJobs );
+onMounted(fetchPositions );
 onMounted(fetchCategorys );
 
+onMounted(
+  () => {
+    reset();
+  },
 
+)
+// 在组件挂载后立即执行一次监听回调
+
+
+// 监听 positionStore.positions 的变化
+watch(
+  () => positionStore.positions,
+  (newPositions) => {
+    positions = newPositions;
+  },
+  { immediate: true } // 立即执行一次
+);
 
 // 计算属性：过滤后的职位列表
-const filteredJobs = computed(() => {
-  let filtered = jobs.value;
+const filteredPositions = computed(() => {
+  console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>positions:',positions)
+  let filtered = positions;
 
   if (selectedCategory.value) {
     filtered = filtered.filter((job) => job.category === selectedCategory.value);
@@ -320,7 +282,7 @@ const filteredJobs = computed(() => {
   if (selectedDept.value) {
     filtered = filtered.filter((job) => job.dept_dictText === selectedDept.value);
   }
-
+  console.log(">>>>>过滤后的职位列表：", filtered);
   return filtered;
 });
 
@@ -341,7 +303,7 @@ const filterDept = (dept) => {
   selectedDept.value = dept === selectedDept.value ? null : dept;
 };
 // 搜索职位
-const searchJobs = () => {
+const searchPositions = () => {
   console.log("搜索职位：" + searchQuery.value);
 };
 </script>
@@ -520,18 +482,18 @@ h1 {
   cursor: not-allowed;
 }
 
-.jobs-per-page {
+.positions-per-page {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-top: 10px;
 }
 
-.jobs-per-page label {
+.positions-per-page label {
   margin-right: 10px;
 }
 
-.jobs-per-page select {
+.positions-per-page select {
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 5px;
