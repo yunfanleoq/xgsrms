@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @Description: 工作经历
  * @Author: jeecg-boot
- * @Date:   2024-12-20
+ * @Date:   2024-12-25
  * @Version: V1.0
  */
 public interface IXgsResumeWorksService extends IService<XgsResumeWorks> {

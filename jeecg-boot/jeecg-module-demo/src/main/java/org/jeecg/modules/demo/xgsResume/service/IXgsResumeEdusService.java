@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @Description: 教育经历
  * @Author: jeecg-boot
- * @Date:   2024-12-20
+ * @Date:   2024-12-25
  * @Version: V1.0
  */
 public interface IXgsResumeEdusService extends IService<XgsResumeEdus> {

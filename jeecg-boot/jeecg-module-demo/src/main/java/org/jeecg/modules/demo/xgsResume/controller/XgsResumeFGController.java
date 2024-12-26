@@ -27,9 +27,9 @@ import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeWorks;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeEdus;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeHome;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
-import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
-import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
+import org.jeecg.modules.demo.xgsResume.entity.XgsResumeFG;
+import org.jeecg.modules.demo.xgsResume.vo.XgsResumeFGPage;
+import org.jeecg.modules.demo.xgsResume.service.IXgsResumeFGService;
 import org.jeecg.modules.demo.xgsResume.service.IXgsResumeWorksService;
 import org.jeecg.modules.demo.xgsResume.service.IXgsResumeEdusService;
 import org.jeecg.modules.demo.xgsResume.service.IXgsResumeHomeService;
@@ -49,18 +49,18 @@ import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
  /**
- * @Description: 基本信息
+ * @Description: 基本信息-副高
  * @Author: jeecg-boot
  * @Date:   2024-12-25
  * @Version: V1.0
  */
-@Api(tags="基本信息")
+@Api(tags="基本信息-副高")
 @RestController
-@RequestMapping("/xgsResume/xgsResumeBase")
+@RequestMapping("/xgsResume/xgsResumeFG")
 @Slf4j
-public class XgsResumeBaseController {
+public class XgsResumeFGController {
 	@Autowired
-	private IXgsResumeBaseService xgsResumeBaseService;
+	private IXgsResumeFGService xgsResumeFGService;
 	@Autowired
 	private IXgsResumeWorksService xgsResumeWorksService;
 	@Autowired
@@ -71,60 +71,60 @@ public class XgsResumeBaseController {
 	/**
 	 * 分页列表查询
 	 *
-	 * @param xgsResumeBase
+	 * @param xgsResumeFG
 	 * @param pageNo
 	 * @param pageSize
 	 * @param req
 	 * @return
 	 */
-	//@AutoLog(value = "基本信息-分页列表查询")
-	@ApiOperation(value="基本信息-分页列表查询", notes="基本信息-分页列表查询")
+	//@AutoLog(value = "基本信息-副高-分页列表查询")
+	@ApiOperation(value="基本信息-副高-分页列表查询", notes="基本信息-副高-分页列表查询")
 	@GetMapping(value = "/list")
-	public Result<IPage<XgsResumeBase>> queryPageList(XgsResumeBase xgsResumeBase,
+	public Result<IPage<XgsResumeFG>> queryPageList(XgsResumeFG xgsResumeFG,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-        QueryWrapper<XgsResumeBase> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeBase, req.getParameterMap());
-		Page<XgsResumeBase> page = new Page<XgsResumeBase>(pageNo, pageSize);
-		IPage<XgsResumeBase> pageList = xgsResumeBaseService.page(page, queryWrapper);
+        QueryWrapper<XgsResumeFG> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeFG, req.getParameterMap());
+		Page<XgsResumeFG> page = new Page<XgsResumeFG>(pageNo, pageSize);
+		IPage<XgsResumeFG> pageList = xgsResumeFGService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
 	
 	/**
 	 *   添加
 	 *
-	 * @param xgsResumeBasePage
+	 * @param xgsResumeFGPage
 	 * @return
 	 */
-	@AutoLog(value = "基本信息-添加")
-	@ApiOperation(value="基本信息-添加", notes="基本信息-添加")
+	@AutoLog(value = "基本信息-副高-添加")
+	@ApiOperation(value="基本信息-副高-添加", notes="基本信息-副高-添加")
     @RequiresPermissions("xgsResume:xgs_resume_base:add")
 	@PostMapping(value = "/add")
-	public Result<String> add(@RequestBody XgsResumeBasePage xgsResumeBasePage) {
-		XgsResumeBase xgsResumeBase = new XgsResumeBase();
-		BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
-		xgsResumeBaseService.saveMain(xgsResumeBase, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
+	public Result<String> add(@RequestBody XgsResumeFGPage xgsResumeFGPage) {
+		XgsResumeFG xgsResumeFG = new XgsResumeFG();
+		BeanUtils.copyProperties(xgsResumeFGPage, xgsResumeFG);
+		xgsResumeFGService.saveMain(xgsResumeFG, xgsResumeFGPage.getXgsResumeWorksList(),xgsResumeFGPage.getXgsResumeEdusList(),xgsResumeFGPage.getXgsResumeHomeList());
 		return Result.OK("添加成功！");
 	}
 	
 	/**
 	 *  编辑
 	 *
-	 * @param xgsResumeBasePage
+	 * @param xgsResumeFGPage
 	 * @return
 	 */
-	@AutoLog(value = "基本信息-编辑")
-	@ApiOperation(value="基本信息-编辑", notes="基本信息-编辑")
+	@AutoLog(value = "基本信息-副高-编辑")
+	@ApiOperation(value="基本信息-副高-编辑", notes="基本信息-副高-编辑")
     @RequiresPermissions("xgsResume:xgs_resume_base:edit")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody XgsResumeBasePage xgsResumeBasePage) {
-		XgsResumeBase xgsResumeBase = new XgsResumeBase();
-		BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
-		XgsResumeBase xgsResumeBaseEntity = xgsResumeBaseService.getById(xgsResumeBase.getId());
-		if(xgsResumeBaseEntity==null) {
+	public Result<String> edit(@RequestBody XgsResumeFGPage xgsResumeFGPage) {
+		XgsResumeFG xgsResumeFG = new XgsResumeFG();
+		BeanUtils.copyProperties(xgsResumeFGPage, xgsResumeFG);
+		XgsResumeFG xgsResumeFGEntity = xgsResumeFGService.getById(xgsResumeFG.getId());
+		if(xgsResumeFGEntity==null) {
 			return Result.error("未找到对应数据");
 		}
-		xgsResumeBaseService.updateMain(xgsResumeBase, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
+		xgsResumeFGService.updateMain(xgsResumeFG, xgsResumeFGPage.getXgsResumeWorksList(),xgsResumeFGPage.getXgsResumeEdusList(),xgsResumeFGPage.getXgsResumeHomeList());
 		return Result.OK("编辑成功!");
 	}
 	
@@ -134,12 +134,12 @@ public class XgsResumeBaseController {
 	 * @param id
 	 * @return
 	 */
-	@AutoLog(value = "基本信息-通过id删除")
-	@ApiOperation(value="基本信息-通过id删除", notes="基本信息-通过id删除")
+	@AutoLog(value = "基本信息-副高-通过id删除")
+	@ApiOperation(value="基本信息-副高-通过id删除", notes="基本信息-副高-通过id删除")
     @RequiresPermissions("xgsResume:xgs_resume_base:delete")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		xgsResumeBaseService.delMain(id);
+		xgsResumeFGService.delMain(id);
 		return Result.OK("删除成功!");
 	}
 	
@@ -149,12 +149,12 @@ public class XgsResumeBaseController {
 	 * @param ids
 	 * @return
 	 */
-	@AutoLog(value = "基本信息-批量删除")
-	@ApiOperation(value="基本信息-批量删除", notes="基本信息-批量删除")
+	@AutoLog(value = "基本信息-副高-批量删除")
+	@ApiOperation(value="基本信息-副高-批量删除", notes="基本信息-副高-批量删除")
     @RequiresPermissions("xgsResume:xgs_resume_base:deleteBatch")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.xgsResumeBaseService.delBatchMain(Arrays.asList(ids.split(",")));
+		this.xgsResumeFGService.delBatchMain(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功！");
 	}
 	
@@ -164,15 +164,15 @@ public class XgsResumeBaseController {
 	 * @param id
 	 * @return
 	 */
-	//@AutoLog(value = "基本信息-通过id查询")
-	@ApiOperation(value="基本信息-通过id查询", notes="基本信息-通过id查询")
+	//@AutoLog(value = "基本信息-副高-通过id查询")
+	@ApiOperation(value="基本信息-副高-通过id查询", notes="基本信息-副高-通过id查询")
 	@GetMapping(value = "/queryById")
-	public Result<XgsResumeBase> queryById(@RequestParam(name="id",required=true) String id) {
-		XgsResumeBase xgsResumeBase = xgsResumeBaseService.getById(id);
-		if(xgsResumeBase==null) {
+	public Result<XgsResumeFG> queryById(@RequestParam(name="id",required=true) String id) {
+		XgsResumeFG xgsResumeFG = xgsResumeFGService.getById(id);
+		if(xgsResumeFG==null) {
 			return Result.error("未找到对应数据");
 		}
-		return Result.OK(xgsResumeBase);
+		return Result.OK(xgsResumeFG);
 
 	}
 	
@@ -220,13 +220,13 @@ public class XgsResumeBaseController {
     * 导出excel
     *
     * @param request
-    * @param xgsResumeBase
+    * @param xgsResumeFG
     */
     @RequiresPermissions("xgsResume:xgs_resume_base:exportXls")
     @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, XgsResumeBase xgsResumeBase) {
+    public ModelAndView exportXls(HttpServletRequest request, XgsResumeFG xgsResumeFG) {
       // Step.1 组装查询条件查询数据
-      QueryWrapper<XgsResumeBase> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeBase, request.getParameterMap());
+      QueryWrapper<XgsResumeFG> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeFG, request.getParameterMap());
       LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 
       //配置选中数据查询条件
@@ -236,12 +236,12 @@ public class XgsResumeBaseController {
             queryWrapper.in("id",selectionList);
        }
        //Step.2 获取导出数据
-       List<XgsResumeBase> xgsResumeBaseList = xgsResumeBaseService.list(queryWrapper);
+       List<XgsResumeFG> xgsResumeFGList = xgsResumeFGService.list(queryWrapper);
 
       // Step.3 组装pageList
-      List<XgsResumeBasePage> pageList = new ArrayList<XgsResumeBasePage>();
-      for (XgsResumeBase main : xgsResumeBaseList) {
-          XgsResumeBasePage vo = new XgsResumeBasePage();
+      List<XgsResumeFGPage> pageList = new ArrayList<XgsResumeFGPage>();
+      for (XgsResumeFG main : xgsResumeFGList) {
+          XgsResumeFGPage vo = new XgsResumeFGPage();
           BeanUtils.copyProperties(main, vo);
           List<XgsResumeWorks> xgsResumeWorksList = xgsResumeWorksService.selectByMainId(main.getId());
           vo.setXgsResumeWorksList(xgsResumeWorksList);
@@ -254,9 +254,9 @@ public class XgsResumeBaseController {
 
       // Step.4 AutoPoi 导出Excel
       ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
-      mv.addObject(NormalExcelConstants.FILE_NAME, "基本信息列表");
-      mv.addObject(NormalExcelConstants.CLASS, XgsResumeBasePage.class);
-      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("基本信息数据", "导出人:"+sysUser.getRealname(), "基本信息"));
+      mv.addObject(NormalExcelConstants.FILE_NAME, "基本信息-副高列表");
+      mv.addObject(NormalExcelConstants.CLASS, XgsResumeFGPage.class);
+      mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("基本信息-副高数据", "导出人:"+sysUser.getRealname(), "基本信息-副高"));
       mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
       return mv;
     }
@@ -281,11 +281,11 @@ public class XgsResumeBaseController {
           params.setHeadRows(1);
           params.setNeedSave(true);
           try {
-              List<XgsResumeBasePage> list = ExcelImportUtil.importExcel(file.getInputStream(), XgsResumeBasePage.class, params);
-              for (XgsResumeBasePage page : list) {
-                  XgsResumeBase po = new XgsResumeBase();
+              List<XgsResumeFGPage> list = ExcelImportUtil.importExcel(file.getInputStream(), XgsResumeFGPage.class, params);
+              for (XgsResumeFGPage page : list) {
+                  XgsResumeFG po = new XgsResumeFG();
                   BeanUtils.copyProperties(page, po);
-                  xgsResumeBaseService.saveMain(po, page.getXgsResumeWorksList(),page.getXgsResumeEdusList(),page.getXgsResumeHomeList());
+                  xgsResumeFGService.saveMain(po, page.getXgsResumeWorksList(),page.getXgsResumeEdusList(),page.getXgsResumeHomeList());
               }
               return Result.OK("文件导入成功！数据行数:" + list.size());
           } catch (Exception e) {

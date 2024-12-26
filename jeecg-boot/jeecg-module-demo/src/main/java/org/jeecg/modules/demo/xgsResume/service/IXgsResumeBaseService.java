@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * @Description: 基本信息
  * @Author: jeecg-boot
- * @Date:   2024-12-20
+ * @Date:   2024-12-25
  * @Version: V1.0
  */
 public interface IXgsResumeBaseService extends IService<XgsResumeBase> {

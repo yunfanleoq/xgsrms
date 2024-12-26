@@ -19,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * @Description: 家庭状况
  * @Author: jeecg-boot
- * @Date:   2024-12-20
+ * @Date:   2024-12-25
  * @Version: V1.0
  */
 @ApiModel(value="xgs_resume_home对象", description="家庭状况")
@@ -139,8 +139,4 @@ public class XgsResumeHome implements Serializable {
 	@Excel(name = "租户编号", width = 15)
     @ApiModelProperty(value = "租户编号")
     private java.lang.Integer tenantId;
-	/**所属部门*/
-	@Excel(name = "所属部门", width = 15)
-    @ApiModelProperty(value = "所属部门")
-    private java.lang.Integer sysOrgCode;
 }

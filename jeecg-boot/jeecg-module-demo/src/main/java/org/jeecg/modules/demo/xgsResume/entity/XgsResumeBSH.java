@@ -18,15 +18,15 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * @Description: 基本信息
+ * @Description: 基本信息-博士后
  * @Author: jeecg-boot
  * @Date:   2024-12-25
  * @Version: V1.0
  */
-@ApiModel(value="xgs_resume_base对象", description="基本信息")
+@ApiModel(value="xgs_resume_base对象", description="基本信息-博士后")
 @Data
 @TableName("xgs_resume_base")
-public class XgsResumeBase implements Serializable {
+public class XgsResumeBSH implements Serializable {
     private static final long serialVersionUID = 1L;
 
 	/**编号*/

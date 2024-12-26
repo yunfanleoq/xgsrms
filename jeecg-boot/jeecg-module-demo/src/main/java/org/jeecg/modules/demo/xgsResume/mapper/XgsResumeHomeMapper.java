@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * @Description: 家庭状况
  * @Author: jeecg-boot
- * @Date:   2024-12-20
+ * @Date:   2024-12-25
  * @Version: V1.0
  */
 public interface XgsResumeHomeMapper extends BaseMapper<XgsResumeHome> {
