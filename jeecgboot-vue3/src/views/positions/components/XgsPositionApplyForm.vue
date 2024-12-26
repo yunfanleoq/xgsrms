@@ -55,9 +55,10 @@
         </a-form>
 <!--        //此处引入简历组件，展示简历填报页面-->
         <div>
-          <XgsResumeForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <XgsResumeForm2 v-else-if="formData.positionType === 'type2'" :form-data="formData" :form-bpm="formBpm" />
-          <XgsResumeForm3 v-else-if="formData.positionType === 'type3'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumeFGForm v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="formBpm" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
             未知的 positionType
@@ -71,12 +72,30 @@
 
 <script lang="ts" setup>
   import { ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted } from 'vue';
-  import XgsResumeForm from '/@/views/xgsResume/components/xgsResumeBaseForm.vue';
+  // import XgsResumeForm from '/@/views/xgsResume/components/xgsResumeBaseForm.vue';
+  import xgsResumeBSHForm from '/@/views/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
+  import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
+  import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
+  import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
+
+
+
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { getValueType } from '/@/utils';
   import { saveOrUpdate } from '../XgsPositionApply.api';
   import { Form } from 'ant-design-vue';
+  import { usePositionStoreWithOut} from "@/store/modules/positions";
+  const positionStore = usePositionStoreWithOut();
+
+
+
+
+
+
+
+
+
   // 使用 defineComponent 注册组件（可选）
   import { defineComponent } from 'vue';
 
@@ -159,7 +178,13 @@
    * 新增
    */
   function add(record) {
-    edit(record);
+    // 先根据 岗位id，userid 查询是否已存在，如果存在，则直接编辑，否则新增
+    console.log('add111111111', record);
+
+    positionStore.setCurrApplyPosition(record);
+    // record = positionStore.currApplyPosition;
+    console.log('add222222222', positionStore.currApplyPosition);
+    edit(positionStore.currApplyPosition);
   }
 
   /**

@@ -116,7 +116,7 @@ public class XgsResumeHome implements Serializable {
 	/**创建者*/
 	@Excel(name = "创建者", width = 15)
     @ApiModelProperty(value = "创建者")
-    private java.lang.String creator;
+    private java.lang.String createBy;
 	/**创建时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -125,7 +125,7 @@ public class XgsResumeHome implements Serializable {
 	/**更新者*/
 	@Excel(name = "更新者", width = 15)
     @ApiModelProperty(value = "更新者")
-    private java.lang.String updater;
+    private java.lang.String updateBy;
 	/**更新时间*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
@@ -139,4 +139,8 @@ public class XgsResumeHome implements Serializable {
 	@Excel(name = "租户编号", width = 15)
     @ApiModelProperty(value = "租户编号")
     private java.lang.Integer tenantId;
+	/**所属部门*/
+	@Excel(name = "所属部门", width = 15)
+    @ApiModelProperty(value = "所属部门")
+    private java.lang.Integer sysOrgCode;
 }

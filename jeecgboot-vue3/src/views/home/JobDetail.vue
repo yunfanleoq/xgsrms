@@ -64,6 +64,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { getJobById } from '@/api/xgsrms/home';
 import {xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList} from "@/api/xgsrms/positions";
 import {useUserStore} from "@/store/modules/user";
+import {usePositionStoreWithOut} from "@/store/modules/positions"
 import {useMessage} from "@/hooks/web/useMessage"; // 假设你有一个 API 来获取职位信息
 
 const route = useRoute();
@@ -208,6 +209,13 @@ const fetchJob = async () => {
     };
     const response = await getJobById(params);
     job.value = response.result.records[0];
+    // 将job存pinia
+    // 获取 Pinia store 实例
+    const positionStore = usePositionStoreWithOut();
+
+    console.log('>>>>>>usePositionStore.currApplyPosition', positionStore.currApplyPosition);
+    positionStore.setCurrApplyPosition( response.result.records[0]);
+    console.log('>>>>>>usePositionStore.currApplyPosition', positionStore.currApplyPosition);
   } catch (error) {
     console.error('获取职位信息失败:', error);
   }
