@@ -57,7 +57,7 @@
     </div>
   </div>
 <!--  <XgsPositionApplyForm v-if="XgsPositionApplyFormShow" :formData="job" :formBpm="false" />-->
-  <XgsPositionApplyModal ref="registerModal" v-model:visible="XgsPositionApplyFormShow" :formData="record" :formBpm="false" />
+  <XgsPositionApplyModal ref="registerModal" v-model:visible="XgsPositionApplyFormShow"  :formBpm="false" />
 
 
 </template>
@@ -71,11 +71,11 @@ import {useUserStore} from "@/store/modules/user";
 import {usePositionApplyStoreWithOut} from "@/store/modules/positionApply"
 import {useMessage} from "@/hooks/web/useMessage"; // 假设你有一个 API 来获取职位信息
 import XgsPositionApplyModal from '@/views/positions/components/XgsPositionApplyModal.vue'
-// const registerModal = ref();
+const registerModal = ref();
 
 const positionApplyStore = usePositionApplyStoreWithOut();
 
-const record = positionApplyStore.currPositionApply;
+// const record = positionApplyStore.currPositionApply;
 const route = useRoute();
 const router = useRouter();
 const jobId = route.params.id as string;
@@ -209,7 +209,7 @@ const positionApply = () => {
     return;
   } else {
     XgsPositionApplyFormShow.value = true;
-
+    registerModal.value.add(positionApplyStore.currPositionApply)
     // const record = ref({
     //   userId: userStore.getUserInfo.username,
     //   userName: userStore.getUserInfo.realname,

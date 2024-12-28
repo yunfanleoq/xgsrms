@@ -92,37 +92,54 @@
 
   // 使用 defineComponent 注册组件（可选）
   import { defineComponent } from 'vue';
-
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
 
   const props = defineProps({
     formDisabled: { type: Boolean, default: false },
-    formData: { type: Object, default: () => ({})},
+    formData: { type: Object, default: () => ({
+        userName: '',
+        positionName: '',
+        positionDept: '',
+        positionType: '',
+        status: '',
+        resumeName: '',
+        mark: '',
+        resumeId: '',
+        positionId: '',
+        applyId: '',
+        disabled: false,
+        // resumeOptions: [],
+        // positionOptions: [],
+        // jobOptions: [],
+        // deptOptions: [],
+        // jobId: '',
+        // deptId: '',
+        // positionId: '',
+        // resumeId: '',
+      // applyId: '',
+      })},
     formBpm: { type: Boolean, default: true }
   });
+
 
 
   const formRef = ref();
   const useForm = Form.useForm;
   const emit = defineEmits(['register', 'ok']);
-  const formData = reactive<Record<string, any>>({
-    id: '',
-    userId: '',
+  const formData = ref({
     userName: '',
-    resumeId: '',
-    resumeName: '',
-    positionId: '',
     positionName: '',
     positionDept: '',
     positionType: '',
-    status: '申请中',
+    status: '',
+    resumeName: '',
     mark: '',
-    tagIds: '',
-    creator: '',
-    updater: '',
-    deleted: '',
-    tenantId: undefined,
-  });
+    resumeId: '',
+    positionId: '',
+    applyId: '',
+    disabled: false,
+
+  })
   const { createMessage } = useMessage();
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
   const wrapperCol = ref<any>({ xs: { span: 24 }, sm: { span: 16 } });
@@ -144,7 +161,29 @@
     return props.formDisabled;
   });
 
+  //页面完全加载完成并 显示一秒后 打印 formData，
+  setTimeout(() => {
+    nextTick(() => {
+      console.log('...............................props', props);
+      console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
+      // Object.assign(formData , props.formData);
+      formData.value.positionType = props.formData.value.positionType || '普通岗位';
+      console.log("===============================")
+      formData.value.resumeId = props.formData.value.resumeId || '';
+      console.log("-------------------------------")
+      formData.value.positionId = props.formData.value.positionId || '';
+      formData.value.applyId = props.formData.value.applyId || '';
+      formData.value.userName = props.formData.value.userName || '';
+      formData.value.positionName = props.formData.value.positionName || '';
+      formData.value.positionDept = props.formData.value.positionDept || '';
+      formData.value.status = props.formData.value.status || '';
+      formData.value.resumeName = props.formData.value.resumeName || '';
+      formData.value.mark = props.formData.value.mark || '';
 
+      console.log('》》》》》》》》》》》》》》》formData',formData);
+      // initFormdata();
+    });
+  }, 1000);
   /**
    * 新增
    */
@@ -152,27 +191,42 @@
     // 先根据 岗位id，userid 查询是否已存在，如果存在，则直接编辑，否则新增
     console.log('add111111111', record);
 
-    positionApplyStore.currPositionApply = record;
+    // positionApplyStore.currPositionApply = record;
     // record = positionStore.currApplyPosition;
     console.log('add222222222', positionApplyStore.currPositionApply);
-    edit(positionApplyStore.currPositionApply);
+    edit(record);
   }
 
+  import { useUserStore } from '/@/store/modules/user';
+  const userStore = useUserStore();
   /**
    * 编辑
    */
   function edit(record) {
+    console.log('edit>>>>>>>>>', record);
     nextTick(() => {
       resetFields();
-      const tmpData = {};
-      Object.keys(formData).forEach((key) => {
-        if(record.hasOwnProperty(key)){
-          tmpData[key] = record[key]
-        }
-      })
+      let tmpData = {};
+      record.realname = userStore.getUserInfo.realname;
+      record.username = userStore.getUserInfo.username;
+
+      tmpData['positionDept'] = record.dept_dictText;
+      tmpData['positionName'] = record.positionName;
+      tmpData['positionType'] = record.category;
+      tmpData['resumeName'] = record.realname+record.username+'_'+record.positionName;
+      tmpData['userName'] = record.realname ;
+      tmpData['resumeId'] = '';
+
+
+      // Object.keys(formData).forEach((key) => {
+      //   if(record.hasOwnProperty(key)){
+      //     tmpData[key] = record[key]
+      //   }
+      // })
       //赋值
-      Object.assign(formData, tmpData);
+      Object.assign(formData.value, tmpData);
     });
+    console.log('edit>>>>end>>>>>', formData);
   }
 
   /**

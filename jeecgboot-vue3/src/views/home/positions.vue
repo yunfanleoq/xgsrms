@@ -32,38 +32,38 @@
             </div>
           </div>
         </section>
-
-              <div class="job-list-container">
-                <!-- 职位列表 -->
-                <section class="job-list">
-                  <div v-for="(job, index) in paginatedPositions" :key="index" class="job-card" @click="goToPositionDetail(job.id)">
-                    <h3>{{ job.positionName }}</h3>
-                    <p>职位数量：<strong>{{ job.personCount }}</strong></p>
-                    <p>招聘部门：<strong>{{ job.dept_dictText }}</strong></p>
-                    <p>工作年限：<span class="salary">{{ job.workYears }}</span></p>
-                    <p>招聘状态：<span class="status-filter">{{ job.status }}</span></p>
-                    <p><span>{{ job.dept_dictText }} </span></p>
-                  </div>
-                </section>
-                <!-- 分页控件 -->
-                <div class="pagination">
-                  <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
-                  <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-                  <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-                  <!--        <div class="positions-per-page">-->
-                  <label for="positions-per-page">每页：</label>
-                  <select id="positions-per-page" v-model.number ="positionsPerPage" @change="changePositionsPerPage">
-                    <option value=5>5</option>
-                    <option value=10>10</option>
-                    <option value=20>20</option>
-                    <option value=50>50</option>
-                    <option value=100>100</option>
-                  </select>
-                  <!--        </div>-->
-                </div>
+          <div class="job-list-container">
+            <!-- 职位列表 -->
+            <section class="job-list">
+              <div v-for="(job, index) in paginatedPositions" :key="index" class="job-card" @click="goToPositionDetail(job.id)">
+                <h3>{{ job.positionName }}</h3>
+                <p>职位数量：<strong>{{ job.personCount }}</strong></p>
+                <p>招聘部门：<strong>{{ job.dept_dictText }}</strong></p>
+                <p>工作年限：<span class="salary">{{ job.workYears }}</span></p>
+                <p>招聘状态：<span class="status-filter">{{ job.status }}</span></p>
+                <p><span>{{ job.dept_dictText }} </span></p>
               </div>
+            </section>
+            <!-- 分页控件 -->
+            <div class="pagination">
+              <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+              <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
+              <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
 
-
+              <!-- 共多少条-->
+              <label for="total-positions">共{{totalCount}}条</label>
+              <label for="total-positions">|</label>
+              <label for="positions-per-page">每页：</label>
+              <select id="positions-per-page" v-model.number ="positionsPerPage" @change="changePositionsPerPage">
+                <option value=5>5</option>
+                <option value=10>10</option>
+                <option value=20>20</option>
+                <option value=50>50</option>
+                <option value=100>100</option>
+              </select>
+              <!--        </div>-->
+            </div>
+          </div>
       </div>
       </main>
   </div>
@@ -75,7 +75,7 @@
 import {ref, computed, onMounted, reactive, watch} from 'vue';
 import { useRouter } from 'vue-router';
 import { usePositionStore } from '@/store/modules/positions';
-import { getDictItems,getJobList,getDeptList } from "@/api/xgsrms/home";
+import { getDictItems,getPositionList,getDeptList } from "@/api/xgsrms/home";
 
 const positionStore = usePositionStore();
 
@@ -94,37 +94,37 @@ const filterJobCategory = (category) =>{
 
 const searchQuery = ref(null);
 const selectedCategory = ref(null);
-const selectedDept = ref({departName: '', id: ''});
+const selectedDept = ref({departName: '', id: null});
 
 const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
 
-const depts = ref([{departName: '', id: ''}]);
+const depts = ref([{departName: '', id: null}]);
 
 // 分页相关的响应式数据
 const currentPage = ref(1);
 const positionsPerPage = ref(10); // 每页显示的条数
 
 // 计算分页后的职位列表
-const paginatedPositions = ref([])
-//   computed(() => {
-//   console.log('Current Page:', currentPage.value);
-//   console.log('Positions Per Page:', positionsPerPage.value);
-//   const start = (currentPage.value - 1) * positionsPerPage.value;
-//   const end = start + positionsPerPage.value;
-//   console.log('Start Index:', start, 'End Index:', end);
-//   const result = filteredPositions.value.slice(start, end);
-//
-//   console.log('>>>>>Paginated Positions:', result);
-//   return result;
-// });
+const paginatedPositions =
+  computed(() => {
+  console.log('Current Page:', currentPage.value);
+  console.log('Positions Per Page:', positionsPerPage.value);
+  const start = (currentPage.value - 1) * positionsPerPage.value;
+  const end = start + positionsPerPage.value;
+  console.log('Start Index:', start, 'End Index:', end);
+  const result = filteredPositions.value.slice(start, end);
+
+  console.log('>>>>>Paginated Positions:', result);
+  return result;
+});
 
 // 计算总页数
-const totalPages = ref(1);
-//   computed(() => {
-//   const total = Math.ceil(filteredPositions.value.length / positionsPerPage.value);
-//   console.log('Total Pages:', total);
-//   return total;
-// });
+const totalPages =
+  computed(() => {
+  const total = Math.ceil(filteredPositions.value.length / positionsPerPage.value);
+  console.log('Total Pages:', total);
+  return total;
+});
 
 // 分页控制函数
 const prevPage = () => {
@@ -148,68 +148,80 @@ const changePositionsPerPage = (event: Event) => {
   currentPage.value = 1; // 重置到第一页
 };
 
-interface Position {
-  id: string;
-  create_by: string;
-  create_time: Date;
-  update_by: string;
-  update_time: Date;
-  sys_org_code: string;
-  dept: string;
-  ktz: string;
-  telphone: string;
-  email: string;
-  position_name: string;
-  research_direction: string;
-  person_count: string;
-  duty: string;
-  xlxw: string;
-  professional: string;
-  work_years: string;
-  memo: string;
-  status: string;
-  category: string;
-}
+// interface Position {
+//   id: string;
+//   create_by: string;
+//   create_time: Date;
+//   update_by: string;
+//   update_time: Date;
+//   sys_org_code: string;
+//   dept: string;
+//   ktz: string;
+//   telphone: string;
+//   email: string;
+//   position_name: string;
+//   research_direction: string;
+//   person_count: string;
+//   duty: string;
+//   xlxw: string;
+//   professional: string;
+//   work_years: string;
+//   memo: string;
+//   status: string;
+//   category: string;
+// }
 
 // let positions = reactive([] as  Position[])
-let positions = reactive([] as Position[])// 确保 positions 是响应式引用
+let positions = ref([])// 确保 positions 是响应式引用
 
-
+let totalCount = ref(0);
 const fetchPositions = () => {
-  console.log('fetchPositions>>>>>>>>>>>BEGIN')
 
-  // if (positionStore.positions.length > 0) {
-  //   positions = positionStore.positions;
-  //   paginatedPositions.value = positions;
-  // } else {
-  positionStore.fetchPositions({
-  pageNo: currentPage.value,
-  pageSize: positionsPerPage.value,
-  // searchQuery: searchQuery.value,
-  category: selectedCategory.value,
-  dept: selectedDept.value.id,
+  getPositionList({
+  pageNo: 1,
+  pageSize: 1000,
+  // // searchQuery: searchQuery.value,
+  // category: selectedCategory.value,
+  // dept: selectedDept.value.id,
   status: statusFilter.value
-  });
-  console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
-  positions = positionStore.positions.records;
-  totalPages.value = positionStore.positions.pages;
+  }).then((res) => {
+    if (res.success) {
+      console.log('fetchPositions>>>>>getPositionList>>>>>>',res)
+      let list = res.result;
+      // positionStore.setPositions(list);
+      // console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
+      positions.value = list.records;
+      // totalPages.value = list.pages;
 
-  paginatedPositions.value = positions;
+      // totalCount.value = list.total;
 
-  console.log('fetchPositions>>>>>>>>>>>positions', positions, depts.value);
+
+      // paginatedPositions.value = positions;
+    }
+});
+  // console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
+  // positions = positionStore.positions.records;
+  // totalPages.value = positionStore.positions.pages;
+  //
+  // totalCount.value = positionStore.positions.total;
+  //
+  // // paginatedPositions.value = positions;
+  //
+  console.log('<<<<<<<<<<<<<<<<<<<<<<fetchPositions>>>>>END>>>>>>positions', positions);
 };
 
 // 使用 watch 监控这些值的变化
 watch(
-  [currentPage, selectedCategory, () => selectedDept.value.id],
+  [currentPage,  selectedCategory, () => selectedDept.value.id],
   ([newPage, newCategory, newDeptId]) => {
-    console.log('Values changed:', newPage, newCategory, newDeptId);
+    console.log('WATCH---------------------Values changed:', newPage, newCategory, newDeptId);
     fetchPositions();
+    console.log('WATCH-------END--------------Values changed:', newPage, newCategory, newDeptId);
   }
 );
 
 const reset = () => {
-  selectedDept.value.id = 0;
+  selectedDept.value.id = null;
   selectedDept.value.departName = "";
   searchQuery.value = "";
   selectedCategory.value = null;
@@ -258,7 +270,7 @@ const fetchCategorys = () => {
 
 
 onMounted(fetchDepts );
-onMounted(fetchPositions );
+onMounted(fetchPositions);
 onMounted(fetchCategorys );
 
 onMounted(
@@ -269,37 +281,31 @@ onMounted(
 )
 // 在组件挂载后立即执行一次监听回调
 
-
-// 监听 positionStore.positions 的变化
-watch(
-  () => positionStore.positions,
-  (newPositions) => {
-    positions = newPositions;
-  },
-  { immediate: true } // 立即执行一次
-);
-
 // 计算属性：过滤后的职位列表
 const filteredPositions = computed(() => {
-  console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>positions:',positions)
-  let filtered = positions;
+  console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>positions:',positions.value)
+  let filtered = positions.value;
 
   if (selectedCategory.value) {
-    filtered = filtered.filter((job) => job.category === selectedCategory.value);
+    console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>selectedCategory:',selectedCategory.value)
+    filtered = filtered.filter((p) => p.category === selectedCategory.value);
   }
 
   if (searchQuery.value) {
+    console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>searchQuery:',searchQuery.value)
     filtered = filtered.filter(
-      (job) =>
-        job.positionName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        job.dept_dictText.toLowerCase().includes(searchQuery.value.toLowerCase()),
+      (p) =>
+        p.positionName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        p.dept_dictText.toLowerCase().includes(searchQuery.value.toLowerCase()),
     );
   }
 
-  if (selectedDept.value) {
-    filtered = filtered.filter((job) => job.dept_dictText === selectedDept.value);
+  if (selectedDept.value.id) {
+    console.log('@@@@@@@@@@@@filteredPosition.idzs>>>>>>>>>>>selectedDept:',selectedDept.value)
+    filtered = filtered.filter((p) => p.dept_dictText === selectedDept.value.departName);
   }
   console.log(">>>>>过滤后的职位列表：", filtered);
+  totalCount.value = filtered.length;
   return filtered;
 });
 
@@ -323,6 +329,8 @@ const filterDept = (dept) => {
 // 搜索职位
 const searchPositions = () => {
   console.log("搜索职位：" + searchQuery.value);
+  selectedDept.value.id = "";
+  selectedDept.value.departName = searchQuery.value;
 };
 </script>
 
@@ -423,6 +431,11 @@ h1 {
 .filters .categories button:hover {
   background-color: #6a11cb;
   color: white;
+}
+
+.filters .categories .active {
+  background-color: #6a11cb;
+  color: #fff;
 }
 
 .filters .search input {
@@ -553,11 +566,11 @@ main {
   transition: background-color 0.3s;
 }
 
-.sidebar li:hover {
+.sidebar ul li:hover {
   background-color: #f0f0f0;
 }
 
-.sidebar li.active {
+.sidebar ul .active {
   background-color: #3d54a7;
   color: #fff;
 }

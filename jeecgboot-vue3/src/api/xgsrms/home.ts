@@ -5,7 +5,7 @@ enum Api {
    jobByIdUrl = '/positions/xgsPositions/list',
    deptListUrl = '/sys/sysDepart/listAll',
    DictItemsUrl = '/sys/dict/getDictItems',
-   jobListUrl = '/positions/xgsPositions/list',
+   positionListUrl = '/positions/xgsPositions/list',
 
 }
 
@@ -14,8 +14,8 @@ enum Api {
  */
 
 
-export function  getJobList  (params) {
-  return defHttp.get({ url:Api.jobListUrl, params }, { isTransformResponse: false });
+export function  getPositionList  (params) {
+  return defHttp.get({ url:Api.positionListUrl, params }, { isTransformResponse: false });
 }
 
 export function  getDeptList  (params) {

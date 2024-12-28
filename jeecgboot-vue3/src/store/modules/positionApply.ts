@@ -32,16 +32,12 @@ export const usePositionApplyStore = defineStore('usePositionApplyStore', {
 
   // 定义getter
   getters: {
-
     getCurrPositionApply: (state) => {
       return state.currPositionApply;
     }
-
   },
   // 定义方法
   actions: {
-
-
   }
 })
 
