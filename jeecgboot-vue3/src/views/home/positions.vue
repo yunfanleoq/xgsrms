@@ -16,12 +16,12 @@
         <section class="filters">
           <div class="categories">
             <button
-              v-for="(dept, index) in depts"
-              :key="index"
+              v-for="dept in depts"
+              :key="dept.id"
               @click="filterDept(dept)"
-              class="dept-button"
+              :class="{ active: selectedDept.id === dept.id }"
             >
-              {{ dept }}
+              {{ dept.departName }}
             </button>
           </div>
           <div class="search-container">
@@ -94,51 +94,50 @@ const filterJobCategory = (category) =>{
 
 const searchQuery = ref(null);
 const selectedCategory = ref(null);
-const selectedDept = ref(null);
+const selectedDept = ref({departName: '', id: ''});
 
 const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
 
-const depts = ref([
-  "密码理论与技术研究室",
-  "体系结构安全研究室",
-  "数据安全研究室"
-
-]);
+const depts = ref([{departName: '', id: ''}]);
 
 // 分页相关的响应式数据
 const currentPage = ref(1);
 const positionsPerPage = ref(10); // 每页显示的条数
 
 // 计算分页后的职位列表
-const paginatedPositions = computed(() => {
-  console.log('Current Page:', currentPage.value);
-  console.log('Positions Per Page:', positionsPerPage.value);
-  const start = (currentPage.value - 1) * positionsPerPage.value;
-  const end = start + positionsPerPage.value;
-  console.log('Start Index:', start, 'End Index:', end);
-  const result = filteredPositions.value.slice(start, end);
-
-  console.log('>>>>>Paginated Positions:', result);
-  return result;
-});
+const paginatedPositions = ref([])
+//   computed(() => {
+//   console.log('Current Page:', currentPage.value);
+//   console.log('Positions Per Page:', positionsPerPage.value);
+//   const start = (currentPage.value - 1) * positionsPerPage.value;
+//   const end = start + positionsPerPage.value;
+//   console.log('Start Index:', start, 'End Index:', end);
+//   const result = filteredPositions.value.slice(start, end);
+//
+//   console.log('>>>>>Paginated Positions:', result);
+//   return result;
+// });
 
 // 计算总页数
-const totalPages = computed(() => {
-  const total = Math.ceil(filteredPositions.value.length / positionsPerPage.value);
-  console.log('Total Pages:', total);
-  return total;
-});
+const totalPages = ref(1);
+//   computed(() => {
+//   const total = Math.ceil(filteredPositions.value.length / positionsPerPage.value);
+//   console.log('Total Pages:', total);
+//   return total;
+// });
 
 // 分页控制函数
 const prevPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--;
+
   }
 };
 
 const nextPage = () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
+
   }
 };
 
@@ -179,21 +178,39 @@ let positions = reactive([] as Position[])// 确保 positions 是响应式引用
 const fetchPositions = () => {
   console.log('fetchPositions>>>>>>>>>>>BEGIN')
 
-  if (positionStore.positions.length > 0) {
-    positions = positionStore.positions;
-  } else {
-    positionStore.fetchPositions({
-      pageNo: 1,
-      pageSize: 1000
-    });
-    console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
-    positions = positionStore.positions;
-  }
+  // if (positionStore.positions.length > 0) {
+  //   positions = positionStore.positions;
+  //   paginatedPositions.value = positions;
+  // } else {
+  positionStore.fetchPositions({
+  pageNo: currentPage.value,
+  pageSize: positionsPerPage.value,
+  // searchQuery: searchQuery.value,
+  category: selectedCategory.value,
+  dept: selectedDept.value.id,
+  status: statusFilter.value
+  });
+  console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
+  positions = positionStore.positions.records;
+  totalPages.value = positionStore.positions.pages;
+
+  paginatedPositions.value = positions;
+
   console.log('fetchPositions>>>>>>>>>>>positions', positions, depts.value);
 };
 
+// 使用 watch 监控这些值的变化
+watch(
+  [currentPage, selectedCategory, () => selectedDept.value.id],
+  ([newPage, newCategory, newDeptId]) => {
+    console.log('Values changed:', newPage, newCategory, newDeptId);
+    fetchPositions();
+  }
+);
+
 const reset = () => {
-  selectedDept.value = null;
+  selectedDept.value.id = 0;
+  selectedDept.value.departName = "";
   searchQuery.value = "";
   selectedCategory.value = null;
 };
@@ -210,7 +227,7 @@ const fetchDepts = () => {
         console.log('fetchDepts>>>>>>>>>>>',res)
         let list = res.result;
         // 提取 list 中的 dept 字段形成数组，并赋值给 depts.value
-        list = list.map((item) => item.departName);
+        list = list.map((item) => ({departName: item.departName, id: item.id}));
 
         depts.value = list;
 
@@ -300,7 +317,8 @@ const filterCategory = (category) => {
 // 根据dept过滤
 const filterDept = (dept) => {
   console.log("过滤部门：" + dept);
-  selectedDept.value = dept === selectedDept.value ? null : dept;
+  selectedDept.value.id =  dept.id;
+  selectedDept.value.departName =  dept.departName;
 };
 // 搜索职位
 const searchPositions = () => {
@@ -542,6 +560,11 @@ main {
 .sidebar li.active {
   background-color: #3d54a7;
   color: #fff;
+}
+
+.filters .categories button .active {
+  background-color: #4CAF50;
+  color: white;
 }
 
 .content {

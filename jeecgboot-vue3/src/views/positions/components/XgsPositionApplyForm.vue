@@ -85,14 +85,8 @@
   import { getValueType } from '/@/utils';
   import { saveOrUpdate } from '../XgsPositionApply.api';
   import { Form } from 'ant-design-vue';
-  import { usePositionStoreWithOut} from "@/store/modules/positions";
-  const positionStore = usePositionApplyStoreWithOut();
-
-
-
-
-
-
+  import { usePositionApplyStoreWithOut} from "@/store/modules/positionApply";
+  const positionApplyStore = usePositionApplyStoreWithOut();
 
 
 
@@ -100,7 +94,7 @@
   import { defineComponent } from 'vue';
 
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
-  import {usePositionApplyStore} from "@/store/modules/positionApply";
+
   const props = defineProps({
     formDisabled: { type: Boolean, default: false },
     formData: { type: Object, default: () => ({})},
@@ -108,18 +102,6 @@
   });
 
 
-  const resumeOptions = computed(() => {
-    // return props.formData.resumeOptions;
-    return [
-      { value: '1', label: '1' },
-      { value: '2', label: '2' },
-      { value: '3', label: '3' },
-      { value: '4', label: '4' },
-      { value: '5', label: '5' },
-      { value: '6', label: '6' },
-
-    ];
-  });
   const formRef = ref();
   const useForm = Form.useForm;
   const emit = defineEmits(['register', 'ok']);
@@ -170,10 +152,10 @@
     // 先根据 岗位id，userid 查询是否已存在，如果存在，则直接编辑，否则新增
     console.log('add111111111', record);
 
-    positionStore.setCurrApplyPosition(record);
+    positionApplyStore.currPositionApply = record;
     // record = positionStore.currApplyPosition;
-    console.log('add222222222', positionStore.currApplyPosition);
-    edit(positionStore.currApplyPosition);
+    console.log('add222222222', positionApplyStore.currPositionApply);
+    edit(positionApplyStore.currPositionApply);
   }
 
   /**

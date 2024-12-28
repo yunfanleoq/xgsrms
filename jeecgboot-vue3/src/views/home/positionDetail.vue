@@ -56,6 +56,10 @@
       <p>职位信息加载中...</p>
     </div>
   </div>
+<!--  <XgsPositionApplyForm v-if="XgsPositionApplyFormShow" :formData="job" :formBpm="false" />-->
+  <XgsPositionApplyModal ref="registerModal" v-model:visible="XgsPositionApplyFormShow" :formData="record" :formBpm="false" />
+
+
 </template>
 
 <script setup lang="ts">
@@ -66,7 +70,12 @@ import {xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList} from "@/api/xg
 import {useUserStore} from "@/store/modules/user";
 import {usePositionApplyStoreWithOut} from "@/store/modules/positionApply"
 import {useMessage} from "@/hooks/web/useMessage"; // 假设你有一个 API 来获取职位信息
+import XgsPositionApplyModal from '@/views/positions/components/XgsPositionApplyModal.vue'
+// const registerModal = ref();
 
+const positionApplyStore = usePositionApplyStoreWithOut();
+
+const record = positionApplyStore.currPositionApply;
 const route = useRoute();
 const router = useRouter();
 const jobId = route.params.id as string;
@@ -92,6 +101,17 @@ const createMessage = useMessage();
 const isCollected = ref(false);
 const favoriteJob = ref({});
 const userId = ref('');
+
+// const record = ref({
+//   userId: userStore.getUserInfo.username,
+//   userName: userStore.getUserInfo.realname,
+//   positionId: job.value.id,
+//   positionName: job.value.positionName,
+//   positionDept: job.value.dept_dictText,
+//   positionType: job.value.category,
+//   // resumeName:userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.+job.value.positionName,
+//
+// });
 
 const fetchFavoriteJob = () => {
   // 判断 userStore.userInfo 是否为 null，为null则赋值为 false，不为 null 则赋值 true
@@ -138,7 +158,6 @@ const markFavoriteJob = () => {
     positionKtz: job.value.ktz_dictText,
     positionCount: job.value.personCount,
 
-
   };
 
 
@@ -180,6 +199,8 @@ const delFavoriteJob = () => {
   });
 };
 
+const XgsPositionApplyFormShow = ref(false);
+
 const positionApply = () => {
   if (userStore.userInfo === null) {
     // 使用 message.warning
@@ -187,18 +208,36 @@ const positionApply = () => {
     console.log('请先登录');
     return;
   } else {
+    XgsPositionApplyFormShow.value = true;
 
-    let queryObj = job.value|| {applyStatus: '申请中'};
-    queryObj.applyStatus = '申请中';
+    // const record = ref({
+    //   userId: userStore.getUserInfo.username,
+    //   userName: userStore.getUserInfo.realname,
+    //   positionId: job.value.id,
+    //   positionName: job.value.positionName,
+    //   positionDept: job.value.dept_dictText,
+    //   positionType: job.value.category,
+    //   resumeName:userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.+job.value.positionName,
+    //
+    // });
 
-    message.success('正在跳转至申请页面');
-    console.log('>>>>>>job.value', queryObj);
-    router.push({
-      name: 'positions-XgsPositionApplyList',
-      query: queryObj
-    });
+    // 页面加载完成后，等待3秒钟 点击 新增按钮 并将 job数据传给 新增窗口。
+    // setTimeout(() => {
+    //   //
+    //   registerModal.value.add(record.value  );
+    // }, 1000);
 
-  }
+    // let queryObj = job.value|| {applyStatus: '申请中'};
+    // queryObj.applyStatus = '申请中';
+    //
+    // message.success('正在跳转至申请页面');
+    // console.log('>>>>>>job.value', queryObj);
+
+    // router.push({
+    //   name: 'positions-XgsPositionApplyList',
+    //   query: queryObj
+    // });
+  };
 
 }
 
@@ -211,7 +250,7 @@ const fetchCurrApplyPosition = async () => {
     job.value = response.result.records[0];
     // 将job存pinia
     // 获取 Pinia store 实例
-    const positionApplyStore = usePositionApplyStoreWithOut();
+
 
     console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
     positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
