@@ -57,7 +57,7 @@
     </div>
   </div>
 <!--  <XgsPositionApplyForm v-if="XgsPositionApplyFormShow" :formData="job" :formBpm="false" />-->
-  <XgsPositionApplyModal ref="registerModal" v-model:visible="XgsPositionApplyFormShow"  :formBpm="false" />
+  <XgsPositionApplyModal ref="registerModal" :form-data="record" v-model:visible="XgsPositionApplyFormShow"  :formBpm="true" />
 
 
 </template>
@@ -102,16 +102,9 @@ const isCollected = ref(false);
 const favoriteJob = ref({});
 const userId = ref('');
 
-// const record = ref({
-//   userId: userStore.getUserInfo.username,
-//   userName: userStore.getUserInfo.realname,
-//   positionId: job.value.id,
-//   positionName: job.value.positionName,
-//   positionDept: job.value.dept_dictText,
-//   positionType: job.value.category,
-//   // resumeName:userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.+job.value.positionName,
-//
-// });
+const record = ref({
+
+});
 
 const fetchFavoriteJob = () => {
   // 判断 userStore.userInfo 是否为 null，为null则赋值为 false，不为 null 则赋值 true
@@ -198,7 +191,7 @@ const delFavoriteJob = () => {
     }
   });
 };
-
+const positionApplyFormData = ref({});
 const XgsPositionApplyFormShow = ref(false);
 
 const positionApply = () => {
@@ -210,7 +203,39 @@ const positionApply = () => {
   } else {
     XgsPositionApplyFormShow.value = true;
     registerModal.value.add(positionApplyStore.currPositionApply)
-    // const record = ref({
+    // record.value = positionApplyStore.currPositionApply;
+    record.value.applyId = '';
+
+    record.value.disabled = false;
+
+    record.value.mark = '';
+
+    record.value.positionDept = job.value.dept_dictText;
+
+    record.value.positionId = job.value.id;
+
+    record.value.positionName = job.value.positionName;
+
+    record.value.positionType = job.value.category;
+
+    record.value.resumeId = '';
+
+    record.value.resumeName = userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.positionName;
+
+    record.value.status = '申请中';
+
+    record.value.userName = userStore.getUserInfo.realname;
+
+    // positionApplyFormData.value = positionApplyStore.currPositionApply;
+    // positionApplyFormData.value.userId = userStore.getUserInfo.username;
+    // positionApplyFormData.value.userName =  userStore.getUserInfo.realname
+    // positionApplyFormData.value.positionId =  job.value.id
+    // positionApplyFormData.value.positionName =  job.value.positionName
+    // positionApplyFormData.value.positionDept =  job.value.dept_dictText
+    // positionApplyFormData.value.positionType =  job.value.category
+    // positionApplyFormData.value.resumeName =  userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.positionName
+
+  // const record = ref({
     //   userId: userStore.getUserInfo.username,
     //   userName: userStore.getUserInfo.realname,
     //   positionId: job.value.id,

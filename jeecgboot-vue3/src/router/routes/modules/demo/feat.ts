@@ -140,7 +140,7 @@ const feat: AppRouteModule = {
       },
       children: [
         {
-          path: 'testTab/id1',
+          path: 'testTab/:id',
           name: 'TestTab1',
           component: () => import('/@/views/demo/feat/tab-params/index.vue'),
           meta: {
@@ -150,7 +150,7 @@ const feat: AppRouteModule = {
           },
         },
         {
-          path: 'testTab/id2',
+          path: 'testTab/:id',
           name: 'TestTab2',
           component: () => import('/@/views/demo/feat/tab-params/index.vue'),
           meta: {

@@ -118,7 +118,7 @@
       }
       return false
     });
-    
+
     //表单配置
     const [registerForm, {setProps,resetFields, setFieldsValue, validate}] = useForm({
         labelWidth: 150,
@@ -133,7 +133,9 @@
     //渲染流程表单数据
     const queryByIdUrl = '/xgsResume/xgsResumeBSH/queryById';
     async function initFormData(){
+      console.log('@@@@@@@BSHFORM initFormDatac@@@@@@@@props.formBpm',props.formBpm, xgsResumeHomeTable)
       if(props.formBpm === true){
+        console.log('@@@@@@@BSHFORM props.formBpm@@@@@@@@',props.formBpm)
         await reset();
         let params = {id: props.formData.dataId};
         const data = await defHttp.get({url: queryByIdUrl, params});
@@ -143,12 +145,15 @@
         });
         requestSubTableData(xgsResumeWorksList, {id: data.id}, xgsResumeWorksTable, ()=>{
           xgsResumeWorksTable.show = true;
+          console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         requestSubTableData(xgsResumeEdusList, {id: data.id}, xgsResumeEdusTable, ()=>{
           xgsResumeEdusTable.show = true;
+          console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         requestSubTableData(xgsResumeHomeList, {id: data.id}, xgsResumeHomeTable, ()=>{
           xgsResumeHomeTable.show = true;
+          console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         // 隐藏底部时禁用整个表单
         setProps({ disabled: formDisabled.value })
