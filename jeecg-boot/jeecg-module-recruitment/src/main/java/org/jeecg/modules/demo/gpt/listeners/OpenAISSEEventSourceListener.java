@@ -1,8 +1,7 @@
 package org.jeecg.modules.demo.gpt.listeners;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unfbx.chatgpt.entity.chat.ChatCompletionResponse;
-import com.unfbx.chatgpt.entity.chat.Message;
+import com.zhipu.oapi.service.v4.model.ModelData;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.Response;
@@ -53,10 +52,10 @@ public class OpenAISSEEventSourceListener extends EventSourceListener {
     @SneakyThrows
     @Override
     public void onEvent(@NotNull EventSource eventSource, String id, String type, @NotNull String data) {
-        log.debug("OpenAI返回数据：{}", data);
+        log.debug("AI返回数据：{}", data);
         tokens += 1;
         if (data.equals("[DONE]")) {
-            log.info("OpenAI返回数据结束了");
+            log.info("AI返回数据结束了");
             sseEmitter.send(SseEmitter.event()
                     .id("[TOKENS]")
                     .data("<br/><br/>tokens：" + tokens())
@@ -70,7 +69,7 @@ public class OpenAISSEEventSourceListener extends EventSourceListener {
             return;
         }
         ObjectMapper mapper = new ObjectMapper();
-        ChatCompletionResponse completionResponse = mapper.readValue(data, ChatCompletionResponse.class); // 读取Json
+        ModelData completionResponse = mapper.readValue(data, ModelData.class); // 读取Json
         try {
             sseEmitter.send(SseEmitter.event()
                     .id(this.topicId)
@@ -105,7 +104,7 @@ public class OpenAISSEEventSourceListener extends EventSourceListener {
         eventSource.cancel();
         sseEmitter.send(SseEmitter.event()
                 .id("[ERR]")
-                .data(Message.builder().content(explainErr(errMsg)).build())
+                .data(explainErr(errMsg))
                 .reconnectTime(3000));
         sseEmitter.send(SseEmitter.event()
                 .id("[DONE]")

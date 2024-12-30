@@ -5,6 +5,7 @@ import org.jeecg.common.util.oConvertUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
@@ -18,6 +19,7 @@ import java.net.UnknownHostException;
 */
 @Slf4j
 @SpringBootApplication
+//@EnableConfigurationProperties
 //@EnableAutoConfiguration(exclude={MongoAutoConfiguration.class})
 public class JeecgSystemApplication extends SpringBootServletInitializer {
 

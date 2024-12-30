@@ -245,12 +245,12 @@
         ); // 后端接口，要配置允许跨域属性
         // 与事件源的连接刚打开时触发
         evtSource.onopen = function (e) {
-          console.log(e);
+          console.log('open chat', e);
         };
         // 当从事件源接收到数据时触发
         evtSource.onmessage = function (e) {
+          // console.log('onmessage: ', e);
           const data = e.data;
-          // console.log(e);
           if (data === '[DONE]') {
             updateChatSome(uuid, props.chatData.length - 1, { loading: false });
             scrollToBottom();
@@ -287,7 +287,7 @@
         };
         // 与事件源的连接无法打开时触发
         evtSource.onerror = function (e) {
-          // console.log(e);
+          console.log('error', e);
           if (e.error?.message || e.statusText) {
             updateChat(uuid.value, props.chatData.length - 1, {
               dateTime: new Date().toLocaleString(),

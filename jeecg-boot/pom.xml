@@ -67,7 +67,6 @@
 		<aliyun.oss.version>3.11.2</aliyun.oss.version>
 		<!-- shiro -->
 		<shiro.version>1.12.0</shiro.version>
-		<java-jwt.version>3.11.0</java-jwt.version>
 		<shiro-redis.version>3.2.2</shiro-redis.version>
 		<codegenerate.version>1.4.9</codegenerate.version>
 		<autopoi-web.version>1.4.11</autopoi-web.version>
@@ -83,7 +82,7 @@
 
 	<modules>
         <module>jeecg-boot-base-core</module>
-        <module>jeecg-module-demo</module>
+        <module>jeecg-module-recruitment</module>
         <module>jeecg-module-system</module>
     </modules>
 
@@ -343,6 +342,11 @@
 				<artifactId>hutool-crypto</artifactId>
 				<version>${hutool.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>cn.hutool</groupId>
+				<artifactId>hutool-cache</artifactId>
+				<version>${hutool.version}</version>
+			</dependency>
 			<!--minio-->
 			<dependency>
 				<groupId>io.minio</groupId>
@@ -413,12 +417,6 @@
 				<groupId>org.jeecgframework.jimureport</groupId>
 				<artifactId>jimureport-nosql-starter</artifactId>
 				<version>1.6.0</version>
-			</dependency>
-			<!-- chatgpt -->
-			<dependency>
-				<groupId>org.jeecgframework.boot</groupId>
-				<artifactId>jeecg-boot-starter-chatgpt</artifactId>
-				<version>${jeecgboot.version}</version>
 			</dependency>
 			<!--flyway 支持 mysql5.7+、MariaDB10.3.16-->
 			<!--mysql5.6，需要把版本号改成5.2.1-->

@@ -45,7 +45,7 @@
 <script name="presetQuestion" setup lang="ts">
   import { ref, onMounted, onBeforeUnmount } from 'vue';
   const emit = defineEmits(['outQuestion']);
-  const data = ref(['请介绍一下JeecgBoot', 'JEECG有哪些优势？', 'JEECG可以做哪些事情？']);
+  const data = ref(['怎么写好简历？', '应聘有哪些优势？', '简历可以做哪些事情？']);
   const leftBtnStatus = ref('');
   const rightBtnStatus = ref('');
   const rightBtn = ref('');

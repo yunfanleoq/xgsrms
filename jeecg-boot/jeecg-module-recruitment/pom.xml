@@ -9,12 +9,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>jeecg-module-demo</artifactId>
+    <artifactId>jeecg-module-recruitment</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>org.jeecgframework.boot</groupId>
             <artifactId>jeecg-boot-base-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-cache</artifactId>
         </dependency>
     </dependencies>
 
