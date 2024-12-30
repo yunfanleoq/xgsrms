@@ -4,12 +4,22 @@ import { rules} from '/@/utils/helper/validator';
 import { render } from '/@/utils/common/renderUtils';
 import {JVxeTypes,JVxeColumn} from '/@/components/jeecg/JVxeTable/types'
 import { getWeekMonthQuarterYear } from '/@/utils';
+import {defineProps} from "vue/dist/vue";
+import {ref} from "vue";
+
+import { useUserStore } from "@/store/modules/user"
+
+const userStore = useUserStore();
+import {
+  xgsResumeEdusList,
+  xgsResumeHomeList
+} from "@/views/xgsResumeBase/xgsResumeBSH/XgsResumeBSH.api";
 //列表数据
 export const columns: BasicColumn[] = [
    {
     title: '姓名',
     align:"center",
-    dataIndex: 'name'
+    dataIndex: 'name',
    },
    {
     title: '本人照片',
@@ -168,7 +178,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '姓名',
     field: 'name',
-    component: 'Input',
+    component: 'Input'
   },
   {
     label: '本人照片',
@@ -197,7 +207,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '民族',
@@ -230,7 +240,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '目前工作单位',
@@ -334,7 +344,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '现专业技术职务',
@@ -613,7 +623,7 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
       type: JVxeTypes.input,
       width:"200px",
       placeholder: '请输入${title}',
-      defaultValue:'',
+      defaultValue:'山东临沂',
     },
     {
       title: '毕业院校',
@@ -621,7 +631,7 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
       type: JVxeTypes.input,
       width:"200px",
       placeholder: '请输入${title}',
-      defaultValue:'',
+      defaultValue:'聊城大学',
     },
     {
       title: '学历',
@@ -629,7 +639,7 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
       type: JVxeTypes.input,
       width:"200px",
       placeholder: '请输入${title}',
-      defaultValue:'',
+      defaultValue:'硕士',
     },
     {
       title: '学位',
@@ -752,3 +762,19 @@ export const superQuerySchema = {
     }
   },
 };
+
+//主表信息
+const resume = ref("")
+//子表信息
+const resumeWorks = ref("")
+const resumeEdus = ref("")
+const resumeHome = ref("")
+
+//获取当前登录的用户的id
+const userId = ref(  )
+userId.value = userStore.getUserInfo.username
+const getResume = () => {
+
+}
+
+

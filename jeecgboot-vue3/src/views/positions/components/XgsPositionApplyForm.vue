@@ -26,13 +26,13 @@
 								<a-input v-model:value="formData.positionType" placeholder="请输入岗位类型"  allow-clear ></a-input>
 							</a-form-item>
 						</a-col>
-						<a-col :span="12" v-if="false">
+						<a-col :span="12" v-show="false">
 							<a-form-item label="申请状态" v-bind="validateInfos.status" id="XgsPositionApplyForm-status" name="status">
 								<a-input v-model:value="formData.status" placeholder="请输入申请状态" style="width: 100%" disabled />
 							</a-form-item>
 						</a-col>
 
-            <a-col :span="12">
+            <a-col :span="12" v-show="false">
               <a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
                 								<a-input v-model:value="formData.resumeName" placeholder="请输入简历名称"  allow-clear ></a-input>
 <!--                <a-select v-model:value="formData.resumeName" placeholder="请选择简历名称" allow-clear>-->
@@ -43,7 +43,7 @@
               </a-form-item>
             </a-col>
 
-            <a-col :span="12">
+            <a-col :span="12" v-show="false">
               <a-form-item label="备注" v-bind="validateInfos.mark" id="XgsPositionApplyForm-mark" name="mark" :label-col="{ span: 2 }" :wrapper-col="{ span: 22 }">
                 <a-textarea v-model:value="formData.mark" placeholder="请输入申请备注" allow-clear :auto-size="{ minRows: 1, maxRows: 10 }" style="width: 93%;" />
               </a-form-item>
@@ -55,7 +55,7 @@
         </a-form>
 <!--        //此处引入简历组件，展示简历填报页面-->
         <div>
-          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm"  />
           <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="formBpm" />
           <xgsResumeFGForm v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="formBpm" />
           <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="formBpm" />
@@ -108,16 +108,10 @@
         positionId: '',
         applyId: '',
         disabled: false,
-        // resumeOptions: [],
-        // positionOptions: [],
-        // jobOptions: [],
-        // deptOptions: [],
-        // jobId: '',
-        // deptId: '',
-        // positionId: '',
-        // resumeId: '',
-      // applyId: '',
+
       })},
+
+
     formBpm: { type: Boolean, default: true }
   });
 
@@ -140,6 +134,28 @@
     disabled: false,
 
   })
+  const resumeFormData = ref( {
+    userName: '',
+    resumeName: '',
+    resumeId: '',
+    dataId: '',
+    disabled: false,
+
+  })
+
+  const initFormData = async () => {
+    resumeFormData.value = {
+      userName: formData.value.userName,
+      resumeName: formData.value.resumeName,
+      resumeId: formData.value.resumeId,
+      dataId: formData.value.resumeId,
+      disabled: formData.value.disabled,
+    }
+  }
+  onMounted(()=>{
+    initFormData();
+  })
+
   const { createMessage } = useMessage();
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
   const wrapperCol = ref<any>({ xs: { span: 24 }, sm: { span: 16 } });
@@ -167,18 +183,18 @@
       console.log('...............................props', props);
       console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
       // Object.assign(formData , props.formData);
-      formData.value.positionType = props.formData.value.positionType || '普通岗位';
+      formData.value.positionType = props.formData.category || '普通岗位';
       console.log("===============================")
-      formData.value.resumeId = props.formData.value.resumeId || '';
+      formData.value.resumeId = props.formData.resumeId || '';
       console.log("-------------------------------")
-      formData.value.positionId = props.formData.value.positionId || '';
-      formData.value.applyId = props.formData.value.applyId || '';
-      formData.value.userName = props.formData.value.userName || '';
-      formData.value.positionName = props.formData.value.positionName || '';
-      formData.value.positionDept = props.formData.value.positionDept || '';
-      formData.value.status = props.formData.value.status || '';
-      formData.value.resumeName = props.formData.value.resumeName || '';
-      formData.value.mark = props.formData.value.mark || '';
+      formData.value.positionId = props.formData.positionId || '';
+      formData.value.applyId = props.formData.applyId || '';
+      formData.value.userName = props.formData.userName || '';
+      formData.value.positionName = props.formData.positionName || '';
+      formData.value.positionDept = props.formData.positionDept || '';
+      formData.value.status = props.formData.status || '';
+      formData.value.resumeName = props.formData.resumeName || '';
+      formData.value.mark = props.formData.mark || '';
 
       console.log('》》》》》》》》》》》》》》》formData',formData);
       // initFormdata();
