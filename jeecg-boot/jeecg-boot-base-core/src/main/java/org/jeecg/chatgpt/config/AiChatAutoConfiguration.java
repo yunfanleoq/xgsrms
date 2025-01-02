@@ -39,8 +39,8 @@ public class AiChatAutoConfiguration {
     public ClientV4 openAiClient(AiChatProperties aiChatProperties) {
         ClientV4.Builder builder = new ClientV4.Builder(aiChatProperties.getApiKey());
         builder.enableTokenCache();
-        builder.networkConfig(30, 10, 10, 10, TimeUnit.SECONDS);
-        builder.connectionPool(new okhttp3.ConnectionPool(8, 1, TimeUnit.SECONDS));
+        builder.networkConfig(300, 100, 100, 100, TimeUnit.SECONDS);
+        builder.connectionPool(new okhttp3.ConnectionPool(10, 1, TimeUnit.SECONDS));
         ClientV4 client = builder.build();
         return client;
     }
