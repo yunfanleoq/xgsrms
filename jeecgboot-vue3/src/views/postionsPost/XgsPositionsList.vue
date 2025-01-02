@@ -84,7 +84,9 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
+        return Object.assign(params, queryParam, {
+          status: '审核通过',
+        });
       },
     },
     exportConfig: {
@@ -122,14 +124,21 @@
     });
   }
   /**
-   * 编辑事件
+   * 发布事件
    */
   function handleEdit(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: true,
-    });
+    if (record.status === '审核通过') {
+      const record1 = {
+        ...record, // 合并 record 的值
+        status: '招聘中', // 设置 status 为 '待审核'
+      };
+      openModal(true, {
+        record: record1,
+        isUpdate: true,
+        showFooter: true,
+      });
+    }
+    return;
   }
   /**
    * 详情
@@ -165,7 +174,7 @@
   function getTableAction(record) {
     return [
       {
-        label: '编辑',
+        label: '发布',
         onClick: handleEdit.bind(null, record),
         auth: 'positions:xgs_positions:edit',
       },

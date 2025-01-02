@@ -1,8 +1,15 @@
 import { BasicColumn } from '/@/components/Table';
 import { FormSchema } from '/@/components/Table';
+import { usePermission } from '/@/hooks/web/usePermission';
+const { hasPermission } = usePermission();
 
 //列表数据
 export const columns: BasicColumn[] = [
+  // {
+  //   title: '岗位状态',
+  //   align: 'center',
+  //   dataIndex: 'status_dictText',
+  // },
   {
     title: '招聘部门',
     align: 'center',
@@ -63,11 +70,7 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'memo',
   },
-  {
-    title: '岗位状态',
-    align: 'center',
-    dataIndex: 'status_dictText',
-  },
+
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
@@ -174,6 +177,9 @@ export const formSchema: FormSchema[] = [
     component: 'JDictSelectTag',
     componentProps: {
       dictCode: '岗位状态',
+    },
+    show: () => {
+      return hasPermission('xgs_position:status');
     },
   },
   // TODO 主键隐藏字段，目前写死为ID

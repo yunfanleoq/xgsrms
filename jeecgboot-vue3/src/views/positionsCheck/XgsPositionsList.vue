@@ -51,14 +51,14 @@
 
 <script lang="ts" name="positions-xgsPositions" setup>
   import { ref, reactive, computed, unref } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { useModal } from '/@/components/Modal';
-  import { useListPage } from '/@/hooks/system/useListPage';
+  import { BasicTable, useTable, TableAction } from '/src/components/Table';
+  import { useModal } from '/src/components/Modal';
+  import { useListPage } from '/src/hooks/system/useListPage';
   import XgsPositionsModal from './components/XgsPositionsModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositions.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
-  import { downloadFile } from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
+  import { downloadFile } from '/src/utils/common/renderUtils';
+  import { useUserStore } from '/src/store/modules/user';
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -84,7 +84,9 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
+        return Object.assign(params, queryParam, {
+          status: '待审核',
+        });
       },
     },
     exportConfig: {
@@ -122,14 +124,21 @@
     });
   }
   /**
-   * 编辑事件
+   * 审核事件
    */
   function handleEdit(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: true,
-    });
+    if (record.status === '待审核') {
+      const record1 = {
+        ...record, // 合并 record 的值
+        status: '审核通过', // 设置 status 为 '待审核'
+      };
+      openModal(true, {
+        record: record1,
+        isUpdate: true,
+        showFooter: true,
+      });
+    }
+    return;
   }
   /**
    * 详情
@@ -165,7 +174,7 @@
   function getTableAction(record) {
     return [
       {
-        label: '编辑',
+        label: '审批',
         onClick: handleEdit.bind(null, record),
         auth: 'positions:xgs_positions:edit',
       },

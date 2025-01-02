@@ -3,7 +3,7 @@
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
-      <template #tableTitle>
+      <template #tableTitle #jSelectUser="{model, status}">
         <a-button type="primary" v-auth="'positions:xgs_positions:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
         <a-button type="primary" v-auth="'positions:xgs_positions:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
           导出</a-button
@@ -21,7 +21,7 @@
             </a-menu>
           </template>
           <a-button v-auth="'positions:xgs_positions:deleteBatch'"
-            >批量操作
+            >删除批量操作
             <Icon icon="mdi:chevron-down"></Icon>
           </a-button>
         </a-dropdown>
@@ -45,18 +45,25 @@
       </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsPositionsModal @register="registerModal" @success="handleSuccess"></XgsPositionsModal>
+    <XgsPositionPublishModal @register="registerModal" @success="handleSuccess"></XgsPositionPublishModal>
   </div>
 </template>
 
 <script lang="ts" name="positions-xgsPositions" setup>
-  import { ref, reactive, computed, unref } from 'vue';
+  import { ref, reactive, computed, unref, onMounted } from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
-  import XgsPositionsModal from './components/XgsPositionsModal.vue';
-  import { columns, searchFormSchema, superQuerySchema } from './XgsPositions.data';
-  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
+  import XgsPositionPublishModal from './components/XgsPositionPublishModal.vue';
+  import { columns, searchFormSchema, superQuerySchema } from './XgsPositionPublish.data';
+  import {
+    list,
+    deleteOne,
+    batchDelete,
+    getImportUrl,
+    getExportUrl,
+    saveOrUpdate
+  } from './XgsPositionPublish.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
   const queryParam = reactive<any>({});
@@ -64,6 +71,7 @@
   const userStore = useUserStore();
   //注册model
   const [registerModal, { openModal }] = useModal();
+
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
@@ -84,7 +92,9 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
+        return Object.assign(params, queryParam, {
+          status: '草稿',
+        });
       },
     },
     exportConfig: {
@@ -119,18 +129,38 @@
     openModal(true, {
       isUpdate: false,
       showFooter: true,
+      data: { status: '草稿' }, // 设置默认岗位状态为“草稿”
     });
+  }
+  /**
+   * 申请事件
+   */
+  function handleApply(record: Recordable) {
+    if (record.status === '草稿') {
+      const record1 = {
+        ...record, // 合并 record 的值
+        status: '待审核', // 设置 status 为 '待审核'
+      };
+
+      // 调用 openModal 方法
+      openModal(true, {
+        record: record1,
+        isUpdate: true,
+        showFooter: true,
+      });
+    }
+    return; // 如果不是草稿，不继续执行
   }
   /**
    * 编辑事件
    */
-  function handleEdit(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: true,
-    });
-  }
+  // function handleEdit(record: Recordable) {
+  //   openModal(true, {
+  //     record,
+  //     isUpdate: true,
+  //     showFooter: true,
+  //   });
+  // }
   /**
    * 详情
    */
@@ -165,8 +195,8 @@
   function getTableAction(record) {
     return [
       {
-        label: '编辑',
-        onClick: handleEdit.bind(null, record),
+        label: '申请',
+        onClick: handleApply.bind(null, record),
         auth: 'positions:xgs_positions:edit',
       },
     ];
@@ -191,6 +221,14 @@
       },
     ];
   }
+
+  onMounted(() => {
+    openModal(true, {
+      isUpdate: false,
+      showFooter: true,
+      data: { status: '草稿' }, // 设置默认岗位状态为“草稿”
+    });
+  });
 </script>
 
 <style lang="less" scoped>
