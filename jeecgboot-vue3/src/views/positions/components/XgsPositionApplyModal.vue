@@ -1,14 +1,6 @@
 <template>
-  <j-modal
-    :title="title"
-    :width="width"
-    :visible="visible"
-    @ok="handleOk"
-    :okButtonProps="{ class: { 'jee-hidden': disableSubmit } }"
-    @cancel="handleCancel"
-    cancelText="关闭"
-  >
-    <XgsPositionApplyForm ref="registerForm" @ok="submitCallback" :formData="formData" :formDisabled="disableSubmit" :formBpm="false" />
+	<j-modal :title="title" :width="width" :visible="visible" @ok="handleOk" :okButtonProps="{ class: { 'jee-hidden': disableSubmit } }" @cancel="handleCancel" cancelText="关闭">
+    	<XgsPositionApplyForm ref="registerForm" @ok="submitCallback" :formData="formData" :formDisabled="disableSubmit" :formBpm="false"></XgsPositionApplyForm>
   </j-modal>
 </template>
 

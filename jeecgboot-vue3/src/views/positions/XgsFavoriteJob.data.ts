@@ -8,17 +8,20 @@ export const columns: BasicColumn[] = [
    {
     title: '用户ID',
     align:"center",
-    dataIndex: 'userId'
+    dataIndex: 'userId',
+     ifShow: false,
    },
    {
     title: '用户姓名',
     align:"center",
-    dataIndex: 'userName'
+    dataIndex: 'userName',
+     ifShow: false,
    },
    {
     title: '职位ID',
     align:"center",
-    dataIndex: 'positionId'
+    dataIndex: 'positionId',
+     ifShow: false,
    },
    {
     title: '职位名称',

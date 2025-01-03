@@ -11,28 +11,29 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'positions:xgs_position_apply:add'"  @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
+<!--        <a-button type="primary" v-auth="'positions:xgs_position_apply:add'"  @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>-->
         <a-button  type="primary" v-auth="'positions:xgs_position_apply:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-        <j-upload-button  type="primary" v-auth="'positions:xgs_position_apply:importExcel'"  preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
-        <a-dropdown v-if="selectedRowKeys.length > 0">
-          <template #overlay>
-            <a-menu>
-              <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined"></Icon>
-                删除
-              </a-menu-item>
-            </a-menu>
-          </template>
-          <a-button v-auth="'positions:xgs_position_apply:deleteBatch'">批量操作
-            <Icon icon="mdi:chevron-down"></Icon>
-          </a-button>
-        </a-dropdown>
+<!--        <j-upload-button  type="primary" v-auth="'positions:xgs_position_apply:importExcel'"  preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>-->
+<!--        <a-dropdown v-if="selectedRowKeys.length > 0">-->
+<!--          <template #overlay>-->
+<!--            <a-menu>-->
+<!--              <a-menu-item key="1" @click="batchHandleDelete">-->
+<!--                <Icon icon="ant-design:delete-outlined"></Icon>-->
+<!--                删除-->
+<!--              </a-menu-item>-->
+<!--            </a-menu>-->
+<!--          </template>-->
+<!--          <a-button v-auth="'positions:xgs_position_apply:deleteBatch'">批量操作-->
+<!--            <Icon icon="mdi:chevron-down"></Icon>-->
+<!--          </a-button>-->
+<!--        </a-dropdown>-->
         <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
+        <super-query :config="superQueryConfig" @search="handleSuperQuery"/>
       </template>
       <!--操作栏-->
       <template #action="{ record }">
-        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
+<!--        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>-->
+        <TableAction :actions="getTableAction(record)"/>
       </template>
       <template v-slot:bodyCell="{ column, record, index, text }">
       </template>
@@ -74,10 +75,10 @@ import {ref, reactive, computed} from 'vue';
   });
 
   // 页面加载完成后，等待3秒钟 点击 新增按钮 并将 job数据传给 新增窗口。
-  setTimeout(() => {
-    //
-    registerModal.value.add(record.value  );
-  }, 1000);
+  // setTimeout(() => {
+  //   //
+  //   registerModal.value.add(record.value  );
+  // }, 1000);
 
 
   //注册table数据
@@ -89,7 +90,7 @@ import {ref, reactive, computed} from 'vue';
       canResize:false,
       useSearchForm: false,
       actionColumn: {
-        width: 120,
+        width: 100,
         fixed: 'right',
       },
       beforeFetch: async (params) => {
@@ -183,7 +184,7 @@ import {ref, reactive, computed} from 'vue';
   function getTableAction(record) {
     return [
       {
-        label: '编辑',
+        label: '查看',
         onClick: handleEdit.bind(null, record),
         auth: 'positions:xgs_position_apply:edit'
       },
