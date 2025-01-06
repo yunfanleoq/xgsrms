@@ -37,8 +37,7 @@
       <p>职位信息加载中...</p>
     </div>
   </div>
-  <!--  <XgsPositionApplyForm v-if="XgsPositionApplyFormShow" :formData="job" :formBpm="false" />-->
-  <XgsPositionApplyModal ref="registerModal" :form-data="record" v-model:visible="XgsPositionApplyFormShow" :formBpm="true" />
+  <XgsPositionApplyModal @register="registerModal" :form-data="record" :formBpm="true" />
 </template>
 
 <script setup lang="ts">
@@ -49,9 +48,12 @@
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   import { useMessage } from '@/hooks/web/useMessage'; // 假设你有一个 API 来获取职位信息
-  import XgsPositionApplyModal from '@/views/positions/components/XgsPositionApplyModal.vue';
-  const registerModal = ref();
+  // import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
+  import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
+  import { message } from 'ant-design-vue';
+  import { useModal } from '@/components/Modal';
 
+  // const registerModal = ref();
   const positionApplyStore = usePositionApplyStoreWithOut();
 
   // const record = positionApplyStore.currPositionApply;
@@ -91,20 +93,15 @@
     } else {
       curUserId = userStore.userInfo.username;
     }
-
     xgsFavoriteJobList({ userId: curUserId, positionId: jobId }).then((res) => {
-      console.log('xgsFavoriteJobList', res);
       if (res.result.records.length > 0) {
         isCollected.value = true;
         favoriteJob.value = res.result.records[0];
-        console.log('favoriteJob', favoriteJob.value);
       }
     });
   };
 
   onMounted(fetchFavoriteJob);
-
-  import { message } from 'ant-design-vue';
 
   const markFavoriteJob = () => {
     // 判断 userStore.userInfo 是否为 null，为null则提示用户登录，不为 null 则赋值 true
@@ -162,7 +159,38 @@
   const positionApplyFormData = ref({});
   const XgsPositionApplyFormShow = ref(false);
 
-  const positionApply = () => {
+  const [registerModal, { openModal }] = useModal();
+  function positionApply() {
+    if (userStore.userInfo === null) {
+      // 使用 message.warning
+      message.warning('请先登录');
+      return;
+    } else {
+      // registerModal.value.addJob(positionApplyStore.currPositionApply);
+      // record.value = positionApplyStore.currPositionApply;
+      let jobDefault = {
+        applyId: '',
+        disabled: false,
+        mark: '',
+        positionDept: job.value.dept_dictText,
+        positionId: job.value.id,
+        positionName: job.value.positionName,
+        positionType: job.value.category,
+        resumeId: '',
+        resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
+        status: '申请中',
+        userName: userStore.getUserInfo.realname,
+      };
+      let jobDetail = Object.assign({}, positionApplyStore.currPositionApply, jobDefault);
+      openModal(true, {
+        isUpdate: false,
+        showFooter: true,
+        jobDetail: jobDetail,
+      });
+    }
+  }
+
+  const positionApply2 = () => {
     if (userStore.userInfo === null) {
       // 使用 message.warning
       message.warning('请先登录');
@@ -170,7 +198,7 @@
       return;
     } else {
       XgsPositionApplyFormShow.value = true;
-      registerModal.value.add(positionApplyStore.currPositionApply);
+      registerModal.value.addJob(positionApplyStore.currPositionApply);
       // record.value = positionApplyStore.currPositionApply;
       record.value.applyId = '';
       record.value.disabled = false;
