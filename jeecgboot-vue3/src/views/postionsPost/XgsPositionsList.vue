@@ -4,7 +4,7 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'positions:xgs_positions:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
+<!--        <a-button type="primary" v-auth="'positions:xgs_positions:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>-->
         <a-button type="primary" v-auth="'positions:xgs_positions:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
           导出</a-button
         >
@@ -26,7 +26,7 @@
           </a-button>
         </a-dropdown>
         <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
+        <!--        <super-query :config="superQueryConfig" @search="handleSuperQuery" />-->
       </template>
       <!--操作栏-->
       <template #action="{ record }">
@@ -102,31 +102,31 @@
 
   const [registerTable, { reload }, { rowSelection, selectedRowKeys }] = tableContext;
 
-  // 高级查询配置
-  const superQueryConfig = reactive(superQuerySchema);
-
-  /**
-   * 高级查询事件
-   */
-  function handleSuperQuery(params) {
-    Object.keys(params).map((k) => {
-      queryParam[k] = params[k];
-    });
-    reload();
-  }
+  // // 高级查询配置
+  // const superQueryConfig = reactive(superQuerySchema);
+  //
+  // /**
+  //  * 高级查询事件
+  //  */
+  // function handleSuperQuery(params) {
+  //   Object.keys(params).map((k) => {
+  //     queryParam[k] = params[k];
+  //   });
+  //   reload();
+  // }
   /**
    * 新增事件
    */
-  function handleAdd() {
-    openModal(true, {
-      isUpdate: false,
-      showFooter: true,
-    });
-  }
+  // function handleAdd() {
+  //   openModal(true, {
+  //     isUpdate: false,
+  //     showFooter: true,
+  //   });
+  // }
   /**
    * 发布事件
    */
-  function handleEdit(record: Recordable) {
+  function handlePost(record: Recordable) {
     if (record.status === '审核通过') {
       const record1 = {
         ...record, // 合并 record 的值
@@ -175,7 +175,7 @@
     return [
       {
         label: '发布',
-        onClick: handleEdit.bind(null, record),
+        onClick: handlePost.bind(null, record),
         auth: 'positions:xgs_positions:edit',
       },
     ];
