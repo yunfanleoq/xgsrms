@@ -1,67 +1,51 @@
 <template>
-<div>
+  <div>
     <!--引用表格-->
    <BasicTable @register="registerTable" :rowSelection="rowSelection">
      <!--插槽:table标题-->
       <template #tableTitle>
-          <a-button type="primary" v-auth="'positions:xgs_favorite_job:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-          <a-button  type="primary" v-auth="'positions:xgs_favorite_job:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-          <j-upload-button type="primary" v-auth="'positions:xgs_favorite_job:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
-          <a-dropdown v-if="selectedRowKeys.length > 0">
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item key="1" @click="batchHandleDelete">
-                    <Icon icon="ant-design:delete-outlined"></Icon>
-                    删除
-                  </a-menu-item>
-                </a-menu>
-                </template>
-                <a-button v-auth="'positions:xgs_favorite_job:deleteBatch'">批量操作
-                  <Icon icon="mdi:chevron-down"></Icon>
-                </a-button>
-          </a-dropdown>
-          <!-- 高级查询 -->
-          <super-query :config="superQueryConfig" @search="handleSuperQuery" />
+          <a-button  type="primary" v-auth="'xgsUserResume:xgs_position_apply:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
+        <!-- 高级查询 -->
+        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
       </template>
        <!--操作栏-->
       <template #action="{ record }">
-          <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
+        <TableAction :actions="getTableAction(record)"/>
       </template>
       <!--字段回显插槽-->
       <template v-slot:bodyCell="{ column, record, index, text }">
       </template>
-      </BasicTable>
-      <!-- 表单区域 -->
-      <XgsFavoriteJobModal @register="registerModal" @success="handleSuccess"></XgsFavoriteJobModal>
+   </BasicTable>
+    <!-- 表单区域 -->
+    <XgsUserPositionApplyModal @register="registerModal" @success="handleSuccess"></XgsUserPositionApplyModal>
   </div>
 </template>
 
-<script lang="ts" name="positions-xgsFavoriteJob" setup>
+<script lang="ts" name="xgsUserResume-xgsUserPositionApply" setup>
   import {ref, reactive, computed, unref} from 'vue';
   import {BasicTable, useTable, TableAction} from '/@/components/Table';
   import {useModal} from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage'
-  import XgsFavoriteJobModal from './components/XgsFavoriteJobModal.vue'
-  import {columns, searchFormSchema, superQuerySchema} from './XgsFavoriteJob.data';
-  import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsFavoriteJob.api';
+  import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue'
+  import {columns, superQuerySchema} from './XgsUserPositionApply.data';
+  import {list, deleteOne, batchDelete, getImportUrl, getExportUrl} from './XgsUserPositionApply.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
-  // const userInfo = computed(() => userStore.userInfo);
   //注册model
   const [registerModal, {openModal}] = useModal();
   //注册table数据
   const { prefixCls,tableContext,onExportXls,onImportXls } = useListPage({
       tableProps:{
-           title: '职位收藏',
+           title: '我的申请',
            api: list,
            columns,
            canResize:false,
            formConfig: {
               //labelWidth: 120,
-              schemas: searchFormSchema,
+              // schemas: searchFormSchema,
               autoSubmitOnEnter:true,
               showAdvancedButton:true,
               fieldMapToNumber: [
@@ -78,7 +62,7 @@
             },
       },
        exportConfig: {
-            name:"职位收藏",
+            name:"我的申请",
             url: getExportUrl,
             params: queryParam,
           },
@@ -86,7 +70,7 @@
             url: getImportUrl,
             success: handleSuccess
           },
-  })
+        })
 
   const [registerTable, {reload},{ rowSelection, selectedRowKeys }] = tableContext
 
@@ -155,9 +139,9 @@
   function getTableAction(record){
        return [
          {
-           label: '编辑',
+           label: '查看',
            onClick: handleEdit.bind(null, record),
-           auth: 'positions:xgs_favorite_job:edit'
+           auth: 'xgsUserResume:xgs_position_apply:edit'
          }
        ]
    }
@@ -176,7 +160,7 @@
              confirm: handleDelete.bind(null, record),
              placement: 'topLeft',
            },
-           auth: 'positions:xgs_favorite_job:delete'
+           auth: 'xgsUserResume:xgs_position_apply:delete'
          }
        ]
    }

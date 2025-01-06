@@ -8,95 +8,111 @@ export const columns: BasicColumn[] = [
   {
     title: '申请人ID',
     align: "center",
-    dataIndex: 'userId'
+    dataIndex: 'userId',
+    ifShow: false
   },
   {
     title: '申请人姓名',
     align: "center",
-    dataIndex: 'userName'
+    dataIndex: 'userName',
+    ifShow: false,
   },
   {
     title: '简历ID',
     align: "center",
-    dataIndex: 'resumeId'
+    dataIndex: 'resumeId',
+    ifShow: false,
   },
   {
     title: '简历名称',
     align: "center",
-    dataIndex: 'resumeName'
+    dataIndex: 'resumeName',
+    ifShow: false,
   },
   {
     title: '岗位ID',
     align: "center",
-    dataIndex: 'positionId'
+    dataIndex: 'positionId',
+    ifShow: false,
   },
   {
     title: '岗位名称',
     align: "center",
-    dataIndex: 'positionName'
+    dataIndex: 'positionName',
+    ellipsis: true,
+    width: 500,
   },
   {
     title: '岗位部门',
     align: "center",
-    dataIndex: 'positionDept'
+    dataIndex: 'positionDept',
+    ellipsis: true,
+    width: 300,
   },
   {
     title: '岗位类型',
     align: "center",
-    dataIndex: 'positionType'
+    dataIndex: 'positionType',
+    ellipsis: true,
+    width: 120,
   },
   {
     title: '申请状态',
     align: "center",
-    dataIndex: 'status'
+    dataIndex: 'status',
+    ellipsis: true,
+    width: 120,
   },
   {
     title: '申请备注',
     align: "center",
-    dataIndex: 'mark'
+    dataIndex: 'mark',
+    ifShow: false,
   },
   {
     title: '申请标签',
     align: "center",
-    dataIndex: 'tagIds'
+    dataIndex: 'tagIds',
+    ifShow: false,
   },
   {
     title: '创建者',
     align: "center",
-    dataIndex: 'creator'
+    dataIndex: 'creator',
+    ifShow: false,
   },
   {
     title: '更新者',
     align: "center",
-    dataIndex: 'updater'
+    dataIndex: 'updater',
+    ifShow: false,
   },
   {
     title: '是否删除',
     align: "center",
-    dataIndex: 'deleted'
+    dataIndex: 'deleted',
+    ifShow: false,
   },
   {
     title: '租户编号',
     align: "center",
-    dataIndex: 'tenantId'
+    dataIndex: 'tenantId',
+    ifShow: false,
+  },
+  {
+    title: '',
+    align: "center",
+    dataIndex: '',
   },
 ];
 
 // 高级查询数据
 export const superQuerySchema = {
-  userId: {title: '申请人ID',order: 0,view: 'text', type: 'string',},
-  userName: {title: '申请人姓名',order: 1,view: 'text', type: 'string',},
-  resumeId: {title: '简历ID',order: 2,view: 'text', type: 'string',},
+  // userName: {title: '申请人姓名',order: 1,view: 'text', type: 'string',},
   resumeName: {title: '简历名称',order: 3,view: 'text', type: 'string',},
-  positionId: {title: '岗位ID',order: 4,view: 'text', type: 'string',},
   positionName: {title: '岗位名称',order: 5,view: 'text', type: 'string',},
   positionDept: {title: '岗位部门',order: 6,view: 'text', type: 'string',},
   positionType: {title: '岗位类型',order: 7,view: 'text', type: 'string',},
   status: {title: '申请状态',order: 8,view: 'number', type: 'number',},
-  mark: {title: '申请备注',order: 9,view: 'text', type: 'string',},
-  tagIds: {title: '申请标签',order: 10,view: 'text', type: 'string',},
-  creator: {title: '创建者',order: 11,view: 'text', type: 'string',},
-  updater: {title: '更新者',order: 12,view: 'text', type: 'string',},
-  deleted: {title: '是否删除',order: 13,view: 'text', type: 'string',},
-  tenantId: {title: '租户编号',order: 14,view: 'number', type: 'number',},
+  // tagIds: {title: '申请标签',order: 10,view: 'text', type: 'string',},
 };

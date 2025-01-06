@@ -9,6 +9,8 @@
     import {BasicModal, useModalInner} from '/@/components/Modal';
     import {BasicForm, useForm} from '/@/components/Form/index';
     import {formSchema} from '../XgsFavoriteJob.data';
+
+    const isReady = ref(false);
     import {saveOrUpdate} from '../XgsFavoriteJob.api';
     // Emits声明
     const emit = defineEmits(['register','success']);
@@ -35,16 +37,17 @@
         }
         // 隐藏底部时禁用整个表单
        setProps({ disabled: !data?.showFooter })
+      isReady.value = true;
     });
     //设置标题
     const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));
     //表单提交事件
     async function handleSubmit(v) {
         try {
-            let values = await validate();
+            // let values = await validate();
             setModalProps({confirmLoading: true});
             //提交表单
-            await saveOrUpdate(values, isUpdate.value);
+            // await saveOrUpdate(values, isUpdate.value);
             //关闭弹窗
             closeModal();
             //刷新列表

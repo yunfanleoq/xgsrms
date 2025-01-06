@@ -7,28 +7,28 @@
 
 						<a-col :span="12">
 							<a-form-item label="申请人" v-bind="validateInfos.userName" id="XgsPositionApplyForm-userName" name="userName">
-								<a-input v-model:value="formData.userName" placeholder="请输入申请人姓名"  allow-clear ></a-input>
+								<a-input v-model:value="formData.userName" placeholder=""  allow-clear disabled></a-input>
 							</a-form-item>
 						</a-col>
 
 						<a-col :span="12">
 							<a-form-item label="岗位名称" v-bind="validateInfos.positionName" id="XgsPositionApplyForm-positionName" name="positionName">
-								<a-input v-model:value="formData.positionName" placeholder="请输入岗位名称"  allow-clear ></a-input>
+								<a-input v-model:value="formData.positionName" placeholder=""  allow-clear disabled></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="12">
 							<a-form-item label="岗位部门" v-bind="validateInfos.positionDept" id="XgsPositionApplyForm-positionDept" name="positionDept">
-								<a-input v-model:value="formData.positionDept" placeholder="请输入岗位部门"  allow-clear ></a-input>
+								<a-input v-model:value="formData.positionDept" placeholder=""  allow-clear disabled></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="12">
 							<a-form-item label="岗位类型" v-bind="validateInfos.positionType" id="XgsPositionApplyForm-positionType" name="positionType">
-								<a-input v-model:value="formData.positionType" placeholder="请输入岗位类型"  allow-clear ></a-input>
+								<a-input v-model:value="formData.positionType" placeholder=""  allow-clear disabled></a-input>
 							</a-form-item>
 						</a-col>
 						<a-col :span="12" v-show="false">
 							<a-form-item label="申请状态" v-bind="validateInfos.status" id="XgsPositionApplyForm-status" name="status">
-								<a-input v-model:value="formData.status" placeholder="请输入申请状态" style="width: 100%" disabled />
+								<a-input v-model:value="formData.status" placeholder="" style="width: 100%" disabled />
 							</a-form-item>
 						</a-col>
 
@@ -45,7 +45,7 @@
 
             <a-col :span="12" v-show="false">
               <a-form-item label="备注" v-bind="validateInfos.mark" id="XgsPositionApplyForm-mark" name="mark" :label-col="{ span: 2 }" :wrapper-col="{ span: 22 }">
-                <a-textarea v-model:value="formData.mark" placeholder="请输入申请备注" allow-clear :auto-size="{ minRows: 1, maxRows: 10 }" style="width: 93%;" />
+                <a-textarea v-model:value="formData.mark" placeholder="" allow-clear :auto-size="{ minRows: 1, maxRows: 10 }" style="width: 93%;" />
               </a-form-item>
             </a-col>
 
@@ -57,7 +57,7 @@
         <div>
           <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm"  />
           <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeFGForm v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumeFGForm v-else-if="formData.positionType === '副高级以上岗位'" :form-data="formData" :form-bpm="formBpm" />
           <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="formBpm" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
@@ -180,7 +180,7 @@
   //页面完全加载完成并 显示一秒后 打印 formData，
   setTimeout(() => {
     nextTick(() => {
-      console.log('...............................props', props);
+      console.log('...............................formData', formData);
       console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
       // Object.assign(formData , props.formData);
       formData.value.positionType = props.formData.category || '普通岗位';
@@ -226,14 +226,17 @@
       record.realname = userStore.getUserInfo.realname;
       record.username = userStore.getUserInfo.username;
 
-      tmpData['positionDept'] = record.dept_dictText;
+      console.log("record", record)
+
+      tmpData['positionDept'] = record.positionDept;
       tmpData['positionName'] = record.positionName;
-      tmpData['positionType'] = record.category;
+      tmpData['positionType'] = record.positionType;
       tmpData['resumeName'] = record.realname+record.username+'_'+record.positionName;
       tmpData['userName'] = record.realname ;
       tmpData['resumeId'] = '';
 
-
+      console.log('edit>>>>>positionDept>>>>', record.positionDept, "<<<<<<<", tmpData['positionName']);
+      console.log("tmpData", tmpData)
       // Object.keys(formData).forEach((key) => {
       //   if(record.hasOwnProperty(key)){
       //     tmpData[key] = record[key]
@@ -241,6 +244,10 @@
       // })
       //赋值
       Object.assign(formData.value, tmpData);
+      //
+      // formData.value = tmpData;
+      console.log("formData", formData)
+
     });
     console.log('edit>>>>end>>>>>', formData);
   }
