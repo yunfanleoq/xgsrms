@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 */
 @Slf4j
 @SpringBootApplication
+
 //@EnableConfigurationProperties
 //@EnableAutoConfiguration(exclude={MongoAutoConfiguration.class})
 public class JeecgSystemApplication extends SpringBootServletInitializer {

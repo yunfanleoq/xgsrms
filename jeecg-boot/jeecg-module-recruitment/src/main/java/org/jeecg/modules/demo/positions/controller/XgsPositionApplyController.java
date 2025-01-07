@@ -105,6 +105,7 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 		return Result.OK("编辑成功!");
 	}
 
+
 	/**
 	 *   通过id删除
 	 *
