@@ -104,7 +104,50 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 		xgsPositionsService.updateById(xgsPositions);
 		return Result.OK("编辑成功!");
 	}
-	
+
+	 /**
+	  *  申请
+	  *
+	  * @param xgsPositions
+	  * @return
+	  */
+	 @AutoLog(value = "招聘岗位列表-申请")
+	 @ApiOperation(value="招聘岗位列表-申请", notes="招聘岗位列表-申请")
+	 @RequiresPermissions("positions:xgs_positions:edit")
+	 @RequestMapping(value = "/apply", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<String> apply(@RequestBody XgsPositions xgsPositions) {
+		 xgsPositionsService.updateById(xgsPositions);
+		 return Result.OK("申请成功!");
+	 }
+	 /**
+	  *  审核
+	  *
+	  * @param xgsPositions
+	  * @return
+	  */
+	 @AutoLog(value = "招聘岗位列表-审核")
+	 @ApiOperation(value="招聘岗位列表-审核", notes="招聘岗位列表-审核")
+	 @RequiresPermissions("positions:xgs_positions:edit")
+	 @RequestMapping(value = "/check", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<String> check(@RequestBody XgsPositions xgsPositions) {
+		 xgsPositionsService.updateById(xgsPositions);
+		 return Result.OK("审核成功!");
+	 }
+
+	 /**
+	  *  发布
+	  *
+	  * @param xgsPositions
+	  * @return
+	  */
+	 @AutoLog(value = "招聘岗位列表-发布")
+	 @ApiOperation(value="招聘岗位列表-发布", notes="招聘岗位列表-发布")
+	 @RequiresPermissions("positions:xgs_positions:edit")
+	 @RequestMapping(value = "/post", method = {RequestMethod.PUT,RequestMethod.POST})
+	 public Result<String> post(@RequestBody XgsPositions xgsPositions) {
+		 xgsPositionsService.updateById(xgsPositions);
+		 return Result.OK("发布成功!");
+	 }
 	/**
 	 *   通过id删除
 	 *

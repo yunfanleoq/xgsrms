@@ -23,6 +23,15 @@ import { getUrlParam } from "@/utils";
 interface dictType {
   [key: string]: any;
 }
+interface Department {
+  departName: string;
+  // 其他属性
+}
+
+interface LoginInfo {
+  departs: Department[]; // departs 是一个包含 Department 对象的数组
+  // 其他属性
+}
 interface UserState {
   userInfo: Nullable<UserInfo>;
   token?: string;
@@ -67,6 +76,13 @@ export const useUserStore = defineStore({
     },
     getLoginInfo(): LoginInfo {
       return this.loginInfo || getAuthCache<LoginInfo>(LOGIN_INFO_KEY) || {};
+    },
+    getDepartName(): string | undefined {
+      const loginInfo = this.getLoginInfo;
+      if (loginInfo.departs && loginInfo.departs.length > 0) {
+        return loginInfo.departs[0]?.departName;
+      }
+      return undefined;
     },
     getToken(): string {
       return this.token || getAuthCache<string>(TOKEN_KEY);

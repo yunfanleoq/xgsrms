@@ -95,9 +95,6 @@ export const formSchema: FormSchema[] = [
 
 // 高级查询数据
 export const superQuerySchema = {
-  userId: {title: '用户ID',order: 0,view: 'text', type: 'string',},
-  userName: {title: '用户姓名',order: 1,view: 'text', type: 'string',},
-  positionId: {title: '职位ID',order: 2,view: 'text', type: 'string',},
   positionName: {title: '职位名称',order: 3,view: 'text', type: 'string',},
   positionDept: {title: '职位部门',order: 4,view: 'text', type: 'string',},
   positionKtz: {title: '职位课题组',order: 5,view: 'text', type: 'string',},

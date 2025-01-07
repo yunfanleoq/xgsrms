@@ -5,8 +5,9 @@ const { createConfirm } = useMessage();
 
 enum Api {
   list = '/positions/xgsPositions/list',
-  save='/positions/xgsPositions/add',
-  edit='/positions/xgsPositions/edit',
+  save = '/positions/xgsPositions/add',
+  edit = '/positions/xgsPositions/edit',
+  apply = '/positions/xgsPositions/apply',
   deleteOne = '/positions/xgsPositions/delete',
   deleteBatch = '/positions/xgsPositions/deleteBatch',
   importExcel = '/positions/xgsPositions/importExcel',
@@ -59,6 +60,6 @@ export const batchDelete = (params, handleSuccess) => {
  * @param params
  */
 export const saveOrUpdate = (params, isUpdate) => {
-  let url = isUpdate ? Api.edit : Api.save;
+  let url = isUpdate ? Api.apply : Api.save;
   return defHttp.post({url: url, params});
 }

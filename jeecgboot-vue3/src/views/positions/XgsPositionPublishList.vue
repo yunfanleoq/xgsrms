@@ -25,8 +25,8 @@
             <Icon icon="mdi:chevron-down"></Icon>
           </a-button>
         </a-dropdown>
-        <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
+        <!--        &lt;!&ndash; 高级查询 &ndash;&gt;-->
+        <!--        <super-query :config="superQueryConfig" @search="handleSuperQuery" />-->
       </template>
       <!--操作栏-->
       <template #action="{ record }">
@@ -66,9 +66,13 @@
   } from './XgsPositionPublish.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
-  const queryParam = reactive<any>({});
-  const checkedKeys = ref<Array<string | number>>([]);
+
   const userStore = useUserStore();
+  const departName = userStore.getDepartName;
+
+  const queryParam = reactive<any>({});
+  // const checkedKeys = ref<Array<string | number>>([]);
+
   //注册model
   const [registerModal, { openModal }] = useModal();
 
@@ -110,26 +114,30 @@
 
   const [registerTable, { reload }, { rowSelection, selectedRowKeys }] = tableContext;
 
-  // 高级查询配置
-  const superQueryConfig = reactive(superQuerySchema);
-
-  /**
-   * 高级查询事件
-   */
-  function handleSuperQuery(params) {
-    Object.keys(params).map((k) => {
-      queryParam[k] = params[k];
-    });
-    reload();
-  }
+  // // 高级查询配置
+  // const superQueryConfig = reactive(superQuerySchema);
+  //
+  // /**
+  //  * 高级查询事件
+  //  */
+  // function handleSuperQuery(params) {
+  //   Object.keys(params).map((k) => {
+  //     queryParam[k] = params[k];
+  //   });
+  //   reload();
+  // }
   /**
    * 新增事件
    */
   function handleAdd() {
+    // const loginInfo = userStore.getLoginInfo(); // 修改: 使用 getLoginInfo 获取登录信息
     openModal(true, {
       isUpdate: false,
       showFooter: true,
-      data: { status: '草稿' }, // 设置默认岗位状态为“草稿”
+      data: {
+        dept: departName,
+        status: '草稿', // 设置默认岗位状态为“草稿”并添加部门名称
+      },
     });
   }
   /**
@@ -197,7 +205,7 @@
       {
         label: '申请',
         onClick: handleApply.bind(null, record),
-        auth: 'positions:xgs_positions:edit',
+        auth: 'positions:xgs_positions:edit', //auth虽然是edit，但是实际是申请
       },
     ];
   }
@@ -222,13 +230,13 @@
     ];
   }
 
-  onMounted(() => {
-    openModal(true, {
-      isUpdate: false,
-      showFooter: true,
-      data: { status: '草稿' }, // 设置默认岗位状态为“草稿”
-    });
-  });
+  // onMounted(() => {
+  //   openModal(true, {
+  //     isUpdate: false,
+  //     showFooter: true,
+  //     data: { status: '草稿' }, // 设置默认岗位状态为“草稿”
+  //   });
+  // });
 </script>
 
 <style lang="less" scoped>

@@ -1,22 +1,32 @@
 <template>
-    <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896">
-      <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm" />
+    <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896" wrapClassName="j-cgform-tab-modal xgsUserPositionApplyModal">
+      <div class="contentArea">
+        <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm" >
+          <template #uploadResume="{ model, field }">
+            <a-form-item label="文件路径" id="XgsUserResumeFileForm-filePath" name="filePath" v-if="false">
+              <j-upload v-model:value="fileData.filePath" :max-count="1" :multiple="false" />
+              <a-button type="primary" :disabled="!fileData.filePath" @click="analysisResume">简历分析</a-button>
+              <div v-text="resumeText" style="width: 800px"></div>
+            </a-form-item>
+          </template>
+        </BasicForm>
+      </div>
 <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
-          <div>
-            <xgsResumePTForm v-if="positionType === '普通岗位'" :formData="formData" :formBpm="formBpm"></xgsResumePTForm>
-            <xgsResumeBSHForm v-else-if="positionType === '博士后岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeBSHForm>
-            <xgsResumeFGForm v-else-if="positionType === '副高级以上岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeFGForm>
-            <xgsResumeTJForm v-else-if="positionType === '人才派遣岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeTJForm>
-            <div v-else>
-              未知的 positionType
-            </div>
+        <div>
+          <xgsResumePTForm v-if="positionType === '普通岗位'" :formData="formData" :formBpm="formBpm"></xgsResumePTForm>
+          <xgsResumeBSHForm v-else-if="positionType === '博士后岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeBSHForm>
+          <xgsResumeFGForm v-else-if="positionType === '副高级以上岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeFGForm>
+          <xgsResumeTJForm v-else-if="positionType === '人才派遣岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeTJForm>
+          <div v-else>
+            未知的 positionType
           </div>
+        </div>
     </BasicModal>
 </template>
 
 <script lang="ts" setup>
-    import {ref, computed, unref} from 'vue';
+    import {ref, computed, reactive, unref} from 'vue';
     import {BasicModal, useModalInner} from '/@/components/Modal';
     import {BasicForm, useForm} from '/@/components/Form/index';
     import {formSchema} from '../XgsUserPositionApply.data';
@@ -29,6 +39,12 @@
     import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
     import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
     import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
+    import JUpload from "@/components/Form/src/jeecg/components/JUpload/JUpload.vue";
+    import {defHttp} from "@/utils/http/axios";
+    import {
+      xgsResumeEdusColumns,
+      xgsResumeHomeColumns, xgsResumeWorksColumns
+    } from "@/views/home/position/components/XgsResumeBase.data";
 
     const isReady = ref(false);
 
@@ -113,6 +129,53 @@
             setModalProps({confirmLoading: false});
         }
     }
+
+    //简历文件处理
+    const fileData = reactive<Record<string, any>>({
+      id: '',
+      fileSize: undefined,
+      fileName: '',
+      fileExt: '',
+      fileJson: '',
+      resumeInfo: '',
+      filePath: '',
+      remarks: '',
+    });
+    const resumeText = ref('');
+    const xgsResumeEdusTable = reactive({
+      loading: false,
+      dataSource: [],
+      columns: xgsResumeEdusColumns,
+    });
+    const xgsResumeHomeTable = reactive({
+      loading: false,
+      dataSource: [],
+      columns: xgsResumeHomeColumns,
+    });
+    const xgsResumeWorksTable = reactive({
+      loading: false,
+      dataSource: [],
+      columns: xgsResumeWorksColumns,
+    });
+    function analysisResume() {
+      setModalProps({ confirmLoading: true });
+      resumeText.value = '请稍等，正在分析简历...';
+      console.log('fileData', fileData.value)
+      defHttp
+        .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: fileData })
+        .then((data) => {
+          if (data) {
+            // TODO 在这里做分析后的对应关系
+            console.log(data);
+            resumeText.value = '示例：在这里做分析后的对应关系，分析结果如下： ' + JSON.stringify(data);
+          } else {
+            createMessage.warning('解析失败，请上传PDF格式的简历');
+          }
+        })
+        .finally(() => {
+          setModalProps({ confirmLoading: false });
+        });
+    }
 </script>
 
 <style lang="less" scoped>
@@ -123,5 +186,67 @@
 
   :deep(.ant-calendar-picker) {
     width: 100%;
+  }
+
+  .titleArea {
+    display: flex;
+    align-content: center;
+    padding-right: 70px;
+    .title {
+      margin-right: 16px;
+      line-height: 32px;
+    }
+    .right {
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex: 1;
+      white-space: nowrap;
+      .ant-radio-group {
+        font-weight: normal;
+      }
+    }
+  }
+
+  html[data-theme='light'] {
+    .right {
+      .ant-radio-group {
+        :deep(.ant-radio-button-wrapper:not(.ant-radio-button-wrapper-checked)) {
+          color: #555;
+        }
+      }
+    }
+  }
+</style>
+
+<style lang="less">
+// Online表单Tab风格专属样式
+  .xgsUserPositionApplyModal .ant-upload-list {
+    width: 600px;
+  }
+  .j-cgform-tab-modal {
+    .contentArea {
+      padding: 20px 1.5% 0;
+    }
+
+    //.ant-modal-header {
+    //  padding-top: 8px;
+    //  padding-bottom: 8px;
+    //  border-bottom: none !important;
+    //}
+
+    .ant-modal .ant-modal-body > .scrollbar,
+    .ant-tabs-nav .ant-tabs-tab {
+      padding-top: 0;
+    }
+
+    .ant-tabs-top-bar {
+      width: calc(100% - 55px);
+      position: relative;
+      left: -14px;
+    }
+
+    .ant-tabs .ant-tabs-top-content > .ant-tabs-tabpane {
+      overflow: hidden auto;
+    }
   }
 </style>
