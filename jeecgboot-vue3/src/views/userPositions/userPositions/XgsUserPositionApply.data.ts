@@ -39,25 +39,21 @@ export const columns: BasicColumn[] = [
     title: '岗位名称',
     align:"center",
     dataIndex: 'positionName',
-    ellipsis: true,
    },
    {
     title: '岗位部门',
     align:"center",
     dataIndex: 'positionDept',
-    ellipsis: true,
    },
    {
     title: '岗位类型',
     align:"center",
     dataIndex: 'positionType',
-    ellipsis: true,
    },
    {
     title: '申请状态',
     align:"center",
     dataIndex: 'status',
-    ellipsis: true,
    },
    {
     title: '申请备注',
@@ -95,6 +91,9 @@ export const columns: BasicColumn[] = [
     dataIndex: 'tenantId',
     ifShow:false,
    },
+];
+//查询数据
+export const searchFormSchema: FormSchema[] = [
 ];
 //表单数据
 export const formSchema: FormSchema[] = [
@@ -187,6 +186,15 @@ export const formSchema: FormSchema[] = [
     field: 'tenantId',
     component: 'InputNumber',
     show:false
+  },
+  {
+    label: '上传简历',
+    field: 'uploadResume',
+    component: 'Input',
+    colSlot: 'uploadResume',
+    colProps: {
+      span: 12,
+    },
   },
 	// TODO 主键隐藏字段，目前写死为ID
 	{

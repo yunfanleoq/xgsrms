@@ -171,7 +171,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '民族',
@@ -235,7 +235,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '参加工作时间',
@@ -243,7 +243,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '目前工作单位',
@@ -266,7 +266,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '现岗位',
@@ -279,7 +279,7 @@ export const formSchema: FormSchema[] = [
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },    
+    },
   },
   {
     label: '与本所职工（包括在读研究生）是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系（若有请写出姓名）？（请务必勾选）',

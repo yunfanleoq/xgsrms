@@ -4,28 +4,29 @@
    <BasicTable @register="registerTable" :rowSelection="rowSelection">
      <!--插槽:table标题-->
       <template #tableTitle>
-          <a-button type="primary" v-auth="'positions:xgs_favorite_job:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-          <a-button  type="primary" v-auth="'positions:xgs_favorite_job:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-          <j-upload-button type="primary" v-auth="'positions:xgs_favorite_job:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
-          <a-dropdown v-if="selectedRowKeys.length > 0">
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item key="1" @click="batchHandleDelete">
-                    <Icon icon="ant-design:delete-outlined"></Icon>
-                    删除
-                  </a-menu-item>
-                </a-menu>
-              </template>
-              <a-button v-auth="'positions:xgs_favorite_job:deleteBatch'">批量操作
-                <Icon icon="mdi:chevron-down"></Icon>
-              </a-button>
+<!--          <a-button type="primary" v-auth="'positions:xgs_favorite_job:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>-->
+        <a-button  type="primary" v-auth="'positions:xgs_favorite_job:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
+<!--          <j-upload-button type="primary" v-auth="'positions:xgs_favorite_job:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>-->
+        <a-dropdown v-if="selectedRowKeys.length > 0">
+            <template #overlay>
+              <a-menu>
+                <a-menu-item key="1" @click="batchHandleDelete">
+                  <Icon icon="ant-design:delete-outlined"></Icon>
+                  取消收藏
+                </a-menu-item>
+              </a-menu>
+            </template>
+            <a-button v-auth="'positions:xgs_favorite_job:deleteBatch'">批量操作
+              <Icon icon="mdi:chevron-down"></Icon>
+            </a-button>
         </a-dropdown>
         <!-- 高级查询 -->
         <super-query :config="superQueryConfig" @search="handleSuperQuery" />
       </template>
        <!--操作栏-->
       <template #action="{ record }">
-        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
+<!--        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>-->
+        <TableAction :actions="getTableAction(record)"/>
       </template>
       <!--字段回显插槽-->
       <template v-slot:bodyCell="{ column, record, index, text }">
@@ -152,13 +153,22 @@
       * 操作栏
       */
   function getTableAction(record){
-       return [
-         {
-           label: '编辑',
-           onClick: handleEdit.bind(null, record),
-           auth: 'positions:xgs_favorite_job:edit'
-         }
-       ]
+     return [
+       {
+         label: '查看',
+         onClick: handleEdit.bind(null, record),
+         auth: 'positions:xgs_favorite_job:edit'
+       },
+       {
+         label: '取消',
+         popConfirm: {
+           title: '是否确认取消收藏该岗位',
+           confirm: handleDelete.bind(null, record),
+           placement: 'topLeft',
+         },
+         auth: 'positions:xgs_favorite_job:delete'
+       }
+     ]
    }
      /**
         * 下拉操作栏
