@@ -1,26 +1,25 @@
-<template> 
+<template>
   <div>
     <div class="main-content">
       <!-- 轮播图 -->
       <div class="carousel">
         <button class="carousel-button left"
-          @click="showPrevImage"
-          v-show="isHovered">◀</button>
+                @click="showPrevImage"
+                v-show="isHovered">◀</button>
         <img :src="carouselImages[currentIndex]"
-          alt="轮播图"
-          @mouseover="isHovered = true"
-          @mouseleave="isHovered = false"/>
+             alt="轮播图"
+             @mouseover="isHovered = true"
+             @mouseleave="isHovered = false"/>
         <button class="carousel-button right"
-          @click="showNextImage"
-          v-show="isHovered">▶</button>
+                @click="showNextImage"
+                v-show="isHovered">▶</button>
         <!-- 圆点导航 -->
         <div class="carousel-dots">
           <span v-for="(image, index) in carouselImages"
-            :key="index"
-            :class="['dot', { active: index === currentIndex }]"
-            @click="currentIndex = index"></span>
+                :key="index"
+                :class="['dot', { active: index === currentIndex }]"
+                @click="currentIndex = index"></span>
         </div>
-
       </div>
 
       <!-- 新闻区域 -->
@@ -46,7 +45,7 @@
         <ul v-if="tabSelected === 'notice'" class="notice-list">
           <li v-for="(item, index) in notices" :key="index">
             <span>{{ item.date }}</span>
-              <a :href="item.link">{{ item.title }}</a>
+            <a :href="item.link">{{ item.title }}</a>
           </li>
         </ul>
         <ul v-else class="recruitment-list">
@@ -54,39 +53,39 @@
             <!-- <span>{{ item.publishDate }}</span> -->
             <!-- <a :href="item.link">{{ item.title }}</a> -->
             <p v-html="item.announcement"></p>
-           </li>
+          </li>
         </ul>
       </div>
     </div>
 
 
-  <!--    <div style="height: 500px">-->
+    <!--    <div style="height: 500px">-->
 
 
-  <!--    </div>-->
-      <!-- 分类和搜索框 -->
-  <!--    <section class="filters">-->
-  <!--    <div class="categories">-->
-  <!--      <button v-for="(category, index) in categories" :key="index" @click="filterCategory(category)">-->
-  <!--        {{ category }}-->
-  <!--      </button>-->
-  <!--    </div>-->
-  <!--    <div class="search">-->
-  <!--      <input v-model="searchQuery" placeholder="请输入职位名称" />-->
-  <!--      <button @click="searchJobs">搜索</button>-->
-  <!--    </div>-->
-  <!--    </section>-->
+    <!--    </div>-->
+    <!-- 分类和搜索框 -->
+    <!--    <section class="filters">-->
+    <!--    <div class="categories">-->
+    <!--      <button v-for="(category, index) in categories" :key="index" @click="filterCategory(category)">-->
+    <!--        {{ category }}-->
+    <!--      </button>-->
+    <!--    </div>-->
+    <!--    <div class="search">-->
+    <!--      <input v-model="searchQuery" placeholder="请输入职位名称" />-->
+    <!--      <button @click="searchJobs">搜索</button>-->
+    <!--    </div>-->
+    <!--    </section>-->
 
-      <!-- 职位列表 -->
-  <!--    <section class="job-list">-->
-  <!--    <div v-for="(job, index) in filteredJobs" :key="index" class="job-card">-->
-  <!--      <h3>{{ job.title }}</h3>-->
-  <!--      <p>职位数量：<strong>{{ job.count }}</strong></p>-->
-  <!--      <p>工作地点：<strong>{{ job.location }}</strong></p>-->
-  <!--      <p>薪资：<span class="salary">{{ job.salary }}</span></p>-->
-  <!--      <p>{{ job.description }}</p>-->
-  <!--    </div>-->
-  <!--    </section>-->
+    <!-- 职位列表 -->
+    <!--    <section class="job-list">-->
+    <!--    <div v-for="(job, index) in filteredJobs" :key="index" class="job-card">-->
+    <!--      <h3>{{ job.title }}</h3>-->
+    <!--      <p>职位数量：<strong>{{ job.count }}</strong></p>-->
+    <!--      <p>工作地点：<strong>{{ job.location }}</strong></p>-->
+    <!--      <p>薪资：<span class="salary">{{ job.salary }}</span></p>-->
+    <!--      <p>{{ job.description }}</p>-->
+    <!--    </div>-->
+    <!--    </section>-->
   </div>
 </template>
 
@@ -138,17 +137,17 @@ const newsList = ref([
 const fetchNews = async (page = 1, size = 2) => {
   try {
     const response = await defHttp.get({
-      url: listUrl,  
+      url: listUrl,
       params: { pageNo: page, pageSize: size, orderBy: "createTime desc"  },
     });
     if (response && response.records) {
       newsList.value = response.records.map((item: any) => ({
-          title: item.newTitle || "无标题",
-          content: item.news || "无内容",
-          createTime: new Date(item.createTime.replace(/-/g, '/')), // 确保时间格式正确
-          // createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
-        }))
-        // .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()); // 按时间降序排序
+        title: item.newTitle || "无标题",
+        content: item.news || "无内容",
+        createTime: new Date(item.createTime.replace(/-/g, '/')), // 确保时间格式正确
+        // createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
+      }))
+      // .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()); // 按时间降序排序
     }
   } catch (error) {
     console.error("请求新闻数据失败:", error);
@@ -169,7 +168,7 @@ const fetchRecruitments = async (page = 1, size = 3) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
-      params: { pageNo: page, pageSize: size }, 
+      params: { pageNo: page, pageSize: size },
     });
 
     if (response && response.records) {
@@ -492,15 +491,15 @@ h2 {
 }
 
 /* .tabs li:hover { */
-  /* background-color: #ffffff;  */
-  /* 鼠标悬停时背景色变白 */
-  /* color: #453d3d;  */
-  /* 鼠标悬停时字体变黑 */
+/* background-color: #ffffff;  */
+/* 鼠标悬停时背景色变白 */
+/* color: #453d3d;  */
+/* 鼠标悬停时字体变黑 */
 /* } */
 
 /* .tabs li.selected { */
-  /* color: #453d3d; 选中项字体颜色 */
-  /* background-color: #fff; 选中项背景色 */
+/* color: #453d3d; 选中项字体颜色 */
+/* background-color: #fff; 选中项背景色 */
 /* } */
 
 
