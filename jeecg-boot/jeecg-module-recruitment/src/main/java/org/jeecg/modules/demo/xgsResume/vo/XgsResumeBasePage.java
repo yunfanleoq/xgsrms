@@ -27,7 +27,22 @@ import io.swagger.annotations.ApiModelProperty;
 @Data
 @ApiModel(value="xgs_resume_basePage对象", description="基本信息")
 public class XgsResumeBasePage {
-
+	/**岗位名称*/
+	@Excel(name = "岗位名称", width = 15)
+	@ApiModelProperty(value = "岗位名称")
+	private java.lang.String applyUserName;
+	/**岗位名称*/
+	@Excel(name = "岗位名称", width = 15)
+	@ApiModelProperty(value = "岗位名称")
+	private java.lang.String applyPositionName;
+	/**岗位部门*/
+	@Excel(name = "岗位部门", width = 15)
+	@ApiModelProperty(value = "岗位部门")
+	private java.lang.String applyPositionDept;
+	/**岗位类型*/
+	@Excel(name = "岗位类型", width = 15)
+	@ApiModelProperty(value = "岗位类型")
+	private java.lang.String applyPositionType;
 	/**编号*/
 	@ApiModelProperty(value = "编号")
     private java.lang.String id;

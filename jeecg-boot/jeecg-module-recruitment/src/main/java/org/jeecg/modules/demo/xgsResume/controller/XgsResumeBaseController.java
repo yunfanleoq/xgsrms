@@ -313,9 +313,7 @@ public class XgsResumeBaseController {
 	 @ApiOperation(value="基本信息-申请工作岗位", notes="基本信息-申请工作岗位")
 	 @PostMapping(value = "/applyJob")
 	 public Result<String> applyJob(@RequestBody XgsResumeBasePage xgsResumeBasePage) {
-		 XgsResumeBase xgsResumeBase = new XgsResumeBase();
-		 BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
-		 xgsResumeBaseService.saveMain(xgsResumeBase, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
+		 xgsResumeBaseService.saveMainWithJob(xgsResumeBasePage, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
 		 return Result.OK("岗位申请已提交，请保持关注！");
 	 }
 
