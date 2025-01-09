@@ -41,7 +41,7 @@
   import {BasicTable, useTable, TableAction} from '/@/components/Table';
   import {useModal} from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage'
-  import XgsFavoriteJobModal from './components/XgsFavoriteJobModal.vue'
+  import XgsFavoriteJobModal from './components/PositionFavoriteDetail.vue'
   import {columns, searchFormSchema, superQuerySchema} from './XgsFavoriteJob.data';
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsFavoriteJob.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
