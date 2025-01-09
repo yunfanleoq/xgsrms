@@ -144,14 +144,9 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
   },
   {
-    label: '岗位职责',
-    field: 'duty',
-    component: 'JEditor',
-  },
-  {
     label: '学历学位',
     field: 'xlxw',
-    component: 'InputTextArea',
+    component: 'Input',
   },
   {
     label: '专业',
@@ -164,9 +159,22 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
   },
   {
+    label: '岗位职责',
+    field: 'duty',
+    labelWidth: '12.5%',
+    component: 'JEditor',
+    colProps: {
+      span: 24,
+    },
+  },
+  {
     label: '备注',
     field: 'memo',
+    labelWidth: '12.5%',
     component: 'JEditor',
+    colProps: {
+      span: 24,
+    },
   },
   {
     label: '岗位状态',

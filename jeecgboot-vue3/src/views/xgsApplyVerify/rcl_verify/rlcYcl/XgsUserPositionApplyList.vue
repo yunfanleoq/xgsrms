@@ -59,7 +59,7 @@
       },
       beforeFetch: (params) => {
         return Object.assign(params, queryParam, {
-          status: '已通过',
+          status: ['初审通过', '人力处未通过'],
         });
       },
     },
@@ -101,17 +101,17 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    if (record.status === '已通过') {
-      const record1 = {
-        ...record,
-        status: '已完成',
-      };
+    // if (record.status === '已处理') {
+    //   const record1 = {
+    //     ...record,
+    //     status: '已通过',
+    //   };
       openModal(true, {
-        record: record1,
+        record,
         isUpdate: true,
         showFooter: true,
       });
-    }
+
   }
   /**
    * 详情
@@ -147,7 +147,7 @@
   function getTableAction(record) {
     return [
       {
-        label: '审核',
+        label: '详情',
         onClick: handleEdit.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
       },

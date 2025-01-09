@@ -160,6 +160,7 @@ export const formSchema: FormSchema[] = [
     field: 'status',
     component: 'Input',
     dynamicDisabled: true,
+    show: false,
   },
   {
     label: '申请备注',

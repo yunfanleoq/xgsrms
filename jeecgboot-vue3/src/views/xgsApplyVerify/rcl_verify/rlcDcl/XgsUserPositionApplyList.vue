@@ -59,7 +59,8 @@
       },
       beforeFetch: (params) => {
         return Object.assign(params, queryParam, {
-          status: '申请中',
+          // positionDept: userStore.getDepartName,
+          status: '待人力处审核',
         });
       },
     },

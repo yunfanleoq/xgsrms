@@ -24,7 +24,6 @@ export const columns: BasicColumn[] = [
     title: '图片',
     align:"center",
     dataIndex: 'photograph',
-    customRender:render.renderImage,
    },
 ];
 //查询数据
@@ -50,15 +49,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '图片',
     field: 'photograph',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-    dynamicRules: ({model,schema}) => {
-          return [
-                 { required: true, message: '请输入图片!'},
-          ];
-     },
+    component: 'JEditor',
   },
 	// TODO 主键隐藏字段，目前写死为ID
 	{
@@ -74,7 +65,7 @@ export const superQuerySchema = {
   recruitAnnouncement: {title: '招聘公告',order: 0,view: 'umeditor', type: 'string',},
   newTitle: {title: '新闻标题',order: 1,view: 'text', type: 'string',},
   news: {title: '新闻',order: 2,view: 'umeditor', type: 'string',},
-  photograph: {title: '图片',order: 3,view: 'image', type: 'string',},
+  photograph: {title: '图片',order: 3,view: 'umeditor', type: 'string',},
 };
 
 /**

@@ -25,14 +25,14 @@
 
 <script lang="ts" name="xgsUserResume-xgsUserPositionApply" setup>
   import { ref, reactive, computed, unref } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { useModal } from '/@/components/Modal';
-  import { useListPage } from '/@/hooks/system/useListPage';
+  import { BasicTable, useTable, TableAction } from '/src/components/Table';
+  import { useModal } from '/src/components/Modal';
+  import { useListPage } from '/src/hooks/system/useListPage';
   import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
   import { columns, superQuerySchema } from './XgsUserPositionApply.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
-  import { downloadFile } from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
+  import { downloadFile } from '/src/utils/common/renderUtils';
+  import { useUserStore } from '/src/store/modules/user';
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -58,8 +58,10 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
+        const userDept = userStore.getDepartName;
         return Object.assign(params, queryParam, {
-          status: '已处理',
+          positionDept: userDept,
+          status: '待部门审核',
         });
       },
     },
@@ -101,17 +103,16 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    if (record.status === '已处理') {
-      const record1 = {
-        ...record,
-        status: '已通过',
-      };
+    // if (record.status === '已处理') {
+    //   const record1 = {
+    //     ...record,
+    //     status: '已通过',
+    //   };
       openModal(true, {
         record,
         isUpdate: true,
         showFooter: true,
       });
-    }
   }
   /**
    * 详情
@@ -147,7 +148,7 @@
   function getTableAction(record) {
     return [
       {
-        label: '审核',
+        label: '详情',
         onClick: handleEdit.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
       },

@@ -1,5 +1,5 @@
-import {defHttp} from '/@/utils/http/axios';
-import { useMessage } from "/@/hooks/web/useMessage";
+import {defHttp} from '/src/utils/http/axios';
+import { useMessage } from "/src/hooks/web/useMessage";
 
 const { createConfirm } = useMessage();
 

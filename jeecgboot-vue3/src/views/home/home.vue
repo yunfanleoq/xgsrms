@@ -1,103 +1,91 @@
-<template> 
+<template>
   <div>
-
-    <!-- 横幅 -->
-    <!-- <section class="banner"> -->
-<!--    <img src="http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg" alt="招聘横幅" />-->
-      <!-- <img src="http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg" alt="招聘横幅" /> -->
-    <!-- </section> -->
-
-  <div class="main-content">
-    <!-- 轮播图 -->
-    <div class="carousel">
-      <button
-        class="carousel-button left"
-        @click="showPrevImage"
-        v-show="isHovered">◀</button>
-      <img
-        :src="carouselImages[currentIndex]"
-        alt="轮播图"
-        @mouseover="isHovered = true"
-        @mouseleave="isHovered = false"/>
-      <button
-        class="carousel-button right"
-        @click="showNextImage"
-        v-show="isHovered">▶</button>
-      <!-- 圆点导航 -->
-      <div class="carousel-dots">
-        <span 
-          v-for="(image, index) in carouselImages"
-          :key="index"
-          :class="['dot', { active: index === currentIndex }]"
-          @click="currentIndex = index"></span>
+    <div class="main-content">
+      <!-- 轮播图 -->
+      <div class="carousel">
+        <button class="carousel-button left"
+                @click="showPrevImage"
+                v-show="isHovered">◀</button>
+        <img :src="carouselImages[currentIndex].image"
+             alt="轮播图"
+             @mouseover="isHovered = true"
+             @mouseleave="isHovered = false"/>
+        <button class="carousel-button right"
+                @click="showNextImage"
+                v-show="isHovered">▶</button>
+        <!-- 圆点导航 -->
+        <div class="carousel-dots">
+          <span v-for="(image, index) in carouselImages"
+                :key="index"
+                :class="['dot', { active: index === currentIndex }]"
+                @click="currentIndex = index"></span>
+        </div>
       </div>
-      
-    </div>
 
-    <!-- 新闻区域 -->
-    <div class="news">
-      <div v-for="(news, index) in newsList" :key="index" class="news-item">
-        <h3 v-html="news.title"></h3>
-        <p v-html="news.content"></p>
+      <!-- 新闻区域 -->
+      <div class="news">
+        <div v-for="(news, index) in newsList" :key="index" class="news-item">
+          <h3 v-html="news.title"></h3>
+          <p v-html="news.content"></p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- 公告导航栏和内容 -->
-  <div class="announcements-container">
-    <div class="tabs-container">
-      <ul class="tabs">
-        <!-- <li :class="{ selected: tabSelected === 'notice' }" @mouseover="tabSelected = 'notice'">通知公告</li> -->
-        <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">招聘公告</li>
-      </ul>
-      <!-- <a class="more-link" :href="tabSelected === 'notice' ? './home/news' : './home/positions'">查看更多 +</a> -->
-      <a class="more-link" :href="'./home/positions'">查看更多 +</a>
-    </div>
-    <div class="announcements-content">
-      <ul v-if="tabSelected === 'notice'" class="notice-list">
-        <li v-for="(item, index) in notices" :key="index">
-          <span>{{ item.date }}</span>
+    <!-- 公告导航栏和内容 -->
+    <div class="announcements-container">
+      <div class="tabs-container">
+        <ul class="tabs">
+          <!-- <li :class="{ selected: tabSelected === 'notice' }" @mouseover="tabSelected = 'notice'">通知公告</li> -->
+          <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">招聘公告</li>
+        </ul>
+        <!-- <a class="more-link" :href="tabSelected === 'notice' ? './home/news' : './home/positions'">查看更多 +</a> -->
+        <a class="more-link" :href="'./home/positions'">查看更多 +</a>
+      </div>
+      <div class="announcements-content">
+        <ul v-if="tabSelected === 'notice'" class="notice-list">
+          <li v-for="(item, index) in notices" :key="index">
+            <span>{{ item.date }}</span>
             <a :href="item.link">{{ item.title }}</a>
-        </li>
-      </ul>
-      <ul v-else class="recruitment-list">
-        <li v-for="(item, index) in recruitments" :key="index">
-          <!-- <span>{{ item.publishDate }}</span> -->
-          <!-- <a :href="item.link">{{ item.title }}</a> -->
-          <p v-html="item.announcement"></p>
-         </li>
-      </ul>
+          </li>
+        </ul>
+        <ul v-else class="recruitment-list">
+          <li v-for="(item, index) in recruitments" :key="index">
+            <!-- <span>{{ item.publishDate }}</span> -->
+            <!-- <a :href="item.link">{{ item.title }}</a> -->
+            <p v-html="item.announcement"></p>
+          </li>
+        </ul>
+      </div>
     </div>
-  </div>
 
 
-<!--    <div style="height: 500px">-->
+    <!--    <div style="height: 500px">-->
 
 
-<!--    </div>-->
+    <!--    </div>-->
     <!-- 分类和搜索框 -->
-<!--    <section class="filters">-->
-<!--    <div class="categories">-->
-<!--      <button v-for="(category, index) in categories" :key="index" @click="filterCategory(category)">-->
-<!--        {{ category }}-->
-<!--      </button>-->
-<!--    </div>-->
-<!--    <div class="search">-->
-<!--      <input v-model="searchQuery" placeholder="请输入职位名称" />-->
-<!--      <button @click="searchJobs">搜索</button>-->
-<!--    </div>-->
-<!--    </section>-->
+    <!--    <section class="filters">-->
+    <!--    <div class="categories">-->
+    <!--      <button v-for="(category, index) in categories" :key="index" @click="filterCategory(category)">-->
+    <!--        {{ category }}-->
+    <!--      </button>-->
+    <!--    </div>-->
+    <!--    <div class="search">-->
+    <!--      <input v-model="searchQuery" placeholder="请输入职位名称" />-->
+    <!--      <button @click="searchJobs">搜索</button>-->
+    <!--    </div>-->
+    <!--    </section>-->
 
     <!-- 职位列表 -->
-<!--    <section class="job-list">-->
-<!--    <div v-for="(job, index) in filteredJobs" :key="index" class="job-card">-->
-<!--      <h3>{{ job.title }}</h3>-->
-<!--      <p>职位数量：<strong>{{ job.count }}</strong></p>-->
-<!--      <p>工作地点：<strong>{{ job.location }}</strong></p>-->
-<!--      <p>薪资：<span class="salary">{{ job.salary }}</span></p>-->
-<!--      <p>{{ job.description }}</p>-->
-<!--    </div>-->
-<!--    </section>-->
+    <!--    <section class="job-list">-->
+    <!--    <div v-for="(job, index) in filteredJobs" :key="index" class="job-card">-->
+    <!--      <h3>{{ job.title }}</h3>-->
+    <!--      <p>职位数量：<strong>{{ job.count }}</strong></p>-->
+    <!--      <p>工作地点：<strong>{{ job.location }}</strong></p>-->
+    <!--      <p>薪资：<span class="salary">{{ job.salary }}</span></p>-->
+    <!--      <p>{{ job.description }}</p>-->
+    <!--    </div>-->
+    <!--    </section>-->
   </div>
 </template>
 
@@ -110,14 +98,40 @@ import {defHttp} from "@/utils/http/axios";
 
 const listUrl = "/xgsHome/xgsHome/list"
 
-// 轮播图数据
 const carouselImages = ref([
   "http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg",
-  "http://www.iie.cas.cn/xwdt2020/ttxw2020/202412/W020241227741553185612.jpg",
-  "http://www.iie.cas.cn/xwdt2020/ttxw2020/202411/W020241119655225033945.JPG",
 ]);
-
 const currentIndex = ref(0);
+
+
+// 获取轮播图数据的函数
+const fetchCarouselImages = async (page = 1, size = 5) => {
+  try {
+    const response = await defHttp.get({
+      url: listUrl, // 替换为你的轮播图数据接口
+      params: { pageNo: 1, pageSize: 1000 },
+    });
+    console.log(response.records)
+
+    if (response && response.records) {
+      carouselImages.value = response.records
+        .map((item) => {
+          const imgTag = item.photograph;  // 获取 HTML 字符串
+          const imgUrl = imgTag.match(/src="(.*?)"/);  // 正则提取 src 属性中的图片链接
+          return {
+            image: imgUrl ? imgUrl[1] : "",  // 如果找到了 src 属性，则提取它
+            createTime: item.createTime || "",  // 假设数据项中包含 `createTime` 字段
+          };
+        })
+        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+        .slice(0, 5); // 截取前三张轮播图
+      console.log("处理后的 carouselImages",carouselImages.value)
+
+    }
+  } catch (error) {
+    console.error("请求轮播图数据失败:", error);
+  }
+};
 
 // 自动轮播
 setInterval(() => {
@@ -139,25 +153,25 @@ const showNextImage = () => {
 
 // 新闻列表数据
 const newsList = ref([
-  { title: "", content: "" },
+  { title: "新闻标题", content: "新闻内容" },
 ]);
 
 // 获取新闻数据接口
 const fetchNews = async (page = 1, size = 2) => {
   try {
     const response = await defHttp.get({
-      url: listUrl,  
-      params: { pageNo: page, pageSize: size },
+      url: listUrl,
+      params: { pageNo: page, pageSize: 1000 },
     });
 
     if (response && response.records) {
-      newsList.value = response.records
-        .map((item: any) => ({
-          title: item.newTitle || "无标题",
-          content: item.news || "无内容",
-          createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
-        }))
-        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()); // 按时间降序排序
+      newsList.value = response.records.map((item: any) => ({
+        title: item.newTitle || "无标题",
+        content: item.news || "无内容",
+        createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
+      }))
+      .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+      .slice(0, size); // 截取前两条
     }
   } catch (error) {
     console.error("请求新闻数据失败:", error);
@@ -178,7 +192,7 @@ const fetchRecruitments = async (page = 1, size = 3) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
-      params: { pageNo: page, pageSize: size }, 
+      params: { pageNo: page, pageSize: 1000 },
     });
 
     if (response && response.records) {
@@ -187,7 +201,8 @@ const fetchRecruitments = async (page = 1, size = 3) => {
           announcement: item.recruitAnnouncement || "暂无内容",
           createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
         }))
-        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()); // 按时间降序排序
+        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())  // 按时间降序排序
+        .slice(0, size); // 截取前三条
     }
   } catch (error) {
     console.error("请求招聘公告数据失败:", error);
@@ -196,6 +211,7 @@ const fetchRecruitments = async (page = 1, size = 3) => {
 
 // 组件挂载时加载招聘公告
 onMounted(() => {
+  fetchCarouselImages();
   fetchRecruitments();
   fetchNews();
 });
@@ -277,15 +293,18 @@ h2 {
   font-weight: bold;
 }
 
+/* 外部容器，确保轮播图和公告区域宽度一致 */
 .main-content {
-  display: flex;
-  justify-content: center;  /* 居中对齐 */
-  align-items: flex-start;  /* 保证顶部对齐 */
-  width: 100%; 
-  max-width: 1300px; /* 限制容器最大宽度 */
-  margin: 20px auto; 
-  padding: 0 20px; /* 两侧留足间隙 */
-  flex-wrap: nowrap; /* 确保不换行 */
+  display: flex;           /* 使用 Flexbox 布局 */
+  justify-content: space-between; /* 两侧对齐 */
+  align-items: stretch;    /* 高度对齐 */
+  max-width: 1200px;       /* 统一容器宽度 */
+  margin: 0 auto;          /* 居中对齐 */
+  padding-left: 20px;      /* 左边距，与导航栏一致 */
+  padding-right: 20px;     /* 右边距 */
+  gap: 20px;               /* 轮播图与新闻区域的间距 */
+  box-sizing: border-box;  /* 包括 padding 在内的宽度计算 */
+  flex-wrap: nowrap;       /* 确保不换行 */
 }
 
 .carousel,
@@ -293,22 +312,28 @@ h2 {
   height: 400px; /* 确保新闻区域与轮播图高度一致 */
 }
 
-
-/* 轮播图区域样式 */
+/* 调整轮播图样式 */
 .carousel {
-  width: 1000px; /* 固定宽度 */
-  max-width: 1000px; /* 限制最大宽度 */
-  margin-right: 40px; /* 轮播图与新闻区域之间的间距 */
-  position: relative; /* 用于定位按钮 */
-  overflow: hidden;
+  flex: 3;                  /* 轮播图占比 3 */
+  max-width: 800px;         /* 限制最大宽度 */
+  height: 400px;            /* 固定高度 */
+  margin: 0;                /* 去除多余边距 */
+  padding: 0;               /* 去除多余内边距 */
+  position: relative;       /* 用于定位按钮 */
+  overflow: hidden;         /* 防止溢出 */
 }
 
 /* 轮播图图片样式 */
 .carousel img {
-  width: 1000px;    /* 填充轮播图容器 */
-  height: 400px;
-  object-fit: cover; /* 确保图片比例不失真 */
-  border-radius: 10px; /* 图片圆角 */
+  /*width: 1000px;    !* 填充轮播图容器 *!*/
+  /*height: 400px;*/
+  /*object-fit: cover; !* 确保图片比例不失真 *!*/
+  /*border-radius: 10px; !* 图片圆角 *!*/
+
+  display: block;
+  width: 100%; /* 或具体宽度 */
+  height: auto; /* 确保图片按比例缩放 */
+  object-fit: cover;
 }
 
 /* 轮播图按钮样式 */
@@ -382,18 +407,16 @@ h2 {
   background-color: #3d54a7; /* 鼠标悬停时颜色 */
 }
 
-
-/* 新闻板块样式 */
+/* 调整新闻区域样式 */
 .news {
-  width: 300px; /* 固定宽度 */
-  max-width: 300px; /* 确保不超过 300px */
-  height: 400px;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box; /* 确保padding和边框不会影响尺寸 */
-  overflow: hidden; /* 防止溢出 */
+  flex: 1;                  /* 新闻区域占比 1 */
+  max-width: 300px;         /* 限制最大宽度 */
+  height: 400px;            /* 固定高度，与轮播图一致 */
+  background-color: #f9f9f9; /* 背景色 */
+  padding: 10px;            /* 内边距 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+  border-radius: 10px;      /* 圆角 */
+  overflow: hidden;         /* 防止溢出 */
 }
 
 .news, .news-item {
@@ -434,17 +457,27 @@ h2 {
   height: auto; /* 自动调整高度 */
 }
 
+/* 确保招聘公告导航栏左对齐 */
+.announcements-container {
+  max-width: 1200px;        /* 与 .main-content 宽度一致 */
+  margin: 0 auto;           /* 居中对齐 */
+  padding-left: 20px;       /* 左边距，与轮播图一致 */
+  padding-right: 20px;      /* 右边距 */
+  display: flex;            /* 使用 Flexbox */
+  flex-direction: column;   /* 垂直排列 */
+}
 
 /* ----- */
-.announcements-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* 左对齐 */
-  width: 940px; 
-  max-width: 1000px; /* 限制最大宽度 */
-  margin-top: 20px; /* 距离轮播图的间距 */
-  margin-left: 195px; /* 与左侧轮播图对齐 */
-}
+/*.announcements-container {*/
+/*  display: flex;*/
+/*  flex-direction: column;*/
+/*  align-items: flex-start; !* 左对齐 *!*/
+/*  width: 940px;*/
+/*  max-width: 1000px; !* 限制最大宽度 *!*/
+/*  margin-top: 20px; !* 距离轮播图的间距 *!*/
+/*  margin-left: 195px; !* 与左侧轮播图对齐 *!*/
+/*}*/
+
 
 .tabs-container {
   display: flex;
@@ -458,6 +491,12 @@ h2 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
 }
 
+.announcements-content {
+  width: 100%;              /* 占满父容器宽度 */
+  display: flex;            /* Flex 布局 */
+  flex-direction: column;   /* 垂直排列内容 */
+  gap: 10px;                /* 子元素间距 */
+}
 
 .tabs {
   display: flex;
@@ -478,15 +517,15 @@ h2 {
 }
 
 /* .tabs li:hover { */
-  /* background-color: #ffffff;  */
-  /* 鼠标悬停时背景色变白 */
-  /* color: #453d3d;  */
-  /* 鼠标悬停时字体变黑 */
+/* background-color: #ffffff;  */
+/* 鼠标悬停时背景色变白 */
+/* color: #453d3d;  */
+/* 鼠标悬停时字体变黑 */
 /* } */
 
 /* .tabs li.selected { */
-  /* color: #453d3d; 选中项字体颜色 */
-  /* background-color: #fff; 选中项背景色 */
+/* color: #453d3d; 选中项字体颜色 */
+/* background-color: #fff; 选中项背景色 */
 /* } */
 
 
@@ -498,9 +537,6 @@ h2 {
   padding: 0 10px;
 }
 
-.announcements-content {
-  width: 100%;
-}
 
 .notice-list,
 .recruitment-list {

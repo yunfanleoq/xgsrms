@@ -17,18 +17,18 @@
 
 <script lang="ts" setup>
     import {ref, computed, unref} from 'vue';
-    import {BasicModal, useModalInner} from '/@/components/Modal';
-    import {BasicForm, useForm} from '/@/components/Form/index';
+    import {BasicModal, useModalInner} from '/src/components/Modal';
+    import {BasicForm, useForm} from '/src/components/Form';
     import {formSchema} from '../XgsUserPositionApply.data';
     import {saveOrUpdate} from '../XgsUserPositionApply.api';
     import axios from "axios";
 
     import xgsUserPositionApplyForm from './XgsUserPositionApplyForm.vue';
 
-    import xgsResumeBSHForm from '/@/views/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
-    import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
-    import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
-    import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
+    import xgsResumeBSHForm from '/src/views/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
+    import xgsResumePTForm from '/src/views/xgsResumeBase/xgsResumePT/components/XgsResumeBaseForm.vue';
+    import xgsResumeFGForm from '/src/views/xgsResumeBase/xgsResumeFG/components/XgsResumeFGForm.vue';
+    import xgsResumeTJForm from '/src/views/xgsResumeBase/xgsResumeTJ/components/XgsResumeTJForm.vue';
 
     const isReady = ref(false);
 

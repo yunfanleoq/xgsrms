@@ -1,66 +1,38 @@
 <template>
   <div>
     <!--引用表格-->
-    <BasicTable @register="registerTable" :rowSelection="rowSelection">
+    <BasicTable @register="registerTable" :rowSelection="rowSelection"
+                :scroll="{ x: 1200 }">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'xgsHome:xgs_home:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-        <a-button type="primary" v-auth="'xgsHome:xgs_home:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-        <j-upload-button type="primary" v-auth="'xgsHome:xgs_home:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls"
-          >导入</j-upload-button
+        <a-button type="primary" v-auth="'xgsUserResume:xgs_position_apply:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
+          导出</a-button
         >
-        <a-dropdown v-if="selectedRowKeys.length > 0">
-          <template #overlay>
-            <a-menu>
-              <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined"></Icon>
-                删除
-              </a-menu-item>
-            </a-menu>
-          </template>
-          <a-button v-auth="'xgsHome:xgs_home:deleteBatch'"
-            >批量操作
-            <Icon icon="mdi:chevron-down"></Icon>
-          </a-button>
-        </a-dropdown>
         <!-- 高级查询 -->
         <super-query :config="superQueryConfig" @search="handleSuperQuery" />
       </template>
       <!--操作栏-->
       <template #action="{ record }">
-        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)" />
+        <TableAction :actions="getTableAction(record)" />
       </template>
       <!--字段回显插槽-->
-      <template v-slot:bodyCell="{ column, record, index, text }">
-        <template v-if="column.dataIndex === 'recruitAnnouncement'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
-        </template>
-        <template v-if="column.dataIndex === 'news'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
-        </template>
-        <template v-if="column.dataIndex==='photograph'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
-        </template>
-      </template>
+      <template v-slot:bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsHomeModal @register="registerModal" @success="handleSuccess"></XgsHomeModal>
+    <XgsUserPositionApplyModal @register="registerModal" @success="handleSuccess"></XgsUserPositionApplyModal>
   </div>
 </template>
 
-<script lang="ts" name="xgsHome-xgsHome" setup>
+<script lang="ts" name="xgsUserResume-xgsUserPositionApply" setup>
   import { ref, reactive, computed, unref } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { useModal } from '/@/components/Modal';
-  import { useListPage } from '/@/hooks/system/useListPage';
-  import XgsHomeModal from './components/XgsHomeModal.vue';
-  import { columns, searchFormSchema, superQuerySchema } from './XgsHome.data';
-  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsHome.api';
-  import { downloadFile } from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
+  import { BasicTable, useTable, TableAction } from '/src/components/Table';
+  import { useModal } from '/src/components/Modal';
+  import { useListPage } from '/src/hooks/system/useListPage';
+  import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
+  import { columns, superQuerySchema } from './XgsUserPositionApply.data';
+  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
+  import { downloadFile } from '/src/utils/common/renderUtils';
+  import { useUserStore } from '/src/store/modules/user';
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -69,13 +41,13 @@
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
-      title: '首页',
+      title: '申请审核',
       api: list,
       columns,
       canResize: false,
       formConfig: {
-        //labelWidth: 120,
-        schemas: searchFormSchema,
+        // labelWidth: 120,
+        // schemas: searchFormSchema,
         autoSubmitOnEnter: true,
         showAdvancedButton: true,
         fieldMapToNumber: [],
@@ -86,11 +58,15 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
+        const userDept = userStore.getDepartName;
+        return Object.assign(params, queryParam, {
+          positionDept: userDept,
+          status: ['待人力处审核', '部门未通过'],
+        });
       },
     },
     exportConfig: {
-      name: '首页',
+      name: '申请审核',
       url: getExportUrl,
       params: queryParam,
     },
@@ -127,11 +103,16 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: true,
-    });
+    // if (record.status === '已处理') {
+    //   const record1 = {
+    //     ...record,
+    //     status: '已通过',
+    //   };
+      openModal(true, {
+        record,
+        isUpdate: true,
+        showFooter: true,
+      });
   }
   /**
    * 详情
@@ -167,9 +148,9 @@
   function getTableAction(record) {
     return [
       {
-        label: '编辑',
+        label: '详情',
         onClick: handleEdit.bind(null, record),
-        auth: 'xgsHome:xgs_home:edit',
+        auth: 'xgsUserResume:xgs_position_apply:edit',
       },
     ];
   }
@@ -189,7 +170,7 @@
           confirm: handleDelete.bind(null, record),
           placement: 'topLeft',
         },
-        auth: 'xgsHome:xgs_home:delete',
+        auth: 'xgsUserResume:xgs_position_apply:delete',
       },
     ];
   }
