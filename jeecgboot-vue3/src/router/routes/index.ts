@@ -163,6 +163,4 @@ export const basicRoutes = [
   TokenLoginRoute,
   Oauth2LoginRoute,
   homeIndexRoute,
-
-
 ];

@@ -42,11 +42,13 @@
   import {BasicTable, useTable, TableAction} from '/@/components/Table';
   import {useModal} from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage'
-  import XgsFavoriteJobModal from './components/XgsFavoriteJobModal.vue'
+  // import XgsFavoriteJobModal from './components/XgsFavoriteJobModal.vue'
+  import XgsFavoriteJobModal from './components/PositionFavoriteDetail.vue'
   import {columns, searchFormSchema, superQuerySchema} from './XgsFavoriteJob.data';
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsFavoriteJob.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
+  import {useRouter} from "vue-router";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -153,10 +155,11 @@
       * 操作栏
       */
   function getTableAction(record){
+    console.log("chakan+++++===", record)
      return [
        {
          label: '查看',
-         onClick: handleEdit.bind(null, record),
+         onClick: handleEdit.bind(null, record.id),
          auth: 'positions:xgs_favorite_job:edit'
        },
        {
