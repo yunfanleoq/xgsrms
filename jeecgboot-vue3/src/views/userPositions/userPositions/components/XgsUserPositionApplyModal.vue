@@ -91,7 +91,7 @@
         // console.log("formData", formData.value);
         formData.value = {
           id: data.record.id,
-          dataId: data.record.id,
+          dataId: data.record.resumeId,
           disabled: true
         }
         // 隐藏底部时禁用整个表单
