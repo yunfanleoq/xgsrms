@@ -1,8 +1,8 @@
-import { BasicColumn } from '/@/components/Table';
-import { FormSchema } from '/@/components/Table';
-import { rules } from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import { getWeekMonthQuarterYear } from '/@/utils';
+import { BasicColumn } from '/src/components/Table';
+import { FormSchema } from '/src/components/Table';
+import { rules } from '/src/utils/helper/validator';
+import { render } from '/src/utils/common/renderUtils';
+import { getWeekMonthQuarterYear } from '/src/utils';
 //列表数据
 export const columns: BasicColumn[] = [
   {
@@ -160,6 +160,7 @@ export const formSchema: FormSchema[] = [
     field: 'status',
     component: 'Input',
     dynamicDisabled: true,
+    show: false,
   },
   {
     label: '申请备注',

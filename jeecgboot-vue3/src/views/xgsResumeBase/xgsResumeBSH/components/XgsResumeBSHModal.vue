@@ -76,7 +76,7 @@
     // Emits声明
     const emit = defineEmits(['register','success']);
     const isUpdate = ref(true);
-    const formDisabled = ref(false);
+    const formDisabled = ref(true);
     const modalRef = ref();
     const refKeys = ref(['xgsResumeBSH','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
     const tabNav = ref<any>([

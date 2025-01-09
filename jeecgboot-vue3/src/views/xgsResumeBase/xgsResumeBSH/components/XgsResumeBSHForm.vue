@@ -156,7 +156,7 @@
           console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         // 隐藏底部时禁用整个表单
-        setProps({ disabled: formDisabled.value })
+        // setProps({ disabled: formDisabled.value })
       }
     }
 

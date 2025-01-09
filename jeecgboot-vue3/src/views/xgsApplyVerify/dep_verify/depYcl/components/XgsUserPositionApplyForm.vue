@@ -9,10 +9,10 @@
 </template>
 
 <script lang="ts">
-    import {BasicForm, useForm} from '/@/components/Form/index';
+    import {BasicForm, useForm} from '/src/components/Form';
     import {computed, defineComponent, ref} from 'vue';
-    import {defHttp} from '/@/utils/http/axios';
-    import { propTypes } from '/@/utils/propTypes';
+    import {defHttp} from '/src/utils/http/axios';
+    import { propTypes } from '/src/utils/propTypes';
     import {getBpmFormSchema} from '../XgsUserPositionApply.data';
     import {saveOrUpdate} from '../XgsUserPositionApply.api';
 

@@ -381,9 +381,9 @@ export const formSchema: FormSchema[] = [
     label: '研究室意见',
     field: 'labIdea',
     component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"研究室意见"
-     },
+    componentProps: {
+      dictCode: "研究室意见"
+    },
   },
   {
     label: '研究室负责人签字',
