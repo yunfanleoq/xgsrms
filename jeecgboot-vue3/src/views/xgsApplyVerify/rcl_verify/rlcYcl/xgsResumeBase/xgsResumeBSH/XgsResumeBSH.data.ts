@@ -415,6 +415,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '研究室意见',
     field: 'labIdea',
+    dynamicDisabled: true,
     component: 'JEditor',
     dynamicDisabled: true,
     componentProps: {

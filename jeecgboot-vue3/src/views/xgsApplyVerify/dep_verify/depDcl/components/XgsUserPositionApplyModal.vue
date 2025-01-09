@@ -7,9 +7,13 @@
     :width="896"
     okText="通过"
     @ok="handleSubmit"
-    cancelText="拒绝"
-    @cancel="handleCancel"
+<!--    cancelText="拒绝"-->
+<!--    @cancel="handleCancel"-->
   >
+    <template #footer>
+      <a-button key="back" @click="handleCancel">拒绝</a-button>
+      <a-button key="submit" type="primary" @click="handleSubmit">通过</a-button>
+    </template>
     <BasicForm
       @register="registerForm"
       name="XgsUserPositionApplyForm"
@@ -115,7 +119,8 @@
       );
       console.log('positionType', positionType.value);
       let values = await validate();
-      // setModalProps({confirmLoading: true});
+      values.status = "待人力处审核";//修改状态
+      setModalProps({confirmLoading: true});
       // //提交表单
       await saveOrUpdate(values, isUpdate.value);
       // //关闭弹窗
@@ -135,17 +140,16 @@
     }
   }
   // 取消按钮点击事件
-  async function handleCancel() {
+  async function handleCancel(v) {
     try {
-      // 获取当前表单的数据
-      const values = await validate();
-      // 修改 status 字段的值
-      values.status = '部门未通过';
-      // 更新表单数据
-      setFieldsValue(values);
-      // 关闭模态对话框
+      let values = await validate();
+      values.status = "部门未通过";//修改状态
+      setModalProps({ confirmLoading: true });
+      //提交表单
+      await saveOrUpdate(values, isUpdate.value);
+      //关闭弹窗
       closeModal();
-      // 触发更新事件
+      //刷新列表
       emit('success');
     } catch ({ errorFields }) {
       if (errorFields) {
@@ -155,6 +159,8 @@
         }
       }
       return Promise.reject(errorFields);
+    } finally {
+      setModalProps({ confirmLoading: false });
     }
   }
 </script>

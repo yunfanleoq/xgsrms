@@ -4,22 +4,12 @@ import { rules} from '/src/utils/helper/validator';
 import { render } from '/src/utils/common/renderUtils';
 import {JVxeTypes,JVxeColumn} from '/src/components/jeecg/JVxeTable/types'
 import { getWeekMonthQuarterYear } from '/src/utils';
-import {defineProps} from "vue/dist/vue";
-import {ref} from "vue";
-
-import { useUserStore } from "@/store/modules/user"
-
-const userStore = useUserStore();
-import {
-  xgsResumeEdusList,
-  xgsResumeHomeList
-} from "@/views/xgsResumeBase/xgsResumeBSH/XgsResumeBSH.api";
 //列表数据
 export const columns: BasicColumn[] = [
    {
     title: '姓名',
     align:"center",
-    dataIndex: 'name',
+    dataIndex: 'name'
    },
    {
     title: '本人照片',
@@ -57,11 +47,6 @@ export const columns: BasicColumn[] = [
     dataIndex: 'idNumber'
    },
    {
-    title: '婚姻状况',
-    align:"center",
-    dataIndex: 'maritalStatus'
-   },
-   {
     title: '政治面貌',
     align:"center",
     dataIndex: 'politicBackground'
@@ -70,6 +55,40 @@ export const columns: BasicColumn[] = [
     title: '户口所在地',
     align:"center",
     dataIndex: 'hukou'
+   },
+   {
+    title: '是否应届毕业生',
+    align:"center",
+    dataIndex: 'yjbys_dictText'
+   },
+   {
+    title: '毕业院校',
+    align:"center",
+    dataIndex: 'graduateCollege'
+   },
+   {
+    title: '学历',
+    align:"center",
+    dataIndex: 'education'
+   },
+   {
+    title: '学位',
+    align:"center",
+    dataIndex: 'degree'
+   },
+   {
+    title: '专业',
+    align:"center",
+    dataIndex: 'profession'
+   },
+   {
+    title: '毕业时间',
+    align:"center",
+    dataIndex: 'graduateDate',
+    customRender:({text}) =>{
+      text = !text ? "" : (text.length > 10 ? text.substr(0,10) : text);
+      return text;
+    },
    },
    {
     title: '参加工作时间',
@@ -96,68 +115,52 @@ export const columns: BasicColumn[] = [
     dataIndex: 'adminPosition'
    },
    {
-    title: '研究室',
+    title: '任职时间',
     align:"center",
-    dataIndex: 'lob'
-   },
-   {
-    title: '博士后研究方向',
-    align:"center",
-    dataIndex: 'researchOrientation'
-   },
-   {
-    title: '申请人当前身份',
-    align:"center",
-    dataIndex: 'proposerStatus_dictText'
-   },
-   {
-    title: '申报博士后类型',
-    align:"center",
-    dataIndex: 'postdoctorType_dictText'
-   },
-   {
-    title: '合作导师',
-    align:"center",
-    dataIndex: 'teacher'
-   },
-   {
-    title: '博士毕业院校',
-    align:"center",
-    dataIndex: 'graduateInstitutions'
-   },
-   {
-    title: '一级学科',
-    align:"center",
-    dataIndex: 'subject1'
-   },
-   {
-    title: '二级学科',
-    align:"center",
-    dataIndex: 'subject2'
-   },
-   {
-    title: '博士学位证书 获得时间',
-    align:"center",
-    dataIndex: 'certificateTime',
+    dataIndex: 'adminPositionDate',
     customRender:({text}) =>{
       text = !text ? "" : (text.length > 10 ? text.substr(0,10) : text);
       return text;
     },
    },
    {
-    title: '现专业技术职务',
+    title: '现岗位',
     align:"center",
-    dataIndex: 'technicalPosition'
+    dataIndex: 'professionLevel'
    },
    {
-    title: '在站期间研究内容有无涉密内容',
+    title: '聘任时间',
     align:"center",
-    dataIndex: 'secretText_dictText'
+    dataIndex: 'professionLevelDate',
+    customRender:({text}) =>{
+      text = !text ? "" : (text.length > 10 ? text.substr(0,10) : text);
+      return text;
+    },
    },
    {
-    title: '一站单位名称',
+    title: '联系电话',
     align:"center",
-    dataIndex: 'workFirst'
+    dataIndex: 'mobile'
+   },
+   {
+    title: 'E-mail',
+    align:"center",
+    dataIndex: 'email'
+   },
+   {
+    title: '应聘部门',
+    align:"center",
+    dataIndex: 'applyDept'
+   },
+   {
+    title: '应聘岗位名称',
+    align:"center",
+    dataIndex: 'applyPosition'
+   },
+   {
+    title: '岗位类型',
+    align:"center",
+    dataIndex: 'positionType_dictText'
    },
    {
     title: '简历名称',
@@ -179,12 +182,10 @@ export const formSchema: FormSchema[] = [
     label: '姓名',
     field: 'name',
     component: 'Input',
-    dynamicDisabled: true,
   },
   {
     label: '本人照片',
     field: 'photograph',
-    dynamicDisabled: true,
      component: 'JImageUpload',
      componentProps:{
         fileMax: 0
@@ -193,7 +194,6 @@ export const formSchema: FormSchema[] = [
   {
     label: '性别',
     field: 'sex',
-    dynamicDisabled: true,
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"sex"
@@ -203,280 +203,216 @@ export const formSchema: FormSchema[] = [
     label: '籍贯',
     field: 'nativePlace',
     component: 'Input',
-    dynamicDisabled: true,
   },
   {
     label: '出生年月',
     field: 'birthday',
-    dynamicDisabled: true,
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
-    },
+    },    
   },
   {
     label: '民族',
     field: 'nation',
     component: 'Input',
-    dynamicDisabled: true,
   },
   {
     label: '身份证号',
     field: 'idNumber',
     component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '婚姻状况',
-    field: 'maritalStatus',
-    component: 'Input',
-    dynamicDisabled: true,
   },
   {
     label: '政治面貌',
     field: 'politicBackground',
     component: 'Input',
-    dynamicDisabled: true,
   },
   {
     label: '户口所在地',
     field: 'hukou',
     component: 'Input',
-    dynamicDisabled: true,
   },
   {
-    label: '参加工作时间',
-    field: 'workDate',
-    dynamicDisabled: true,
-    component: 'DatePicker',
-    componentProps: {
-      valueFormat: 'YYYY-MM-DD'
-    },
-  },
-  {
-    label: '目前工作单位',
-    field: 'workUnit',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '档案所在单位',
-    field: 'personFilesUnit',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '现行政职务',
-    field: 'adminPosition',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '学习经历',
-    field: 'studyExperience',
-    component: 'InputTextArea',
-    dynamicDisabled: true,
-  },
-  {
-    label: '研究方向与专长',
-    field: 'researchDirection',
-    component: 'InputTextArea',
-    dynamicDisabled: true,
-  },
-  {
-    label: '承担科研、管理工作情况',
-    field: 'researchWork',
-    component: 'InputTextArea',
-    dynamicDisabled: true,
-  },
-  {
-    label: '主要论著目录',
-    field: 'researchWorks',
-    component: 'InputTextArea',
-    dynamicDisabled: true,
-  },
-  {
-    label: '论文专著专利',
-    field: 'researchPaper',
-    component: 'InputTextArea',
-    dynamicDisabled: true,
-  },
-  {
-    label: '拟研究计划',
-    field: 'researchProposal',
-    component: 'InputTextArea',
-    dynamicDisabled: true,
-  },
-  {
-    label: '所在地',
-    field: 'areaId',
-    component: 'InputNumber',
-    dynamicDisabled: true,
-  },
-  {
-    label: '研究室',
-    field: 'lob',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '博士后研究方向',
-    field: 'researchOrientation',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '申请人当前身份',
-    field: 'proposerStatus',
-    dynamicDisabled: true,
-    component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"申请人身份"
-     },
-  },
-  {
-    label: '申报博士后类型',
-    field: 'postdoctorType',
-    dynamicDisabled: true,
-    component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"博士后类型"
-     },
-  },
-  {
-    label: '合作导师',
-    field: 'teacher',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '博士毕业院校',
-    field: 'graduateInstitutions',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '一级学科',
-    field: 'subject1',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '二级学科',
-    field: 'subject2',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '博士学位证书 获得时间',
-    field: 'certificateTime',
-    dynamicDisabled: true,
-    component: 'DatePicker',
-    componentProps: {
-      valueFormat: 'YYYY-MM-DD'
-    },
-  },
-  {
-    label: '现专业技术职务',
-    field: 'technicalPosition',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '在站期间研究内容有无涉密内容',
-    field: 'secretText',
-    dynamicDisabled: true,
+    label: '是否应届毕业生',
+    field: 'yjbys',
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"yes_or_no"
      },
   },
   {
-    label: '一站单位名称',
-    field: 'workFirst',
-    component: 'Input',
-    dynamicDisabled: true,
+    label: '是否统招统分',
+    field: 'tztf',
+    component: 'JDictSelectTag',
+    componentProps:{
+        dictCode:"yes_or_no"
+     },
   },
   {
-    label: '导师评价',
-    field: 'teacherEvaluate',
+    label: '毕业院校',
+    field: 'graduateCollege',
     component: 'Input',
-    dynamicDisabled: true,
   },
-  // {
-  //   label: '导师签字',
-  //   field: 'teacherSignature',
-  //   dynamicDisabled: true,
-  //    component: 'JImageUpload',
-  //    componentProps:{
-  //       fileMax: 0
-  //     },
-  // },
   {
-    label: '研究室意见',
-    field: 'labIdea',
-    component: 'JEditor',
-    dynamicDisabled: true,
+    label: '学历',
+    field: 'education',
+    component: 'Input',
+  },
+  {
+    label: '学位',
+    field: 'degree',
+    component: 'Input',
+  },
+  {
+    label: '专业',
+    field: 'profession',
+    component: 'Input',
+  },
+  {
+    label: '毕业时间',
+    field: 'graduateDate',
+    component: 'DatePicker',
     componentProps: {
-      dictCode: "研究室意见"
-    },
-    colProps: {
-      span: 24,
-    },
+      valueFormat: 'YYYY-MM-DD'
+    },    
   },
-  // {
-  //   label: '研究室负责人签字',
-  //   field: 'labSignature',
-  //    component: 'JImageUpload',
-  //    componentProps:{
-  //       fileMax: 0
-  //     },
-  // },
-  // {
-  //   label: '人力资源处意见',
-  //   field: 'resourcesIdea',
-  //   component: 'Input',
-  //   dynamicDisabled: true,
-  // },
-  // {
-  //   label: '人力资源处签字',
-  //   field: 'resourceSsignature',
-  //   dynamicDisabled: true,
-  //    component: 'JImageUpload',
-  //    componentProps:{
-  //       fileMax: 0
-  //     },
-  // },
-  // {
-  //   label: '研究所意见',
-  //   field: 'schoolSsignature',
-  //   component: 'Input',
-  //   dynamicDisabled: true,
-  // },
-  // {
-  //   label: '研究所签字',
-  //   field: 'schoolIdea',
-  //   dynamicDisabled: true,
-  //    component: 'JImageUpload',
-  //    componentProps:{
-  //       fileMax: 0
-  //     },
-  // },
-  // {
-  //   label: '简历名称',
-  //   field: 'resumeName',
-  //   component: 'Input',
-  //   dynamicDisabled: true,
-  // },
-  // {
-  //   label: '简历类别',
-  //   field: 'resumeType',
-  //   // dynamicDisabled: true,
-  //   component: 'JDictSelectTag',
-  //   componentProps:{
-  //       dictCode:"岗位分类"
-  //    },
-  // },
+  {
+    label: '参加工作时间',
+    field: 'workDate',
+    component: 'DatePicker',
+    componentProps: {
+      valueFormat: 'YYYY-MM-DD'
+    },    
+  },
+  {
+    label: '目前工作单位',
+    field: 'workUnit',
+    component: 'Input',
+  },
+  {
+    label: '档案所在单位',
+    field: 'personFilesUnit',
+    component: 'Input',
+  },
+  {
+    label: '现行政职务',
+    field: 'adminPosition',
+    component: 'Input',
+  },
+  {
+    label: '任职时间',
+    field: 'adminPositionDate',
+    component: 'DatePicker',
+    componentProps: {
+      valueFormat: 'YYYY-MM-DD'
+    },    
+  },
+  {
+    label: '现岗位',
+    field: 'professionLevel',
+    component: 'Input',
+  },
+  {
+    label: '聘任时间',
+    field: 'professionLevelDate',
+    component: 'DatePicker',
+    componentProps: {
+      valueFormat: 'YYYY-MM-DD'
+    },    
+  },
+  {
+    label: '与本所职工（包括在读研究生）是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系（若有请写出姓名）？（请务必勾选）',
+    field: 'xgsRelation',
+    component: 'Input',
+  },
+  {
+    label: '联系电话',
+    field: 'mobile',
+    component: 'Input',
+    dynamicRules: ({model,schema}) => {
+          return [
+                 { required: false},
+                 { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号码!'},
+          ];
+     },
+  },
+  {
+    label: 'E-mail',
+    field: 'email',
+    component: 'Input',
+    dynamicRules: ({model,schema}) => {
+          return [
+                 { required: false},
+                 { pattern: /^([\w]+\.*)([\w]+)@[\w]+\.\w{3}(\.\w{2}|)$/, message: '请输入正确的电子邮件!'},
+          ];
+     },
+  },
+  {
+    label: '学习经历',
+    field: 'studyExperience',
+    component: 'InputTextArea',
+  },
+  {
+    label: '研究方向与专长',
+    field: 'researchDirection',
+    component: 'InputTextArea',
+  },
+  {
+    label: '承担科研、管理工作情况',
+    field: 'researchWork',
+    component: 'InputTextArea',
+  },
+  {
+    label: '工作主要业绩',
+    field: 'researchResult',
+    component: 'InputTextArea',
+  },
+  {
+    label: '论文专著专利',
+    field: 'researchPaper',
+    component: 'InputTextArea',
+  },
+  {
+    label: '应聘岗位陈述',
+    field: 'positionDescription',
+    component: 'InputTextArea',
+  },
+  {
+    label: '应聘部门',
+    field: 'applyDept',
+    component: 'Input',
+  },
+  {
+    label: '应聘岗位名称',
+    field: 'applyPosition',
+    component: 'Input',
+  },
+  {
+    label: '岗位类型',
+    field: 'positionType',
+    component: 'JCheckbox',
+    componentProps:{
+        dictCode:"	岗位类型"
+     },
+  },
+  {
+    label: '所在地',
+    field: 'areaId',
+    component: 'InputNumber',
+  },
+  {
+    label: '简历名称',
+    field: 'resumeName',
+    component: 'Input',
+  },
+  {
+    label: '简历类别',
+    field: 'resumeType',
+    component: 'JDictSelectTag',
+    componentProps:{
+        dictCode:"岗位分类"
+     },
+  },
 	// TODO 主键隐藏字段，目前写死为ID
 	{
 	  label: '',
@@ -668,7 +604,7 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
       type: JVxeTypes.input,
       width:"200px",
       placeholder: '请输入${title}',
-      defaultValue:'山东临沂',
+      defaultValue:'',
     },
     {
       title: '毕业院校',
@@ -676,7 +612,7 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
       type: JVxeTypes.input,
       width:"200px",
       placeholder: '请输入${title}',
-      defaultValue:'聊城大学',
+      defaultValue:'',
     },
     {
       title: '学历',
@@ -684,7 +620,7 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
       type: JVxeTypes.input,
       width:"200px",
       placeholder: '请输入${title}',
-      defaultValue:'硕士',
+      defaultValue:'',
     },
     {
       title: '学位',
@@ -737,27 +673,28 @@ export const superQuerySchema = {
   birthday: {title: '出生年月',order: 4,view: 'date', type: 'string',},
   nation: {title: '民族',order: 5,view: 'text', type: 'string',},
   idNumber: {title: '身份证号',order: 6,view: 'text', type: 'string',},
-  maritalStatus: {title: '婚姻状况',order: 7,view: 'text', type: 'string',},
-  politicBackground: {title: '政治面貌',order: 8,view: 'text', type: 'string',},
-  hukou: {title: '户口所在地',order: 9,view: 'text', type: 'string',},
-  workDate: {title: '参加工作时间',order: 10,view: 'date', type: 'string',},
-  workUnit: {title: '目前工作单位',order: 11,view: 'text', type: 'string',},
-  personFilesUnit: {title: '档案所在单位',order: 12,view: 'text', type: 'string',},
-  adminPosition: {title: '现行政职务',order: 13,view: 'text', type: 'string',},
-  lob: {title: '研究室',order: 21,view: 'text', type: 'string',},
-  researchOrientation: {title: '博士后研究方向',order: 22,view: 'text', type: 'string',},
-  proposerStatus: {title: '申请人当前身份',order: 23,view: 'list', type: 'string',dictCode: '申请人身份',},
-  postdoctorType: {title: '申报博士后类型',order: 24,view: 'list', type: 'string',dictCode: '博士后类型',},
-  teacher: {title: '合作导师',order: 25,view: 'text', type: 'string',},
-  graduateInstitutions: {title: '博士毕业院校',order: 26,view: 'text', type: 'string',},
-  subject1: {title: '一级学科',order: 27,view: 'text', type: 'string',},
-  subject2: {title: '二级学科',order: 28,view: 'text', type: 'string',},
-  certificateTime: {title: '博士学位证书 获得时间',order: 29,view: 'date', type: 'string',},
-  technicalPosition: {title: '现专业技术职务',order: 30,view: 'text', type: 'string',},
-  secretText: {title: '在站期间研究内容有无涉密内容',order: 31,view: 'list', type: 'string',dictCode: 'yes_or_no',},
-  workFirst: {title: '一站单位名称',order: 32,view: 'text', type: 'string',},
-  resumeName: {title: '简历名称',order: 41,view: 'text', type: 'string',},
-  resumeType: {title: '简历类别',order: 42,view: 'list', type: 'string',dictCode: '岗位分类',},
+  politicBackground: {title: '政治面貌',order: 7,view: 'text', type: 'string',},
+  hukou: {title: '户口所在地',order: 8,view: 'text', type: 'string',},
+  yjbys: {title: '是否应届毕业生',order: 9,view: 'list', type: 'string',dictCode: 'yes_or_no',},
+  graduateCollege: {title: '毕业院校',order: 11,view: 'text', type: 'string',},
+  education: {title: '学历',order: 12,view: 'text', type: 'string',},
+  degree: {title: '学位',order: 13,view: 'text', type: 'string',},
+  profession: {title: '专业',order: 14,view: 'text', type: 'string',},
+  graduateDate: {title: '毕业时间',order: 15,view: 'date', type: 'string',},
+  workDate: {title: '参加工作时间',order: 16,view: 'date', type: 'string',},
+  workUnit: {title: '目前工作单位',order: 17,view: 'text', type: 'string',},
+  personFilesUnit: {title: '档案所在单位',order: 18,view: 'text', type: 'string',},
+  adminPosition: {title: '现行政职务',order: 19,view: 'text', type: 'string',},
+  adminPositionDate: {title: '任职时间',order: 20,view: 'date', type: 'string',},
+  professionLevel: {title: '现岗位',order: 21,view: 'text', type: 'string',},
+  professionLevelDate: {title: '聘任时间',order: 22,view: 'date', type: 'string',},
+  mobile: {title: '联系电话',order: 24,view: 'text', type: 'string',},
+  email: {title: 'E-mail',order: 25,view: 'text', type: 'string',},
+  applyDept: {title: '应聘部门',order: 32,view: 'text', type: 'string',},
+  applyPosition: {title: '应聘岗位名称',order: 33,view: 'text', type: 'string',},
+  positionType: {title: '岗位类型',order: 34,view: 'checkbox', type: 'string',dictCode: '	岗位类型',},
+  resumeName: {title: '简历名称',order: 36,view: 'text', type: 'string',},
+  resumeType: {title: '简历类别',order: 37,view: 'list', type: 'string',dictCode: '岗位分类',},
   //子表高级查询
   xgsResumeWorks: {
     title: '工作经历',
@@ -807,19 +744,3 @@ export const superQuerySchema = {
     }
   },
 };
-
-//主表信息
-const resume = ref("")
-//子表信息
-const resumeWorks = ref("")
-const resumeEdus = ref("")
-const resumeHome = ref("")
-
-//获取当前登录的用户的id
-const userId = ref(  )
-userId.value = userStore.getUserInfo.username
-const getResume = () => {
-
-}
-
-

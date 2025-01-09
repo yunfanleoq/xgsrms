@@ -25,7 +25,7 @@
 
     import xgsUserPositionApplyForm from './XgsUserPositionApplyForm.vue';
 
-    import xgsResumeBSHForm from '/@/views/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
+    import xgsResumeBSHForm from '/src/views/xgsApplyVerify/rcl_verify/rlcYcl/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
     import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
     import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
     import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
