@@ -1,19 +1,19 @@
-import {defHttp} from '/@/utils/http/axios';
-import { useMessage } from "/@/hooks/web/useMessage";
+import {defHttp} from '/src/utils/http/axios';
+import { useMessage } from "/src/hooks/web/useMessage";
 
 const { createConfirm } = useMessage();
 
 enum Api {
-  list = '/xgsResume/xgsResumeTJ/list',
-  save='/xgsResume/xgsResumeTJ/add',
-  edit='/xgsResume/xgsResumeTJ/edit',
-  deleteOne = '/xgsResume/xgsResumeTJ/delete',
-  deleteBatch = '/xgsResume/xgsResumeTJ/deleteBatch',
-  importExcel = '/xgsResume/xgsResumeTJ/importExcel',
-  exportXls = '/xgsResume/xgsResumeTJ/exportXls',
-  xgsResumeWorksList = '/xgsResume/xgsResumeTJ/queryXgsResumeWorksByMainId',
-  xgsResumeEdusList = '/xgsResume/xgsResumeTJ/queryXgsResumeEdusByMainId',
-  xgsResumeHomeList = '/xgsResume/xgsResumeTJ/queryXgsResumeHomeByMainId',
+  list = '/xgsResume/xgsResumeBase/list',
+  save='/xgsResume/xgsResumeBase/add',
+  edit='/xgsResume/xgsResumeBase/edit',
+  deleteOne = '/xgsResume/xgsResumeBase/delete',
+  deleteBatch = '/xgsResume/xgsResumeBase/deleteBatch',
+  importExcel = '/xgsResume/xgsResumeBase/importExcel',
+  exportXls = '/xgsResume/xgsResumeBase/exportXls',
+  xgsResumeWorksList = '/xgsResume/xgsResumeBase/queryXgsResumeWorksByMainId',
+  xgsResumeEdusList = '/xgsResume/xgsResumeBase/queryXgsResumeEdusByMainId',
+  xgsResumeHomeList = '/xgsResume/xgsResumeBase/queryXgsResumeHomeByMainId',
 }
 /**
  * 导出api

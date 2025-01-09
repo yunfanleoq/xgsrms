@@ -1,56 +1,105 @@
-import {BasicColumn} from '/@/components/Table';
-import {FormSchema} from '/@/components/Table';
-import { rules} from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import {JVxeTypes,JVxeColumn} from '/@/components/jeecg/JVxeTable/types'
-import { getWeekMonthQuarterYear } from '/@/utils';
+import {BasicColumn} from '/src/components/Table';
+import {FormSchema} from '/src/components/Table';
+import { rules} from '/src/utils/helper/validator';
+import { render } from '/src/utils/common/renderUtils';
+import {JVxeTypes,JVxeColumn} from '/src/components/jeecg/JVxeTable/types'
+import { getWeekMonthQuarterYear } from '/src/utils';
 //列表数据
 export const columns: BasicColumn[] = [
    {
-    title: '被推荐人',
+    title: '姓名',
     align:"center",
-    dataIndex: 'propositus'
+    dataIndex: 'name'
    },
    {
-    title: '推荐人',
+    title: '本人照片',
     align:"center",
-    dataIndex: 'referrer'
-   },
-   {
-    title: '推荐人技术职务',
-    align:"center",
-    dataIndex: 'referrerPosition'
-   },
-   {
-    title: '推荐人工作单位',
-    align:"center",
-    dataIndex: 'referrerUnit'
-   },
-   {
-    title: '推荐人联系方式',
-    align:"center",
-    dataIndex: 'referrerMobile'
-   },
-   {
-    title: '推荐人电子邮箱',
-    align:"center",
-    dataIndex: 'referrerEmail'
-   },
-   {
-    title: '推荐人签名',
-    align:"center",
-    dataIndex: 'referrerSignature',
+    dataIndex: 'photograph',
     customRender:render.renderImage,
    },
    {
-    title: '拟申报岗位等级',
+    title: '性别',
     align:"center",
-    dataIndex: 'positionClass'
+    dataIndex: 'sex_dictText'
    },
    {
-    title: '推荐原因',
+    title: '籍贯',
     align:"center",
-    dataIndex: 'cause'
+    dataIndex: 'nativePlace'
+   },
+   {
+    title: '出生年月',
+    align:"center",
+    dataIndex: 'birthday',
+    customRender:({text}) =>{
+      text = !text ? "" : (text.length > 10 ? text.substr(0,10) : text);
+      return text;
+    },
+   },
+   {
+    title: '民族',
+    align:"center",
+    dataIndex: 'nation'
+   },
+   {
+    title: '身份证号',
+    align:"center",
+    dataIndex: 'idNumber'
+   },
+   {
+    title: '婚姻状况',
+    align:"center",
+    dataIndex: 'maritalStatus'
+   },
+   {
+    title: '政治面貌',
+    align:"center",
+    dataIndex: 'politicBackground'
+   },
+   {
+    title: '国籍',
+    align:"center",
+    dataIndex: 'nationality'
+   },
+   {
+    title: '户口所在地',
+    align:"center",
+    dataIndex: 'hukou'
+   },
+   {
+    title: '专业',
+    align:"center",
+    dataIndex: 'profession'
+   },
+   {
+    title: '目前工作单位',
+    align:"center",
+    dataIndex: 'workUnit'
+   },
+   {
+    title: '现行政职务',
+    align:"center",
+    dataIndex: 'adminPosition'
+   },
+   {
+    title: '现岗位',
+    align:"center",
+    dataIndex: 'professionLevel'
+   },
+   {
+    title: '联系电话',
+    align:"center",
+    dataIndex: 'mobile'
+   },
+   {
+    title: 'E-mail',
+    align:"center",
+    dataIndex: 'email'
+   },
+   {
+    title: '应聘岗位名称',
+    align:"center",
+    dataIndex: 'applyPosition'
    },
    {
     title: '简历名称',
@@ -69,28 +118,92 @@ export const searchFormSchema: FormSchema[] = [
 //表单数据
 export const formSchema: FormSchema[] = [
   {
-    label: '被推荐人',
-    field: 'propositus',
+    label: '姓名',
+    field: 'name',
     component: 'Input',
   },
   {
-    label: '推荐人',
-    field: 'referrer',
+    label: '本人照片',
+    field: 'photograph',
+     component: 'JImageUpload',
+     componentProps:{
+        fileMax: 0
+      },
+  },
+  {
+    label: '性别',
+    field: 'sex',
+    component: 'JDictSelectTag',
+    componentProps:{
+        dictCode:"sex"
+     },
+  },
+  {
+    label: '籍贯',
+    field: 'nativePlace',
     component: 'Input',
   },
   {
-    label: '推荐人技术职务',
-    field: 'referrerPosition',
+    label: '出生年月',
+    field: 'birthday',
+    component: 'DatePicker',
+    componentProps: {
+      valueFormat: 'YYYY-MM-DD'
+    },    
+  },
+  {
+    label: '民族',
+    field: 'nation',
     component: 'Input',
   },
   {
-    label: '推荐人工作单位',
-    field: 'referrerUnit',
+    label: '身份证号',
+    field: 'idNumber',
     component: 'Input',
   },
   {
-    label: '推荐人联系方式',
-    field: 'referrerMobile',
+    label: '婚姻状况',
+    field: 'maritalStatus',
+    component: 'Input',
+  },
+  {
+    label: '政治面貌',
+    field: 'politicBackground',
+    component: 'Input',
+  },
+  {
+    label: '国籍',
+    field: 'nationality',
+    component: 'Input',
+  },
+  {
+    label: '户口所在地',
+    field: 'hukou',
+    component: 'Input',
+  },
+  {
+    label: '专业',
+    field: 'profession',
+    component: 'Input',
+  },
+  {
+    label: '目前工作单位',
+    field: 'workUnit',
+    component: 'Input',
+  },
+  {
+    label: '现行政职务',
+    field: 'adminPosition',
+    component: 'Input',
+  },
+  {
+    label: '现岗位',
+    field: 'professionLevel',
+    component: 'Input',
+  },
+  {
+    label: '联系电话',
+    field: 'mobile',
     component: 'Input',
     dynamicRules: ({model,schema}) => {
           return [
@@ -100,8 +213,8 @@ export const formSchema: FormSchema[] = [
      },
   },
   {
-    label: '推荐人电子邮箱',
-    field: 'referrerEmail',
+    label: 'E-mail',
+    field: 'email',
     component: 'Input',
     dynamicRules: ({model,schema}) => {
           return [
@@ -111,22 +224,69 @@ export const formSchema: FormSchema[] = [
      },
   },
   {
-    label: '推荐人签名',
-    field: 'referrerSignature',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
+    label: '学习经历',
+    field: 'studyExperience',
+    component: 'InputTextArea',
   },
   {
-    label: '拟申报岗位等级',
-    field: 'positionClass',
+    label: '承担科研、管理工作情况',
+    field: 'researchWork',
+    component: 'InputTextArea',
+  },
+  {
+    label: '主要论著目录',
+    field: 'researchWorks',
+    component: 'InputTextArea',
+  },
+  {
+    label: '工作主要业绩',
+    field: 'researchResult',
+    component: 'InputTextArea',
+  },
+  {
+    label: '论文专著专利',
+    field: 'researchPaper',
+    component: 'InputTextArea',
+  },
+  {
+    label: '获科技奖情况',
+    field: 'carryPrizeScience',
+    component: 'InputTextArea',
+  },
+  {
+    label: '获荣誉奖情况',
+    field: 'carryPrizeHonor',
+    component: 'InputTextArea',
+  },
+  {
+    label: '拟研究计划',
+    field: 'researchProposal',
+    component: 'InputTextArea',
+  },
+  {
+    label: '科研条件',
+    field: 'researchCondition',
+    component: 'InputTextArea',
+  },
+  {
+    label: '研究问题协助',
+    field: 'researchQuestionsSolve',
+    component: 'InputTextArea',
+  },
+  {
+    label: '应聘岗位陈述',
+    field: 'positionDescription',
+    component: 'InputTextArea',
+  },
+  {
+    label: '应聘岗位名称',
+    field: 'applyPosition',
     component: 'Input',
   },
   {
-    label: '推荐原因',
-    field: 'cause',
-    component: 'InputTextArea',
+    label: '所在地',
+    field: 'areaId',
+    component: 'InputNumber',
   },
   {
     label: '简历名称',
@@ -394,17 +554,26 @@ export const xgsResumeHomeColumns: JVxeColumn[] = [
 
 // 高级查询数据
 export const superQuerySchema = {
-  propositus: {title: '被推荐人',order: 0,view: 'text', type: 'string',},
-  referrer: {title: '推荐人',order: 1,view: 'text', type: 'string',},
-  referrerPosition: {title: '推荐人技术职务',order: 2,view: 'text', type: 'string',},
-  referrerUnit: {title: '推荐人工作单位',order: 3,view: 'text', type: 'string',},
-  referrerMobile: {title: '推荐人联系方式',order: 4,view: 'text', type: 'string',},
-  referrerEmail: {title: '推荐人电子邮箱',order: 5,view: 'text', type: 'string',},
-  referrerSignature: {title: '推荐人签名',order: 6,view: 'image', type: 'string',},
-  positionClass: {title: '拟申报岗位等级',order: 7,view: 'text', type: 'string',},
-  cause: {title: '推荐原因',order: 8,view: 'textarea', type: 'string',},
-  resumeName: {title: '简历名称',order: 9,view: 'text', type: 'string',},
-  resumeType: {title: '简历类别',order: 10,view: 'list', type: 'string',dictCode: '岗位分类',},
+  name: {title: '姓名',order: 0,view: 'text', type: 'string',},
+  photograph: {title: '本人照片',order: 1,view: 'image', type: 'string',},
+  sex: {title: '性别',order: 2,view: 'list', type: 'string',dictCode: 'sex',},
+  nativePlace: {title: '籍贯',order: 3,view: 'text', type: 'string',},
+  birthday: {title: '出生年月',order: 4,view: 'date', type: 'string',},
+  nation: {title: '民族',order: 5,view: 'text', type: 'string',},
+  idNumber: {title: '身份证号',order: 6,view: 'text', type: 'string',},
+  maritalStatus: {title: '婚姻状况',order: 7,view: 'text', type: 'string',},
+  politicBackground: {title: '政治面貌',order: 8,view: 'text', type: 'string',},
+  nationality: {title: '国籍',order: 9,view: 'text', type: 'string',},
+  hukou: {title: '户口所在地',order: 10,view: 'text', type: 'string',},
+  profession: {title: '专业',order: 11,view: 'text', type: 'string',},
+  workUnit: {title: '目前工作单位',order: 12,view: 'text', type: 'string',},
+  adminPosition: {title: '现行政职务',order: 13,view: 'text', type: 'string',},
+  professionLevel: {title: '现岗位',order: 14,view: 'text', type: 'string',},
+  mobile: {title: '联系电话',order: 15,view: 'text', type: 'string',},
+  email: {title: 'E-mail',order: 16,view: 'text', type: 'string',},
+  applyPosition: {title: '应聘岗位名称',order: 28,view: 'text', type: 'string',},
+  resumeName: {title: '简历名称',order: 30,view: 'text', type: 'string',},
+  resumeType: {title: '简历类别',order: 31,view: 'list', type: 'string',dictCode: '岗位分类',},
   //子表高级查询
   xgsResumeWorks: {
     title: '工作经历',

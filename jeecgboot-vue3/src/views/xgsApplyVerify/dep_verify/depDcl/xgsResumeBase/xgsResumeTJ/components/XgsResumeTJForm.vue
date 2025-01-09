@@ -3,7 +3,7 @@
   <!-- 子表单区域 -->
     <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs">
      <!--主表区域 -->
-     <a-tab-pane tab="基本信息-博士后" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
+     <a-tab-pane tab="基本信息-推荐" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
        <BasicForm @register="registerForm" ref="formRef"/>
      </a-tab-pane>
   <!--子表单区域 -->
@@ -64,16 +64,16 @@
 </template>
 
 <script lang="ts" setup>
-    import { defHttp } from '/@/utils/http/axios';
+    import { defHttp } from '/src/utils/http/axios';
     import {ref, computed, unref,reactive, onMounted, defineProps } from 'vue';
-    import {BasicForm, useForm} from '/@/components/Form/index';
-    import { JVxeTable } from '/@/components/jeecg/JVxeTable'
-    import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts'
-    import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeBSH.data';
-    import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeBSH.api';
-    import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils'
-    const refKeys = ref(['xgsResumeBSH','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
-    const activeKey = ref('xgsResumeBSH');
+    import {BasicForm, useForm} from '/src/components/Form';
+    import { JVxeTable } from '/src/components/jeecg/JVxeTable'
+    import { useJvxeMethod } from '/src/hooks/system/useJvxeMethods.ts'
+    import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeTJ.data';
+    import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeTJ.api';
+    import { VALIDATE_FAILED } from '/src/utils/common/vxeUtils'
+    const refKeys = ref(['xgsResumeTJ','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
+    const activeKey = ref('xgsResumeTJ');
     const xgsResumeWorks = ref();
     const xgsResumeEdus = ref();
     const xgsResumeHome = ref();
@@ -118,7 +118,7 @@
       }
       return false
     });
-
+    
     //表单配置
     const [registerForm, {setProps,resetFields, setFieldsValue, validate}] = useForm({
         labelWidth: 150,
@@ -131,11 +131,9 @@
       initFormData();
     });
     //渲染流程表单数据
-    const queryByIdUrl = '/xgsResume/xgsResumeBSH/queryById';
+    const queryByIdUrl = '/xgsResume/xgsResumeTJ/queryById';
     async function initFormData(){
-      console.log('@@@@@@@BSHFORM initFormDatac@@@@@@@@props.formBpm',props.formBpm, xgsResumeHomeTable)
       if(props.formBpm === true){
-        console.log('@@@@@@@BSHFORM props.formBpm@@@@@@@@',props.formBpm)
         await reset();
         let params = {id: props.formData.dataId};
         const data = await defHttp.get({url: queryByIdUrl, params});
@@ -145,18 +143,15 @@
         });
         requestSubTableData(xgsResumeWorksList, {id: data.id}, xgsResumeWorksTable, ()=>{
           xgsResumeWorksTable.show = true;
-          console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         requestSubTableData(xgsResumeEdusList, {id: data.id}, xgsResumeEdusTable, ()=>{
           xgsResumeEdusTable.show = true;
-          console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         requestSubTableData(xgsResumeHomeList, {id: data.id}, xgsResumeHomeTable, ()=>{
           xgsResumeHomeTable.show = true;
-          console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@',xgsResumeHomeTable)
         })
         // 隐藏底部时禁用整个表单
-        // setProps({ disabled: formDisabled.value })
+        setProps({ disabled: formDisabled.value })
       }
     }
 
@@ -173,7 +168,7 @@
 
     async function reset(){
       await resetFields();
-      activeKey.value = 'xgsResumeBSH';
+      activeKey.value = 'xgsResumeTJ';
       xgsResumeWorksTable.dataSource = [];
       xgsResumeEdusTable.dataSource = [];
       xgsResumeHomeTable.dataSource = [];

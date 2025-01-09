@@ -32,20 +32,20 @@
       </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsResumeTJModal @register="registerModal" @success="handleSuccess"></XgsResumeTJModal>
+    <XgsResumeBSHModal @register="registerModal" @success="handleSuccess"></XgsResumeBSHModal>
   </div>
 </template>
 
-<script lang="ts" name="xgsResume-xgsResumeTJ" setup>
+<script lang="ts" name="xgsResume-xgsResumeBSH" setup>
   import {ref, reactive, computed, unref} from 'vue';
-  import {BasicTable, useTable, TableAction} from '/@/components/Table';
-  import { useListPage } from '/@/hooks/system/useListPage'
-  import {useModal} from '/@/components/Modal';
-  import XgsResumeTJModal from './components/XgsResumeTJModal.vue'
-  import {columns, searchFormSchema, superQuerySchema} from './XgsResumeTJ.data';
-  import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsResumeTJ.api';
-  import {downloadFile} from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
+  import {BasicTable, useTable, TableAction} from '/src/components/Table';
+  import { useListPage } from '/src/hooks/system/useListPage'
+  import {useModal} from '/src/components/Modal';
+  import XgsResumeBSHModal from './components/XgsResumeBSHModal.vue'
+  import {columns, searchFormSchema, superQuerySchema} from './XgsResumeBSH.data';
+  import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsResumeBSH.api';
+  import {downloadFile} from '/src/utils/common/renderUtils';
+  import { useUserStore } from '/src/store/modules/user';
   const queryParam = reactive<any>({});
   const userStore = useUserStore();
   const checkedKeys = ref<Array<string | number>>([]);
@@ -54,7 +54,7 @@
    //注册table数据
   const { prefixCls,tableContext,onExportXls,onImportXls } = useListPage({
       tableProps:{
-           title: '基本信息-推荐',
+           title: '基本信息-博士后',
            api: list,
            columns,
            canResize:false,
@@ -77,7 +77,7 @@
            },
         },
         exportConfig: {
-            name:"基本信息-推荐",
+            name:"基本信息-博士后",
             url: getExportUrl,
             params: queryParam,
         },

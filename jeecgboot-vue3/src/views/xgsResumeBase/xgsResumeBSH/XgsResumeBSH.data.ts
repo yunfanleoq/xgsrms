@@ -403,76 +403,88 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
     dynamicDisabled: true,
   },
-  {
-    label: '导师签字',
-    field: 'teacherSignature',
-    dynamicDisabled: true,
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
+  // {
+  //   label: '导师签字',
+  //   field: 'teacherSignature',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
   {
     label: '研究室意见',
     field: 'labIdea',
-    component: 'JEditor',
+    dynamicDisabled: true,
+    component: 'Input',
+    colProps: {
+      span: 24,
+    },
     componentProps: {
       dictCode: "研究室意见"
     },
   },
-  {
-    label: '研究室负责人签字',
-    field: 'labSignature',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
+  // {
+  //   label: '研究室负责人签字',
+  //   field: 'labSignature',
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
   {
     label: '人力资源处意见',
     field: 'resourcesIdea',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '人力资源处签字',
-    field: 'resourceSsignature',
-    dynamicDisabled: true,
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
+    component: 'JEditor',
+    colProps: {
+      span: 24,
+    },
+    rules: [
+      {
+        required: true,
+        message: '请填写人力资源处意见',
       },
+    ],
   },
-  {
-    label: '研究所意见',
-    field: 'schoolSsignature',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '研究所签字',
-    field: 'schoolIdea',
-    dynamicDisabled: true,
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
-  {
-    label: '简历名称',
-    field: 'resumeName',
-    component: 'Input',
-    dynamicDisabled: true,
-  },
-  {
-    label: '简历类别',
-    field: 'resumeType',
-    dynamicDisabled: true,
-    component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"岗位分类"
-     },
-  },
+  // {
+  //   label: '人力资源处签字',
+  //   field: 'resourceSsignature',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
+  // {
+  //   label: '研究所意见',
+  //   field: 'schoolSsignature',
+  //   component: 'Input',
+  //   dynamicDisabled: true,
+  // },
+  // {
+  //   label: '研究所签字',
+  //   field: 'schoolIdea',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
+  // {
+  //   label: '简历名称',
+  //   field: 'resumeName',
+  //   component: 'Input',
+  //   dynamicDisabled: true,
+  // },
+  // {
+  //   label: '简历类别',
+  //   field: 'resumeType',
+  //   dynamicDisabled: true,
+  //   component: 'JDictSelectTag',
+  //   componentProps:{
+  //       dictCode:"岗位分类"
+  //    },
+  // },
 	// TODO 主键隐藏字段，目前写死为ID
 	{
 	  label: '',

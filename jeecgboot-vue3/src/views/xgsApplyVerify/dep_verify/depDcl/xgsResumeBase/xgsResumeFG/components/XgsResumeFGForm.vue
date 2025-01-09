@@ -3,7 +3,7 @@
   <!-- 子表单区域 -->
     <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs">
      <!--主表区域 -->
-     <a-tab-pane tab="基本信息-推荐" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
+     <a-tab-pane tab="基本信息-副高" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
        <BasicForm @register="registerForm" ref="formRef"/>
      </a-tab-pane>
   <!--子表单区域 -->
@@ -64,16 +64,16 @@
 </template>
 
 <script lang="ts" setup>
-    import { defHttp } from '/@/utils/http/axios';
+    import { defHttp } from '/src/utils/http/axios';
     import {ref, computed, unref,reactive, onMounted, defineProps } from 'vue';
-    import {BasicForm, useForm} from '/@/components/Form/index';
-    import { JVxeTable } from '/@/components/jeecg/JVxeTable'
-    import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts'
-    import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeTJ.data';
-    import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeTJ.api';
-    import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils'
-    const refKeys = ref(['xgsResumeTJ','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
-    const activeKey = ref('xgsResumeTJ');
+    import {BasicForm, useForm} from '/src/components/Form';
+    import { JVxeTable } from '/src/components/jeecg/JVxeTable'
+    import { useJvxeMethod } from '/src/hooks/system/useJvxeMethods.ts'
+    import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeFG.data';
+    import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeFG.api';
+    import { VALIDATE_FAILED } from '/src/utils/common/vxeUtils'
+    const refKeys = ref(['xgsResumeFG','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
+    const activeKey = ref('xgsResumeFG');
     const xgsResumeWorks = ref();
     const xgsResumeEdus = ref();
     const xgsResumeHome = ref();
@@ -131,7 +131,7 @@
       initFormData();
     });
     //渲染流程表单数据
-    const queryByIdUrl = '/xgsResume/xgsResumeTJ/queryById';
+    const queryByIdUrl = '/xgsResume/xgsResumeFG/queryById';
     async function initFormData(){
       if(props.formBpm === true){
         await reset();
@@ -168,7 +168,7 @@
 
     async function reset(){
       await resetFields();
-      activeKey.value = 'xgsResumeTJ';
+      activeKey.value = 'xgsResumeFG';
       xgsResumeWorksTable.dataSource = [];
       xgsResumeEdusTable.dataSource = [];
       xgsResumeHomeTable.dataSource = [];

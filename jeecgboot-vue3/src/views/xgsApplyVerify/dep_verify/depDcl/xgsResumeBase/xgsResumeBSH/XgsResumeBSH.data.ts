@@ -1,9 +1,9 @@
-import {BasicColumn} from '/@/components/Table';
-import {FormSchema} from '/@/components/Table';
-import { rules} from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import {JVxeTypes,JVxeColumn} from '/@/components/jeecg/JVxeTable/types'
-import { getWeekMonthQuarterYear } from '/@/utils';
+import {BasicColumn} from '/src/components/Table';
+import {FormSchema} from '/src/components/Table';
+import { rules} from '/src/utils/helper/validator';
+import { render } from '/src/utils/common/renderUtils';
+import {JVxeTypes,JVxeColumn} from '/src/components/jeecg/JVxeTable/types'
+import { getWeekMonthQuarterYear } from '/src/utils';
 import {defineProps} from "vue/dist/vue";
 import {ref} from "vue";
 
@@ -403,15 +403,15 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
     dynamicDisabled: true,
   },
-  {
-    label: '导师签字',
-    field: 'teacherSignature',
-    dynamicDisabled: true,
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
+  // {
+  //   label: '导师签字',
+  //   field: 'teacherSignature',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
   {
     label: '研究室意见',
     field: 'labIdea',
@@ -419,15 +419,25 @@ export const formSchema: FormSchema[] = [
     componentProps: {
       dictCode: "研究室意见"
     },
-  },
-  {
-    label: '研究室负责人签字',
-    field: 'labSignature',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
+    colProps: {
+      span: 24,
+    },
+    rules: [
+      {
+        required: true,
+        message: '请填写研究室意见',
       },
+    ],
+    helpMessage: '请务必填写研究室意见',
   },
+  // {
+  //   label: '研究室负责人签字',
+  //   field: 'labSignature',
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
   // {
   //   label: '人力资源处意见',
   //   field: 'resourcesIdea',

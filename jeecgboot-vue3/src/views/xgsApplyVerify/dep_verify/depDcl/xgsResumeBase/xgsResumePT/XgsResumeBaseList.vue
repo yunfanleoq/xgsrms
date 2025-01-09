@@ -38,14 +38,14 @@
 
 <script lang="ts" name="xgsResume-xgsResumeBase" setup>
   import {ref, reactive, computed, unref} from 'vue';
-  import {BasicTable, useTable, TableAction} from '/@/components/Table';
-  import { useListPage } from '/@/hooks/system/useListPage'
-  import {useModal} from '/@/components/Modal';
+  import {BasicTable, useTable, TableAction} from '/src/components/Table';
+  import { useListPage } from '/src/hooks/system/useListPage'
+  import {useModal} from '/src/components/Modal';
   import XgsResumeBaseModal from './components/XgsResumeBaseModal.vue'
   import {columns, searchFormSchema, superQuerySchema} from './XgsResumeBase.data';
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsResumeBase.api';
-  import {downloadFile} from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
+  import {downloadFile} from '/src/utils/common/renderUtils';
+  import { useUserStore } from '/src/store/modules/user';
   const queryParam = reactive<any>({});
   const userStore = useUserStore();
   const checkedKeys = ref<Array<string | number>>([]);

@@ -16,7 +16,7 @@
      <!--表单区域 -->
      <div class="contentArea">
        <!--主表区域 -->
-        <BasicForm @register="registerForm" ref="formRef" v-show="activeKey == refKeys[0]" name="XgsResumeBSHForm"/>
+        <BasicForm @register="registerForm" ref="formRef" v-show="activeKey == refKeys[0]" name="XgsResumeTJForm"/>
        <!--子表区域 -->
          <JVxeTable
            v-show="activeKey == 'xgsResumeWorks'"
@@ -66,26 +66,26 @@
 
 <script lang="ts" setup>
     import {ref, computed, unref,reactive} from 'vue';
-    import {BasicModal, useModalInner} from '/@/components/Modal';
-    import {BasicForm, useForm} from '/@/components/Form/index';
-    import { JVxeTable } from '/@/components/jeecg/JVxeTable'
-    import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts'
-    import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeBSH.data';
-    import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeBSH.api';
-    import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils'
+    import {BasicModal, useModalInner} from '/src/components/Modal';
+    import {BasicForm, useForm} from '/src/components/Form';
+    import { JVxeTable } from '/src/components/jeecg/JVxeTable'
+    import { useJvxeMethod } from '/src/hooks/system/useJvxeMethods.ts'
+    import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeTJ.data';
+    import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeTJ.api';
+    import { VALIDATE_FAILED } from '/src/utils/common/vxeUtils'
     // Emits声明
     const emit = defineEmits(['register','success']);
     const isUpdate = ref(true);
-    const formDisabled = ref(true);
+    const formDisabled = ref(false);
     const modalRef = ref();
-    const refKeys = ref(['xgsResumeBSH','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
+    const refKeys = ref(['xgsResumeTJ','xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', ]);
     const tabNav = ref<any>([
-      { tableName: 'xgsResumeBSH', tableTxt: '基本信息-博士后' },
+      { tableName: 'xgsResumeTJ', tableTxt: '基本信息-推荐' },
        { tableName: 'xgsResumeWorks', tableTxt: '工作经历' },
        { tableName: 'xgsResumeEdus', tableTxt: '教育经历' },
        { tableName: 'xgsResumeHome', tableTxt: '家庭状况' },
     ]);
-    const activeKey = ref('xgsResumeBSH');
+    const activeKey = ref('xgsResumeTJ');
     const xgsResumeWorks = ref();
     const xgsResumeEdus = ref();
     const xgsResumeHome = ref();
@@ -153,7 +153,7 @@
     //重置
     async function reset(){
       await resetFields();
-      activeKey.value = 'xgsResumeBSH';
+      activeKey.value = 'xgsResumeTJ';
       xgsResumeWorksTable.dataSource = [];
       xgsResumeEdusTable.dataSource = [];
       xgsResumeHomeTable.dataSource = [];

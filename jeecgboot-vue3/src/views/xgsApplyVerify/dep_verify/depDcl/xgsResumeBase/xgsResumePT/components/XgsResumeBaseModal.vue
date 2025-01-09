@@ -66,13 +66,13 @@
 
 <script lang="ts" setup>
     import {ref, computed, unref,reactive} from 'vue';
-    import {BasicModal, useModalInner} from '/@/components/Modal';
-    import {BasicForm, useForm} from '/@/components/Form/index';
-    import { JVxeTable } from '/@/components/jeecg/JVxeTable'
-    import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts'
+    import {BasicModal, useModalInner} from '/src/components/Modal';
+    import {BasicForm, useForm} from '/src/components/Form';
+    import { JVxeTable } from '/src/components/jeecg/JVxeTable'
+    import { useJvxeMethod } from '/src/hooks/system/useJvxeMethods.ts'
     import {formSchema,xgsResumeWorksColumns,xgsResumeEdusColumns,xgsResumeHomeColumns} from '../XgsResumeBase.data';
     import {saveOrUpdate,xgsResumeWorksList,xgsResumeEdusList,xgsResumeHomeList} from '../XgsResumeBase.api';
-    import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils'
+    import { VALIDATE_FAILED } from '/src/utils/common/vxeUtils'
     // Emits声明
     const emit = defineEmits(['register','success']);
     const isUpdate = ref(true);
