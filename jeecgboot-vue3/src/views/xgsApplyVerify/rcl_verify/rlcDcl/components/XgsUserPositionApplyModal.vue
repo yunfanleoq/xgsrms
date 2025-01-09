@@ -1,8 +1,9 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896" okText="通过"
-              @ok="handleSubmit"
-              cancelText="拒绝"
-              @cancel="handleCancel">
+  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896" @ok="handleSubmit">
+    <template #footer>
+      <a-button key="back" @click="handleCancel">拒绝</a-button>
+      <a-button key="submit" type="primary" @click="handleSubmit">通过</a-button>
+    </template>
     <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm" />
     <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
@@ -98,12 +99,37 @@
       );
       console.log('positionType', positionType.value);
       let values = await validate();
-      // setModalProps({confirmLoading: true});
+      values.status = "初审通过";
+      setModalProps({confirmLoading: true});
       // //提交表单
       await saveOrUpdate(values, isUpdate.value);
       // //关闭弹窗
       closeModal();
       // //刷新列表
+      emit('success');
+    } catch ({ errorFields }) {
+      if (errorFields) {
+        const firstField = errorFields[0];
+        if (firstField) {
+          scrollToField(firstField.name, { behavior: 'smooth', block: 'center' });
+        }
+      }
+      return Promise.reject(errorFields);
+    } finally {
+      setModalProps({ confirmLoading: false });
+    }
+  }
+  // 取消按钮点击事件
+  async function handleCancel(v) {
+    try {
+      let values = await validate();
+      values.status = "人力处未通过";//修改状态
+      setModalProps({ confirmLoading: true });
+      //提交表单
+      await saveOrUpdate(values, isUpdate.value);
+      //关闭弹窗
+      closeModal();
+      //刷新列表
       emit('success');
     } catch ({ errorFields }) {
       if (errorFields) {

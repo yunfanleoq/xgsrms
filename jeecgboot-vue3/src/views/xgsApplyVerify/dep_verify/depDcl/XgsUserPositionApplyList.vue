@@ -103,17 +103,11 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    if (record.status === '待部门审核') {
-      const record1 = {
-        ...record,
-        status: '待人力处审核',
-      };
       openModal(true, {
-        record: record1,
+        record,
         isUpdate: true,
         showFooter: true,
       });
-    }
   }
   /**
    * 详情

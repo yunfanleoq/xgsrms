@@ -1,6 +1,8 @@
 package org.jeecg.modules.demo.xgsResume.service.impl;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
@@ -13,6 +15,10 @@ import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeHomeMapper;
 import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeBaseMapper;
 import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
+import org.jeecg.modules.recruitment.position.controller.XgsFlowOpinionsController;
+import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
+import org.jeecg.modules.recruitment.position.mapper.XgsFlowOpinionsMapper;
+import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -42,7 +48,9 @@ public class XgsResumeBaseServiceImpl extends ServiceImpl<XgsResumeBaseMapper, X
 	private XgsResumeHomeMapper xgsResumeHomeMapper;
 	@Autowired
 	private XgsPositionApplyMapper positionApplyMapper;
-	
+	@Autowired
+	private XgsFlowOpinionsMapper flowOpinionsMapper;
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void saveMain(XgsResumeBase xgsResumeBase, List<XgsResumeWorks> xgsResumeWorksList,List<XgsResumeEdus> xgsResumeEdusList,List<XgsResumeHome> xgsResumeHomeList) {
@@ -130,14 +138,25 @@ public class XgsResumeBaseServiceImpl extends ServiceImpl<XgsResumeBaseMapper, X
 		XgsResumeBase xgsResumeBase = new XgsResumeBase();
 		BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
 		saveMain(xgsResumeBase, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList);
+		// 登录用户
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		// 岗位信息
 		XgsPositionApply positionApply = new XgsPositionApply();
+		positionApply.setUserId(sysUser.getId());
+		positionApply.setUserName(sysUser.getRealname());
 		positionApply.setResumeId(xgsResumeBase.getId());
 		positionApply.setPositionName(xgsResumeBasePage.getApplyPositionName());
 		positionApply.setPositionDept(xgsResumeBasePage.getApplyPositionDept());
 		positionApply.setPositionType(xgsResumeBasePage.getApplyPositionType());
-		positionApply.setApprovalNode("2"); // 提交到 部门审核
-		positionApply.setStatus("审核中"); // 用户看到的审核状态
-		positionApply.setApprovalStatus("待部门审核"); // 内部审核状态
+		positionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT); // 提交到 部门审核
+		positionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING); // 内部审核状态
+		positionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO); // 用户看到的审核状态
 		positionApplyMapper.insert(positionApply);
+		// 增加流程记录
+		XgsFlowOpinions flowOpinions = new XgsFlowOpinions();
+		flowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_USER);
+		flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
+		flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
+		flowOpinionsMapper.insert(flowOpinions);
 	}
 }
