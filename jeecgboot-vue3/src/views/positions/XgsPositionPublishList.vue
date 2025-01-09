@@ -97,6 +97,7 @@
       },
       beforeFetch: (params) => {
         return Object.assign(params, queryParam, {
+          dept: departName,
           status: '草稿',
         });
       },

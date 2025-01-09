@@ -186,7 +186,7 @@ import {ref, reactive, computed} from 'vue';
       {
         label: '查看',
         onClick: handleEdit.bind(null, record),
-        auth: 'positions:xgs_position_apply:edit'
+        auth: 'positions:xgs_position_apply:edit',
       },
     ];
   }
