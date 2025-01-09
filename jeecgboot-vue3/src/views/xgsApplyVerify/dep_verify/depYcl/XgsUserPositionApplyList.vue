@@ -41,7 +41,7 @@
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
-      title: '申请审核',
+      title: '部门已处理申请',
       api: list,
       columns,
       canResize: false,
@@ -66,7 +66,7 @@
       },
     },
     exportConfig: {
-      name: '申请审核',
+      name: '部门已处理申请',
       url: getExportUrl,
       params: queryParam,
     },
@@ -103,11 +103,6 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    // if (record.status === '已处理') {
-    //   const record1 = {
-    //     ...record,
-    //     status: '已通过',
-    //   };
       openModal(true, {
         record,
         isUpdate: true,

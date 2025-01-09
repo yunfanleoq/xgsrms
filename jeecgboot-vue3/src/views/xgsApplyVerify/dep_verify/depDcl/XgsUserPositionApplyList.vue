@@ -41,7 +41,7 @@
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
-      title: '申请审核',
+      title: '部门待处理申请',
       api: list,
       columns,
       canResize: false,
@@ -66,7 +66,7 @@
       },
     },
     exportConfig: {
-      name: '申请审核',
+      name: '部门待处理申请',
       url: getExportUrl,
       params: queryParam,
     },
@@ -103,16 +103,17 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    // if (record.status === '已处理') {
-    //   const record1 = {
-    //     ...record,
-    //     status: '已通过',
-    //   };
+    if (record.status === '待部门审核') {
+      const record1 = {
+        ...record,
+        status: '待人力处审核',
+      };
       openModal(true, {
-        record,
+        record: record1,
         isUpdate: true,
         showFooter: true,
       });
+    }
   }
   /**
    * 详情
@@ -148,7 +149,7 @@
   function getTableAction(record) {
     return [
       {
-        label: '详情',
+        label: '审核',
         onClick: handleEdit.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
       },
