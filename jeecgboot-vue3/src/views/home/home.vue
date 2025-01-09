@@ -6,7 +6,7 @@
         <button class="carousel-button left"
                 @click="showPrevImage"
                 v-show="isHovered">◀</button>
-        <img :src="carouselImages[currentIndex]"
+        <img :src="carouselImages[currentIndex].image"
              alt="轮播图"
              @mouseover="isHovered = true"
              @mouseleave="isHovered = false"/>
@@ -98,17 +98,40 @@ import {defHttp} from "@/utils/http/axios";
 
 const listUrl = "/xgsHome/xgsHome/list"
 
-
-// 获取轮播图数据的函数
-
-// 轮播图数据
 const carouselImages = ref([
   "http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg",
-  "http://www.iie.cas.cn/xwdt2020/ttxw2020/202412/W020241227741553185612.jpg",
-  "http://www.iie.cas.cn/xwdt2020/ttxw2020/202411/W020241119655225033945.JPG",
 ]);
-
 const currentIndex = ref(0);
+
+
+// 获取轮播图数据的函数
+const fetchCarouselImages = async (page = 1, size = 5) => {
+  try {
+    const response = await defHttp.get({
+      url: listUrl, // 替换为你的轮播图数据接口
+      params: { pageNo: 1, pageSize: 1000 },
+    });
+    console.log(response.records)
+
+    if (response && response.records) {
+      carouselImages.value = response.records
+        .map((item) => {
+          const imgTag = item.photograph;  // 获取 HTML 字符串
+          const imgUrl = imgTag.match(/src="(.*?)"/);  // 正则提取 src 属性中的图片链接
+          return {
+            image: imgUrl ? imgUrl[1] : "",  // 如果找到了 src 属性，则提取它
+            createTime: item.createTime || "",  // 假设数据项中包含 `createTime` 字段
+          };
+        })
+        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+        .slice(0, 5); // 截取前三张轮播图
+      console.log("处理后的 carouselImages",carouselImages.value)
+
+    }
+  } catch (error) {
+    console.error("请求轮播图数据失败:", error);
+  }
+};
 
 // 自动轮播
 setInterval(() => {
@@ -138,16 +161,17 @@ const fetchNews = async (page = 1, size = 2) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
-      params: { pageNo: page, pageSize: size, orderBy: "createTime desc"  },
+      params: { pageNo: page, pageSize: 1000 },
     });
+
     if (response && response.records) {
       newsList.value = response.records.map((item: any) => ({
         title: item.newTitle || "无标题",
         content: item.news || "无内容",
-        createTime: new Date(item.createTime.replace(/-/g, '/')), // 确保时间格式正确
-        // createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
+        createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
       }))
-      // .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()); // 按时间降序排序
+      .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+      .slice(0, size); // 截取前两条
     }
   } catch (error) {
     console.error("请求新闻数据失败:", error);
@@ -168,7 +192,7 @@ const fetchRecruitments = async (page = 1, size = 3) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
-      params: { pageNo: page, pageSize: size },
+      params: { pageNo: page, pageSize: 1000 },
     });
 
     if (response && response.records) {
@@ -177,7 +201,8 @@ const fetchRecruitments = async (page = 1, size = 3) => {
           announcement: item.recruitAnnouncement || "暂无内容",
           createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
         }))
-        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()); // 按时间降序排序
+        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())  // 按时间降序排序
+        .slice(0, size); // 截取前三条
     }
   } catch (error) {
     console.error("请求招聘公告数据失败:", error);
@@ -186,6 +211,7 @@ const fetchRecruitments = async (page = 1, size = 3) => {
 
 // 组件挂载时加载招聘公告
 onMounted(() => {
+  fetchCarouselImages();
   fetchRecruitments();
   fetchNews();
 });
