@@ -37,4 +37,13 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
     String APPROVAL_STATUS_HR_NOT_PASS = "人力处未通过";
     String APPROVAL_STATUS_PASS = "初审通过";
     String APPROVAL_STATUS_GOING = "审核中";
+
+    String APPROVAL_RESULT_AGREE = "同意";
+    String APPROVAL_RESULT_REJECT = "驳回";
+
+    /**
+     * 办理
+     * @param xgsFlowOpinions
+     */
+    void add(XgsFlowOpinions xgsFlowOpinions);
 }

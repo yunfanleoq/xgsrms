@@ -10,10 +10,12 @@
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsFlowOpinions.data';
   import { saveOrUpdate } from '../XgsFlowOpinions.api';
+  import { useUserStore } from '@/store/modules/user';
   // Emits声明
   const emit = defineEmits(['register', 'success']);
   const isUpdate = ref(true);
   const isDetail = ref(false);
+  const userStore = useUserStore();
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
     labelWidth: 150,
@@ -33,12 +35,19 @@
       await setFieldsValue({
         ...data.record,
       });
+    } else {
+      await setFieldsValue({
+        approvalUser: userStore.userInfo.realname,
+        approvalNode: data.record.approvalNode,
+        approvalStatus: '同意',
+        parentId: data.record.id,
+      });
     }
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
   });
   //设置标题
-  const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));
+  const title = computed(() => (!unref(isUpdate) ? '审批' : !unref(isDetail) ? '详情' : '审批'));
   //表单提交事件
   async function handleSubmit(v) {
     try {

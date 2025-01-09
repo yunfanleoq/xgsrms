@@ -25,11 +25,6 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'approvalStatus_dictText',
   },
-  {
-    title: '业务ID',
-    align: 'center',
-    dataIndex: 'parentId',
-  },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
@@ -66,13 +61,25 @@ export const formSchema: FormSchema[] = [
     label: '审批人',
     field: 'approvalUser',
     component: 'Input',
+    dynamicDisabled: ({ values }) => {
+      return true;
+    },
   },
   {
     label: '审批环节',
     field: 'approvalNode',
     component: 'JDictSelectTag',
+    dynamicDisabled: ({ values }) => {
+      return true;
+    },
+  },
+  {
+    label: '审批结果',
+    field: 'approvalStatus',
+    component: 'JDictSelectTag',
     componentProps: {
-      dictCode: '',
+      dictCode: '审批状态',
+      type: 'radio',
     },
   },
   {
@@ -81,18 +88,10 @@ export const formSchema: FormSchema[] = [
     component: 'InputTextArea',
   },
   {
-    label: '审批状态',
-    field: 'approvalStatus',
-    component: 'JDictSelectTag',
-    componentProps: {
-      dictCode: '',
-      type: 'radio',
-    },
-  },
-  {
     label: '业务ID',
     field: 'parentId',
     component: 'Input',
+    show: false,
   },
   // TODO 主键隐藏字段，目前写死为ID
   {

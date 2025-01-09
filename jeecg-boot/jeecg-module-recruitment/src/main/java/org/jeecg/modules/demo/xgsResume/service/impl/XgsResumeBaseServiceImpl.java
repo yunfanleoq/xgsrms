@@ -149,8 +149,8 @@ public class XgsResumeBaseServiceImpl extends ServiceImpl<XgsResumeBaseMapper, X
 		positionApply.setPositionDept(xgsResumeBasePage.getApplyPositionDept());
 		positionApply.setPositionType(xgsResumeBasePage.getApplyPositionType());
 		positionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT); // 提交到 部门审核
-		positionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING); // 内部审核状态
-		positionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO); // 用户看到的审核状态
+		positionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO); // 内部审核状态
+		positionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING); // 用户看到的审核状态
 		positionApplyMapper.insert(positionApply);
 		// 增加流程记录
 		XgsFlowOpinions flowOpinions = new XgsFlowOpinions();

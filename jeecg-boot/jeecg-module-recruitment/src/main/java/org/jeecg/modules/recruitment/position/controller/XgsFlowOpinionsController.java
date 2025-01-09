@@ -88,10 +88,10 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 	 */
 	@AutoLog(value = "审批办理过程表-添加")
 	@ApiOperation(value="审批办理过程表-添加", notes="审批办理过程表-添加")
-	@RequiresPermissions("resume:xgs_flow_opinions:add")
+//	@RequiresPermissions("resume:xgs_flow_opinions:add")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody XgsFlowOpinions xgsFlowOpinions) {
-		xgsFlowOpinionsService.save(xgsFlowOpinions);
+		xgsFlowOpinionsService.add(xgsFlowOpinions);
 		return Result.OK("添加成功！");
 	}
 	

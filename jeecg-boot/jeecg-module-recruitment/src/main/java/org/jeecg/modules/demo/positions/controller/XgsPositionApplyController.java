@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -69,9 +70,58 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-        QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
+		String approvalNode = req.getParameter("approvalNode");
+		String approvalStatus = req.getParameter("approvalStatusValue");
+		xgsPositionApply.setApprovalNode(null);
 		Page<XgsPositionApply> page = new Page<XgsPositionApply>(pageNo, pageSize);
-		IPage<XgsPositionApply> pageList = xgsPositionApplyService.page(page, queryWrapper);
+		IPage<XgsPositionApply> pageList = null;
+        if (IXgsFlowOpinionsService.NODE_DEPT.equals(approvalNode)) {
+			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
+			if ("1".equals(approvalStatus)) {
+				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_DEPT);
+				queryWrapper.eq("approval_status", IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+			} else if ("2".equals(approvalStatus)) {
+				queryWrapper.in("approval_node",
+						IXgsFlowOpinionsService.NODE_USER,
+						IXgsFlowOpinionsService.NODE_DEPT,
+						IXgsFlowOpinionsService.NODE_HR,
+						IXgsFlowOpinionsService.NODE_END
+				);
+				queryWrapper.in("approval_status",
+						IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_PASS,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_NOT_PASS,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_TODO,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PASS,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_NOT_PASS
+				);
+			} else {
+				queryWrapper.eq("approval_status", "-1");
+			}
+			pageList = xgsPositionApplyService.page(page, queryWrapper);
+        } else {
+			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
+			if ("1".equals(approvalStatus)) {
+				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_HR);
+				queryWrapper.eq("approval_status", IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+			} else if ("2".equals(approvalStatus)) {
+				queryWrapper.in("approval_node",
+						IXgsFlowOpinionsService.NODE_USER,
+						IXgsFlowOpinionsService.NODE_DEPT,
+						IXgsFlowOpinionsService.NODE_HR,
+						IXgsFlowOpinionsService.NODE_END
+						);
+				queryWrapper.in("approval_status",
+						IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_PASS,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_NOT_PASS,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_TODO,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PASS,
+						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_NOT_PASS
+				);
+			} else {
+				queryWrapper.eq("approval_status", "-1");
+			}
+			pageList = xgsPositionApplyService.page(page, queryWrapper);
+		}
 		return Result.OK(pageList);
 	}
 
@@ -83,7 +133,7 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 	 */
 	@AutoLog(value = "岗位申请-添加")
 	@ApiOperation(value="岗位申请-添加", notes="岗位申请-添加")
-	@RequiresPermissions("positions:xgs_position_apply:add")
+//	@RequiresPermissions("positions:xgs_position_apply:add")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody XgsPositionApply xgsPositionApply) {
 		xgsPositionApplyService.save(xgsPositionApply);

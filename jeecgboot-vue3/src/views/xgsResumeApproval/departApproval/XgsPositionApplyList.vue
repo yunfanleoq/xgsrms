@@ -26,7 +26,7 @@
           </a-button>
         </a-dropdown>
         <!-- 高级查询 -->
-        <a-radio-group v-model:value="approvalStatus" button-style="solid">
+        <a-radio-group v-model:value="queryParam.approvalStatusValue" button-style="solid" @change="reload" style="margin: 0 auto">
           <a-radio-button value="1">待审核</a-radio-button>
           <a-radio-button value="2">已审核</a-radio-button>
         </a-radio-group>
@@ -39,26 +39,32 @@
       <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsPositionApplyModal @register="registerModal" @success="handleSuccess" />
+    <XgsPositionApplyModal ref="registerModal" @success="handleSuccess" />
+    <XgsFlowOpinionsModal @register="opinionModal" @success="handleSuccess" />
   </div>
 </template>
 
 <script lang="ts" name="resume-xgsPositionApply" setup>
   import { ref, reactive, computed, unref } from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsPositionApplyModal from './components/XgsPositionApplyModal.vue';
+  import XgsFlowOpinionsModal from '../opinions/components/XgsFlowOpinionsModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositionApply.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositionApply.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
-  const queryParam = reactive<any>({});
+  import {useModal} from "@/components/Modal";
+  const queryParam = reactive<any>({
+    approvalNode: '部门审核',
+    approvalStatusValue: '1',
+  });
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
-  const approvalStatus = ref('1');
   //注册model
-  const [registerModal, { openModal }] = useModal();
+  const registerModal = ref();
+  //注册model
+  const [opinionModal, { openModal }] = useModal();
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
@@ -111,18 +117,21 @@
    * 新增事件
    */
   function handleAdd() {
-    openModal(true, {
-      isUpdate: false,
-      showFooter: true,
-    });
+    registerModal.value.disableSubmit = false;
+    registerModal.value.add();
   }
+
   /**
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
+    registerModal.value.disableSubmit = false;
+    registerModal.value.edit(record);
+  }
+  function handleOpinion(record: Recordable) {
     openModal(true, {
       record,
-      isUpdate: true,
+      isUpdate: false,
       showFooter: true,
     });
   }
@@ -130,12 +139,10 @@
    * 详情
    */
   function handleDetail(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: false,
-    });
+    registerModal.value.disableSubmit = true;
+    registerModal.value.edit(record);
   }
+
   /**
    * 删除事件
    */
@@ -164,6 +171,14 @@
         onClick: handleEdit.bind(null, record),
         auth: 'resume:xgs_position_apply:edit',
       },
+      {
+        label: '审核',
+        onClick: handleOpinion.bind(null, record),
+      },
+      {
+        label: '详情',
+        onClick: handleDetail.bind(null, record),
+      },
     ];
   }
   /**
@@ -171,10 +186,6 @@
    */
   function getDropDownAction(record) {
     return [
-      {
-        label: '详情',
-        onClick: handleDetail.bind(null, record),
-      },
       {
         label: '删除',
         popConfirm: {

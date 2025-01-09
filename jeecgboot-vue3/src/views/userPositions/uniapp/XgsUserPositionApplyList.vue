@@ -25,12 +25,10 @@
 </template>
 
 <script>
-  import MescrollMixin from '@/components/mescroll-uni/mescroll-mixins.js';
-  import Mixin from '@/common/mixin/Mixin.js';
 
   export default {
     name: 'XgsUserPositionApplyList',
-    mixins: [MescrollMixin, Mixin],
+    mixins: [],
     data() {
       return {
         CustomBar: this.CustomBar,
