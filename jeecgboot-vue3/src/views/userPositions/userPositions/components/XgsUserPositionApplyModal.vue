@@ -35,10 +35,10 @@
 
     import xgsUserPositionApplyForm from './XgsUserPositionApplyForm.vue';
 
-    import xgsResumeBSHForm from '/@/views/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
-    import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
-    import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
-    import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
+    import xgsResumeBSHForm from '/@/views/userPositions/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
+    import xgsResumePTForm from '/@/views/userPositions/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
+    import xgsResumeFGForm from '/@/views/userPositions/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
+    import xgsResumeTJForm from '/@/views/userPositions/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
     import JUpload from "@/components/Form/src/jeecg/components/JUpload/JUpload.vue";
     import {defHttp} from "@/utils/http/axios";
     import {
