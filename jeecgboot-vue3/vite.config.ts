@@ -136,6 +136,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       esbuildOptions: {
         target: 'es2020',
       },
+      include: ['clipboard'],
       exclude: [
         //升级vite4后，需要排除online依赖
         '@jeecg/online',

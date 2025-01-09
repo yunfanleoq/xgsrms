@@ -40,6 +40,10 @@
           <!--富文本件字段回显插槽-->
           <div v-html="text"></div>
         </template>
+        <template v-if="column.dataIndex==='photograph'">
+          <!--富文本件字段回显插槽-->
+          <div v-html="text"></div>
+        </template>
       </template>
     </BasicTable>
     <!-- 表单区域 -->
