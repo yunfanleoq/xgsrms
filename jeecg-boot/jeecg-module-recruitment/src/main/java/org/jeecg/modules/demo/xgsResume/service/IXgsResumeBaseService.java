@@ -5,6 +5,8 @@ import org.jeecg.modules.demo.xgsResume.entity.XgsResumeEdus;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeHome;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
@@ -50,5 +52,13 @@ public interface IXgsResumeBaseService extends IService<XgsResumeBase> {
 	 * @param idList
 	 */
 	public void delBatchMain (Collection<? extends Serializable> idList);
-	
+
+	/**
+	 * 在线申请岗位保存
+	 * @param xgsResumeBase
+	 * @param xgsResumeWorksList
+	 * @param xgsResumeEdusList
+	 * @param xgsResumeHomeList
+	 */
+    void saveMainWithJob(XgsResumeBasePage xgsResumeBase, List<XgsResumeWorks> xgsResumeWorksList, List<XgsResumeEdus> xgsResumeEdusList, List<XgsResumeHome> xgsResumeHomeList);
 }

@@ -1,5 +1,8 @@
 package org.jeecg.modules.demo.xgsResume.service.impl;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
+import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeWorks;
 import org.jeecg.modules.demo.xgsResume.entity.XgsResumeEdus;
@@ -9,6 +12,9 @@ import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeEdusMapper;
 import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeHomeMapper;
 import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeBaseMapper;
 import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
+import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
+import org.jeecgframework.poi.excel.annotation.Excel;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +40,8 @@ public class XgsResumeBaseServiceImpl extends ServiceImpl<XgsResumeBaseMapper, X
 	private XgsResumeEdusMapper xgsResumeEdusMapper;
 	@Autowired
 	private XgsResumeHomeMapper xgsResumeHomeMapper;
+	@Autowired
+	private XgsPositionApplyMapper positionApplyMapper;
 	
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -115,5 +123,21 @@ public class XgsResumeBaseServiceImpl extends ServiceImpl<XgsResumeBaseMapper, X
 			xgsResumeBaseMapper.deleteById(id);
 		}
 	}
-	
+
+	@Override
+	@Transactional
+	public void saveMainWithJob(XgsResumeBasePage xgsResumeBasePage, List<XgsResumeWorks> xgsResumeWorksList, List<XgsResumeEdus> xgsResumeEdusList, List<XgsResumeHome> xgsResumeHomeList) {
+		XgsResumeBase xgsResumeBase = new XgsResumeBase();
+		BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
+		saveMain(xgsResumeBase, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList);
+		XgsPositionApply positionApply = new XgsPositionApply();
+		positionApply.setResumeId(xgsResumeBase.getId());
+		positionApply.setPositionName(xgsResumeBasePage.getApplyPositionName());
+		positionApply.setPositionDept(xgsResumeBasePage.getApplyPositionDept());
+		positionApply.setPositionType(xgsResumeBasePage.getApplyPositionType());
+		positionApply.setApprovalNode("2"); // 提交到 部门审核
+		positionApply.setStatus("审核中"); // 用户看到的审核状态
+		positionApply.setApprovalStatus("待部门审核"); // 内部审核状态
+		positionApplyMapper.insert(positionApply);
+	}
 }

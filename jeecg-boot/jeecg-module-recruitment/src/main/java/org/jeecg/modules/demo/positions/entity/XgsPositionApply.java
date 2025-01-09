@@ -108,4 +108,23 @@ public class XgsPositionApply implements Serializable {
 	@Excel(name = "租户编号", width = 15)
     @ApiModelProperty(value = "租户编号")
     private java.lang.Integer tenantId;
+    /**审批环节*/
+    @Excel(name = "审批环节", width = 15)
+    @ApiModelProperty(value = "审批环节")
+    private java.lang.String approvalNode;
+    /**审批状态*/
+    @Excel(name = "审批状态", width = 15)
+    @ApiModelProperty(value = "审批状态")
+    private java.lang.String approvalStatus;
+    /**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    private java.lang.String sysOrgCode;
+    /**申请状态*/
+    @Excel(name = "申请状态", width = 15)
+    @ApiModelProperty(value = "申请状态")
+    private java.lang.String applyStatus;
+    /**申请结果*/
+    @Excel(name = "申请结果", width = 15)
+    @ApiModelProperty(value = "申请结果")
+    private java.lang.String applyResult;
 }

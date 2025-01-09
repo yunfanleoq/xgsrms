@@ -102,10 +102,10 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    if (record.status === '申请中') {
+    if (record.status === '待人力处审核') {
       const record1 = {
         ...record,
-        status: '已处理',
+        status: '初审通过',
       };
       openModal(true, {
         record: record1,

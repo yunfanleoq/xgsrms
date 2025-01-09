@@ -182,10 +182,10 @@ import {ref, computed, unref, reactive, toRefs, toRef} from 'vue';
     } else {
       //表单赋值
       await setFieldsValue({
-        userName: jobDetail.value.userName,
-        positionName: jobDetail.value.positionName,
-        positionDept: jobDetail.value.positionDept,
-        positionType: jobDetail.value.positionType,
+        applyUserName: jobDetail.value.userName,
+        applyPositionName: jobDetail.value.positionName,
+        applyPositionDept: jobDetail.value.positionDept,
+        applyPositionType: jobDetail.value.positionType,
       });
     }
     // 隐藏底部时禁用整个表单

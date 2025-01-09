@@ -5,6 +5,7 @@
     destroyOnClose
     :title="title"
     :width="896"
+    okText="通过"
     @ok="handleSubmit"
     cancelText="拒绝"
     @cancel="handleCancel"
@@ -39,7 +40,8 @@
 
   import xgsUserPositionApplyForm from './XgsUserPositionApplyForm.vue';
 
-  import xgsResumeBSHForm from '/src/views/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
+  // import xgsResumeBSHForm from '/src/views/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
+  import xgsResumeBSHForm from '/src/views/xgsApplyVerify/dep_verify/depDcl/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
   import xgsResumePTForm from '/src/views/xgsResumeBase/xgsResumePT/components/XgsResumeBaseForm.vue';
   import xgsResumeFGForm from '/src/views/xgsResumeBase/xgsResumeFG/components/XgsResumeFGForm.vue';
   import xgsResumeTJForm from '/src/views/xgsResumeBase/xgsResumeTJ/components/XgsResumeTJForm.vue';
@@ -133,10 +135,28 @@
     }
   }
   // 取消按钮点击事件
-  function handleCancel() {
-    status.value = '部门未通过'
-    closeModal();
+  async function handleCancel() {
+    try {
+      // 获取当前表单的数据
+      const values = await validate();
+      // 修改 status 字段的值
+      values.status = '部门未通过';
+      // 更新表单数据
+      setFieldsValue(values);
+      // 关闭模态对话框
+      closeModal();
+      // 触发更新事件
+      emit('success');
+    } catch ({ errorFields }) {
+      if (errorFields) {
+        const firstField = errorFields[0];
+        if (firstField) {
+          scrollToField(firstField.name, { behavior: 'smooth', block: 'center' });
+        }
+      }
+      return Promise.reject(errorFields);
     }
+  }
 </script>
 
 <style lang="less" scoped>

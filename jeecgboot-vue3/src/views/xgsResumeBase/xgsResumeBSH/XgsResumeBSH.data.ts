@@ -178,11 +178,13 @@ export const formSchema: FormSchema[] = [
   {
     label: '姓名',
     field: 'name',
-    component: 'Input'
+    component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '本人照片',
     field: 'photograph',
+    dynamicDisabled: true,
      component: 'JImageUpload',
      componentProps:{
         fileMax: 0
@@ -191,6 +193,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '性别',
     field: 'sex',
+    dynamicDisabled: true,
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"sex"
@@ -200,10 +203,12 @@ export const formSchema: FormSchema[] = [
     label: '籍贯',
     field: 'nativePlace',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '出生年月',
     field: 'birthday',
+    dynamicDisabled: true,
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
@@ -213,30 +218,36 @@ export const formSchema: FormSchema[] = [
     label: '民族',
     field: 'nation',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '身份证号',
     field: 'idNumber',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '婚姻状况',
     field: 'maritalStatus',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '政治面貌',
     field: 'politicBackground',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '户口所在地',
     field: 'hukou',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '参加工作时间',
     field: 'workDate',
+    dynamicDisabled: true,
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
@@ -246,65 +257,78 @@ export const formSchema: FormSchema[] = [
     label: '目前工作单位',
     field: 'workUnit',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '档案所在单位',
     field: 'personFilesUnit',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '现行政职务',
     field: 'adminPosition',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '学习经历',
     field: 'studyExperience',
     component: 'InputTextArea',
+    dynamicDisabled: true,
   },
   {
     label: '研究方向与专长',
     field: 'researchDirection',
     component: 'InputTextArea',
+    dynamicDisabled: true,
   },
   {
     label: '承担科研、管理工作情况',
     field: 'researchWork',
     component: 'InputTextArea',
+    dynamicDisabled: true,
   },
   {
     label: '主要论著目录',
     field: 'researchWorks',
     component: 'InputTextArea',
+    dynamicDisabled: true,
   },
   {
     label: '论文专著专利',
     field: 'researchPaper',
     component: 'InputTextArea',
+    dynamicDisabled: true,
   },
   {
     label: '拟研究计划',
     field: 'researchProposal',
     component: 'InputTextArea',
+    dynamicDisabled: true,
   },
   {
     label: '所在地',
     field: 'areaId',
     component: 'InputNumber',
+    dynamicDisabled: true,
   },
   {
     label: '研究室',
     field: 'lob',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '博士后研究方向',
     field: 'researchOrientation',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '申请人当前身份',
     field: 'proposerStatus',
+    dynamicDisabled: true,
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"申请人身份"
@@ -313,6 +337,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '申报博士后类型',
     field: 'postdoctorType',
+    dynamicDisabled: true,
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"博士后类型"
@@ -322,25 +347,30 @@ export const formSchema: FormSchema[] = [
     label: '合作导师',
     field: 'teacher',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '博士毕业院校',
     field: 'graduateInstitutions',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '一级学科',
     field: 'subject1',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '二级学科',
     field: 'subject2',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '博士学位证书 获得时间',
     field: 'certificateTime',
+    dynamicDisabled: true,
     component: 'DatePicker',
     componentProps: {
       valueFormat: 'YYYY-MM-DD'
@@ -350,10 +380,12 @@ export const formSchema: FormSchema[] = [
     label: '现专业技术职务',
     field: 'technicalPosition',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '在站期间研究内容有无涉密内容',
     field: 'secretText',
+    dynamicDisabled: true,
     component: 'JDictSelectTag',
     componentProps:{
         dictCode:"yes_or_no"
@@ -363,76 +395,96 @@ export const formSchema: FormSchema[] = [
     label: '一站单位名称',
     field: 'workFirst',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '导师评价',
     field: 'teacherEvaluate',
     component: 'Input',
+    dynamicDisabled: true,
   },
-  {
-    label: '导师签字',
-    field: 'teacherSignature',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
+  // {
+  //   label: '导师签字',
+  //   field: 'teacherSignature',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
   {
     label: '研究室意见',
     field: 'labIdea',
-    component: 'JEditor',
-
+    dynamicDisabled: true,
+    component: 'Input',
+    colProps: {
+      span: 24,
+    },
     componentProps: {
       dictCode: "研究室意见"
     },
   },
-  {
-    label: '研究室负责人签字',
-    field: 'labSignature',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
+  // {
+  //   label: '研究室负责人签字',
+  //   field: 'labSignature',
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
   {
     label: '人力资源处意见',
     field: 'resourcesIdea',
-    component: 'Input',
-  },
-  {
-    label: '人力资源处签字',
-    field: 'resourceSsignature',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
+    component: 'JEditor',
+    colProps: {
+      span: 24,
+    },
+    rules: [
+      {
+        required: true,
+        message: '请填写人力资源处意见',
       },
+    ],
   },
-  {
-    label: '研究所意见',
-    field: 'schoolSsignature',
-    component: 'Input',
-  },
-  {
-    label: '研究所签字',
-    field: 'schoolIdea',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
-  },
-  {
-    label: '简历名称',
-    field: 'resumeName',
-    component: 'Input',
-  },
-  {
-    label: '简历类别',
-    field: 'resumeType',
-    component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"岗位分类"
-     },
-  },
+  // {
+  //   label: '人力资源处签字',
+  //   field: 'resourceSsignature',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
+  // {
+  //   label: '研究所意见',
+  //   field: 'schoolSsignature',
+  //   component: 'Input',
+  //   dynamicDisabled: true,
+  // },
+  // {
+  //   label: '研究所签字',
+  //   field: 'schoolIdea',
+  //   dynamicDisabled: true,
+  //    component: 'JImageUpload',
+  //    componentProps:{
+  //       fileMax: 0
+  //     },
+  // },
+  // {
+  //   label: '简历名称',
+  //   field: 'resumeName',
+  //   component: 'Input',
+  //   dynamicDisabled: true,
+  // },
+  // {
+  //   label: '简历类别',
+  //   field: 'resumeType',
+  //   dynamicDisabled: true,
+  //   component: 'JDictSelectTag',
+  //   componentProps:{
+  //       dictCode:"岗位分类"
+  //    },
+  // },
 	// TODO 主键隐藏字段，目前写死为ID
 	{
 	  label: '',
