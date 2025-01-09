@@ -26,7 +26,10 @@
           </a-button>
         </a-dropdown>
         <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
+        <a-radio-group v-model:value="approvalStatus" button-style="solid">
+          <a-radio-button value="1">待审核</a-radio-button>
+          <a-radio-button value="2">已审核</a-radio-button>
+        </a-radio-group>
       </template>
       <!--操作栏-->
       <template #action="{ record }">
@@ -53,6 +56,7 @@
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
+  const approvalStatus = ref('1');
   //注册model
   const [registerModal, { openModal }] = useModal();
   //注册table数据

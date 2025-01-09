@@ -28,7 +28,7 @@ export const columns: BasicColumn[] = [
   {
     title: '审批状态',
     align: 'center',
-    dataIndex: 'approvalStatus_dictText',
+    dataIndex: 'approvalStatus',
   },
 ];
 //查询数据
