@@ -74,22 +74,22 @@ export const searchFormSchema: FormSchema[] = [];
 export const formSchema: FormSchema[] = [
   {
     label: '申请人',
-    field: 'userName',
+    field: 'applyUserName',
     component: 'Input',
   },
   {
     label: '岗位名称',
-    field: 'positionName',
+    field: 'applyPositionName',
     component: 'Input',
   },
   {
     label: '岗位部门',
-    field: 'positionDept',
+    field: 'applyPositionDept',
     component: 'Input',
   },
   {
     label: '岗位类型',
-    field: 'positionType',
+    field: 'applyPositionType',
     component: 'Input',
   },
   {

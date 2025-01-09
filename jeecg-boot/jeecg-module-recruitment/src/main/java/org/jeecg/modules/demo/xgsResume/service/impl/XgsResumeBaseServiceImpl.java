@@ -136,7 +136,7 @@ public class XgsResumeBaseServiceImpl extends ServiceImpl<XgsResumeBaseMapper, X
 		positionApply.setPositionDept(xgsResumeBasePage.getApplyPositionDept());
 		positionApply.setPositionType(xgsResumeBasePage.getApplyPositionType());
 		positionApply.setApprovalNode("2"); // 提交到 部门审核
-		positionApply.setApplyStatus("审核中"); // 用户看到的审核状态
+		positionApply.setStatus("审核中"); // 用户看到的审核状态
 		positionApply.setApprovalStatus("待部门审核"); // 内部审核状态
 		positionApplyMapper.insert(positionApply);
 	}
