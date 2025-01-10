@@ -102,7 +102,7 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
 			if ("1".equals(approvalStatus)) {
 				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_HR);
-				queryWrapper.eq("approval_status", IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+				queryWrapper.eq("approval_status", IXgsFlowOpinionsService.APPROVAL_STATUS_HR_TODO);
 			} else if ("2".equals(approvalStatus)) {
 				queryWrapper.in("approval_node",
 						IXgsFlowOpinionsService.NODE_USER,
