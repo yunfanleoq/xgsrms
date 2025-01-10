@@ -30,7 +30,7 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
         if (NODE_DEPT.equals(xgsFlowOpinions.getApprovalNode())) {
             if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getApprovalStatus())) {
                 positionApply.setApprovalNode(NODE_HR);
-                positionApply.setApprovalStatus(APPROVAL_STATUS_DEPT_PASS);
+                positionApply.setApprovalStatus(APPROVAL_STATUS_HR_TODO);
                 positionApply.setApplyStatus(APPROVAL_STATUS_DEPT_PASS);
             } else {
                 positionApply.setApprovalNode(NODE_USER);
