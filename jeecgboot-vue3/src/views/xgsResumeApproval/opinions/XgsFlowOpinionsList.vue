@@ -2,36 +2,6 @@
   <div>
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
-      <!--插槽:table标题-->
-      <template #tableTitle>
-        <a-button type="primary" v-auth="'resume:xgs_flow_opinions:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-        <a-button type="primary" v-auth="'resume:xgs_flow_opinions:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
-          导出</a-button
-        >
-        <j-upload-button type="primary" v-auth="'resume:xgs_flow_opinions:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls"
-          >导入</j-upload-button
-        >
-        <a-dropdown v-if="selectedRowKeys.length > 0">
-          <template #overlay>
-            <a-menu>
-              <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined" />
-                删除
-              </a-menu-item>
-            </a-menu>
-          </template>
-          <a-button v-auth="'resume:xgs_flow_opinions:deleteBatch'"
-            >批量操作
-            <Icon icon="mdi:chevron-down" />
-          </a-button>
-        </a-dropdown>
-        <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
-      </template>
-      <!--操作栏-->
-      <template #action="{ record }">
-        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)" />
-      </template>
       <!--字段回显插槽-->
       <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
@@ -66,13 +36,9 @@
         //labelWidth: 120,
         schemas: searchFormSchema,
         autoSubmitOnEnter: true,
-        showAdvancedButton: true,
+        showAdvancedButton: false,
         fieldMapToNumber: [],
         fieldMapToTime: [],
-      },
-      actionColumn: {
-        width: 120,
-        fixed: 'right',
       },
       beforeFetch: (params) => {
         return Object.assign(params, queryParam);

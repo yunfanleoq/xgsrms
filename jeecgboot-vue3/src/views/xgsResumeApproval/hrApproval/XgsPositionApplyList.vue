@@ -34,6 +34,7 @@
     <!-- 表单区域 -->
     <XgsPositionApplyModal ref="registerModal" @success="handleSuccess" />
     <XgsFlowOpinionsModal @register="opinionModal" @success="handleSuccess" />
+    <XgsFlowOpinionsListModal @register="opinionListModal" @success="handleSuccess" />
   </div>
 </template>
 
@@ -47,8 +48,8 @@
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositionApply.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
-  import XgsFlowOpinionsModal
-    from "@/views/xgsResumeApproval/opinions/components/XgsFlowOpinionsModal.vue";
+  import XgsFlowOpinionsModal from '@/views/xgsResumeApproval/opinions/components/XgsFlowOpinionsModal.vue';
+  import XgsFlowOpinionsListModal from '@/views/xgsResumeApproval/opinions/components/XgsFlowOpinionsListModal.vue';
   const queryParam = reactive<any>({
     approvalNode: '人力处审核',
     approvalStatusValue: '1',
@@ -59,6 +60,7 @@
   const registerModal = ref();
   //注册model
   const [opinionModal, { openModal }] = useModal();
+  const [opinionListModal, { openModal: openListModal }] = useModal();
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
@@ -133,6 +135,13 @@
       showFooter: true,
     });
   }
+  function handleOpinionList(record: Recordable) {
+    openListModal(true, {
+      record,
+      isUpdate: false,
+      showFooter: true,
+    });
+  }
   /**
    * 详情
    */
@@ -174,6 +183,12 @@
       {
         label: '审核',
         onClick: handleOpinion.bind(null, record),
+        ifShow: () => queryParam.approvalStatusValue === '1',
+      },
+      {
+        label: '办理过程',
+        onClick: handleOpinionList.bind(null, record),
+        ifShow: () => queryParam.approvalStatusValue === '2',
       },
       {
         label: '详情',

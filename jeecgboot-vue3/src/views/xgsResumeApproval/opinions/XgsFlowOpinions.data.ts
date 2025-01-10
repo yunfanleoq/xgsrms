@@ -16,27 +16,21 @@ export const columns: BasicColumn[] = [
     dataIndex: 'approvalNode_dictText',
   },
   {
+    title: '审批结果',
+    align: 'center',
+    dataIndex: 'approvalStatus_dictText',
+  },
+  {
     title: '办理意见',
     align: 'center',
     dataIndex: 'opinions',
-  },
-  {
-    title: '审批状态',
-    align: 'center',
-    dataIndex: 'approvalStatus_dictText',
   },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
   {
-    label: '审批人',
-    field: 'approvalUser',
-    component: 'Input',
-    //colProps: {span: 6},
-  },
-  {
-    label: '审批环节',
-    field: 'approvalNode',
+    label: '审批状态',
+    field: 'approvalStatus',
     component: 'JSelectMultiple',
     componentProps: {},
     //colProps: {span: 6},
@@ -45,13 +39,6 @@ export const searchFormSchema: FormSchema[] = [
     label: '办理意见',
     field: 'opinions',
     component: 'Input',
-    //colProps: {span: 6},
-  },
-  {
-    label: '审批状态',
-    field: 'approvalStatus',
-    component: 'JSelectMultiple',
-    componentProps: {},
     //colProps: {span: 6},
   },
 ];
