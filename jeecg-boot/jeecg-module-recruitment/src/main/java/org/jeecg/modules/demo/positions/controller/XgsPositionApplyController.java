@@ -10,9 +10,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
@@ -53,6 +56,35 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsPositionApplyController extends JeecgController<XgsPositionApply, IXgsPositionApplyService> {
 	@Autowired
 	private IXgsPositionApplyService xgsPositionApplyService;
+
+	 /**
+	  * 分页列表查询 我的申请列表
+	  *
+	  * @param xgsPositionApply
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 //@AutoLog(value = "岗位申请-分页列表查询")
+	 @ApiOperation(value="岗位申请-分页列表查询", notes="岗位申请-分页列表查询")
+	 @GetMapping(value = "/listMine")
+	 public Result<IPage<XgsPositionApply>> listMine(XgsPositionApply xgsPositionApply,
+														  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+														  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+														  HttpServletRequest req) {
+		 String approvalNode = req.getParameter("approvalNode");
+		 String approvalStatus = req.getParameter("approvalStatusValue");
+		 //获取当前用户
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 xgsPositionApply.setApprovalNode(null);
+		 Page<XgsPositionApply> page = new Page<XgsPositionApply>(pageNo, pageSize);
+		 IPage<XgsPositionApply> pageList = null;
+		 QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
+		 queryWrapper.eq("create_by", sysUser.getUsername());
+		 pageList = xgsPositionApplyService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
 
 	/**
 	 * 分页列表查询
