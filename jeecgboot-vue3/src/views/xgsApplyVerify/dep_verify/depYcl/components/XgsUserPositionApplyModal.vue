@@ -1,5 +1,8 @@
 <template>
-    <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896" @ok="handleSubmit">
+    <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896"
+                @ok="handleSubmit"
+                @cancel="handleCancel"
+                cancelText="关闭">
       <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm" />
 <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
@@ -29,6 +32,7 @@
     import xgsResumePTForm from '/src/views/xgsResumeBase/xgsResumePT/components/XgsResumeBaseForm.vue';
     import xgsResumeFGForm from '/src/views/xgsResumeBase/xgsResumeFG/components/XgsResumeFGForm.vue';
     import xgsResumeTJForm from '/src/views/xgsResumeBase/xgsResumeTJ/components/XgsResumeTJForm.vue';
+    import JModal from "@/components/Modal/src/JModal/JModal.vue";
 
     const isReady = ref(false);
 
@@ -50,7 +54,7 @@
       console.log('data', data)
         //重置表单
         await resetFields();
-        setModalProps({confirmLoading: false,showCancelBtn:!!data?.showFooter,showOkBtn:!!data?.showFooter});
+        setModalProps({confirmLoading: false,showCancelBtn:!!data?.showFooter,showOkBtn:false});
         isUpdate.value = !!data?.isUpdate;
         isDetail.value = !!data?.showFooter;
         if (unref(isUpdate)) {

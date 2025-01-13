@@ -7,8 +7,6 @@
     :width="896"
     okText="通过"
     @ok="handleSubmit"
-<!--    cancelText="拒绝"-->
-<!--    @cancel="handleCancel"-->
   >
     <template #footer>
       <a-button key="back" @click="handleCancel">拒绝</a-button>
@@ -54,6 +52,7 @@
 
   // Emits声明
   const emit = defineEmits(['register', 'success']);
+  const disableSubmit = ref<boolean>(false);
   const isUpdate = ref(true);
   const isDetail = ref(false);
   const positionType = ref('');

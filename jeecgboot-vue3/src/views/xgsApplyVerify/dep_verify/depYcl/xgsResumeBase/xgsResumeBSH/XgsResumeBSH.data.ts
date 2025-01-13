@@ -414,7 +414,7 @@ export const formSchema: FormSchema[] = [
   // },
   {
     label: '研究室意见',
-    field: 'labIdea',
+    field: 'school_ssignature',
     component: 'JEditor',
     dynamicDisabled: true,
     componentProps: {

@@ -4,13 +4,13 @@ import { useMessage } from "/@/hooks/web/useMessage";
 const { createConfirm } = useMessage();
 
 enum Api {
-  list = '/positions/xgsPositionApply/list',
-  save='/positions/xgsPositionApply/add',
-  edit='/positions/xgsPositionApply/edit',
-  deleteOne = '/positions/xgsPositionApply/delete',
-  deleteBatch = '/positions/xgsPositionApply/deleteBatch',
-  importExcel = '/positions/xgsPositionApply/importExcel',
-  exportXls = '/positions/xgsPositionApply/exportXls',
+  list = '/positions/xgsPositionApply2/list',
+  save='/positions/xgsPositionApply2/add',
+  edit='/positions/xgsPositionApply2/edit',
+  deleteOne = '/positions/xgsPositionApply2/delete',
+  deleteBatch = '/positions/xgsPositionApply2/deleteBatch',
+  importExcel = '/positions/xgsPositionApply2/importExcel',
+  exportXls = '/positions/xgsPositionApply2/exportXls',
 
   resumePTById = '/xgsResume/xgsResumeBase/queryById',
   resumeBSHById = '/xgsResume/xgsResumeBSH/queryById',
