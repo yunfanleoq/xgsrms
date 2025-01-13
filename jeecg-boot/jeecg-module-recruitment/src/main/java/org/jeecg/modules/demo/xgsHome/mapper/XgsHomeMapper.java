@@ -12,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @Date:   2025-01-10
  * @Version: V1.0
  */
+
 public interface XgsHomeMapper extends BaseMapper<XgsHome> {
 
 }

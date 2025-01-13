@@ -13,6 +13,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
  * @Date:   2025-01-10
  * @Version: V1.0
  */
+
 @Service
 public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> implements IXgsHomeService {
 

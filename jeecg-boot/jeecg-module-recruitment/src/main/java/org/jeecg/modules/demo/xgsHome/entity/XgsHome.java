@@ -73,4 +73,5 @@ public class XgsHome implements Serializable {
 	@Excel(name = "图片", width = 15)
     @ApiModelProperty(value = "图片")
     private java.lang.String photograph;
+
 }

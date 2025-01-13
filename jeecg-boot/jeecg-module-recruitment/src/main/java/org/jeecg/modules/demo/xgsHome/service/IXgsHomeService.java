@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @Date:   2025-01-10
  * @Version: V1.0
  */
+
 public interface IXgsHomeService extends IService<XgsHome> {
 
 }

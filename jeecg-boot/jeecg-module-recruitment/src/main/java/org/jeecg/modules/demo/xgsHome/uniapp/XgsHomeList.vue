@@ -6,6 +6,7 @@
 			<block slot="content">首页</block>
 		</cu-custom>
 		<!--滚动加载列表-->
+
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="upOption" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
 				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goHome">

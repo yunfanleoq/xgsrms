@@ -62,6 +62,7 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 	 * @param req
 	 * @return
 	 */
+
 	//@AutoLog(value = "首页-分页列表查询")
 	@ApiOperation(value="首页-分页列表查询", notes="首页-分页列表查询")
 	@GetMapping(value = "/list")

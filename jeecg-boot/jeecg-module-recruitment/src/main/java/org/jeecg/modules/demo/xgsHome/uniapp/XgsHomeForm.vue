@@ -6,6 +6,7 @@
 			<block slot="content">首页</block>
 		</cu-custom>
 		 <!--表单区域-->
+
 		<view>
 			<form>
               <view class="cu-form-group">
