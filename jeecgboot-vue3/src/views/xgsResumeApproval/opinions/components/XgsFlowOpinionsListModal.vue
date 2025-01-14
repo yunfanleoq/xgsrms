@@ -1,6 +1,6 @@
 <template>
   <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="1000" @ok="handleSubmit">
-    <XgsFlowOpinionsList ref="flowListRef"></XgsFlowOpinionsList>
+    <XgsFlowOpinionsList ref="flowListRef" :positionApply="positionApply"></XgsFlowOpinionsList>
   </BasicModal>
 </template>
 
@@ -15,17 +15,16 @@
   const isUpdate = ref(true);
   const isDetail = ref(false);
   const flowListRef = ref(null);
+  const positionApply = ref({});
   const userStore = useUserStore();
 
   //表单赋值
   const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
     //重置表单
-    await resetFields();
     setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
     isUpdate.value = !!data?.isUpdate;
     isDetail.value = !!data?.showFooter;
-    // 隐藏底部时禁用整个表单
-    setProps({ disabled: !data?.showFooter });
+    positionApply.value = data.record;
   });
   //设置标题
   const title = ref('办理过程');

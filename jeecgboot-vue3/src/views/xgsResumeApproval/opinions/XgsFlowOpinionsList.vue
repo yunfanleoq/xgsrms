@@ -21,6 +21,20 @@
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
   const queryParam = reactive<any>({});
+  const props = defineProps({
+    disableSubmit: {
+      type: Boolean,
+      default: false,
+    },
+    positionApply: {
+      type: Object,
+      default: () => {
+        return {};
+      },
+    },
+  });
+  queryParam.positionApplyId = unref(props.positionApply).id;
+  // console.log('props.positionApply', props.positionApply, unref(props.positionApply));
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
   //注册model
