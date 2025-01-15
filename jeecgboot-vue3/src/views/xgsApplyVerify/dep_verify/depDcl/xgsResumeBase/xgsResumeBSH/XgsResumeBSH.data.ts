@@ -417,7 +417,7 @@ export const formSchema: FormSchema[] = [
     field: 'labIdea',
     component: 'JEditor',
     componentProps: {
-      dictCode: "研究室意见"
+      dictCode: '研究室意见',
     },
     colProps: {
       span: 24,

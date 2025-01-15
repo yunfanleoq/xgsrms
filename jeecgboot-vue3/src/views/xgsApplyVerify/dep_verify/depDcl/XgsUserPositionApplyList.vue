@@ -29,7 +29,7 @@
   import { useModal } from '/src/components/Modal';
   import { useListPage } from '/src/hooks/system/useListPage';
   import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
-  import { columns, superQuerySchema } from './XgsUserPositionApply.data';
+  import { columns, searchFormSchema, superQuerySchema } from './XgsUserPositionApply.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
@@ -47,7 +47,7 @@
       canResize: false,
       formConfig: {
         // labelWidth: 120,
-        // schemas: searchFormSchema,
+        schemas: searchFormSchema,
         autoSubmitOnEnter: true,
         showAdvancedButton: true,
         fieldMapToNumber: [],

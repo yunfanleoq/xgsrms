@@ -1,7 +1,7 @@
 <template>
   <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="896" @ok="handleSubmit">
     <template #footer>
-      <a-button key="back" @click="handleCancel">拒绝</a-button>
+      <a-button key="back" @click="handleCancel">驳回</a-button>
       <a-button key="submit" type="primary" @click="handleSubmit">通过</a-button>
     </template>
     <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm" />

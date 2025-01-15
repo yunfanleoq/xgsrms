@@ -3,6 +3,12 @@ import { FormSchema } from '/src/components/Table';
 import { rules } from '/src/utils/helper/validator';
 import { render } from '/src/utils/common/renderUtils';
 import { getWeekMonthQuarterYear } from '/src/utils';
+const positionTypes = [
+  { label: '普通岗位', value: '普通岗位' },
+  { label: '博士后岗位', value: '博士后岗位' },
+  { label: '副高级以上岗位', value: '副高级以上岗位' },
+  { label: '人才派遣岗位', value: '人才派遣岗位' },
+];
 //列表数据
 export const columns: BasicColumn[] = [
   {
@@ -103,6 +109,31 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'tenantId',
     ifShow: false,
+  },
+];
+//查询数据
+export const searchFormSchema: FormSchema[] = [
+  {
+    label: '岗位名称',
+    field: 'positionName',
+    component: 'Input',
+    colProps: {span: 7},
+
+  },
+  // {
+  //   label: '岗位部门',
+  //   field: 'positionDept',
+  //   component: 'JSelectDept',
+  //   // colProps: {span: 8},
+  // },
+  {
+    label: '岗位类型',
+    field: 'positionType',
+    component: 'Select',
+    // colProps: {span: 8},
+    componentProps: {
+      options: positionTypes,
+    },
   },
 ];
 //表单数据

@@ -1,6 +1,13 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="800" @ok="handleSubmit">
-    <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
+  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="1200" @ok="handleSubmit">
+    <a-tabs v-model:activeKey="activeKey">
+      <a-tab-pane key="1" tab="审核意见">
+        <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
+      </a-tab-pane>
+      <a-tab-pane key="2" tab="简历信息" force-render>
+        <XgsPositionApplyForm ref="registerFormResume" @ok="submitCallback" :formData="formDataResume" :formDisabled="true" :formBpm="false" />
+      </a-tab-pane>
+    </a-tabs>
   </BasicModal>
 </template>
 
@@ -11,11 +18,23 @@
   import { formSchema } from '../XgsFlowOpinions.data';
   import { saveOrUpdate } from '../XgsFlowOpinions.api';
   import { useUserStore } from '@/store/modules/user';
+  import XgsPositionApplyForm from '@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyForm.vue';
   // Emits声明
   const emit = defineEmits(['register', 'success']);
   const isUpdate = ref(true);
   const isDetail = ref(false);
+  const activeKey = ref('1');
+  const formDataResume = ref({});
+  const registerFormResume = ref();
   const userStore = useUserStore();
+
+  /**
+   * form保存回调事件
+   */
+  function submitCallback() {
+    handleCancel();
+    emit('success');
+  }
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
     labelWidth: 150,

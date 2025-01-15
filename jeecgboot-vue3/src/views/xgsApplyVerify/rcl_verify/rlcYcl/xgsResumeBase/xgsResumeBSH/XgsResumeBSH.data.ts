@@ -416,7 +416,7 @@ export const formSchema: FormSchema[] = [
     label: '研究室意见',
     field: 'labIdea',
     dynamicDisabled: true,
-    component: 'JEditor',
+    component: 'Input',
     dynamicDisabled: true,
     componentProps: {
       dictCode: "研究室意见"
@@ -433,12 +433,15 @@ export const formSchema: FormSchema[] = [
   //       fileMax: 0
   //     },
   // },
-  // {
-  //   label: '人力资源处意见',
-  //   field: 'resourcesIdea',
-  //   component: 'Input',
-  //   dynamicDisabled: true,
-  // },
+  {
+    label: '人力资源处意见',
+    field: 'resourcesIdea',
+    component: 'Input',
+    dynamicDisabled: true,
+    colProps: {
+      span: 24,
+    },
+  },
   // {
   //   label: '人力资源处签字',
   //   field: 'resourceSsignature',
