@@ -16,7 +16,7 @@
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsFlowOpinions.data';
-  import { saveOrUpdate } from '../XgsFlowOpinions.api';
+  import { saveOrUpdate, getResumeData } from '../XgsFlowOpinions.api';
   import { useUserStore } from '@/store/modules/user';
   import XgsPositionApplyForm from '@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyForm.vue';
   // Emits声明
@@ -24,6 +24,7 @@
   const isUpdate = ref(true);
   const isDetail = ref(false);
   const activeKey = ref('1');
+  const positionApply = ref({});
   const formDataResume = ref({});
   const registerFormResume = ref();
   const userStore = useUserStore();
@@ -49,6 +50,7 @@
     setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
     isUpdate.value = !!data?.isUpdate;
     isDetail.value = !!data?.showFooter;
+    positionApply.value = data.record;
     if (unref(isUpdate)) {
       //表单赋值
       await setFieldsValue({
@@ -62,6 +64,11 @@
         parentId: data.record.id,
       });
     }
+    let resumeId = data.record.resumeId;
+    // await getResumeData({ id: resumeId }).then((data) => {
+    //   formDataResume.value = data;
+    // });
+    registerFormResume.value.edit(data.record);
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
   });
