@@ -13,6 +13,7 @@ import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -302,4 +303,17 @@ public class XgsResumeTJController {
       return Result.OK("文件导入失败！");
     }
 
+	 /**
+	  *   申请工作岗位
+	  *
+	  * @param xgsResumeBasePage
+	  * @return
+	  */
+	 @AutoLog(value = "基本信息-申请工作岗位")
+	 @ApiOperation(value="基本信息-申请工作岗位", notes="基本信息-申请工作岗位")
+	 @PostMapping(value = "/applyJob")
+	 public Result<String> applyJob(@RequestBody XgsResumeBasePage xgsResumeBasePage) {
+		 xgsResumeTJService.saveMainWithJob(xgsResumeBasePage, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
+		 return Result.OK("岗位申请已提交，请保持关注！");
+	 }
 }

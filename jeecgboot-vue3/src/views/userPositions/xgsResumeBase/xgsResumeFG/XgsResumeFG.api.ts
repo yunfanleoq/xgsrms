@@ -5,7 +5,7 @@ const { createConfirm } = useMessage();
 
 enum Api {
   list = '/xgsResume/xgsResumeFG/list',
-  save='/xgsResume/xgsResumeFG/add',
+  save='/xgsResume/xgsResumeFG/applyJob',
   edit='/xgsResume/xgsResumeFG/edit',
   deleteOne = '/xgsResume/xgsResumeFG/delete',
   deleteBatch = '/xgsResume/xgsResumeFG/deleteBatch',
