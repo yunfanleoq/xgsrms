@@ -14,6 +14,8 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
+import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
 
@@ -50,8 +52,10 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 @RequestMapping("/resume/xgsFlowOpinions")
 @Slf4j
 public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, IXgsFlowOpinionsService> {
-	@Autowired
-	private IXgsFlowOpinionsService xgsFlowOpinionsService;
+	 @Autowired
+	 private IXgsResumeBaseService resumeBaseService;
+	 @Autowired
+	 private IXgsFlowOpinionsService xgsFlowOpinionsService;
 	
 	/**
 	 * 分页列表查询
@@ -69,6 +73,7 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		String positionApplyId = req.getParameter("positionApplyId");
         // 自定义查询规则
         Map<String, QueryRuleEnum> customeRuleMap = new HashMap<>();
         // 自定义多选的查询规则为：LIKE_WITH_OR
@@ -76,6 +81,7 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
         customeRuleMap.put("approvalStatus", QueryRuleEnum.LIKE_WITH_OR);
         QueryWrapper<XgsFlowOpinions> queryWrapper = QueryGenerator.initQueryWrapper(xgsFlowOpinions, req.getParameterMap(),customeRuleMap);
 		Page<XgsFlowOpinions> page = new Page<XgsFlowOpinions>(pageNo, pageSize);
+		queryWrapper.eq("parent_id", positionApplyId);
 		IPage<XgsFlowOpinions> pageList = xgsFlowOpinionsService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
@@ -182,4 +188,20 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
         return super.importExcel(request, response, XgsFlowOpinions.class);
     }
 
+	 /**
+	  * 通过id查询简历数据
+	  *
+	  * @param id
+	  * @return
+	  */
+	 //@AutoLog(value = "审批办理过程表-通过id查询")
+	 @ApiOperation(value="审批办理过程-通过id查询简历数据", notes="审批办理过程-通过id查询简历数据")
+	 @GetMapping(value = "/getResumeData")
+	 public Result<XgsResumeBase> getResumeData(@RequestParam(name="id",required=true) String id) {
+		 XgsResumeBase xgsResumeBase = resumeBaseService.getById(id);
+		 if(xgsResumeBase==null) {
+			 return Result.error("未找到对应数据");
+		 }
+		 return Result.OK(xgsResumeBase);
+	 }
 }
