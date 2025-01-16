@@ -149,7 +149,7 @@
     };
   };
   onMounted(() => {
-    initFormData();
+    // initFormData();
   });
 
   const { createMessage } = useMessage();
@@ -173,28 +173,28 @@
   });
 
   //页面完全加载完成并 显示一秒后 打印 formData，
-  setTimeout(() => {
-    nextTick(() => {
-      console.log('...............................formData', formData);
-      console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
-      // Object.assign(formData , props.formData);
-      formData.value.positionType = props.formData.category || '普通岗位';
-      console.log('===============================');
-      formData.value.resumeId = props.formData.resumeId || '';
-      console.log('-------------------------------');
-      formData.value.positionId = props.formData.positionId || '';
-      formData.value.applyId = props.formData.applyId || '';
-      formData.value.userName = props.formData.userName || '';
-      formData.value.positionName = props.formData.positionName || '';
-      formData.value.positionDept = props.formData.positionDept || '';
-      formData.value.status = props.formData.status || '';
-      formData.value.resumeName = props.formData.resumeName || '';
-      formData.value.mark = props.formData.mark || '';
-
-      console.log('》》》》》》》》》》》》》》》formData', formData);
-      // initFormdata();
-    });
-  }, 1000);
+  // setTimeout(() => {
+  //   nextTick(() => {
+  //     console.log('...............................formData', formData);
+  //     console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
+  //     // Object.assign(formData , props.formData);
+  //     formData.value.positionType = props.formData.category || '普通岗位';
+  //     console.log('===============================');
+  //     formData.value.resumeId = props.formData.resumeId || '';
+  //     console.log('-------------------------------');
+  //     formData.value.positionId = props.formData.positionId || '';
+  //     formData.value.applyId = props.formData.applyId || '';
+  //     formData.value.userName = props.formData.userName || '';
+  //     formData.value.positionName = props.formData.positionName || '';
+  //     formData.value.positionDept = props.formData.positionDept || '';
+  //     formData.value.status = props.formData.status || '';
+  //     formData.value.resumeName = props.formData.resumeName || '';
+  //     formData.value.mark = props.formData.mark || '';
+  //
+  //     console.log('》》》》》》》》》》》》》》》formData', formData);
+  //     // initFormdata();
+  //   });
+  // }, 1000);
   /**
    * 新增
    */
