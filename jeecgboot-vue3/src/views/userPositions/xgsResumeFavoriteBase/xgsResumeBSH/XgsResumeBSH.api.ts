@@ -4,33 +4,48 @@ import { useMessage } from "/@/hooks/web/useMessage";
 const { createConfirm } = useMessage();
 
 enum Api {
-  list = '/positions/xgsFavoriteJob/listMine',
-  save='/positions/xgsFavoriteJob/add',
-  edit='/positions/xgsFavoriteJob/edit',
-  deleteOne = '/positions/xgsFavoriteJob/delete',
-  deleteBatch = '/positions/xgsFavoriteJob/deleteBatch',
-  importExcel = '/positions/xgsFavoriteJob/importExcel',
-  exportXls = '/positions/xgsFavoriteJob/exportXls',
+  list = '/xgsResume/xgsResumeBSH/list',
+  save='/xgsResume/xgsResumeBSH/applyJob',
+  edit='/xgsResume/xgsResumeBSH/edit',
+  deleteOne = '/xgsResume/xgsResumeBSH/delete',
+  deleteBatch = '/xgsResume/xgsResumeBSH/deleteBatch',
+  importExcel = '/xgsResume/xgsResumeBSH/importExcel',
+  exportXls = '/xgsResume/xgsResumeBSH/exportXls',
+  xgsResumeWorksList = '/xgsResume/xgsResumeBSH/queryXgsResumeWorksByMainId',
+  xgsResumeEdusList = '/xgsResume/xgsResumeBSH/queryXgsResumeEdusByMainId',
+  xgsResumeHomeList = '/xgsResume/xgsResumeBSH/queryXgsResumeHomeByMainId',
 }
 /**
  * 导出api
  * @param params
  */
 export const getExportUrl = Api.exportXls;
+
 /**
  * 导入api
  */
 export const getImportUrl = Api.importExcel;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeWorksList = Api.xgsResumeWorksList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeEdusList = Api.xgsResumeEdusList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeHomeList = Api.xgsResumeHomeList;
 /**
  * 列表接口
  * @param params
  */
 export const list = (params) =>
   defHttp.get({url: Api.list, params});
-
-// export const myList = (params) =>
-//   defHttp.get({url: Api.list, params});
-
 
 /**
  * 删除单个
@@ -47,8 +62,8 @@ export const deleteOne = (params,handleSuccess) => {
 export const batchDelete = (params, handleSuccess) => {
   createConfirm({
     iconType: 'warning',
-    title: '确认取消',
-    content: '是否取消收藏选中岗位',
+    title: '确认删除',
+    content: '是否删除选中数据',
     okText: '确认',
     cancelText: '取消',
     onOk: () => {
