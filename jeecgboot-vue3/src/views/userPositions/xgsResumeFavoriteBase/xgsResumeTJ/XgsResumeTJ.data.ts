@@ -166,12 +166,12 @@ export const formSchema: FormSchema[] = [
      },
   },
 	// TODO 主键隐藏字段，目前写死为ID
-	{
-	  label: '',
-	  field: 'id',
-	  component: 'Input',
-	  show: false
-	},
+	// {
+	//   label: '',
+	//   field: 'id',
+	//   component: 'Input',
+	//   show: false
+	// },
 ];
 //子表单数据
 //子表表格配置

@@ -180,25 +180,25 @@ export const searchFormSchema: FormSchema[] = [
 export const formSchema: FormSchema[] = [
   {
     label: '申请人',
-    field: 'userName',
+    field: 'applyUserName',
     component: 'Input',
     dynamicDisabled: true,
   },
   {
     label: '岗位名称',
-    field: 'positionName',
+    field: 'applyPositionName',
     component: 'Input',
     dynamicDisabled: true,
   },
   {
     label: '岗位部门',
-    field: 'positionDept',
+    field: 'applyPositionDept',
     component: 'Input',
     dynamicDisabled: true,
   },
   {
     label: '岗位类型',
-    field: 'positionType',
+    field: 'applyPositionType',
     component: 'Input',
     dynamicDisabled: true,
   },
@@ -438,12 +438,12 @@ export const formSchema: FormSchema[] = [
      },
   },
 	// TODO 主键隐藏字段，目前写死为ID
-	{
-	  label: '',
-	  field: 'id',
-	  component: 'Input',
-	  show: false
-	},
+	// {
+	//   label: '',
+	//   field: 'id',
+	//   component: 'Input',
+	//   show: false
+	// },
 ];
 //子表单数据
 //子表表格配置

@@ -123,7 +123,7 @@
     }
     // TODO: 实现收藏职位的功能
     let params = {
-      id: jobId,
+      // id: jobId,
       userId: userStore.userInfo.username,
       userName: userStore.userInfo.realname,
       positionId: jobId,
@@ -180,14 +180,16 @@
         applyId: '',
         disabled: false,
         mark: '',
-        positionDept: job.value.dept_dictText,
+        applyPositionDept: job.value.dept_dictText,
         positionId: job.value.id,
-        positionName: job.value.positionName,
-        positionType: job.value.category,
+        applyPositionName: job.value.positionName,
+        applyPositionType: job.value.category,
         resumeId: '',
         resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
         status: '申请中',
-        userName: userStore.getUserInfo.realname,
+        applyUserName: userStore.getUserInfo.realname,
+        email: '',
+        researchDirection: '',
       };
       let jobDetail = Object.assign({}, positionApplyStore.currPositionApply, jobDefault);
       openModal(true, {

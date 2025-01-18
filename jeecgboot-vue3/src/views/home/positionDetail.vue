@@ -113,7 +113,7 @@
     }
     // TODO: 实现收藏职位的功能
     let params = {
-      id: jobId,
+      // id: jobId,
       userId: userStore.userInfo.username,
       userName: userStore.userInfo.realname,
       positionId: jobId,

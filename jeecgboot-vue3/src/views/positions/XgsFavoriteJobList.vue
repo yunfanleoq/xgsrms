@@ -159,7 +159,7 @@
      return [
        {
          label: '查看',
-         onClick: handleEdit.bind(null, record.id),
+         onClick: handleEdit.bind(null, record.positionId),
          auth: 'positions:xgs_favorite_job:edit'
        },
        {
