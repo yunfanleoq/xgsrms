@@ -6,23 +6,22 @@
           <a-row>
             <a-col :span="12">
               <a-form-item label="申请人" v-bind="validateInfos.userName" id="XgsPositionApplyForm-userName" name="userName">
-                <a-input v-model:value="formData.userName" placeholder="请输入申请人姓名" allow-clear />
+                <a-input v-model:value="formData.userName" placeholder="请输入申请人姓名" disabled />
               </a-form-item>
             </a-col>
-
             <a-col :span="12">
               <a-form-item label="岗位名称" v-bind="validateInfos.positionName" id="XgsPositionApplyForm-positionName" name="positionName">
-                <a-input v-model:value="formData.positionName" placeholder="请输入岗位名称" allow-clear />
+                <a-input v-model:value="formData.positionName" placeholder="请输入岗位名称" disabled />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item label="岗位部门" v-bind="validateInfos.positionDept" id="XgsPositionApplyForm-positionDept" name="positionDept">
-                <a-input v-model:value="formData.positionDept" placeholder="请输入岗位部门" allow-clear />
+                <a-input v-model:value="formData.positionDept" placeholder="请输入岗位部门" disabled />
               </a-form-item>
             </a-col>
             <a-col :span="12">
               <a-form-item label="岗位类型" v-bind="validateInfos.positionType" id="XgsPositionApplyForm-positionType" name="positionType">
-                <a-input v-model:value="formData.positionType" placeholder="请输入岗位类型" allow-clear />
+                <a-input v-model:value="formData.positionType" placeholder="请输入岗位类型" disabled />
               </a-form-item>
             </a-col>
             <a-col :span="12" v-show="false">
@@ -30,7 +29,6 @@
                 <a-input v-model:value="formData.status" placeholder="请输入申请状态" style="width: 100%" disabled />
               </a-form-item>
             </a-col>
-
             <a-col :span="12" v-show="false">
               <a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
                 <a-input v-model:value="formData.resumeName" placeholder="请输入简历名称" allow-clear />
@@ -41,7 +39,6 @@
                 <!--                </a-select>-->
               </a-form-item>
             </a-col>
-
             <a-col :span="12" v-show="false">
               <a-form-item
                 label="备注"
