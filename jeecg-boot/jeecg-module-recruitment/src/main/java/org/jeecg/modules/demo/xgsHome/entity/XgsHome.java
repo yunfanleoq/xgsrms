@@ -74,4 +74,5 @@ public class XgsHome implements Serializable {
     @ApiModelProperty(value = "图片")
     private java.lang.String photograph;
 
+
 }

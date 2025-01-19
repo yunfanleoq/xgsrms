@@ -7,6 +7,7 @@
           <a-button type="primary" v-auth="'xgsHome:xgs_home:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
           <a-button  type="primary" v-auth="'xgsHome:xgs_home:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
           <j-upload-button type="primary" v-auth="'xgsHome:xgs_home:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
+          <a-button type="primary" @click="syncHomeContent" preIcon="ant-design:sync-outlined"> 自动同步</a-button> <!-- 添加同步按钮 -->
           <a-dropdown v-if="selectedRowKeys.length > 0">
               <template #overlay>
                 <a-menu>
@@ -51,6 +52,7 @@
 <script lang="ts" name="xgsHome-xgsHome" setup>
   import {ref, reactive, computed, unref} from 'vue';
   import {BasicTable, useTable, TableAction} from '/@/components/Table';
+  import { defHttp } from '/@/utils/http/axios'; // 假设你使用的是 axios
   import {useModal} from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage'
   import XgsHomeModal from './components/XgsHomeModal.vue'
@@ -58,6 +60,7 @@
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsHome.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
+  import loading from "@/views/demo/comp/loading/index.vue";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -154,7 +157,26 @@
   async function batchHandleDelete() {
      await batchDelete({ids: selectedRowKeys.value}, handleSuccess);
    }
-   /**
+
+  /**
+   * 自动同步首页数据
+   */
+  function syncHomeContent() {
+    defHttp.post({ url: '/xgsHome/xgsHome/syncHomeContent' })
+      .then(() => {
+        // 成功同步后提示
+        console.log('同步成功');
+        reload(); // 重新加载表格数据
+      })
+      .catch(error => {
+        // 同步失败后提示
+        console.error('同步失败', error);
+      });
+  }
+
+
+
+  /**
     * 成功回调
     */
   function handleSuccess() {

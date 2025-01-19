@@ -50,9 +50,9 @@
         </ul>
         <ul v-else class="recruitment-list">
           <li v-for="(item, index) in recruitments" :key="index">
-            <!-- <span>{{ item.publishDate }}</span> -->
-            <!-- <a :href="item.link">{{ item.title }}</a> -->
-            <p v-html="item.announcement"></p>
+            <a :href="'/home/recruitment/' + item.id">
+              <p v-html="item.announcement"></p>
+            </a> <!-- 添加查看详情的链接 -->
           </li>
         </ul>
       </div>
@@ -114,13 +114,21 @@ const fetchCarouselImages = async (page = 1, size = 5) => {
     console.log(response.records)
 
     if (response && response.records) {
-      carouselImages.value = response.records
-        .map((item) => {
+      carouselImages.value = response.records.map((item) => {
           const imgTag = item.photograph;  // 获取 HTML 字符串
-          const imgUrl = imgTag.match(/src="(.*?)"/);  // 正则提取 src 属性中的图片链接
+          let imgUrl = "";  // 用于存储图片链接
+          // 如果是 HTML 格式的 <img> 标签，提取 src 属性
+          if (imgTag && imgTag.includes('<img')) {
+            const match = imgTag.match(/src="(.*?)"/);  // 提取 <img> 标签中的 src 链接
+            imgUrl = match ? match[1] : "";
+          }
+          // 如果是纯图片链接，直接使用该链接
+          else if (imgTag && !imgTag.includes('<img')) {
+            imgUrl = imgTag;
+          }
           return {
-            image: imgUrl ? imgUrl[1] : "",  // 如果找到了 src 属性，则提取它
-            createTime: item.createTime || "",  // 假设数据项中包含 `createTime` 字段
+            image: imgUrl,  // 将图片链接放入 image 字段
+            createTime: item.createTime || "",
           };
         })
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
@@ -157,7 +165,7 @@ const newsList = ref([
 ]);
 
 // 获取新闻数据接口
-const fetchNews = async (page = 1, size = 2) => {
+const fetchNews = async (page = 1, size = 5) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
@@ -178,7 +186,6 @@ const fetchNews = async (page = 1, size = 2) => {
   }
 };
 
-
 // const tabSelected = ref('notice');
 
 // 数据
@@ -188,7 +195,7 @@ const recruitments = ref([
 const tabSelected = ref('recruitment');
 
 // 获取招聘公告数据
-const fetchRecruitments = async (page = 1, size = 3) => {
+const fetchRecruitments = async (page = 1, size = 5) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
@@ -424,8 +431,8 @@ h2 {
 }
 
 .news-item {
-  margin-bottom: 10px;
-  padding: 10px;
+  margin-bottom: 5px;
+  padding: 5px;
   border-bottom: 1px solid #ddd;
 }
 
@@ -445,7 +452,7 @@ h2 {
 }
 
 .news-item p {
-  margin: 5px 0 0;
+  margin: 0;
   color: #111;
   white-space: normal;
   overflow: hidden;
@@ -547,7 +554,7 @@ h2 {
 
 .notice-list li,
 .recruitment-list li {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .notice-list li a,
@@ -556,12 +563,19 @@ h2 {
   text-decoration: none;
 }
 
-.notice-list li span,
-.recruitment-list li span {
-  margin-right: 10px;
-  font-size: 14px;
-  color: #666;
+.recruitment-list li p {
+  margin: 0;                    /* 去除上下边距 */
+  padding: 3px 0;               /* 设置内边距 */
+  line-height: 1.4;             /* 行高 */
+  font-size: 16px;              /* 字体大小 */
+
+  display: -webkit-box;         /* 必须使用这个属性来启用多行限制 */
+  -webkit-line-clamp: 1;        /* 限制显示1行 */
+  -webkit-box-orient: vertical; /* 必须设置的属性，用于设置多行文本的排列方向 */
+  overflow: hidden;             /* 超出部分隐藏 */
+  text-overflow: ellipsis;      /* 显示省略号 */
 }
+
 /*--------*/
 
 /* 分类和搜索 */

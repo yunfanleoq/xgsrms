@@ -11,5 +11,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 
 public interface IXgsHomeService extends IService<XgsHome> {
+    boolean syncHomeContentFromAPI();
 
 }
