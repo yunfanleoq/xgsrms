@@ -57,14 +57,20 @@
                 />
               </a-form-item>
             </a-col>
+            <a-col :span="12">
+              <a-form-item label="PDF简历" id="XgsUserResumeFileForm-filePath" name="filePath">
+                <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" />
+                <a-button type="primary" :disabled="!formData.filePath" @click="analysisResume">自动填充简历信息</a-button>
+              </a-form-item>
+            </a-col>
           </a-row>
         </a-form>
         <!--        //此处引入简历组件，展示简历填报页面-->
         <div>
-          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeFGForm v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumeFGForm v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="true" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
             未知的 positionType
@@ -142,6 +148,26 @@
     disabled: false,
   });
 
+  // 分析简历
+  const resumeText = ref('');
+  function analysisResume() {
+    confirmLoading.value = true;
+    resumeText.value = '请稍等，正在分析简历...';
+    defHttp
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData })
+      .then((data) => {
+        if (data) {
+          // TODO 在这里做分析后的对应关系
+          console.log(data);
+          resumeText.value = ''; // '示例：在这里做分析后的对应关系，分析结果如下： ' + JSON.stringify(data);
+        } else {
+          createMessage.warning('解析失败，请上传PDF格式的简历');
+        }
+      })
+      .finally(() => {
+        confirmLoading.value = false;
+      });
+  }
   const initFormData = async () => {
     resumeFormData.value = {
       userName: formData.value.userName,
@@ -212,6 +238,7 @@
   }
 
   import { useUserStore } from '/@/store/modules/user';
+  import JUpload from "../../../components/Form/src/jeecg/components/JUpload/JUpload.vue";
   const userStore = useUserStore();
   /**
    * 编辑

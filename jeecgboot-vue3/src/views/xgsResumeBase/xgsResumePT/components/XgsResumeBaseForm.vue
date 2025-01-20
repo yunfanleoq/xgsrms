@@ -111,7 +111,7 @@
       </a-collapse-panel>
     </a-collapse>
 
-    <div style="width: 100%; text-align: center; margin-top: 10px" v-if="showFlowSubmitButton">
+    <div style="width: 100%; text-align: center; margin-top: 10px" v-if="false">
       <a-button preIcon="ant-design:check-outlined" style="width: 126px" type="primary" @click="handleSubmit">提 交</a-button>
     </div>
   </div>
@@ -189,7 +189,7 @@
   //渲染流程表单数据
   const queryByIdUrl = '/xgsResume/xgsResumeBase/queryById';
   async function initFormData() {
-    if (props.formBpm === true) {
+    if (props.formBpm === true && props.formData.dataId) {
       await reset();
       let params = { id: props.formData.dataId };
       const data = await defHttp.get({ url: queryByIdUrl, params });
