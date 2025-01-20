@@ -46,7 +46,9 @@
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsInterview.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
-  const queryParam = reactive<any>({});
+  const queryParam = reactive<any>({
+    candidateId: useUserStore().getUserInfo?.id || ''
+  });
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
   //注册model
