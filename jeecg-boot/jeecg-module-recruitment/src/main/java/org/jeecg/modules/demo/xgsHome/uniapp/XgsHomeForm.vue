@@ -6,7 +6,6 @@
 			<block slot="content">首页</block>
 		</cu-custom>
 		 <!--表单区域-->
-
 		<view>
 			<form>
               <view class="cu-form-group">
@@ -31,6 +30,12 @@
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">图片：</text></view>
                   <input  placeholder="请输入图片" v-model="model.photograph"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">招聘公告标题：</text></view>
+                  <input  placeholder="请输入招聘公告标题" v-model="model.recruitAnnouncementTitle"/>
                 </view>
               </view>
 				<view class="padding">

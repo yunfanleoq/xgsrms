@@ -1,33 +1,28 @@
 package org.jeecg.modules.demo.xgsHome.service.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import org.jeecg.modules.demo.xgsHome.entity.XgsHome;
 import org.jeecg.modules.demo.xgsHome.mapper.XgsHomeMapper;
 import org.jeecg.modules.demo.xgsHome.service.IXgsHomeService;
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.ArrayList;
+import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @Description: 首页
  * @Author: jeecg-boot
- * @Date:   2025-01-10
+ * @Date:   2025-01-21
  * @Version: V1.0
  */
-
 @Service
 public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> implements IXgsHomeService {
     @Autowired
@@ -78,10 +73,10 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 newsTitles.add(newTitle); // 将新闻标题添加到集合中
             });
 
-            // 提取招聘公告
+            // 提取招聘公告标题
             document.select(".notice_students .tab_con:eq(1) ul li h3").forEach(element -> {
-                String recruitAnnouncement = element.text();
-                recruitAnnouncements.add(recruitAnnouncement); // 将招聘公告添加到集合中
+                String recruitAnnouncementTitle = element.text();
+                recruitAnnouncements.add(recruitAnnouncementTitle); // 将招聘公告添加到集合中
             });
             int maxSize = Math.max(photographUrls.size(), Math.max(newsTitles.size(), recruitAnnouncements.size()));
             // 检查是否有数据缺失，如果有则跳过这条数据
@@ -96,8 +91,9 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 XgsHome homeData = new XgsHome();
                 homeData.setPhotograph(photographUrls.get(i));
                 homeData.setNewTitle(newsTitles.get(i));
-                homeData.setRecruitAnnouncement(recruitAnnouncements.get(i));
+                homeData.setRecruitAnnouncementTitle(recruitAnnouncements.get(i));
                 homeData.setNews(" ");
+                homeData.setRecruitAnnouncement(" ");
 
                 // 设置其他字段
                 homeData.setCreateTime(new Date());

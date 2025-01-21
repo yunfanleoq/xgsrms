@@ -6,14 +6,37 @@
           v-for="(category, index) in jobCategories"
           :key="index"
           @click="filterJobCategory(category)"
-          :class="{ active: selectedCategory === category }"
-        >
+          :class="{ active: selectedCategory === category && !showAnnouncementList }">
           {{ category }}
+        </li>
+        <li @click="showAnnouncements" :class="{ active: showAnnouncementList }">
+          招聘公告
         </li>
       </ul>
     </aside>
     <main class="content">
-      <div>
+      <section v-if="showAnnouncementList" class="announcement-list">
+        <h2>招聘公告</h2>
+        <ul>
+          <li
+            v-for="(announcement, index) in announcements"
+            :key="index"
+            @click="goToAnnouncementDetail(String(announcement.id))"
+            class="announcement-item">
+            <div class="announcement-card">
+              <h3>{{ announcement.title }}</h3>
+              <p class="announcement-time">{{ formatDate(announcement.createTime) }}</p>
+            </div>
+          </li>
+        </ul>
+        <!-- 分页 -->
+        <div class="pagination">
+          <button @click="prevPage" :disabled="announce_currentPage === 1">上一页</button>
+          <span>第 {{ announce_currentPage }} 页 / 共 {{ announce_totalPages }} 页</span>
+          <button @click="nextPage" :disabled="announce_currentPage === announce_totalPages">下一页</button>
+        </div>
+      </section>
+      <div v-else>
         <section class="filters">
           <div class="categories">
             <button v-for="dept in depts" :key="dept.id" @click="filterDept(dept)" :class="{ active: selectedDept.id === dept.id }">
@@ -81,16 +104,81 @@
   import { useRouter } from 'vue-router';
   import { usePositionStore } from '@/store/modules/positions';
   import { getDictItems, getPositionList, getDeptList } from '@/api/xgsrms/home';
+  import Line from "@/views/demo/charts/Line.vue";
+  import {defHttp} from "@/utils/http/axios";
 
   const positionStore = usePositionStore();
 
   const jobCategories = ref([]);
+
+  // 招聘公告相关数据
+  const announcements = ref([]); // 用于存储招聘公告数据
+  const showAnnouncementList = ref(false); // 控制招聘公告列表的显示
+  const announce_currentPage = ref(1); // 当前页码
+  const itemsPerPage = ref(10); // 每页显示条目数
+
+  // 格式化时间，仅显示年月日
+  const formatDate = (dateTime: string) => {
+    const date = new Date(dateTime);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+
+  // 模拟从后端获取招聘公告
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await defHttp.get({
+        url: "/xgsHome/xgsHome/list",
+      });
+
+      if (response && response.records) {
+        announcements.value = response.records.map((item: any) => ({
+            id: item.id, // 映射招聘公告的主键 ID
+            title: item.recruitAnnouncementTitle,
+            createTime: item.createTime,
+          }))
+          .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())  // 按时间降序排序
+      }
+    } catch (error) {
+      console.error("请求招聘公告数据失败:", error);
+    }
+  };
+
+  // 分页计算
+  const paginatedAnnouncements = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    return announcements.value.slice(start, start + itemsPerPage.value);
+  });
+
+  const announce_totalPages = computed(() => {
+    return Math.ceil(announcements.value.length / itemsPerPage.value);
+  });
+
+
+  // 显示招聘公告列表
+  const showAnnouncements = () => {
+    showAnnouncementList.value = true; // 切换到招聘公告模式
+    selectedCategory.value = null; // 清除岗位分类选中状态
+    fetchAnnouncements();
+  };
+
+  // 跳转至招聘公告详情
+  const goToAnnouncementDetail = (announcementId: string) => {
+    router.push({ name: 'announcementDetail', params: { id: announcementId } });
+  };
+
+  // -----------------
+
   //
   const goToPositionDetail = (positionId: number) => {
     router.push({ name: 'positionDetail', params: { id: positionId } });
   };
 
   const filterJobCategory = (category) => {
+    showAnnouncementList.value = false; // 退出招聘公告模式
     // 根据选择的岗位分类进行过滤的逻辑
     console.log('Selected job category:', category);
     selectedCategory.value = category;
@@ -562,6 +650,49 @@
     background-color: #3d54a7;
     color: #fff;
   }
+
+  .announcement-list {
+    margin: 20px;
+  }
+
+  h2 {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+  }
+
+  .announcement-item {
+    cursor: pointer;
+  }
+
+  .announcement-item:hover {
+    color: #3d54a7;
+  }
+
+  .announcement-card {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .announcement-card:hover {
+    color: #3d54a7;
+  }
+
+  .announcement-card h3 {
+    font-size: 16px;
+    margin: 0;
+    flex: 1; /* 使标题占满可用空间 */
+  }
+
+  .announcement-card .announcement-time {
+    font-size: 16px;
+    color: #888;
+    text-align: right;
+  }
+
 
   .filters .categories button .active {
     background-color: #4caf50;

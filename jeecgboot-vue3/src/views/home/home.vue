@@ -42,17 +42,16 @@
         <a class="more-link" :href="'./home/positions'">查看更多 +</a>
       </div>
       <div class="announcements-content">
-        <ul v-if="tabSelected === 'notice'" class="notice-list">
-          <li v-for="(item, index) in notices" :key="index">
-            <span>{{ item.date }}</span>
-            <a :href="item.link">{{ item.title }}</a>
-          </li>
-        </ul>
-        <ul v-else class="recruitment-list">
-          <li v-for="(item, index) in recruitments" :key="index">
-            <a :href="'/home/recruitment/' + item.id">
+<!--        <ul v-if="tabSelected === 'notice'" class="notice-list">-->
+<!--          <li v-for="(item, index) in notices" :key="index">-->
+<!--            <span>{{ item.date }}</span>-->
+<!--            <a :href="item.link">{{ item.title }}</a>-->
+<!--          </li>-->
+<!--        </ul>-->
+        <ul class="recruitment-list">
+          <li v-for="(item, index) in recruitments" :key="index"
+              @click="goToAnnouncementDetail(String(item.id))">
               <p v-html="item.announcement"></p>
-            </a> <!-- 添加查看详情的链接 -->
           </li>
         </ul>
       </div>
@@ -132,7 +131,7 @@ const fetchCarouselImages = async (page = 1, size = 5) => {
           };
         })
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-        .slice(0, 5); // 截取前三张轮播图
+        .slice(0, 5); // 截取前5张轮播图
       console.log("处理后的 carouselImages",carouselImages.value)
 
     }
@@ -175,7 +174,7 @@ const fetchNews = async (page = 1, size = 5) => {
     if (response && response.records) {
       newsList.value = response.records.map((item: any) => ({
         title: item.newTitle || "无标题",
-        content: item.news || "无内容",
+        // content: item.news || "无内容",
         createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
       }))
       .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
@@ -194,7 +193,7 @@ const recruitments = ref([
 ]); // 初始化为空的招聘公告数组
 const tabSelected = ref('recruitment');
 
-// 获取招聘公告数据
+// 获取招聘公告标题数据
 const fetchRecruitments = async (page = 1, size = 5) => {
   try {
     const response = await defHttp.get({
@@ -205,15 +204,21 @@ const fetchRecruitments = async (page = 1, size = 5) => {
     if (response && response.records) {
       recruitments.value = response.records
         .map((item: any) => ({
-          announcement: item.recruitAnnouncement || "暂无内容",
-          createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
+          id: item.id,
+          announcement: item.recruitAnnouncementTitle ,
+          createTime: item.createTime , // 假设服务器返回的时间格式为字符串
         }))
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())  // 按时间降序排序
-        .slice(0, size); // 截取前三条
+        .slice(0, size); // 截取前5条
     }
   } catch (error) {
     console.error("请求招聘公告数据失败:", error);
   }
+};
+
+// 跳转至招聘公告详情
+const goToAnnouncementDetail = (itemId: string) => {
+  router.push({ name: 'announcementDetail', params: { id: itemId } });
 };
 
 // 组件挂载时加载招聘公告
@@ -544,20 +549,24 @@ h2 {
   padding: 0 10px;
 }
 
-
-.notice-list,
 .recruitment-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.notice-list li,
 .recruitment-list li {
-  margin-bottom: 5px;
+  cursor: default; /* 默认状态下的鼠标样式 */
+  color: #333; /* 默认字体颜色 */
+  transition: color 0.3s ease; /* 动态过渡效果 */
+  margin: 5px;
 }
 
-.notice-list li a,
+.recruitment-list li:hover {
+  cursor: pointer; /* 鼠标悬停时的鼠标样式 */
+  color: #3d54a7; /* 鼠标悬停时的字体颜色 */
+}
+
 .recruitment-list li a {
   color: #333;
   text-decoration: none;

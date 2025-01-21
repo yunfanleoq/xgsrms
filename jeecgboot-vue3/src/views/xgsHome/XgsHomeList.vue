@@ -20,7 +20,7 @@
               <a-button v-auth="'xgsHome:xgs_home:deleteBatch'">批量操作
                 <Icon icon="mdi:chevron-down"></Icon>
               </a-button>
-        </a-dropdown>
+          </a-dropdown>
         <!-- 高级查询 -->
         <super-query :config="superQueryConfig" @search="handleSuperQuery" />
       </template>
@@ -52,7 +52,6 @@
 <script lang="ts" name="xgsHome-xgsHome" setup>
   import {ref, reactive, computed, unref} from 'vue';
   import {BasicTable, useTable, TableAction} from '/@/components/Table';
-  import { defHttp } from '/@/utils/http/axios'; // 假设你使用的是 axios
   import {useModal} from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage'
   import XgsHomeModal from './components/XgsHomeModal.vue'
@@ -60,7 +59,7 @@
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsHome.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
-  import loading from "@/views/demo/comp/loading/index.vue";
+  import {defHttp} from "@/utils/http/axios";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -125,6 +124,23 @@
        showFooter: true,
      });
   }
+
+  /**
+   * 自动同步首页数据
+   */
+  function syncHomeContent() {
+    defHttp.post({ url: '/xgsHome/xgsHome/syncHomeContent' })
+      .then(() => {
+        // 成功同步后提示
+        console.log('同步成功');
+        reload(); // 重新加载表格数据
+      })
+      .catch(error => {
+        // 同步失败后提示
+        console.error('同步失败', error);
+      });
+  }
+
    /**
     * 编辑事件
     */
@@ -157,26 +173,7 @@
   async function batchHandleDelete() {
      await batchDelete({ids: selectedRowKeys.value}, handleSuccess);
    }
-
-  /**
-   * 自动同步首页数据
-   */
-  function syncHomeContent() {
-    defHttp.post({ url: '/xgsHome/xgsHome/syncHomeContent' })
-      .then(() => {
-        // 成功同步后提示
-        console.log('同步成功');
-        reload(); // 重新加载表格数据
-      })
-      .catch(error => {
-        // 同步失败后提示
-        console.error('同步失败', error);
-      });
-  }
-
-
-
-  /**
+   /**
     * 成功回调
     */
   function handleSuccess() {

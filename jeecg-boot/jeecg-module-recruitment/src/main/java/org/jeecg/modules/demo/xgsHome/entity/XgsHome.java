@@ -23,7 +23,7 @@ import lombok.experimental.Accessors;
 /**
  * @Description: 首页
  * @Author: jeecg-boot
- * @Date:   2025-01-10
+ * @Date:   2025-01-21
  * @Version: V1.0
  */
 @Data
@@ -73,6 +73,8 @@ public class XgsHome implements Serializable {
 	@Excel(name = "图片", width = 15)
     @ApiModelProperty(value = "图片")
     private java.lang.String photograph;
-
-
+	/**招聘公告标题*/
+	@Excel(name = "招聘公告标题", width = 15)
+    @ApiModelProperty(value = "招聘公告标题")
+    private java.lang.String recruitAnnouncementTitle;
 }
