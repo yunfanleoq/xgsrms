@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted } from 'vue';
+  import { ref, reactive, defineExpose, nextTick, defineProps, computed, onMounted, toRaw } from 'vue';
   // import XgsResumeForm from '/@/views/xgsResume/components/xgsResumeBaseForm.vue';
   import xgsResumeBSHForm from '/@/views/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
   import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
@@ -187,7 +187,10 @@
   const confirmLoading = ref<boolean>(false);
   //表单验证
   const validatorRules = reactive({});
-  const { resetFields, validate, validateInfos } = useForm(formData, validatorRules, { immediate: false });
+  const { resetFields, validate, validateInfos } = useForm(formData, validatorRules, {
+    onValidate: (...args) => console.log(123, ...args),
+    immediate: false,
+  });
 
   // 表单禁用
   const disabled = computed(() => {
@@ -201,29 +204,29 @@
     return props.formDisabled;
   });
 
-  //页面完全加载完成并 显示一秒后 打印 formData，
-  setTimeout(() => {
-    nextTick(() => {
-      console.log('...............................props', props);
-      console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
-      // Object.assign(formData , props.formData);
-      formData.value.positionType = props.formData.category || '普通岗位';
-      console.log('===============================');
-      formData.value.resumeId = props.formData.resumeId || '';
-      console.log('-------------------------------');
-      formData.value.positionId = props.formData.positionId || '';
-      formData.value.applyId = props.formData.applyId || '';
-      formData.value.userName = props.formData.userName || '';
-      formData.value.positionName = props.formData.positionName || '';
-      formData.value.positionDept = props.formData.positionDept || '';
-      formData.value.status = props.formData.status || '';
-      formData.value.resumeName = props.formData.resumeName || '';
-      formData.value.mark = props.formData.mark || '';
-
-      console.log('》》》》》》》》》》》》》》》formData', formData);
-      // initFormdata();
-    });
-  }, 1000);
+  // //页面完全加载完成并 显示一秒后 打印 formData，
+  // setTimeout(() => {
+  //   nextTick(() => {
+  //     console.log('...............................props', props);
+  //     console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
+  //     // Object.assign(formData , props.formData);
+  //     formData.value.positionType = props.formData.category || '普通岗位';
+  //     console.log('===============================');
+  //     formData.value.resumeId = props.formData.resumeId || '';
+  //     console.log('-------------------------------');
+  //     formData.value.positionId = props.formData.positionId || '';
+  //     formData.value.applyId = props.formData.applyId || '';
+  //     formData.value.userName = props.formData.userName || '';
+  //     formData.value.positionName = props.formData.positionName || '';
+  //     formData.value.positionDept = props.formData.positionDept || '';
+  //     formData.value.status = props.formData.status || '';
+  //     formData.value.resumeName = props.formData.resumeName || '';
+  //     formData.value.mark = props.formData.mark || '';
+  //
+  //     console.log('》》》》》》》》》》》》》》》formData', formData);
+  //     // initFormdata();
+  //   });
+  // }, 1000);
   /**
    * 新增
    */
@@ -238,7 +241,7 @@
   }
 
   import { useUserStore } from '/@/store/modules/user';
-  import JUpload from "../../../components/Form/src/jeecg/components/JUpload/JUpload.vue";
+  import JUpload from '../../../components/Form/src/jeecg/components/JUpload/JUpload.vue';
   const userStore = useUserStore();
   /**
    * 编辑
@@ -293,17 +296,17 @@
       isUpdate.value = true;
     }
     //循环数据
-    for (let data in model) {
+    for (let data in formData) {
       //如果该数据是数组并且是字符串类型
-      if (model[data] instanceof Array) {
+      if (formData[data] instanceof Array) {
         let valueType = getValueType(formRef.value.getProps, data);
         //如果是字符串类型的需要变成以逗号分割的字符串
         if (valueType === 'string') {
-          model[data] = model[data].join(',');
+          model[data] = formData[data].join(',');
         }
       }
     }
-    await saveOrUpdate(model, isUpdate.value)
+    saveOrUpdate(model.value, isUpdate.value)
       .then((res) => {
         if (res.success) {
           createMessage.success(res.message);
