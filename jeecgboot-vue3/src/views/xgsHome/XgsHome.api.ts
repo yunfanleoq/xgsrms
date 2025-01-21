@@ -21,6 +21,14 @@ export const getExportUrl = Api.exportXls;
  * 导入api
  */
 export const getImportUrl = Api.importExcel;
+
+// 同步首页内容
+export const syncHomeContentApi = () => {
+  return defHttp.post({
+    url: '/xgsHome/xgsHome/syncHomeContent',
+  });
+};
+
 /**
  * 列表接口
  * @param params

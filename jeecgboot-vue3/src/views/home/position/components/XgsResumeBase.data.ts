@@ -76,21 +76,25 @@ export const formSchema: FormSchema[] = [
     label: '申请人',
     field: 'applyUserName',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '岗位名称',
     field: 'applyPositionName',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '岗位部门',
     field: 'applyPositionDept',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '岗位类型',
     field: 'applyPositionType',
     component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '被推荐人',

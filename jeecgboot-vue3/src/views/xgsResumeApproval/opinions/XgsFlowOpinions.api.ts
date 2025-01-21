@@ -4,6 +4,7 @@ import { useMessage } from '/@/hooks/web/useMessage';
 const { createConfirm } = useMessage();
 
 enum Api {
+  getResumeData = '/resume/xgsFlowOpinions/getResumeData',
   list = '/resume/xgsFlowOpinions/list',
   save = '/resume/xgsFlowOpinions/add',
   edit = '/resume/xgsFlowOpinions/edit',
@@ -26,6 +27,11 @@ export const getImportUrl = Api.importExcel;
  * @param params
  */
 export const list = (params) => defHttp.get({ url: Api.list, params });
+/**
+ * 简历数据
+ * @param params
+ */
+export const getResumeData = (params) => defHttp.get({ url: Api.getResumeData, params });
 
 /**
  * 删除单个

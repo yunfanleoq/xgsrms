@@ -4,7 +4,7 @@ import { useMessage } from "/@/hooks/web/useMessage";
 const { createConfirm } = useMessage();
 
 enum Api {
-  list = '/positions/xgsFavoriteJob/list',
+  list = '/positions/xgsFavoriteJob/listMine',
   save='/positions/xgsFavoriteJob/add',
   edit='/positions/xgsFavoriteJob/edit',
   deleteOne = '/positions/xgsFavoriteJob/delete',

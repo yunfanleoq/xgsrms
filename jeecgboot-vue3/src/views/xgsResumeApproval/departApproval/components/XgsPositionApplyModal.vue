@@ -16,7 +16,6 @@
   import { ref, nextTick, defineExpose, onMounted } from 'vue';
   import XgsPositionApplyForm from './XgsPositionApplyForm.vue';
   import JModal from '/@/components/Modal/src/JModal/JModal.vue';
-
   const title = ref<string>('');
   const width = ref<number>(1200);
   const visible = ref<boolean>(false);

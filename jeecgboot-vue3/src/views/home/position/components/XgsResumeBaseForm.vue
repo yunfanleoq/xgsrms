@@ -4,8 +4,7 @@
     <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs">
       <!--主表区域 -->
       <a-tab-pane tab="基本信息" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
-        <BasicForm @register="registerForm" ref="formRef">
-        </BasicForm>
+        <BasicForm @register="registerForm" ref="formRef" />
       </a-tab-pane>
       <!--子表单区域 -->
       <a-tab-pane tab="教育经历" key="xgsResumeEdus" :forceRender="true" :style="tabsStyle">
@@ -73,7 +72,7 @@
   import { formSchema, xgsResumeEdusColumns, xgsResumeHomeColumns, xgsResumeWorksColumns } from './XgsResumeBase.data';
   import { saveOrUpdate, xgsResumeEdusList, xgsResumeHomeList, xgsResumeWorksList } from './XgsResumeBase.api';
   import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils';
-  import JUpload from "../../../../components/Form/src/jeecg/components/JUpload/JUpload.vue";
+  import JUpload from '../../../../components/Form/src/jeecg/components/JUpload/JUpload.vue';
   const refKeys = ref(['xgsResumeBase', 'xgsResumeEdus', 'xgsResumeHome', 'xgsResumeWorks']);
   const activeKey = ref('xgsResumeBase');
   const xgsResumeEdus = ref();

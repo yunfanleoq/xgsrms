@@ -37,7 +37,7 @@
       <p>职位信息加载中...</p>
     </div>
   </div>
-  <XgsPositionApplyModal @register="registerModal" :form-data="record" :formBpm="true" />
+  <XgsPositionApplyModal ref="registerModalRef" :form-data="record" :formBpm="true" />
 </template>
 
 <script setup lang="ts">
@@ -48,12 +48,12 @@
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   import { useMessage } from '@/hooks/web/useMessage'; // 假设你有一个 API 来获取职位信息
-  // import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
-  import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
+  import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
+  // import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
   import { message } from 'ant-design-vue';
   import { useModal } from '@/components/Modal';
 
-  // const registerModal = ref();
+  const registerModalRef = ref();
   const positionApplyStore = usePositionApplyStoreWithOut();
 
   // const record = positionApplyStore.currPositionApply;
@@ -113,7 +113,7 @@
     }
     // TODO: 实现收藏职位的功能
     let params = {
-      id: jobId,
+      // id: jobId,
       userId: userStore.userInfo.username,
       userName: userStore.userInfo.realname,
       positionId: jobId,
@@ -160,7 +160,8 @@
   const XgsPositionApplyFormShow = ref(false);
 
   const [registerModal, { openModal }] = useModal();
-  function positionApply() {
+  // position apply
+  const positionApply1 = () => {
     if (userStore.userInfo === null) {
       // 使用 message.warning
       message.warning('请先登录');
@@ -188,9 +189,9 @@
         jobDetail: jobDetail,
       });
     }
-  }
+  };
 
-  const positionApply2 = () => {
+  const positionApply = () => {
     if (userStore.userInfo === null) {
       // 使用 message.warning
       message.warning('请先登录');
@@ -198,7 +199,7 @@
       return;
     } else {
       XgsPositionApplyFormShow.value = true;
-      registerModal.value.addJob(positionApplyStore.currPositionApply);
+      registerModalRef.value.addJob(positionApplyStore.currPositionApply);
       // record.value = positionApplyStore.currPositionApply;
       record.value.applyId = '';
       record.value.disabled = false;

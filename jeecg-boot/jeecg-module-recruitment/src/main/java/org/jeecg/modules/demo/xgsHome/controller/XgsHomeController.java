@@ -90,6 +90,25 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 		xgsHomeService.save(xgsHome);
 		return Result.OK("添加成功！");
 	}
+
+	 /**
+	  * 自动同步首页数据接口
+	  */
+	 @ApiOperation(value="自动同步首页数据", notes="从外部API同步首页数据")
+	 @PostMapping(value = "/syncHomeContent")
+	 public Result<String> syncHomeContent() {
+		 try {
+			 boolean success = xgsHomeService.syncHomeContentFromAPI(); // 调用服务层方法进行同步
+			 if (success) {
+				 return Result.OK("同步成功！");
+			 } else {
+				 return Result.error("同步失败，请检查外部API是否可用");
+			 }
+		 } catch (Exception e) {
+			 log.error("同步数据时发生错误", e);
+			 return Result.error("同步失败，系统异常");
+		 }
+	 }
 	
 	/**
 	 *  编辑

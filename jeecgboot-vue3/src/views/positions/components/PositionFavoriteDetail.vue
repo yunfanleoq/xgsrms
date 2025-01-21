@@ -37,7 +37,11 @@
         <p>职位信息加载中...</p>
       </div>
     </div>
-    <XgsPositionApplyModal @register="registerModal" :form-data="record" :formBpm="true" />
+<!--    <XgsPositionApplyModal @register="registerModal" :form-data="record" :formBpm="true" />-->
+    <XgsResumeBSHModal v-if="job.category === '博士后岗位'" @register="registerModal" :form-data="record" :formBpm="false" />
+    <XgsResumeFGModal v-else-if="job.category === '副高级以上岗位'" @register="registerModal" :form-data="record" :formBpm="true" />
+    <XgsResumeTJModal v-else-if="job.category === '人才派遣岗位'" @register="registerModal" :form-data="record" :formBpm="true" />
+    <XgsResumeBaseModal v-else @register="registerModal" :form-data="record" :formBpm="false" />
 
   </BasicModal>
 </template>
@@ -52,6 +56,22 @@
   import { useMessage } from '@/hooks/web/useMessage'; // 假设你有一个 API 来获取职位信息
   // import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
   import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
+
+
+  import {saveOrUpdate} from '../XgsFavoriteJob.api';
+  import data from "emoji-mart-vue-fast/data/apple.json";
+  import XgsResumeBSHModal
+    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumeBSH/components/XgsResumeBSHModal.vue";
+  import XgsResumeFGModal
+    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumeFG/components/XgsResumeFGModal.vue";
+  import XgsResumeTJModal
+    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumeTJ/components/XgsResumeTJModal.vue";
+  import XgsResumeBaseModal
+    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumePT/components/XgsResumeBaseModal.vue";
+  import XgsUserPositionApplyModal
+    from "@/views/userPositions/userPositions/components/XgsUserPositionApplyModal.vue";
+  import JUpload from "@/components/Form/src/jeecg/components/JUpload/JUpload.vue";
+
   import { message } from 'ant-design-vue';
   import {BasicModal, useModal, useModalInner} from '@/components/Modal';
 
@@ -63,7 +83,7 @@
   const route = useRoute();
   // const jobId = route.params.id as string;
   let jobId = '';
-  const job = ref(null);
+  const job = ref({});
 
   const userStore = useUserStore();
 
@@ -103,7 +123,7 @@
     }
     // TODO: 实现收藏职位的功能
     let params = {
-      id: jobId,
+      // id: jobId,
       userId: userStore.userInfo.username,
       userName: userStore.userInfo.realname,
       positionId: jobId,
@@ -160,14 +180,16 @@
         applyId: '',
         disabled: false,
         mark: '',
-        positionDept: job.value.dept_dictText,
+        applyPositionDept: job.value.dept_dictText,
         positionId: job.value.id,
-        positionName: job.value.positionName,
-        positionType: job.value.category,
+        applyPositionName: job.value.positionName,
+        applyPositionType: job.value.category,
         resumeId: '',
         resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
         status: '申请中',
-        userName: userStore.getUserInfo.realname,
+        applyUserName: userStore.getUserInfo.realname,
+        email: '',
+        researchDirection: '',
       };
       let jobDetail = Object.assign({}, positionApplyStore.currPositionApply, jobDefault);
       openModal(true, {
@@ -223,8 +245,7 @@
 
   //
   const isReady = ref(false);
-  import {saveOrUpdate} from '../XgsFavoriteJob.api';
-  import data from "emoji-mart-vue-fast/data/apple.json";
+
   const favoriteJobId = ref('')
   // Emits声明
   const emit = defineEmits(['register','success']);
@@ -244,18 +265,13 @@
     setModalProps({confirmLoading: false,showCancelBtn:!!data?.showFooter,showOkBtn:!!data?.showFooter});
     // isUpdate.value = !!data?.isUpdate;
     // isDetail.value = !!data?.showFooter;
-    console.log('data=======================')
     isUpdate.value = true;
     isDetail.value = true;
-    console.log('data=======================2')
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter })
-    console.log('data=======================3')
     isReady.value = true;
     jobId = data.record
-    console.log('data=======================4')
     favoriteJobId.value = data.record
-    console.log("1111", favoriteJobId.value)
     fetchCurrApplyPosition();
   });
   //设置标题
