@@ -30,6 +30,7 @@
       <div v-else> 未知的 positionType </div>
     </div>
   </BasicModal>
+
 </template>
 
 <script lang="ts" setup>

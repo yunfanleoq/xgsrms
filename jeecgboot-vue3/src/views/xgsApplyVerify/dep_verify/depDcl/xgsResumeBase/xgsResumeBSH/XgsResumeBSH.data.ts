@@ -422,13 +422,13 @@ export const formSchema: FormSchema[] = [
     colProps: {
       span: 24,
     },
-    rules: [
-      {
-        required: true,
-        message: '请填写研究室意见',
-      },
-    ],
-    helpMessage: '请务必填写研究室意见',
+    // rules: [
+    //   {
+    //     required: true,
+    //     message: '请填写研究室意见',
+    //   },
+    // ],
+    // helpMessage: '请务必填写研究室意见',
   },
   // {
   //   label: '研究室负责人签字',

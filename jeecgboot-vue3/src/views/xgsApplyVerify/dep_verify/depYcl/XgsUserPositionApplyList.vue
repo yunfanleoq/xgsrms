@@ -61,7 +61,7 @@
         const userDept = userStore.getDepartName;
         return Object.assign(params, queryParam, {
           positionDept: userDept,
-          status: ['待人力处审核', '部门未通过'],
+          approvalStatus: ['待人力处审核', '部门未通过'],
         });
       },
     },

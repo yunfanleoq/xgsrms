@@ -70,7 +70,7 @@ export const columns: BasicColumn[] = [
   {
     title: '申请状态',
     align: 'center',
-    dataIndex: 'status',
+    dataIndex: 'approvalStatus',
     ellipsis: true,
     // width: '150px',
   },
