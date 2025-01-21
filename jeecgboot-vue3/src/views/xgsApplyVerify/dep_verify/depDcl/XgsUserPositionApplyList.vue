@@ -143,7 +143,7 @@
   function getTableAction(record) {
     return [
       {
-        label: '审核',
+        label: '详情',
         onClick: handleEdit.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
       },

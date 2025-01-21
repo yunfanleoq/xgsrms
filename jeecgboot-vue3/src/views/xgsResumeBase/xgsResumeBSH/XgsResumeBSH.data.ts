@@ -435,7 +435,7 @@ export const formSchema: FormSchema[] = [
   {
     label: '人力资源处意见',
     field: 'resourcesIdea',
-    component: 'JEditor',
+    component: 'InputTextArea',
     colProps: {
       span: 24,
     },
