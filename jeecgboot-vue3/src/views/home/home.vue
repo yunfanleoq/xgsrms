@@ -42,17 +42,16 @@
         <a class="more-link" :href="'./home/positions'">查看更多 +</a>
       </div>
       <div class="announcements-content">
-        <ul v-if="tabSelected === 'notice'" class="notice-list">
-          <li v-for="(item, index) in notices" :key="index">
-            <span>{{ item.date }}</span>
-            <a :href="item.link">{{ item.title }}</a>
-          </li>
-        </ul>
-        <ul v-else class="recruitment-list">
-          <li v-for="(item, index) in recruitments" :key="index">
-            <!-- <span>{{ item.publishDate }}</span> -->
-            <!-- <a :href="item.link">{{ item.title }}</a> -->
-            <p v-html="item.announcement"></p>
+<!--        <ul v-if="tabSelected === 'notice'" class="notice-list">-->
+<!--          <li v-for="(item, index) in notices" :key="index">-->
+<!--            <span>{{ item.date }}</span>-->
+<!--            <a :href="item.link">{{ item.title }}</a>-->
+<!--          </li>-->
+<!--        </ul>-->
+        <ul class="recruitment-list">
+          <li v-for="(item, index) in recruitments" :key="index"
+              @click="goToAnnouncementDetail(String(item.id))">
+              <p v-html="item.announcement"></p>
           </li>
         </ul>
       </div>
@@ -114,17 +113,25 @@ const fetchCarouselImages = async (page = 1, size = 5) => {
     console.log(response.records)
 
     if (response && response.records) {
-      carouselImages.value = response.records
-        .map((item) => {
+      carouselImages.value = response.records.map((item) => {
           const imgTag = item.photograph;  // 获取 HTML 字符串
-          const imgUrl = imgTag.match(/src="(.*?)"/);  // 正则提取 src 属性中的图片链接
+          let imgUrl = "";  // 用于存储图片链接
+          // 如果是 HTML 格式的 <img> 标签，提取 src 属性
+          if (imgTag && imgTag.includes('<img')) {
+            const match = imgTag.match(/src="(.*?)"/);  // 提取 <img> 标签中的 src 链接
+            imgUrl = match ? match[1] : "";
+          }
+          // 如果是纯图片链接，直接使用该链接
+          else if (imgTag && !imgTag.includes('<img')) {
+            imgUrl = imgTag;
+          }
           return {
-            image: imgUrl ? imgUrl[1] : "",  // 如果找到了 src 属性，则提取它
-            createTime: item.createTime || "",  // 假设数据项中包含 `createTime` 字段
+            image: imgUrl,  // 将图片链接放入 image 字段
+            createTime: item.createTime || "",
           };
         })
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-        .slice(0, 5); // 截取前三张轮播图
+        .slice(0, 5); // 截取前5张轮播图
       console.log("处理后的 carouselImages",carouselImages.value)
 
     }
@@ -157,7 +164,7 @@ const newsList = ref([
 ]);
 
 // 获取新闻数据接口
-const fetchNews = async (page = 1, size = 2) => {
+const fetchNews = async (page = 1, size = 5) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
@@ -167,7 +174,7 @@ const fetchNews = async (page = 1, size = 2) => {
     if (response && response.records) {
       newsList.value = response.records.map((item: any) => ({
         title: item.newTitle || "无标题",
-        content: item.news || "无内容",
+        // content: item.news || "无内容",
         createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
       }))
       .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
@@ -178,7 +185,6 @@ const fetchNews = async (page = 1, size = 2) => {
   }
 };
 
-
 // const tabSelected = ref('notice');
 
 // 数据
@@ -187,8 +193,8 @@ const recruitments = ref([
 ]); // 初始化为空的招聘公告数组
 const tabSelected = ref('recruitment');
 
-// 获取招聘公告数据
-const fetchRecruitments = async (page = 1, size = 3) => {
+// 获取招聘公告标题数据
+const fetchRecruitments = async (page = 1, size = 5) => {
   try {
     const response = await defHttp.get({
       url: listUrl,
@@ -198,15 +204,21 @@ const fetchRecruitments = async (page = 1, size = 3) => {
     if (response && response.records) {
       recruitments.value = response.records
         .map((item: any) => ({
-          announcement: item.recruitAnnouncement || "暂无内容",
-          createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
+          id: item.id,
+          announcement: item.recruitAnnouncementTitle ,
+          createTime: item.createTime , // 假设服务器返回的时间格式为字符串
         }))
         .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())  // 按时间降序排序
-        .slice(0, size); // 截取前三条
+        .slice(0, size); // 截取前5条
     }
   } catch (error) {
     console.error("请求招聘公告数据失败:", error);
   }
+};
+
+// 跳转至招聘公告详情
+const goToAnnouncementDetail = (itemId: string) => {
+  router.push({ name: 'announcementDetail', params: { id: itemId } });
 };
 
 // 组件挂载时加载招聘公告
@@ -424,8 +436,8 @@ h2 {
 }
 
 .news-item {
-  margin-bottom: 10px;
-  padding: 10px;
+  margin-bottom: 5px;
+  padding: 5px;
   border-bottom: 1px solid #ddd;
 }
 
@@ -445,7 +457,7 @@ h2 {
 }
 
 .news-item p {
-  margin: 5px 0 0;
+  margin: 0;
   color: #111;
   white-space: normal;
   overflow: hidden;
@@ -537,31 +549,42 @@ h2 {
   padding: 0 10px;
 }
 
-
-.notice-list,
 .recruitment-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.notice-list li,
 .recruitment-list li {
-  margin-bottom: 10px;
+  cursor: default; /* 默认状态下的鼠标样式 */
+  color: #333; /* 默认字体颜色 */
+  transition: color 0.3s ease; /* 动态过渡效果 */
+  margin: 5px;
 }
 
-.notice-list li a,
+.recruitment-list li:hover {
+  cursor: pointer; /* 鼠标悬停时的鼠标样式 */
+  color: #3d54a7; /* 鼠标悬停时的字体颜色 */
+}
+
 .recruitment-list li a {
   color: #333;
   text-decoration: none;
 }
 
-.notice-list li span,
-.recruitment-list li span {
-  margin-right: 10px;
-  font-size: 14px;
-  color: #666;
+.recruitment-list li p {
+  margin: 0;                    /* 去除上下边距 */
+  padding: 3px 0;               /* 设置内边距 */
+  line-height: 1.4;             /* 行高 */
+  font-size: 16px;              /* 字体大小 */
+
+  display: -webkit-box;         /* 必须使用这个属性来启用多行限制 */
+  -webkit-line-clamp: 1;        /* 限制显示1行 */
+  -webkit-box-orient: vertical; /* 必须设置的属性，用于设置多行文本的排列方向 */
+  overflow: hidden;             /* 超出部分隐藏 */
+  text-overflow: ellipsis;      /* 显示省略号 */
 }
+
 /*--------*/
 
 /* 分类和搜索 */

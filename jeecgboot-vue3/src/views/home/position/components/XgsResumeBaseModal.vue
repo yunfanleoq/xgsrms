@@ -83,7 +83,7 @@
 </template>
 
 <script lang="ts" setup>
-import {ref, computed, unref, reactive, toRefs, toRef} from 'vue';
+  import { ref, computed, unref, reactive, toRefs, toRef } from 'vue';
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { JVxeTable } from '/@/components/jeecg/JVxeTable';

@@ -19,7 +19,8 @@
       <template v-slot:bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsUserPositionApplyModal @register="registerModal" @success="handleSuccess"></XgsUserPositionApplyModal>
+    <XgsUserPositionApplyModal ref="registerModal" @success="handleSuccess" />
+    <XgsFlowOpinionsModal @register="opinionModal" @success="handleSuccess" />
   </div>
 </template>
 
@@ -28,16 +29,19 @@
   import { BasicTable, useTable, TableAction } from '/src/components/Table';
   import { useModal } from '/src/components/Modal';
   import { useListPage } from '/src/hooks/system/useListPage';
-  import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
-  import { columns, superQuerySchema } from './XgsUserPositionApply.data';
+  import XgsUserPositionApplyModal from '/src/views/xgsApplyVerify/dep_verify/depDcl/components/XgsUserPositionApplyModal.vue';
+  import { columns, searchFormSchema, superQuerySchema } from './XgsUserPositionApply.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
+  import XgsFlowOpinionsModal from "@/views/xgsApplyVerify/dep_verify/depDcl/opinions/components/XgsFlowOpinionsModal.vue";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
   //注册model
-  const [registerModal, { openModal }] = useModal();
+  // const [registerModal, { openModal }] = useModal();
+  const registerModal = ref();
+  const [opinionModal, { openModal }] = useModal();
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
@@ -47,7 +51,7 @@
       canResize: false,
       formConfig: {
         // labelWidth: 120,
-        // schemas: searchFormSchema,
+        schemas: searchFormSchema,
         autoSubmitOnEnter: true,
         showAdvancedButton: true,
         fieldMapToNumber: [],
@@ -103,21 +107,32 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-      openModal(true, {
-        record,
-        isUpdate: true,
-        showFooter: true,
-      });
+    registerModal.value.disableSubmit = true;
+    registerModal.value.edit(record);
+    // openModal(true, {
+    //     record,
+    //     isUpdate: true,
+    //     showFooter: true,
+    //   });
+  }
+  function handleOpinion(record: Recordable) {
+    openModal(true, {
+      record,
+      isUpdate: false,
+      showFooter: true,
+    });
   }
   /**
    * 详情
    */
   function handleDetail(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: false,
-    });
+    registerModal.value.disableSubmit = true;
+    registerModal.value.edit(record);
+    // openModal(true, {
+    //   record,
+    //   isUpdate: true,
+    //   showFooter: false,
+    // });
   }
   /**
    * 删除事件
@@ -144,6 +159,10 @@
     return [
       {
         label: '审核',
+        onClick: handleOpinion.bind(null, record),
+      },
+      {
+        label: '详情',
         onClick: handleEdit.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
       },

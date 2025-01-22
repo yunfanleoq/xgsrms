@@ -13,6 +13,7 @@ import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -67,7 +68,33 @@ public class XgsResumeBaseController {
 	private IXgsResumeEdusService xgsResumeEdusService;
 	@Autowired
 	private IXgsResumeHomeService xgsResumeHomeService;
-	
+
+	 /**
+	  * 分页列表查询 我的申请列表
+	  *
+	  * @param xgsResumeBase
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 //@AutoLog(value = "岗位申请-分页列表查询")
+	 @ApiOperation(value="岗位申请-分页列表查询", notes="岗位申请-分页列表查询")
+	 @GetMapping(value = "/listMine")
+	 public Result<IPage<XgsResumeBase>> listMine(XgsResumeBase xgsResumeBase,
+													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+													   HttpServletRequest req) {
+		 //获取当前用户
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 Page<XgsResumeBase> page = new Page<XgsResumeBase>(pageNo, pageSize);
+		 IPage<XgsResumeBase> pageList = null;
+		 QueryWrapper<XgsResumeBase> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeBase, req.getParameterMap());
+		 queryWrapper.eq("create_by", sysUser.getUsername());
+		 pageList = xgsResumeBaseService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
+
 	/**
 	 * 分页列表查询
 	 *

@@ -25,12 +25,22 @@ export const columns: BasicColumn[] = [
     align:"center",
     dataIndex: 'photograph',
    },
+   {
+    title: '招聘公告标题',
+    align:"center",
+    dataIndex: 'recruitAnnouncementTitle'
+   },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
 ];
 //表单数据
 export const formSchema: FormSchema[] = [
+  {
+    label: '招聘公告标题',
+    field: 'recruitAnnouncementTitle',
+    component: 'Input',
+  },
   {
     label: '招聘公告',
     field: 'recruitAnnouncement',
@@ -51,6 +61,7 @@ export const formSchema: FormSchema[] = [
     field: 'photograph',
     component: 'JEditor',
   },
+
 	// TODO 主键隐藏字段，目前写死为ID
 	{
 	  label: '',
@@ -66,6 +77,7 @@ export const superQuerySchema = {
   newTitle: {title: '新闻标题',order: 1,view: 'text', type: 'string',},
   news: {title: '新闻',order: 2,view: 'umeditor', type: 'string',},
   photograph: {title: '图片',order: 3,view: 'umeditor', type: 'string',},
+  recruitAnnouncementTitle: {title: '招聘公告标题',order: 4,view: 'text', type: 'string',},
 };
 
 /**
