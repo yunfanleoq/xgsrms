@@ -24,13 +24,13 @@
             <Icon icon="mdi:chevron-down"></Icon>
           </a-button>
         </a-dropdown>
-        <!--        &lt;!&ndash; 高级查询 &ndash;&gt;
-                <super-query :config="superQueryConfig" @search="handleSuperQuery" />-->
+        <!-- 高级查询 -->
+        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
       </template>
       <!--操作栏-->
-<!--      <template #action="{ record }">
+      <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
-      </template>-->
+      </template>
       <!--字段回显插槽-->
       <template v-slot:bodyCell="{ column, record, index, text }">
       </template>

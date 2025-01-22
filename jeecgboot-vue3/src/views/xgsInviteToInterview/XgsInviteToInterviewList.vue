@@ -4,13 +4,9 @@
    <BasicTable @register="registerTable" :rowSelection="rowSelection">
      <!--插槽:table标题-->
       <template #tableTitle>
-<!--
           <a-button type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
--->
           <a-button  type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-<!--
           <j-upload-button type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
--->
           <a-dropdown v-if="selectedRowKeys.length > 0">
               <template #overlay>
                 <a-menu>
