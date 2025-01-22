@@ -222,7 +222,7 @@
         if(item.value == statusType && statusResume == "未通过"){
           thisStatusList.push({statusName:item.value, statusType: "未通过"})
           statusText.value = ""
-        }else if(item.value == statusType && statusResume != "未通过"){
+        }else if(item.value == statusType && statusResume == "审核中"){
           thisStatusList.push({statusName:item.value, statusType: "已通过"})
           statusText.value = ""
         }else {
