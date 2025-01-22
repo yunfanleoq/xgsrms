@@ -17,6 +17,8 @@ enum Api {
   resumeBSHById = '/xgsResume/xgsResumeBSH/queryById',
   resumeFGById = '/xgsResume/xgsResumeFG/queryById',
   resumeTJById = '/xgsResume/xgsResumeTJ/queryById',
+
+  DictItemsUrl = '/sys/dict/getDictItems',
 }
 /**
  * 导出api
@@ -96,3 +98,8 @@ export const getResumeFGById = (params) => {
 export const getResumeTJById = (params) => {
   return defHttp.get({ url: Api.resumeTJById, params: { id: params.id } });
 };
+
+
+export function getDictItems(params) {
+  return defHttp.get({ url: Api.DictItemsUrl+'/'+params.dictCode, params }, { isTransformResponse: false });
+}
