@@ -223,7 +223,7 @@
           thisStatusList.push({statusName:item.value, statusType: "未通过"})
           statusText.value = ""
         }else if(item.value == statusType && statusResume == "审核中"){
-          thisStatusList.push({statusName:item.value, statusType: "已通过"})
+          thisStatusList.push({statusName:item.value, statusType: statusResume})
           statusText.value = ""
         }else {
           thisStatusList.push({statusName:item.value, statusType: statusText.value})
