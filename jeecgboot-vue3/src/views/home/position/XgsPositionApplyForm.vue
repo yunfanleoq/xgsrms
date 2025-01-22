@@ -67,10 +67,10 @@
         </a-form>
         <!--        //此处引入简历组件，展示简历填报页面-->
         <div>
-          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="true" />
-          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="true" />
-          <xgsResumeFGForm v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="true" />
-          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumePTForm ref="formPT" v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumeBSHForm ref="formBSH" v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumeFGForm ref="formFG" v-else-if="formData.positionType === '副高级岗位'" :form-data="formData" :form-bpm="true" />
+          <xgsResumeTJForm ref="formTJ" v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="true" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
             未知的 positionType
@@ -125,6 +125,10 @@
   });
 
   const formRef = ref();
+  const formPT = ref();
+  const formBSH = ref();
+  const formFG = ref();
+  const formTJ = ref();
   const useForm = Form.useForm;
   const emit = defineEmits(['register', 'ok']);
   const formData = ref({
@@ -186,9 +190,10 @@
   const wrapperCol = ref<any>({ xs: { span: 24 }, sm: { span: 16 } });
   const confirmLoading = ref<boolean>(false);
   //表单验证
-  const validatorRules = reactive({});
+  const validatorRules = reactive({
+    name: [{ required: true, message: 'Please input name' }],
+  });
   const { resetFields, validate, validateInfos } = useForm(formData, validatorRules, {
-    onValidate: (...args) => console.log(123, ...args),
     immediate: false,
   });
 
@@ -247,7 +252,6 @@
    * 编辑
    */
   function edit(record) {
-    console.log('edit>>>>>>>>>', record);
     nextTick(() => {
       resetFields();
       let tmpData = {};
@@ -261,11 +265,6 @@
       tmpData['userName'] = record.realname;
       tmpData['resumeId'] = '';
 
-      // Object.keys(formData).forEach((key) => {
-      //   if(record.hasOwnProperty(key)){
-      //     tmpData[key] = record[key]
-      //   }
-      // })
       //赋值
       Object.assign(formData.value, tmpData);
     });
@@ -276,8 +275,8 @@
    * 提交数据
    */
   async function submitForm() {
+    // 触发表单验证
     try {
-      // 触发表单验证
       await validate();
     } catch ({ errorFields }) {
       if (errorFields) {
@@ -288,6 +287,34 @@
       }
       return Promise.reject(errorFields);
     }
+    if (formData.value.positionType === '普通岗位') {
+      try {
+        let formDataPT = await formPT.value.handleSubmit();
+        console.log('data: ', formDataPT);
+      } catch ({ errorFields }) {
+        return Promise.reject(errorFields);
+      }
+      // formPT.value
+      //   .handleSubmit()
+      //   .then((formDataPT) => {
+      //     console.log(111, formDataPT);
+      //   })
+      //   .catch((err) => {
+      //     console.log(222, err);
+      //     return Promise.reject(err);
+      //   });
+      return Promise.reject();
+    }
+    if (formData.value.positionType === '博士后岗位') {
+      formBSH.value.handleSubmit();
+    }
+    if (formData.value.positionType === '副高级岗位') {
+      formFG.value.handleSubmit();
+    }
+    if (formData.value.positionType === '专家推荐岗位') {
+      formTJ.value.handleSubmit();
+    }
+    // 提交表单
     confirmLoading.value = true;
     const isUpdate = ref<boolean>(false);
     //时间格式化

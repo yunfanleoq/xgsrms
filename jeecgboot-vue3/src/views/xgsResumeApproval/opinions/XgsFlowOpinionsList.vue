@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts" name="resume-xgsFlowOpinions" setup>
-  import { ref, reactive, computed, unref } from 'vue';
+  import { ref, reactive, computed, unref, defineExpose, watchEffect, watch } from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
@@ -33,8 +33,7 @@
       },
     },
   });
-  queryParam.positionApplyId = unref(props.positionApply).id;
-  // console.log('props.positionApply', props.positionApply, unref(props.positionApply));
+
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
   //注册model
@@ -46,6 +45,7 @@
       api: list,
       columns,
       canResize: false,
+      immediate: false,
       formConfig: {
         //labelWidth: 120,
         schemas: searchFormSchema,
@@ -57,15 +57,6 @@
       beforeFetch: (params) => {
         return Object.assign(params, queryParam);
       },
-    },
-    exportConfig: {
-      name: '审批办理过程表',
-      url: getExportUrl,
-      params: queryParam,
-    },
-    importConfig: {
-      url: getImportUrl,
-      success: handleSuccess,
     },
   });
 
@@ -162,6 +153,19 @@
       },
     ];
   }
+  watch(
+    () => props.positionApply,
+    (newVal, oldVal) => {
+      if (newVal) {
+        queryParam.positionApplyId = newVal.id;
+      }
+      reload();
+    }
+  );
+
+  defineExpose({
+    reload,
+  });
 </script>
 
 <style lang="less" scoped>

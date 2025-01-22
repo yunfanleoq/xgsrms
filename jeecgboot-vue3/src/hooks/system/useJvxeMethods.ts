@@ -41,7 +41,7 @@ export function useJvxeMethod(requestAddOrEdit, classifyIntoFormData, tableRefs,
   /** 确定按钮点击事件 */
   function handleSubmit() {
     /** 触发表单验证 */
-    getAllTable()
+    return getAllTable()
       .then((tables) => {
         let values = formRef.value.getFieldsValue();
         return validateFormModelAndTables(formRef.value.validate, values, tables, formRef.value.getProps, false);
@@ -62,9 +62,9 @@ export function useJvxeMethod(requestAddOrEdit, classifyIntoFormData, tableRefs,
         if (e.error === VALIDATE_FAILED) {
           // 如果有未通过表单验证的子表，就自动跳转到它所在的tab
           //update-begin-author:taoyan date:2022-11-22 for: VUEN-2866【代码生成】Tab风格 一对多子表校验不通过时，点击提交表单空白了，流程附加页面也有此问题
-          if(e.paneKey){
-            activeKey.value = e.paneKey
-          }else{
+          if (e.paneKey) {
+            activeKey.value = e.paneKey;
+          } else {
             //update-begin-author:liusq date:2024-06-12 for: TV360X-478 一对多tab，校验未通过时，tab没有跳转
             activeKey.value = e.subIndex == null ? (e.index == null ? unref(activeKey) : refKeys.value[e.index]) : Object.keys(tableRefs)[e.subIndex];
             //update-end-author:liusq date:2024-06-12  for: TV360X-478 一对多tab，校验未通过时，tab没有跳转
@@ -80,7 +80,8 @@ export function useJvxeMethod(requestAddOrEdit, classifyIntoFormData, tableRefs,
           return Promise.reject(e?.errorFields);
           //update-end---author:wangshuai---date:2024-06-17---for:【TV360X-1064】非原生提交表单滚动校验没通过的项---
         } else {
-          console.error(e);
+          return Promise.reject(e);
+          // console.error(e);
         }
       });
   }

@@ -27,7 +27,6 @@ export const RootRoute: AppRouteRecordRaw = {
   meta: {
     title: 'Root',
   },
-
 };
 
 export const LoginRoute: AppRouteRecordRaw = {
@@ -66,7 +65,6 @@ export const TokenLoginRoute: AppRouteRecordRaw = {
     ignoreAuth: true,
   },
 };
-
 
 export const homeIndexRoute: AppRouteRecordRaw = {
   path: '/home',

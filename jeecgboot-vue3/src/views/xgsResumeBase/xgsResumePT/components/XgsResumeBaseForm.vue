@@ -119,7 +119,7 @@
 
 <script lang="ts" setup>
   import { defHttp } from '/@/utils/http/axios';
-  import { ref, computed, unref, reactive, onMounted, defineProps } from 'vue';
+  import {ref, computed, unref, reactive, onMounted, defineProps, defineExpose} from 'vue';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { JVxeTable } from '/@/components/jeecg/JVxeTable';
   import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts';
@@ -247,8 +247,15 @@
   //表单提交事件
   async function requestAddOrEdit(values) {
     //提交表单
-    await saveOrUpdate(values, true);
+    // await saveOrUpdate(values, true);
+    return new Promise((resolve, reject) => {
+      resolve(values);
+    });
   }
+
+  defineExpose({
+    handleSubmit,
+  });
 </script>
 
 <style lang="less" scoped>
