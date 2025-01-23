@@ -217,3 +217,179 @@ export const table1 = {
     total: 0,
   },
 };
+
+export const myResume = {
+  columns: [
+    {
+      title: '简历编号',
+      align: 'center',
+      dataIndex: 'reBizCode',
+    },
+    {
+      title: '简历类型',
+      align: 'center',
+      dataIndex: 'type',
+    },
+    {
+      title: '简历状态',
+      align: 'center',
+      dataIndex: 'acceptBy',
+    },
+    {
+      title: '简历时间',
+      align: 'center',
+     dataIndex: 'acceptDate',
+    }
+  ],
+
+  dataSource: [
+    {
+      reBizCode: 'A001',
+      type: '转移登记',
+      acceptBy: '张四',
+      acceptDate: '2019-01-22'
+    },
+    {
+      reBizCode: 'A002',
+      type: '抵押登记',
+      acceptBy: '李吧',
+      acceptDate: '2019-01-23'
+    },
+    {
+      reBizCode: 'A003',
+      type: '转移登记',
+      acceptBy: '王三',
+      acceptDate: '2019-01-25'
+    },
+    {
+      reBizCode: 'A004',
+      type: '转移登记',
+      acceptBy: '赵二',
+      acceptDate: '2019-11-22'
+    },
+  ],
+  ipagination: {
+    current: 1,
+    pageSize: 5,
+    pageSizeOptions: ['10', '20', '30'],
+    showTotal: (total, range) => {
+      return range[0] + '-' + range[1] + ' 共' + total + '条';
+    },
+    showQuickJumper: true,
+    showSizeChanger: true,
+    total: 0,
+  },
+}
+
+export const myInterView = {
+  columns: [
+    {
+      title: '岗位名称',
+      align: 'center',
+      dataIndex: 'positionName',
+    },
+    {
+      title: '部门名称',
+      align: 'center',
+      dataIndex: 'deptName',
+    },
+    {
+      title: '面试时间',
+      align: 'center',
+      dataIndex: 'imterviewTime' ,
+    },
+    {
+      title: '面试地点',
+      align: 'center',
+      dataIndex: 'imterviewPlace' ,
+    }
+  ],
+  dataSource: [
+    {
+      positionName: '前端开发',
+      deptName: '技术部',
+      imterviewTime: '2019-01-22',
+      imterviewPlace: 'office'
+    },
+    {
+      positionName: '后端开发',
+      deptName: '技术部',
+      imterviewTime: '2019-01-23',
+      imterviewPlace: 'office'
+    },
+    {
+      positionName: '测试工程师',
+      deptName: '技术部',
+      imterviewTime: '2019-01-25',
+      imterviewPlace: 'office'
+    }
+  ],
+  ipagination: {
+    current: 1,
+    pageSize: 5,
+    pageSizeOptions: ['10', '20', '30'],
+    showTotal: (total, range) => {
+      return range[0] + '-' + range[1] + ' 共' + total + '条';
+    },
+    showQuickJumper: true,
+    showSizeChanger: true,
+    total: 0,
+  },
+ }
+
+
+ export const myApply = {
+  columns: [
+    {
+      title: '岗位名称',
+      align: 'center',
+      dataIndex: 'positionName',
+    },
+    {
+      title: '部门名称',
+      align: 'center',
+      dataIndex: 'deptName',
+    },
+    {
+      title: '申请时间',
+      align: 'center',
+      dataIndex: 'applyTime' ,
+    },
+    {
+      title: '申请状态',
+      align: 'center',
+      dataIndex: 'applyStatus' ,
+    }
+  ],
+   dataSource: [
+    {
+      positionName: '前端开发',
+      deptName: '技术部',
+      applyTime: '2019-01-22',
+      applyStatus: '已通过'
+    },
+    {
+      positionName: '后端开发',
+      deptName: '技术部',
+      applyTime: '2019-01-23',
+      applyStatus: '已通过'
+    },
+    {
+      positionName: '测试工程师',
+      deptName: '技术部',
+      applyTime: '2019-01-25',
+      applyStatus: '已通过'
+    }
+   ],
+   ipagination: {
+    current: 1,
+    pageSize: 5,
+    pageSizeOptions: ['10', '20', '30'],
+    showTotal: (total, range) => {
+      return range[0] + '-' + range[1] + ' 共' + total + '条';
+    },
+    showQuickJumper: true,
+    showSizeChanger: true,
+    total: 0,
+  },
+ }
