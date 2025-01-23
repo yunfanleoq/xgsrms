@@ -58,7 +58,7 @@
               </a-form-item>
             </a-col>
             <a-col :span="12">
-              <a-form-item label="PDF简历" id="XgsUserResumeFileForm-filePath" name="filePath">
+              <a-form-item label="上传PDF简历" id="XgsUserResumeFileForm-filePath" name="filePath">
                 <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" />
                 <a-button type="primary" :disabled="!formData.filePath" @click="analysisResume">自动填充简历信息</a-button>
               </a-form-item>
@@ -158,7 +158,7 @@
     confirmLoading.value = true;
     resumeText.value = '请稍等，正在分析简历...';
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData.value })
       .then((data) => {
         if (data) {
           // TODO 在这里做分析后的对应关系
@@ -287,32 +287,33 @@
       }
       return Promise.reject(errorFields);
     }
-    if (formData.value.positionType === '普通岗位') {
-      try {
+    try {
+      if (formData.value.positionType === '普通岗位') {
         let formDataPT = await formPT.value.handleSubmit();
         console.log('data: ', formDataPT);
-      } catch ({ errorFields }) {
-        return Promise.reject(errorFields);
+        // formPT.value
+        //   .handleSubmit()
+        //   .then((formDataPT) => {
+        //     console.log(111, formDataPT);
+        //   })
+        //   .catch((err) => {
+        //     console.log(222, err);
+        //     return Promise.reject(err);
+        //   });
+        return Promise.reject();
       }
-      // formPT.value
-      //   .handleSubmit()
-      //   .then((formDataPT) => {
-      //     console.log(111, formDataPT);
-      //   })
-      //   .catch((err) => {
-      //     console.log(222, err);
-      //     return Promise.reject(err);
-      //   });
-      return Promise.reject();
-    }
-    if (formData.value.positionType === '博士后岗位') {
-      formBSH.value.handleSubmit();
-    }
-    if (formData.value.positionType === '副高级岗位') {
-      formFG.value.handleSubmit();
-    }
-    if (formData.value.positionType === '专家推荐岗位') {
-      formTJ.value.handleSubmit();
+      if (formData.value.positionType === '博士后岗位') {
+        let formDataBSH = await formBSH.value.handleSubmit();
+      }
+      if (formData.value.positionType === '副高级岗位') {
+        let formDataFG = await formFG.value.handleSubmit();
+      }
+      if (formData.value.positionType === '专家推荐岗位') {
+        let formDataTJ = await formTJ.value.handleSubmit();
+      }
+    } catch (e) {
+      createMessage.warning('表单验证失败');
+      return Promise.reject(e);
     }
     // 提交表单
     confirmLoading.value = true;

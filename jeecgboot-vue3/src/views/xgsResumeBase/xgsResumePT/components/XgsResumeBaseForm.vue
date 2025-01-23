@@ -1,116 +1,63 @@
 <template>
   <div>
-    <!--    &lt;!&ndash; 子表单区域 &ndash;&gt;
-    <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs">
-      &lt;!&ndash;主表区域 &ndash;&gt;
-      <a-tab-pane tab="基本信息" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
-        <BasicForm @register="registerForm" ref="formRef" />
-      </a-tab-pane>
-      &lt;!&ndash;子表单区域 &ndash;&gt;
-      <a-tab-pane tab="工作经历" key="xgsResumeWorks" :forceRender="true" :style="tabsStyle">
-        <JVxeTable
-          keep-source
-          resizable
-          ref="xgsResumeWorks"
-          v-if="xgsResumeWorksTable.show"
-          :loading="xgsResumeWorksTable.loading"
-          :columns="xgsResumeWorksTable.columns"
-          :dataSource="xgsResumeWorksTable.dataSource"
-          :height="340"
-          :disabled="formDisabled"
-          :rowNumber="true"
-          :rowSelection="true"
-          :toolbar="true"
-        />
-      </a-tab-pane>
-      <a-tab-pane tab="教育经历" key="xgsResumeEdus" :forceRender="true" :style="tabsStyle">
-        <JVxeTable
-          keep-source
-          resizable
-          ref="xgsResumeEdus"
-          v-if="xgsResumeEdusTable.show"
-          :loading="xgsResumeEdusTable.loading"
-          :columns="xgsResumeEdusTable.columns"
-          :dataSource="xgsResumeEdusTable.dataSource"
-          :height="340"
-          :disabled="formDisabled"
-          :rowNumber="true"
-          :rowSelection="true"
-          :toolbar="true"
-        />
-      </a-tab-pane>
-      <a-tab-pane tab="家庭状况" key="xgsResumeHome" :forceRender="true" :style="tabsStyle">
-        <JVxeTable
-          keep-source
-          resizable
-          ref="xgsResumeHome"
-          v-if="xgsResumeHomeTable.show"
-          :loading="xgsResumeHomeTable.loading"
-          :columns="xgsResumeHomeTable.columns"
-          :dataSource="xgsResumeHomeTable.dataSource"
-          :height="340"
-          :disabled="formDisabled"
-          :rowNumber="true"
-          :rowSelection="true"
-          :toolbar="true"
-        />
-      </a-tab-pane>
-    </a-tabs>-->
-
-    <a-collapse v-model:activeKey="activeKey">
-      <a-collapse-panel key="1" header="1 基本信息">
-        <BasicForm @register="registerForm" ref="formRef" />
-      </a-collapse-panel>
-      <a-collapse-panel key="2" header="2 工作经历">
-        <JVxeTable
-          keep-source
-          resizable
-          ref="xgsResumeWorks"
-          v-if="xgsResumeWorksTable.show"
-          :loading="xgsResumeWorksTable.loading"
-          :columns="xgsResumeWorksTable.columns"
-          :dataSource="xgsResumeWorksTable.dataSource"
-          :height="340"
-          :disabled="formDisabled"
-          :rowNumber="true"
-          :rowSelection="true"
-          :toolbar="true"
-        />
-      </a-collapse-panel>
-      <a-collapse-panel key="3" header="3 教育经历">
-        <JVxeTable
-          keep-source
-          resizable
-          ref="xgsResumeEdus"
-          v-if="xgsResumeEdusTable.show"
-          :loading="xgsResumeEdusTable.loading"
-          :columns="xgsResumeEdusTable.columns"
-          :dataSource="xgsResumeEdusTable.dataSource"
-          :height="340"
-          :disabled="formDisabled"
-          :rowNumber="true"
-          :rowSelection="true"
-          :toolbar="true"
-        />
-      </a-collapse-panel>
-      <a-collapse-panel key="4" header="4 家庭状况">
-        <JVxeTable
-          keep-source
-          resizable
-          ref="xgsResumeHome"
-          v-if="xgsResumeHomeTable.show"
-          :loading="xgsResumeHomeTable.loading"
-          :columns="xgsResumeHomeTable.columns"
-          :dataSource="xgsResumeHomeTable.dataSource"
-          :height="340"
-          :disabled="formDisabled"
-          :rowNumber="true"
-          :rowSelection="true"
-          :toolbar="true"
-        />
-      </a-collapse-panel>
-    </a-collapse>
-
+    <a-card>
+      <!-- 子表单区域 -->
+      <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs" tab-position="left">
+        <!--主表区域 -->
+        <a-tab-pane tab="基本信息" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
+          <BasicForm @register="registerForm" ref="formRef" />
+        </a-tab-pane>
+        <!--子表单区域 -->
+        <a-tab-pane tab="工作经历" key="xgsResumeWorks" :forceRender="true" :style="tabsStyle">
+          <JVxeTable
+            keep-source
+            resizable
+            ref="xgsResumeWorks"
+            v-if="xgsResumeWorksTable.show"
+            :loading="xgsResumeWorksTable.loading"
+            :columns="xgsResumeWorksTable.columns"
+            :dataSource="xgsResumeWorksTable.dataSource"
+            :height="340"
+            :disabled="formDisabled"
+            :rowNumber="true"
+            :rowSelection="true"
+            :toolbar="true"
+          />
+        </a-tab-pane>
+        <a-tab-pane tab="教育经历" key="xgsResumeEdus" :forceRender="true" :style="tabsStyle">
+          <JVxeTable
+            keep-source
+            resizable
+            ref="xgsResumeEdus"
+            v-if="xgsResumeEdusTable.show"
+            :loading="xgsResumeEdusTable.loading"
+            :columns="xgsResumeEdusTable.columns"
+            :dataSource="xgsResumeEdusTable.dataSource"
+            :height="340"
+            :disabled="formDisabled"
+            :rowNumber="true"
+            :rowSelection="true"
+            :toolbar="true"
+          />
+        </a-tab-pane>
+        <a-tab-pane tab="家庭状况" key="xgsResumeHome" :forceRender="true" :style="tabsStyle">
+          <JVxeTable
+            keep-source
+            resizable
+            ref="xgsResumeHome"
+            v-if="xgsResumeHomeTable.show"
+            :loading="xgsResumeHomeTable.loading"
+            :columns="xgsResumeHomeTable.columns"
+            :dataSource="xgsResumeHomeTable.dataSource"
+            :height="340"
+            :disabled="formDisabled"
+            :rowNumber="true"
+            :rowSelection="true"
+            :toolbar="true"
+          />
+        </a-tab-pane>
+      </a-tabs>
+    </a-card>
     <div style="width: 100%; text-align: center; margin-top: 10px" v-if="false">
       <a-button preIcon="ant-design:check-outlined" style="width: 126px" type="primary" @click="handleSubmit">提 交</a-button>
     </div>
@@ -127,9 +74,9 @@
   import { saveOrUpdate, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList } from '../XgsResumeBase.api';
   import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils';
 
-  const activeKey = ref(['1', '2', '3', '4']);
   const refKeys = ref(['xgsResumeBase', 'xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome']);
-  // const activeKey = ref('xgsResumeBase');
+  const activeKey = ref('xgsResumeBase');
+  // const activeKey = ref(['1', '2', '3', '4']);
   const xgsResumeWorks = ref();
   const xgsResumeEdus = ref();
   const xgsResumeHome = ref();
@@ -252,7 +199,6 @@
       resolve(values);
     });
   }
-
   defineExpose({
     handleSubmit,
   });

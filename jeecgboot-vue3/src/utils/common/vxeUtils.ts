@@ -33,7 +33,7 @@ export async function validateFormModelAndTables(validate, formData, cases, prop
       //update-begin---author:wangshuai---date:2024-06-17---for:【TV360X-1064】非原生提交表单滚动校验没通过的项---
       .catch(({ errorFields }) => {
         reject({ error: VALIDATE_FAILED, index: 0, errorFields: errorFields });
-      //update-end---author:wangshuai---date:2024-06-17---for:【TV360X-1064】非原生提交表单滚动校验没通过的项---
+        //update-end---author:wangshuai---date:2024-06-17---for:【TV360X-1064】非原生提交表单滚动校验没通过的项---
       });
   });
   Object.assign(dataMap, { formValue: values });

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 子表单区域 -->
-    <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs">
+    <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs" tab-position="left">
       <!--主表区域 -->
       <a-tab-pane tab="基本信息-博士后" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
         <BasicForm @register="registerForm" ref="formRef" />
@@ -65,7 +65,7 @@
 
 <script lang="ts" setup>
   import { defHttp } from '/@/utils/http/axios';
-  import { ref, computed, unref, reactive, onMounted, defineProps } from 'vue';
+  import {ref, computed, unref, reactive, onMounted, defineProps, defineExpose} from 'vue';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { JVxeTable } from '/@/components/jeecg/JVxeTable';
   import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts';
@@ -82,19 +82,19 @@
     loading: false,
     dataSource: [],
     columns: xgsResumeWorksColumns,
-    show: false,
+    show: true,
   });
   const xgsResumeEdusTable = reactive({
     loading: false,
     dataSource: [],
     columns: xgsResumeEdusColumns,
-    show: false,
+    show: true,
   });
   const xgsResumeHomeTable = reactive({
     loading: false,
     dataSource: [],
     columns: xgsResumeHomeColumns,
-    show: false,
+    show: true,
   });
 
   const props = defineProps({
@@ -133,9 +133,7 @@
   //渲染流程表单数据
   const queryByIdUrl = '/xgsResume/xgsResumeBSH/queryById';
   async function initFormData() {
-    console.log('@@@@@@@BSHFORM initFormDatac@@@@@@@@props.formBpm', props.formBpm, xgsResumeHomeTable);
-    if (props.formBpm === true) {
-      console.log('@@@@@@@BSHFORM props.formBpm@@@@@@@@', props.formBpm);
+    if (props.formBpm === true && props.formData.dataId) {
       await reset();
       let params = { id: props.formData.dataId };
       const data = await defHttp.get({ url: queryByIdUrl, params });
@@ -145,15 +143,12 @@
       });
       requestSubTableData(xgsResumeWorksList, { id: data.id }, xgsResumeWorksTable, () => {
         xgsResumeWorksTable.show = true;
-        console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@', xgsResumeHomeTable);
       });
       requestSubTableData(xgsResumeEdusList, { id: data.id }, xgsResumeEdusTable, () => {
         xgsResumeEdusTable.show = true;
-        console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@', xgsResumeHomeTable);
       });
       requestSubTableData(xgsResumeHomeList, { id: data.id }, xgsResumeHomeTable, () => {
         xgsResumeHomeTable.show = true;
-        console.log('@@@@@@@xgsResumeHomeTable@@@@@@@@', xgsResumeHomeTable);
       });
       // 隐藏底部时禁用整个表单
       // setProps({ disabled: formDisabled.value })
@@ -196,8 +191,14 @@
   //表单提交事件
   async function requestAddOrEdit(values) {
     //提交表单
-    await saveOrUpdate(values, true);
+    // await saveOrUpdate(values, true);
+    return new Promise((resolve, reject) => {
+      resolve(values);
+    });
   }
+  defineExpose({
+    handleSubmit,
+  });
 </script>
 
 <style lang="less" scoped>

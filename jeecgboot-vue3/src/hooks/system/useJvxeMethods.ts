@@ -77,9 +77,11 @@ export function useJvxeMethod(requestAddOrEdit, classifyIntoFormData, tableRefs,
               formRef.value.scrollToField(firstField.name, { behavior: 'smooth', block: 'end' });
             }
           }
+          console.log(111, e);
           return Promise.reject(e?.errorFields);
           //update-end---author:wangshuai---date:2024-06-17---for:【TV360X-1064】非原生提交表单滚动校验没通过的项---
         } else {
+          console.log(222, e);
           return Promise.reject(e);
           // console.error(e);
         }
