@@ -14,7 +14,10 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.modules.demo.positions.entity.XgsFirstHtml;
+import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.entity.XgsPositions;
+import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.demo.positions.service.IXgsPositionsService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -22,6 +25,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.modules.demo.xgsInviteToInterview.entity.XgsInviteToInterview;
+import org.jeecg.modules.demo.xgsInviteToInterview.service.IXgsInviteToInterviewService;
+import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
+import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
@@ -52,6 +59,15 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPositionsService> {
 	@Autowired
 	private IXgsPositionsService xgsPositionsService;
+
+	@Autowired
+	private IXgsPositionApplyService xgsPositionApplyService;
+
+	@Autowired
+	private IXgsInviteToInterviewService xgsInviteToInterviewService;
+
+	@Autowired
+	private IXgsResumeBaseService xgsResumeBaseService;
 	
 	/**
 	 * 分页列表查询
@@ -220,4 +236,48 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
         return super.importExcel(request, response, XgsPositions.class);
     }
 
+	 /**
+	  *   获取首页头部信息
+	  *
+	  * @param
+	  * @return
+	  */
+	 @AutoLog(value = "获取首页头部信息")
+	 @ApiOperation(value="获取首页头部信息", notes="获取首页头部信息")
+	 @PostMapping(value = "/first_text")
+	 public Result<XgsFirstHtml> firstText(String identity,
+									 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+									 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+									 HttpServletRequest req) {
+		 //岗位数量（所有招聘中的岗位数量）
+		 XgsPositions xgsPositions = new XgsPositions();
+		 xgsPositions.setStatus("招聘中");
+		 QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, req.getParameterMap());
+		 Page<XgsPositions> page = new Page<XgsPositions>(pageNo, pageSize);
+		 IPage<XgsPositions> positionsList = xgsPositionsService.page(page, queryWrapper);
+
+		 //招聘数量（所有需要招聘完成（面试通过）的数量）
+		 XgsInviteToInterview xgsInviteToInterview = new XgsInviteToInterview();
+		 xgsInviteToInterview.setInviteStatus("已通过");
+		 QueryWrapper<XgsInviteToInterview> queryWrapperXgsInviteToInterview = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap());
+		 Page<XgsInviteToInterview> pageXgsInviteToInterview = new Page<XgsInviteToInterview>(pageNo, pageSize);
+		 IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(pageXgsInviteToInterview, queryWrapperXgsInviteToInterview);
+
+		 //审核数量（所有需要审核的简历数量）
+		 XgsPositionApply xgsPositionApply = new XgsPositionApply();
+		 xgsPositionApply.setApplyStatus("审核中");
+		 QueryWrapper<XgsPositionApply> queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
+		 Page<XgsPositionApply> pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
+		 IPage<XgsPositionApply> pageListXgsPositionApply = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
+
+		 //简历数量（所有需要简历的数量）
+		 XgsResumeBase xgsResumeBase = new XgsResumeBase();
+		 QueryWrapper<XgsResumeBase> queryWrapperXgsResumeBase = QueryGenerator.initQueryWrapper(xgsResumeBase, req.getParameterMap());
+		 Page<XgsResumeBase> pageXgsResumeBase = new Page<XgsResumeBase>(pageNo, pageSize);
+		 IPage<XgsResumeBase> pageListXgsResumeBase = xgsResumeBaseService.page(pageXgsResumeBase, queryWrapperXgsResumeBase);
+
+		 XgsFirstHtml xgsFirstHtml = new XgsFirstHtml((int) positionsList.getTotal(), (int) pageList.getTotal(), (int) pageListXgsPositionApply.getTotal(), (int) pageListXgsResumeBase.getTotal());
+
+		 return Result.OK(xgsFirstHtml);
+	 }
 }

@@ -26,7 +26,6 @@
             formBpm: propTypes.bool.def(true),
         },
         setup(props){
-          console.log("~~~~~~~~~~~~~~~~_____", props)
             const [registerForm, { setFieldsValue, setProps, getFieldsValue }] = useForm({
                 labelWidth: 150,
                 schemas: getBpmFormSchema(props.formData),

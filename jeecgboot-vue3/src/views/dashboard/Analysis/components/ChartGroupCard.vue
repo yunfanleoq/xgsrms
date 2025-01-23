@@ -23,6 +23,8 @@
   import ChartCard from '/@/components/chart/ChartCard.vue';
   import { chartCardList, bdcCardList } from '../data';
 
+  import {headerText} from '../api.ts';
+
   const props = defineProps({
     loading: {
       type: Boolean,
@@ -33,6 +35,18 @@
     },
   });
   const dataList = computed(() => (props.type === 'bdc' ? bdcCardList : chartCardList));
+
+  function initLogInfo() {
+    headerText(null).then((res) => {
+      if (res.success) {
+        chartCardList[0].total = res.result.positionsNumber
+        chartCardList[1].total = res.result.personCountNumber
+        chartCardList[2].total = res.result.contactNumber
+        chartCardList[3].total = res.result.resumeNumber
+      }
+    });
+  }
+  initLogInfo()
 
   function getTotal(total, index) {
     return index === 0 ? `${total}` : index === 3 ? `${total}` : total;

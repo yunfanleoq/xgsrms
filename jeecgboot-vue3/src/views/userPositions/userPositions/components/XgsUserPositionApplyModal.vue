@@ -121,36 +121,6 @@
     });
     //设置标题
     const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '查看'));
-    //表单提交事件
-    // async function handleSubmit(v) {
-    //     try {
-    //       console.log("registerForm", useForm({
-    //         schemas: formSchema,
-    //         showActionButtonGroup: false,
-    //         baseColProps: {span: 12}
-    //       }));
-    //       console.log("positionType",positionType.value);
-    //         let values = await validate();
-    //         // setModalProps({confirmLoading: true});
-    //         // //提交表单
-    //         await saveOrUpdate(values, isUpdate.value);
-    //         // //关闭弹窗
-    //         closeModal();
-    //         // //刷新列表
-    //         emit('success');
-    //     } catch ({ errorFields }) {
-    //        if (errorFields) {
-    //          const firstField = errorFields[0];
-    //          if (firstField) {
-    //            scrollToField(firstField.name, { behavior: 'smooth', block: 'center' });
-    //          }
-    //        }
-    //        return Promise.reject(errorFields);
-    //     } finally {
-    //         setModalProps({confirmLoading: false});
-    //     }
-    // }
-
     //简历文件处理
     const fileData = reactive<Record<string, any>>({
       id: '',

@@ -108,13 +108,13 @@ export const bdcCardList: GrowCardItem[] = [
 
 export const table = {
   dataSource: [
-    { reBizCode: '1', type: '转移登记', acceptBy: '张三', acceptDate: '2019-01-22', curNode: '任务分派', flowRate: 60 },
+    { reBizCode: '1', type: '转移登记', acceptBy: '张1三', acceptDate: '2019-01-22', curNode: '任务分派', flowRate: 1 },
     { reBizCode: '2', type: '抵押登记', acceptBy: '李四', acceptDate: '2019-01-23', curNode: '领导审核', flowRate: 30 },
-    { reBizCode: '3', type: '转移登记', acceptBy: '王武', acceptDate: '2019-01-25', curNode: '任务处理', flowRate: 20 },
+    { reBizCode: '3', type: '转移登记', acceptBy: '王武', acceptDate: '2019-01-25', curNode: '任务处理', flowRate: 1 },
     { reBizCode: '4', type: '转移登记', acceptBy: '赵楼', acceptDate: '2019-11-22', curNode: '部门审核', flowRate: 80 },
     { reBizCode: '5', type: '转移登记', acceptBy: '钱就', acceptDate: '2019-12-12', curNode: '任务分派', flowRate: 90 },
     { reBizCode: '6', type: '转移登记', acceptBy: '孙吧', acceptDate: '2019-03-06', curNode: '任务处理', flowRate: 10 },
-    { reBizCode: '7', type: '抵押登记', acceptBy: '周大', acceptDate: '2019-04-13', curNode: '任务分派', flowRate: 100 },
+    { reBizCode: '7', type: '抵押登记', acceptBy: '周大', acceptDate: '2019-04-13', curNode: '任务分派', flowRate: 1 },
     { reBizCode: '8', type: '抵押登记', acceptBy: '吴二', acceptDate: '2019-05-09', curNode: '任务上报', flowRate: 50 },
     { reBizCode: '9', type: '抵押登记', acceptBy: '郑爽', acceptDate: '2019-07-12', curNode: '任务处理', flowRate: 63 },
     { reBizCode: '20', type: '抵押登记', acceptBy: '林有', acceptDate: '2019-12-12', curNode: '任务打回', flowRate: 59 },
@@ -203,6 +203,60 @@ export const table1 = {
       title: '超时时间',
       align: 'center',
       dataIndex: 'flowRate',
+    },
+  ],
+  ipagination: {
+    current: 1,
+    pageSize: 5,
+    pageSizeOptions: ['10', '20', '30'],
+    showTotal: (total, range) => {
+      return range[0] + '-' + range[1] + ' 共' + total + '条';
+    },
+    showQuickJumper: true,
+    showSizeChanger: true,
+    total: 0,
+  },
+};
+
+export const totalApple = {
+  dataSource: [
+    { sysOrgCode: '转移登记', dept: '张三', createTime: '2019-01-22', personCount: '任务分派', category: 60 },
+    { sysOrgCode: '抵押登记', dept: '李四', createTime: '2019-01-23', personCount: '领导审核', category: 30 },
+    { sysOrgCode: '转移登记', dept: '王武', createTime: '2019-01-25', personCount: '任务处理', category: 20 },
+    { sysOrgCode: '转移登记', dept: '赵楼', createTime: '2019-11-22', personCount: '部门审核', category: 80 },
+    { sysOrgCode: '转移登记', dept: '钱就', createTime: '2019-12-12', personCount: '任务分派', category: 90 },
+    { sysOrgCode: '转移登记', dept: '孙吧', createTime: '2019-03-06', personCount: '任务处理', category: 10 },
+    { sysOrgCode: '抵押登记', dept: '周大', createTime: '2019-04-13', personCount: '任务分派', category: 100 },
+    { sysOrgCode: '抵押登记', dept: '吴二', createTime: '2019-05-09', personCount: '任务上报', category: 50 },
+    { sysOrgCode: '抵押登记', dept: '郑爽', createTime: '2019-07-12', personCount: '任务处理', category: 63 },
+    { sysOrgCode: '抵押登记', dept: '林有', createTime: '2019-12-12', personCount: '任务打回', category: 59 },
+    { sysOrgCode: '转移登记', dept: '码云', createTime: '2019-09-10', personCount: '任务签收', category: 87 },
+  ],
+  columns: [
+    {
+      title: '所属部门',
+      align: 'center',
+      dataIndex: 'sysOrgCode',
+    },
+    {
+      title: '招聘部门',
+      align: 'center',
+      dataIndex: 'dept',
+    },
+    {
+      title: '创建日期',
+      align: 'center',
+      dataIndex: 'createTime',
+    },
+    {
+      title: '招聘人数',
+      align: 'center',
+      dataIndex: 'personCount',
+    },
+    {
+      title: '岗位分类',
+      align: 'center',
+      dataIndex: 'category',
     },
   ],
   ipagination: {

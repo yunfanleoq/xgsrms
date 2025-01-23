@@ -7,7 +7,7 @@
       </a-radio-group>
       <span><b>（部署正式环境不显示此选项）</b></span>
     </div>
-    <IndexChart v-if="indexStyle === 0" />
+    <IndexChart v-if="indexStyle === 0" :formData="formData"/>
     <IndexBdc v-if="indexStyle == 1" />
   </a-spin>
 </template>
@@ -16,6 +16,7 @@
   import IndexChart from './homePage/IndexChart.vue';
   import IndexBdc from './homePage/IndexBdc.vue';
   import { defHttp } from '/@/utils/http/axios';
+  import { chartCardList} from './data';
 
   const indexStyle = ref(0);
   const loading = ref(true);
@@ -33,4 +34,12 @@
     .finally(() => {
       loading.value = false;
     });
+
+  const formData = ref({
+    gwsl:5,
+    zpsl:100,
+    shsl:20,
+    jlsl:60
+
+  })
 </script>

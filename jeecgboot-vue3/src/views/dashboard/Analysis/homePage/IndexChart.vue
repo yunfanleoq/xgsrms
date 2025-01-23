@@ -9,20 +9,20 @@
               :dataSource="dataSource"
               size="default"
               rowKey="reBizCode"
-              :columns="table.columns"
+              :columns="totalApple.columns"
               :pagination="ipagination"
               @change="tableChange"
             >
-              <template #bodyCell="{ column, record }">
-                <template v-if="column.dataIndex === 'flowRate'">
-                  <Progress
-                    :strokeColor="getPercentColor(record.flowRate)"
-                    :format="getPercentFormat"
-                    :percent="getFlowRateNumber(record.flowRate)"
-                    style="width: 80px"
-                  />
-                </template>
-              </template>
+<!--              <template #bodyCell="{ column, record }">-->
+<!--                <template v-if="column.dataIndex === 'flowRate'">-->
+<!--                  <Progress-->
+<!--                    :strokeColor="getPercentColor(record.flowRate)"-->
+<!--                    :format="getPercentFormat"-->
+<!--                    :percent="getFlowRateNumber(record.flowRate)"-->
+<!--                    style="width: 80px"-->
+<!--                  />-->
+<!--                </template>-->
+<!--              </template>-->
             </a-table>
           </a-tab-pane>
 
@@ -35,11 +35,11 @@
               :pagination="ipagination1"
               @change="tableChange1"
             >
-              <template #bodyCell="{ column, record }">
-                <template v-if="column.dataIndex === 'flowRate'">
-                  <span style="color: red">{{ record.flowRate }}小时</span>
-                </template>
-              </template>
+<!--              <template #bodyCell="{ column, record }">-->
+<!--                <template v-if="column.dataIndex === 'flowRate'">-->
+<!--                  <span style="color: red">{{ record.flowRate }}小时</span>-->
+<!--                </template>-->
+<!--              </template>-->
             </a-table>
           </a-tab-pane>
         </a-tabs>
@@ -60,13 +60,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-  import { ref, unref, watch } from 'vue';
+import {defineProps, onMounted, ref, unref, watch} from 'vue';
   import ChartGroupCard from '../components/ChartGroupCard.vue';
   import LineMulti from '/@/components/chart/LineMulti.vue';
   import HeadInfo from '/@/components/chart/HeadInfo.vue';
-  import { getLoginfo, getVisitInfo } from '../api.ts';
+  import { getLoginfo, getVisitInfo ,getPositionsList} from '../api.ts';
   import { useRootSetting } from '/@/hooks/setting/useRootSetting';
-  import { table, table1 } from '@/views/dashboard/Analysis/data';
+  import { totalApple, table1 ,chartCardList, tableY} from '@/views/dashboard/Analysis/data';
   import { Progress } from 'ant-design-vue';
 
   const loading = ref(true);
@@ -97,6 +97,7 @@
         });
       }
     });
+
   }
 
   const ipColor = ref();
@@ -115,7 +116,7 @@
   function tableChange(pagination) {
     ipagination.value.current = pagination.current;
     ipagination.value.pageSize = pagination.pageSize;
-    loadDataSource();
+    // loadDataSource();
   }
 
   function tableChange1(pagination) {
@@ -148,28 +149,52 @@
   const indexRegisterType = ref('转移登记');
   const dataSource = ref([]);
   const dataSource1 = ref([]);
-  const ipagination = ref(table.ipagination);
+  const ipagination = ref(totalApple.ipagination);
   const ipagination1 = ref(table1.ipagination);
-  function loadDataSource() {
-    dataSource.value = table.dataSource.filter((item) => {
-      if (!unref(indexRegisterType)) {
-        return true;
-      }
-      return item.type == unref(indexRegisterType);
-    });
-  }
+  // function loadDataSource() {
+  //   updateTable();
+  //   // dataSource.value = table.dataSource.filter((item) => {
+  //     // if (!unref(indexRegisterType)) {
+  //       return true;
+  //     // }
+  //     // return item.sysOrgCode == unref(indexRegisterType);
+  //   // });
+  //   console.log('table.dataSou8', table.dataSource)
+  // }
 
   function loadDataSource1() {
-    dataSource1.value = table1.dataSource.filter((item) => {
-      if (!unref(indexRegisterType)) {
+    // updateTable();
+    dataSource1.value = totalApple.dataSource.filter((item) => {
+      // if (!unref(indexRegisterType)) {
         return true;
-      }
-      return item.type == unref(indexRegisterType);
+      // }
+      // return item.type == unref(indexRegisterType);
     });
   }
 
-  loadDataSource();
+  // loadDataSource();
   loadDataSource1();
+
+function updateyfbPositionsTable() {
+  getPositionsList(null).then((res) => {
+    // console.log('po==============sitionsList', res)
+    if (res.success) {
+      // console.log('po==============si---tionsList', res.result.records)
+      // console.log('table.dataSource,,,,,,,&&&,,,,', table.dataSource)
+      // table.dataSource = res.result.records;
+      dataSource.value = res.result.records;
+      // console.log('table.dataSource,,,,,,,,,,,,,,', table.dataSource)
+
+      ipagination.value = totalApple.ipagination;
+    }
+  });
+}
+
+// 使用 onMounted 钩子在页面刷新时调用 updateTable
+onMounted(() => {
+  updateyfbPositionsTable();
+});
+
 </script>
 
 <style lang="less" scoped>
