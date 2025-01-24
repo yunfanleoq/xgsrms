@@ -11,6 +11,7 @@
         <j-upload-button type="primary" v-auth="'xgsIntroduce:xgs_introduce:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls"
           >导入</j-upload-button
         >
+        <a-button type="primary" preIcon="ant-design:sync-outlined" @click="handleAutoSync"> 自动同步</a-button>
         <a-dropdown v-if="selectedRowKeys.length > 0">
           <template #overlay>
             <a-menu>
@@ -47,6 +48,8 @@
 
 <script lang="ts" name="xgsIntroduce-xgsIntroduce" setup>
   import { ref, reactive, computed, unref } from 'vue';
+  import axios from 'axios';
+  import { saveOrUpdate } from './XgsIntroduce.api';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
@@ -109,6 +112,64 @@
     reload();
   }
   /**
+   * 自动同步事件
+   */
+  const handleAutoSync = async () => {
+    try {
+      const response = await axios.get('http://www.iie.cas.cn/jggk2020/dwjj2020/');
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(response.data, 'text/html');
+      const targetDiv = doc.querySelector('div.t3d');
+      console.log(doc);
+      if (targetDiv) {
+        const record = {
+          //组装数据
+          text: targetDiv.outerHTML, // 概况内容
+          picture: null, // 图片的URL
+          pictureText: null, // 图片附文
+          id: '1871084441866518530', // 数据的唯一标识
+          type: '单位简介', // 概况类型的实际值
+        };
+        //将最新数据放置到数据库中
+        await saveOrUpdate(record, true); // false 表示新增
+        await reload();
+      }
+      const response1 = await axios.get('http://www.iie.cas.cn/jggk2020/ysfm2020/');
+      const parser1 = new DOMParser();
+      const doc1 = parser1.parseFromString(response1.data, 'text/html');
+      const targetDiv1 = doc1.querySelector('div.new-graphics');
+      if (targetDiv1) {
+        //此处是将获取的数据中的相对路径修改为绝对路径
+        const absolutePathPrefix = 'https://www.iie.ac.cn/jggk2020/ysfm2020/';
+        const links = targetDiv1.querySelectorAll('a[href^="./"]');
+        const images = targetDiv1.querySelectorAll('img[src^="./"]');
+        links.forEach((link) => {
+          link.href = absolutePathPrefix + link.href.slice(2);
+        });
+        images.forEach((img) => {
+          img.src = absolutePathPrefix + img.src.slice(2);
+        });
+        let outerHTML = targetDiv1.outerHTML;
+        outerHTML = outerHTML.replace(/(https:\/\/www\.iie\.ac\.cn\/jggk2020\/ysfm2020\/)tp:\/\/localhost:3100\/xgsIntroduce\//g, '$1');
+        if (outerHTML) {
+          //组装数据
+          const record = {
+            text: outerHTML, // 概况内容
+            picture: null, // 图片的URL
+            pictureText: null, // 图片附文
+            id: '1871493342910930946', // 数据的唯一标识
+            type: '院所风貌', // 概况类型的实际值
+          };
+          //将最新数据放置到数据库中
+          await saveOrUpdate(record, true); // false 表示新增
+          await reload();
+        }
+      }
+    } catch (error) {
+      console.error('获取或处理内容时出错：', error);
+    }
+  };
+  /**
    * 新增事件
    */
   function handleAdd() {
@@ -155,6 +216,7 @@
   function handleSuccess() {
     (selectedRowKeys.value = []) && reload();
   }
+
   /**
    * 操作栏
    */
@@ -195,3 +257,4 @@
     width: 100%;
   }
 </style>
+
