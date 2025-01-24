@@ -12,8 +12,8 @@
         <h2>{{ typeY }}</h2>
         <ul class="job-list">
           <li v-for="job in paginatedNews" :key="job.type">
-            <div v-if="job.type === typeY" v-html="job.text" v-show="shouldRender(job.type)" class="top-border"></div>
-          </li>
+              <div v-if="job.type === typeY" v-html="job.text" v-show="shouldRender(job.type)" class="top-border"></div>
+            </li>
         </ul>
 
 
@@ -34,6 +34,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { defHttp } from "@/utils/http/axios"
 import { request } from "axios"
+
 
 const jobTypeList = ref([
   { text: "研究队伍", value: "研究队伍" },
@@ -172,7 +173,10 @@ const shouldRender = (inType) => {
 }
 </script>
 
-
+<style>
+@import '@/design/xgs_webstyle.css';
+@import '@/design/bootstrap.css';
+</style>
 <style scoped>
 #app {
   display: flex;
@@ -273,6 +277,7 @@ main {
   border-top: 1px solid #3d54a7;
   padding-bottom: 20px;
   padding-top: 20px;
+
 }
 
 .pagination {
