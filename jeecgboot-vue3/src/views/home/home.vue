@@ -24,9 +24,12 @@
 
       <!-- 新闻区域 -->
       <div class="news">
-        <div v-for="(news, index) in newsList" :key="index" class="news-item">
+        <div v-for="(news, index) in newsList" :key="index" class="news-item" @click="news.id && goToNewsDetail(String(news.id))">
           <h3 v-html="news.title"></h3>
-          <p v-html="news.content"></p>
+        </div>
+        <!-- 查看更多链接 -->
+        <div class="news-more">
+          <a class="more-link" :href="'./home/news'">查看更多 +</a>
         </div>
       </div>
     </div>
@@ -164,25 +167,82 @@ const newsList = ref([
 ]);
 
 // 获取新闻数据接口
+// const fetchNews = async (page = 1, size = 5) => {
+//   try {
+//     const response = await defHttp.get({
+//       url: listUrl,
+//       params: { pageNo: page, pageSize: 1000 },
+//     });
+//
+//     if (response && response.records) {
+//       newsList.value = response.records.map((item: any) => ({
+//         title: item.newTitle || "无标题",
+//         // content: item.news || "无内容",
+//         createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
+//       }))
+//       .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+//       .slice(0, size); // 截取前5条
+//     }
+//   } catch (error) {
+//     console.error("请求新闻数据失败:", error);
+//   }
+// };
+
 const fetchNews = async (page = 1, size = 5) => {
   try {
-    const response = await defHttp.get({
+    // 获取首页数据
+    const homeResponse = await defHttp.get({
       url: listUrl,
       params: { pageNo: page, pageSize: 1000 },
     });
 
-    if (response && response.records) {
-      newsList.value = response.records.map((item: any) => ({
-        title: item.newTitle || "无标题",
-        // content: item.news || "无内容",
-        createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
-      }))
-      .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-      .slice(0, size); // 截取前两条
+    // 获取详情表数据
+    const journalismResponse = await defHttp.get({
+      url: '/xgsJournalism/xgsJournalism/list',
+      params: { pageNo: page, pageSize: 1000 },
+    });
+
+    console.log("xgs_home 数据:", homeResponse.records);
+    console.log("xgs_journalism 数据:", journalismResponse.records);
+
+    if (homeResponse?.records && journalismResponse?.records) {
+      const journalismData = journalismResponse.records;
+
+      // 标题标准化函数
+      const normalize = (str) => str?.toLowerCase().trim();
+
+      // 将首页数据与详情表关联
+      newsList.value = homeResponse.records
+        .map((item: any) => {
+          // 在详情表中根据标题匹配
+          const matchedJournalism = journalismData.find(
+            (journalism) =>
+              normalize(journalism.journalismHead) === normalize(item.newTitle)
+          );
+
+          if (!matchedJournalism) {
+            console.warn(`未匹配到详情表的新闻: ${item.newTitle}`);
+          }
+
+          return {
+            title: item.newTitle,
+            id: matchedJournalism?.id || null, // 关联详情表的 id
+            createTime: item.createTime || '',
+            // content: matchedJournalism?.journalismText, // 可选：用于显示新闻内容摘要
+          };
+        })
+        .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+        .slice(0, size); // 截取前 `size` 条
     }
   } catch (error) {
-    console.error("请求新闻数据失败:", error);
+    console.error('请求新闻数据失败:', error);
   }
+};
+
+
+// 跳转至头条新闻详情
+const goToNewsDetail = (itemId: string) => {
+  router.push({ name: 'newsDetail', params: { id: itemId } });
 };
 
 // const tabSelected = ref('notice');
@@ -306,18 +366,30 @@ h2 {
 }
 
 /* 外部容器，确保轮播图和公告区域宽度一致 */
+/*.main-content {*/
+/*  display: flex;           !* 使用 Flexbox 布局 *!*/
+/*  justify-content: space-between; !* 两侧对齐 *!*/
+/*  align-items: stretch;    !* 高度对齐 *!*/
+/*  max-width: 1200px;       !* 统一容器宽度 *!*/
+/*  margin: 0 auto;          !* 居中对齐 *!*/
+/*  padding-left: 20px;      !* 左边距，与导航栏一致 *!*/
+/*  padding-right: 20px;     !* 右边距 *!*/
+/*  gap: 20px;               !* 轮播图与新闻区域的间距 *!*/
+/*  box-sizing: border-box;  !* 包括 padding 在内的宽度计算 *!*/
+/*  flex-wrap: nowrap;       !* 确保不换行 *!*/
+/*}*/
+
 .main-content {
-  display: flex;           /* 使用 Flexbox 布局 */
-  justify-content: space-between; /* 两侧对齐 */
-  align-items: stretch;    /* 高度对齐 */
-  max-width: 1200px;       /* 统一容器宽度 */
-  margin: 0 auto;          /* 居中对齐 */
-  padding-left: 20px;      /* 左边距，与导航栏一致 */
-  padding-right: 20px;     /* 右边距 */
-  gap: 20px;               /* 轮播图与新闻区域的间距 */
-  box-sizing: border-box;  /* 包括 padding 在内的宽度计算 */
-  flex-wrap: nowrap;       /* 确保不换行 */
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 20px; /* 与 announcements-container 左右对齐 */
+  padding-right: 20px;
+  box-sizing: border-box;
 }
+
 
 .carousel,
 .news {
@@ -327,7 +399,8 @@ h2 {
 /* 调整轮播图样式 */
 .carousel {
   flex: 3;                  /* 轮播图占比 3 */
-  max-width: 800px;         /* 限制最大宽度 */
+  max-width: calc(1200px * 0.75); /* 限制宽度为容器的 75% */
+  /*max-width: 800px;         !* 限制最大宽度 *!*/
   height: 400px;            /* 固定高度 */
   margin: 0;                /* 去除多余边距 */
   padding: 0;               /* 去除多余内边距 */
@@ -337,11 +410,6 @@ h2 {
 
 /* 轮播图图片样式 */
 .carousel img {
-  /*width: 1000px;    !* 填充轮播图容器 *!*/
-  /*height: 400px;*/
-  /*object-fit: cover; !* 确保图片比例不失真 *!*/
-  /*border-radius: 10px; !* 图片圆角 *!*/
-
   display: block;
   width: 100%; /* 或具体宽度 */
   height: auto; /* 确保图片按比例缩放 */
@@ -422,73 +490,58 @@ h2 {
 /* 调整新闻区域样式 */
 .news {
   flex: 1;                  /* 新闻区域占比 1 */
-  max-width: 300px;         /* 限制最大宽度 */
+  /*max-width: 300px;         !* 限制最大宽度 *!*/
+  max-width: calc(1200px * 0.25); /* 限制宽度为容器的 25% */
   height: 400px;            /* 固定高度，与轮播图一致 */
-  background-color: #f9f9f9; /* 背景色 */
+  background-color: #3d54a7; /* 背景色 */
   padding: 10px;            /* 内边距 */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* 阴影效果 */
-  border-radius: 10px;      /* 圆角 */
+  /*border-radius: 10px;      !* 圆角 *!*/
   overflow: hidden;         /* 防止溢出 */
+  position: relative;       /* 方便定位“查看更多”按钮 */
 }
 
-.news, .news-item {
-  box-sizing: border-box;
-}
-
+/* 单个新闻项样式 */
 .news-item {
-  margin-bottom: 5px;
+  margin-bottom: 10px;       /* 新闻间距 */
   padding: 5px;
-  border-bottom: 1px solid #ddd;
-}
-
-/* 去掉最后一条新闻的分隔线 */
-.news-item:last-child {
-  border-bottom: none;
+  cursor: pointer;
+  transition: background-color 0.3s; /* 添加平滑背景变化效果 */
 }
 
 .news-item h3 {
-  width: 100%;  /* 确保标题宽度与父容器对齐 */
+  width: 100%;
   margin: 0;
-  color: #3d54a7;
-  font-size: 18px;
+  color: white;
+  font-size: 20px;
   font-weight: bold;
-  word-wrap: break-word;   /* 自动换行 */
-  word-break: break-word;  /* 强制换行 */
+  overflow: hidden;
+  text-overflow: ellipsis;  /* 超出部分显示省略号 */
+  white-space: nowrap;      /* 强制单行显示 */
+  transition: color 0.3s;
 }
 
-.news-item p {
-  margin: 0;
-  color: #111;
-  white-space: normal;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3; /* 显示最多3行 */
-  -webkit-box-orient: vertical;
-  width: 100%;  /* 改为100%以适应父容器 */
-  height: auto; /* 自动调整高度 */
+.news-item:hover h3 {
+  color: dodgerblue; /* 鼠标悬停时标题变黑 */
 }
+
+
+/* 查看更多样式 */
+.news-more {
+  position: absolute;
+  bottom: 10px;  /* 距离底部 10px */
+  right: 10px;   /* 距离右侧 10px */
+}
+
 
 /* 确保招聘公告导航栏左对齐 */
 .announcements-container {
-  max-width: 1200px;        /* 与 .main-content 宽度一致 */
-  margin: 0 auto;           /* 居中对齐 */
-  padding-left: 20px;       /* 左边距，与轮播图一致 */
-  padding-right: 20px;      /* 右边距 */
-  display: flex;            /* 使用 Flexbox */
-  flex-direction: column;   /* 垂直排列 */
+  max-width: 1200px; /* 确保与 main-content 宽度一致 */
+  margin: 0 auto;
+  padding-left: 20px; /* 与 main-content 左对齐 */
+  padding-right: 20px; /* 与 main-content 右对齐 */
+  box-sizing: border-box;
 }
-
-/* ----- */
-/*.announcements-container {*/
-/*  display: flex;*/
-/*  flex-direction: column;*/
-/*  align-items: flex-start; !* 左对齐 *!*/
-/*  width: 940px;*/
-/*  max-width: 1000px; !* 限制最大宽度 *!*/
-/*  margin-top: 20px; !* 距离轮播图的间距 *!*/
-/*  margin-left: 195px; !* 与左侧轮播图对齐 *!*/
-/*}*/
 
 
 .tabs-container {
@@ -499,7 +552,7 @@ h2 {
   margin-bottom: 10px;
   background-color: #3d54a7; /* 导航栏背景色 */
   /* padding: 0 15px; 内边距 */
-  border-radius: 5px; /* 圆角样式 */
+  /*border-radius: 5px; !* 圆角样式 *!*/
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影效果 */
 }
 
