@@ -7,6 +7,10 @@
           <a-button type="primary" v-auth="'xgsResume:xgs_resume_base:add'"  @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
           <a-button  type="primary" v-auth="'xgsResume:xgs_resume_base:exportXls'"  preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
           <j-upload-button  type="primary" v-auth="'xgsResume:xgs_resume_base:importExcel'"  preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
+          <a-button
+            type="primary"
+            @click="batchAddToTalentPool"
+            preIcon="ant-design:user-add-outlined">加入人才库</a-button>
           <a-dropdown v-if="selectedRowKeys.length > 0">
               <template #overlay>
                 <a-menu>
@@ -43,9 +47,11 @@
   import {useModal} from '/@/components/Modal';
   import XgsResumeBaseModal from './components/XgsResumeBaseModal.vue'
   import {columns, searchFormSchema, superQuerySchema} from './XgsResumeBase.data';
-  import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsResumeBase.api';
+  import {list, deleteOne, batchDelete, getImportUrl,getExportUrl, addToTalentPool} from './XgsResumeBase.api';
+  import { message } from "ant-design-vue"; // 使用 Ant Design Vue 的 message
   import {downloadFile} from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
+  import {defHttp} from "@/utils/http/axios";
   const queryParam = reactive<any>({});
   const userStore = useUserStore();
   const checkedKeys = ref<Array<string | number>>([]);
@@ -160,6 +166,32 @@
          }
        ]
    }
+
+  // 加入人才库
+  async function batchAddToTalentPool() {
+    if (selectedRowKeys.value.length === 0) {
+      message.warning("请先选择至少一条简历后再进行操作");
+      return;
+    }
+
+    try {
+      const response = await defHttp.post({
+        url: '/xgsTalentpool/xgsTalentpool/addBatchFromResume',
+        params: { ids: selectedRowKeys.value }, // 将选中的简历 ID 传给后端
+      });
+
+      if (response==="添加到人才库成功！") {
+        reload(); // 刷新表格
+        selectedRowKeys.value = []; // 清空选中的状态
+      } else {
+        // 失败时显示失败提示
+        message.error( "操作失败");
+      }
+    } catch (error) {
+      // 发生错误时显示提示
+      message.error("操作失败，请重试");
+    }
+  }
 
 
   /**

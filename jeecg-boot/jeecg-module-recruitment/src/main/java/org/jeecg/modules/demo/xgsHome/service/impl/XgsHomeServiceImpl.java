@@ -3,6 +3,8 @@ package org.jeecg.modules.demo.xgsHome.service.impl;
 import org.jeecg.modules.demo.xgsHome.entity.XgsHome;
 import org.jeecg.modules.demo.xgsHome.mapper.XgsHomeMapper;
 import org.jeecg.modules.demo.xgsHome.service.IXgsHomeService;
+import org.jeecg.modules.demo.xgsJournalism.entity.XgsJournalism;
+import org.jeecg.modules.demo.xgsJournalism.mapper.XgsJournalismMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +32,9 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
 
     @Autowired
     private XgsHomeMapper xgsHomeMapper;  // 注入 Mapper
+
+    @Autowired
+    private XgsJournalismMapper xgsJournalismMapper;  // 注入 Mapper
 
     @Override
     public boolean syncHomeContentFromAPI() {
@@ -86,6 +91,21 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 if (i >= photographUrls.size() || i >= newsTitles.size() || i >= recruitAnnouncements.size()) {
                     continue; // 如果某个集合没有足够的元素，则跳过这次循环
                 }
+
+                //创建XgsJournalism对象
+                //同步的新闻属于头条新闻,也需要同步到数据库中
+                XgsJournalism xgsJournalism = new XgsJournalism();
+                xgsJournalism.setJournalismHead(newsTitles.get(i));
+                xgsJournalism.setJournalismText(" ");
+                xgsJournalism.setState("已发布");
+                xgsJournalism.setType("头条新闻");
+                xgsJournalism.setCreateTime(new Date());
+                xgsJournalism.setUpdateTime(new Date());
+                xgsJournalism.setCreateBy("admin");
+                xgsJournalism.setUpdateBy("admin");
+                xgsJournalism.setSysOrgCode("A01");
+
+                xgsJournalismMapper.insert(xgsJournalism);
 
                 // 创建 XgsHome 对象
                 XgsHome homeData = new XgsHome();

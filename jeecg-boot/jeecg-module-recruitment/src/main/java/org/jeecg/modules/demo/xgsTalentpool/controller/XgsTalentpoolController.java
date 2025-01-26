@@ -14,6 +14,8 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
+import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.modules.demo.xgsTalentpool.entity.XgsTalentpool;
 import org.jeecg.modules.demo.xgsTalentpool.service.IXgsTalentpoolService;
 
@@ -38,7 +40,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-
+import org.springframework.beans.BeanUtils;
  /**
  * @Description: 人才库
  * @Author: jeecg-boot
@@ -52,6 +54,8 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsTalentpoolController extends JeecgController<XgsTalentpool, IXgsTalentpoolService> {
 	@Autowired
 	private IXgsTalentpoolService xgsTalentpoolService;
+	 @Autowired
+	 private IXgsResumeBaseService xgsResumeBaseService;
 	
 	/**
 	 * 分页列表查询
@@ -93,8 +97,48 @@ public class XgsTalentpoolController extends JeecgController<XgsTalentpool, IXgs
 		xgsTalentpoolService.save(xgsTalentpool);
 		return Result.OK("添加成功！");
 	}
-	
-	/**
+
+	 /**
+	  * 批量添加
+	  *
+	  * @param xgsTalentpoolList
+	  * @return
+	  */
+	 @ApiOperation(value = "人才库-批量从简历表添加", notes = "人才库-批量从简历表添加")
+	 @PostMapping(value = "/addBatchFromResume")
+	 public Result<String> addBatchFromResume(@RequestBody Map<String, List<String>> idsMap) {
+		 List<String> ids = idsMap.get("ids");
+
+		 // 校验简历 ID 是否为空
+		 if (ids == null || ids.isEmpty()) {
+			 return Result.error("没有传递任何简历 ID");
+		 }
+
+		 // 根据简历 ID 获取简历信息
+		 List<XgsResumeBase> resumeBaseList = xgsResumeBaseService.listByIds(ids);
+		 if (resumeBaseList.isEmpty()) {
+			 return Result.error("未找到相关简历信息");
+		 }
+
+		 // 将简历信息转为人才库需要的对象（只复制存在的字段）
+		 List<XgsTalentpool> talentpoolList = resumeBaseList.stream().map(resume -> {
+			 XgsTalentpool talentpool = new XgsTalentpool();
+
+			 // 使用 BeanUtils.copyProperties 自动复制匹配的字段
+			 BeanUtils.copyProperties(resume, talentpool);
+
+			 // 返回填充完成的对象
+			 return talentpool;
+		 }).collect(Collectors.toList());
+
+		 // 批量插入人才库
+		 xgsTalentpoolService.saveBatch(talentpoolList);
+
+		 return Result.OK("添加到人才库成功！");
+	 }
+
+
+	 /**
 	 *  编辑
 	 *
 	 * @param xgsTalentpool
