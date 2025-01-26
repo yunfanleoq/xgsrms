@@ -112,7 +112,7 @@
     reload();
   }
   /**
-   * 自动同步事件
+   *  自动同步事件
    */
   const handleAutoSync = async () => {
     try {
