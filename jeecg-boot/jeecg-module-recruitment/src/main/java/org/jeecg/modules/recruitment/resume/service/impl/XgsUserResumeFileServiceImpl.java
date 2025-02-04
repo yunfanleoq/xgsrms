@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Description: 用户简历文件分析
@@ -99,13 +101,15 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
             ChatMessage currentMessage = new ChatMessage(ChatMessageRole.USER.value(), messageContent);
             messages.add(currentMessage);
             Map<String, Object> completionRequest = new HashMap<>();
-            completionRequest.put("model", "glm-4-long");
+            completionRequest.put("model", "GLM-4-Plus");
             completionRequest.put("messages", messages);
             ModelData modelData = clientV4.getChatApiService().createChatCompletion(completionRequest).blockingGet();
-            String jsonStr = modelData.getChoices().get(0).getMessage().getContent().toString();
-            jsonStr = jsonStr.replaceFirst("^```json", "");
-            jsonStr = jsonStr.replaceFirst("```$", "");
-            xgsUserResumeFile.setFileJson(jsonStr);
+            String markdownText = modelData.getChoices().get(0).getMessage().getContent().toString();
+            // 提取 JSON 数据
+            List<String> jsonDataList = extractJsonFromMarkdown(markdownText);
+            String jsonStr = jsonDataList.iterator().next();
+            JSONObject jsonObject = JSONObject.parseObject(jsonStr);
+            xgsUserResumeFile.setFileJson(jsonObject.toJSONString());
             saveOrUpdate(xgsUserResumeFile);
             Thread.sleep(1500);
             clientV4.getChatApiService().deletedFile(resFile.getId());
@@ -114,5 +118,43 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
         }
 
         return xgsUserResumeFile;
+    }
+
+    /**
+     * 从 Markdown 文本中提取 JSON 数据
+     *
+     * @param markdownText Markdown 文本
+     * @return 提取的 JSON 数据列表
+     */
+    public static List<String> extractJsonFromMarkdown(String markdownText) {
+        List<String> jsonDataList = new ArrayList<>();
+
+        // 正则表达式匹配代码块中的 JSON（以 ```json 开头）
+        String jsonBlockPattern = "```json\\s*([\\s\\S]*?)\\s*```";
+        // 正则表达式匹配内联的 JSON（用反引号包裹）
+        String inlineJsonPattern = "`(\\{.*?\\}|\\[.*?\\])`";
+
+        // 提取代码块中的 JSON
+        extractMatches(markdownText, jsonBlockPattern, jsonDataList);
+        // 提取内联的 JSON
+        extractMatches(markdownText, inlineJsonPattern, jsonDataList);
+
+        return jsonDataList;
+    }
+
+    /**
+     * 使用正则表达式提取匹配的内容
+     *
+     * @param text    输入文本
+     * @param pattern 正则表达式
+     * @param matches 存储匹配结果的列表
+     */
+    private static void extractMatches(String text, String pattern, List<String> matches) {
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(text);
+
+        while (matcher.find()) {
+            matches.add(matcher.group(1).trim()); // 提取匹配的内容并去除空白字符
+        }
     }
 }

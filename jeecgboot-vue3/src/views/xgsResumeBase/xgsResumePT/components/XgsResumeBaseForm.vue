@@ -199,8 +199,14 @@
       resolve(values);
     });
   }
+  async function setDataByPDF(data) {
+    await setFieldsValue({
+      ...data.value,
+    });
+  }
   defineExpose({
     handleSubmit,
+    setDataByPDF,
   });
 </script>
 

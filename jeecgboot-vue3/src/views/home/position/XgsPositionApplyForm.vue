@@ -59,7 +59,7 @@
             </a-col>
             <a-col :span="12">
               <a-form-item label="上传PDF简历" id="XgsUserResumeFileForm-filePath" name="filePath">
-                <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" />
+                <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" accept=".pdf" />
                 <a-button type="primary" :disabled="!formData.filePath" @click="analysisResume">自动填充简历信息</a-button>
               </a-form-item>
             </a-col>
@@ -163,10 +163,10 @@
     defHttp
       .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData.value })
       .then((data) => {
-        if (data) {
-          // TODO 在这里做分析后的对应关系
-          console.log(data);
-          resumeText.value = ''; // '示例：在这里做分析后的对应关系，分析结果如下： ' + JSON.stringify(data);
+        if (data && data.fileJson) {
+          let resumeData = JSON.parse(data.fileJson);
+          fillResumeInfo(resumeData);
+          resumeText.value = '';
         } else {
           createMessage.warning('解析失败，请上传PDF格式的简历');
         }
@@ -174,6 +174,91 @@
       .finally(() => {
         confirmLoading.value = false;
       });
+  }
+  function fillResumeInfo(resumeData) {
+    console.log(resumeData);
+    // {
+    //   "教育背景": {
+    //   "学校": "上海大学",
+    //     "时间": "2012.09-2016.07",
+    //     "学位": "本科",
+    //     "主修课程": [
+    //     "基础会计学",
+    //   ]
+    // },
+    //   "工作经验": [
+    //   {
+    //     "时间": "2016.03-至今",
+    //     "公司": "贵泽实业有限公司",
+    //     "职责": [
+    //       "负责本部的行政人事管理和日常事务，协助总监搞好各部门之间的综合协调，落实公司规章制度，沟通内外联系，保证上情下达和下情上报，负责对会议文件决定的事项进行催办、查办和落实，负责全公司组织系统及工作职责研讨和修订。",
+    //       "编制公司人事管理制度，规避各项人事风险。",
+    //       "负责招聘工作，制定公司的人力资源发展计划，确保人才梯队发展和人才储备及培养。",
+    //       "督导公司各项行政、人事制度的执行，以及各项行政人事工作的进展情况，并采取必要的措施。"
+    //     ],
+    //     "职位": "行政主管"
+    //   },
+    //   {
+    //     "时间": "2015.03-2016.01",
+    //     "公司": "一路网络科技有限公司",
+    //     "职责": [
+    //       "负责中心的接待工作；",
+    //       "负责中心的行政事务及前台管理；",
+    //       "协助处理客户服务及简单客诉；",
+    //       "负责中心简单财务管理，资产管控；"
+    //     ],
+    //     "职位": "行政助理"
+    //   }
+    // ]
+    // }
+    // {title: '本人照片', align: 'center', dataIndex: 'photograph', customRender: render.renderImage,},
+    // {title: '性别', align: 'center', dataIndex: 'sex_dictText',},
+    // {title: '籍贯', align: 'center', dataIndex: 'nativePlace',},
+    // {title: '出生年月', align: 'center', dataIndex: 'birthday', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
+    // {title: '民族', align: 'center', dataIndex: 'nation',},
+    // {title: '身份证号', align: 'center', dataIndex: 'idNumber',},
+    // {title: '政治面貌', align: 'center', dataIndex: 'politicBackground',},
+    // {title: '户口所在地', align: 'center', dataIndex: 'hukou',},
+    // {title: '是否应届毕业生', align: 'center', dataIndex: 'yjbys_dictText',},
+    // {title: '毕业院校', align: 'center', dataIndex: 'graduateCollege',},
+    // {title: '学位', align: 'center', dataIndex: 'degree',},
+    // {title: '专业', align: 'center', dataIndex: 'profession',},
+    // {title: '毕业时间', align: 'center', dataIndex: 'graduateDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
+    // {title: '参加工作时间', align: 'center', dataIndex: 'workDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
+    // {title: '目前工作单位', align: 'center', dataIndex: 'workUnit',},
+    // {title: '档案所在单位', align: 'center', dataIndex: 'personFilesUnit',},
+    // {title: '现行政职务', align: 'center', dataIndex: 'adminPosition',},
+    // {title: '任职时间', align: 'center', dataIndex: 'adminPositionDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
+    // {title: '现岗位', align: 'center', dataIndex: 'professionLevel',},
+    // {title: '聘任时间', align: 'center', dataIndex: 'professionLevelDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
+    // 在这里根据解析结果填充表单数据
+    const pdfData = ref({
+      name: resumeData['基本信息']['姓名'],
+      email: resumeData['基本信息']['邮箱'],
+      mobile: resumeData['基本信息']['手机'],
+      education: resumeData['基本信息']['学历'],
+      // formData.value.userName = resumeData['基本信息']['姓名'];
+      // formData.value.userName = resumeData['基本信息']['邮箱'];
+      // formData.value.userName = resumeData['基本信息']['手机'];
+      // formData.value.userName = resumeData['基本信息']['微信'];
+      // formData.value.userName = resumeData['基本信息']['地址'];
+      // formData.value.userName = resumeData['基本信息']['学历'];
+      // formData.value.userName = resumeData['基本信息']['年龄'];
+      // formData.value.userName = resumeData['基本信息']['求职意向'];
+      // formData.value.positionName = resumeData.position;
+    });
+    if (formData.value.positionType === '普通岗位') {
+      formPT.value.setDataByPDF(pdfData);
+    }
+    if (formData.value.positionType === '博士后岗位') {
+      formBSH.value.setDataByPDF(pdfData);
+    }
+    if (formData.value.positionType === '副高级岗位') {
+      formFG.value.setDataByPDF(pdfData);
+    }
+    if (formData.value.positionType === '专家推荐岗位') {
+      formTJ.value.setDataByPDF(pdfData);
+    }
   }
   const initFormData = async () => {
     resumeFormData.value = {
@@ -251,6 +336,7 @@
 
   import { useUserStore } from '/@/store/modules/user';
   import JUpload from '../../../components/Form/src/jeecg/components/JUpload/JUpload.vue';
+  import {render} from "@/utils/common/renderUtils";
   const userStore = useUserStore();
   /**
    * 编辑

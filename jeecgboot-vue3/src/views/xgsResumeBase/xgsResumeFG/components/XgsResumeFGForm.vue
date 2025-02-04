@@ -196,8 +196,14 @@
       resolve(values);
     });
   }
+  function setDataByPDF(data) {
+    setFieldsValue({
+      ...data.value,
+    });
+  }
   defineExpose({
     handleSubmit,
+    setDataByPDF,
   });
 </script>
 
