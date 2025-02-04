@@ -178,12 +178,12 @@ public class ShiroConfig {
         //性能监控——安全隐患泄露TOEKN（durid连接池也有）
         //filterChainDefinitionMap.put("/actuator/**", "anon");
         //测试模块排除
-        filterChainDefinitionMap.put("/test/seata/**", "anon");
+//        filterChainDefinitionMap.put("/test/seata/**", "anon");
 
         //错误路径排除
         filterChainDefinitionMap.put("/error", "anon");
         // 企业微信证书排除
-        filterChainDefinitionMap.put("/WW_verify*", "anon");
+//        filterChainDefinitionMap.put("/WW_verify*", "anon");
 
         // 添加自己的过滤器并且取名为jwt
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);

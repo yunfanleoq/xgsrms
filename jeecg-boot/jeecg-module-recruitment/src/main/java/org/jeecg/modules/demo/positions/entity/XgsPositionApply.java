@@ -127,4 +127,8 @@ public class XgsPositionApply implements Serializable {
     @Excel(name = "申请结果", width = 15)
     @ApiModelProperty(value = "申请结果")
     private java.lang.String applyResult;
+    /**简历文件*/
+    @Excel(name = "简历文件", width = 15)
+    @ApiModelProperty(value = "简历文件")
+    private java.lang.String resumeFile;
 }

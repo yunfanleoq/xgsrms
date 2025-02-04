@@ -30,8 +30,8 @@
               </a-form-item>
             </a-col>
             <a-col :span="12" v-show="false">
-              <a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
-                <a-input v-model:value="formData.resumeName" placeholder="请输入简历名称" allow-clear />
+              <a-form-item label="简历名称" v-bind="validateInfos.resumeFile" id="XgsPositionApplyForm-resumeName" name="resumeFile">
+                <a-input v-model:value="formData.resumeFile" placeholder="请输入简历名称" allow-clear />
                 <!--                <a-select v-model:value="formData.resumeName" placeholder="请选择简历名称" allow-clear>-->
                 <!--                  <a-select-option v-for="resume in resumeOptions" :key="resume.value" :value="resume.value">-->
                 <!--                    {{ resume.label }}-->
@@ -93,7 +93,7 @@
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { getValueType } from '/@/utils';
-  import { saveOrUpdate } from './XgsPositionApply.api';
+  import { doPositionApply } from './XgsPositionApply.api';
   import { Form } from 'ant-design-vue';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   const positionApplyStore = usePositionApplyStoreWithOut();
@@ -113,6 +113,7 @@
         positionType: '',
         status: '',
         resumeName: '',
+        resumeFile: '',
         mark: '',
         resumeId: '',
         positionId: '',
@@ -138,6 +139,7 @@
     positionType: '',
     status: '',
     resumeName: '',
+    resumeFile: '',
     mark: '',
     resumeId: '',
     positionId: '',
@@ -147,6 +149,7 @@
   const resumeFormData = ref({
     userName: '',
     resumeName: '',
+    resumeFile: '',
     resumeId: '',
     dataId: '',
     disabled: false,
@@ -176,6 +179,7 @@
     resumeFormData.value = {
       userName: formData.value.userName,
       resumeName: formData.value.resumeName,
+      resumeFile: formData.value.resumeFile,
       resumeId: formData.value.resumeId,
       dataId: formData.value.resumeId,
       disabled: formData.value.disabled,
@@ -287,29 +291,19 @@
       }
       return Promise.reject(errorFields);
     }
+    let resumeFormData = {};
     try {
       if (formData.value.positionType === '普通岗位') {
-        let formDataPT = await formPT.value.handleSubmit();
-        console.log('data: ', formDataPT);
-        // formPT.value
-        //   .handleSubmit()
-        //   .then((formDataPT) => {
-        //     console.log(111, formDataPT);
-        //   })
-        //   .catch((err) => {
-        //     console.log(222, err);
-        //     return Promise.reject(err);
-        //   });
-        return Promise.reject();
+        resumeFormData = await formPT.value.handleSubmit();
       }
       if (formData.value.positionType === '博士后岗位') {
-        let formDataBSH = await formBSH.value.handleSubmit();
+        resumeFormData = await formBSH.value.handleSubmit();
       }
       if (formData.value.positionType === '副高级岗位') {
-        let formDataFG = await formFG.value.handleSubmit();
+        resumeFormData = await formFG.value.handleSubmit();
       }
       if (formData.value.positionType === '专家推荐岗位') {
-        let formDataTJ = await formTJ.value.handleSubmit();
+        resumeFormData = await formTJ.value.handleSubmit();
       }
     } catch (e) {
       createMessage.warning('表单验证失败');
@@ -334,7 +328,11 @@
         }
       }
     }
-    saveOrUpdate(model.value, isUpdate.value)
+    let params = {
+      xgsPositionApply: model.value,
+      resumeFormData,
+    };
+    doPositionApply(params)
       .then((res) => {
         if (res.success) {
           createMessage.success(res.message);
