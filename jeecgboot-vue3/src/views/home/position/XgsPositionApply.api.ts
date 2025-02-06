@@ -5,6 +5,7 @@ const { createConfirm } = useMessage();
 
 enum Api {
   list = '/positions/xgsPositionApply/list',
+  doPositionApply = '/positions/xgsPositionApply/doPositionApply',
   save = '/positions/xgsPositionApply/add',
   edit = '/positions/xgsPositionApply/edit',
   deleteOne = '/positions/xgsPositionApply/delete',
@@ -69,4 +70,12 @@ export const batchDelete = (params, handleSuccess) => {
 export const saveOrUpdate = (params, isUpdate) => {
   const url = isUpdate ? Api.edit : Api.save;
   return defHttp.post({ url: url, params }, { isTransformResponse: false });
+};
+
+/**
+ * 保存或者更新 在线申请
+ * @param params
+ */
+export const doPositionApply = (params) => {
+  return defHttp.post({ url: Api.doPositionApply, params }, { isTransformResponse: false });
 };

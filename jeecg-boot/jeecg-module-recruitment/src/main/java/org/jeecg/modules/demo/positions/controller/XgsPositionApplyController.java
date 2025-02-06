@@ -25,6 +25,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
+import org.jeecg.modules.demo.positions.vo.XgsPositionApplyVO;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
 import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
@@ -171,6 +172,20 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 		xgsPositionApplyService.save(xgsPositionApply);
 		return Result.OK("添加成功！");
 	}
+
+	 /**
+	  *   在线申请添加岗位信息
+	  *
+	  * @param xgsPositionApplyVO
+	  * @return
+	  */
+	 @AutoLog(value = "岗位申请-在线申请添加岗位信息")
+	 @ApiOperation(value="岗位申请-在线申请添加岗位信息", notes="岗位申请-在线申请添加岗位信息")
+	 @PostMapping(value = "/doPositionApply")
+	 public Result<String> doPositionApply(@RequestBody XgsPositionApplyVO xgsPositionApplyVO) {
+		 xgsPositionApplyService.doPositionApply(xgsPositionApplyVO);
+		 return Result.OK("在线申请添加岗位信息成功！");
+	 }
 
 	/**
 	 *  编辑
