@@ -7,7 +7,8 @@
           <a-button type="primary" v-auth="'xgsContactUs:xgs_contact_us:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
           <a-button  type="primary" v-auth="'xgsContactUs:xgs_contact_us:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
           <j-upload-button type="primary" v-auth="'xgsContactUs:xgs_contact_us:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
-          <a-dropdown v-if="selectedRowKeys.length > 0">
+        <a-button type="primary" preIcon="ant-design:sync-outlined" @click="handleAutoSync"> 自动同步</a-button>
+        <a-dropdown v-if="selectedRowKeys.length > 0">
               <template #overlay>
                 <a-menu>
                   <a-menu-item key="1" @click="batchHandleDelete">
@@ -50,6 +51,8 @@
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsContactUs.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
+  import axios from "axios";
+  import {saveOrUpdate} from "@/views/xgsContactUs/XgsContactUs.api";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -105,6 +108,35 @@
     });
     reload();
   }
+  /**
+   *  自动同步事件
+   */
+  const handleAutoSync = async () => {
+    try {
+      //先获取所有数据的id
+      const allData = await list({});
+      const allIds = allData.records.map((item) => item.id);
+      // 调用批量删除函数删除所有数据
+      batchDelete({ ids: allIds }, handleSuccess, false);
+      //获取数据
+      const response = await axios.get('https://www.iie.ac.cn/lxwm/');
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(response.data, 'text/html');
+      const targetDiv = doc.querySelector('div.list-news.t3d');
+      if (targetDiv) {
+        const record = {
+          //组装数据
+          id: '1887438233323352066', // 数据的唯一标识
+          text: targetDiv.outerHTML, // 概况内容
+        };
+        //将最新数据放置到数据库中
+        await saveOrUpdate(record, false); // false 表示新增
+        await reload();
+      }
+    } catch (error) {
+      console.error('获取或处理内容时出错：', error);
+    }
+  };
    /**
     * 新增事件
     */

@@ -174,7 +174,7 @@ const shouldRender = (inType) => {
 </script>
 
 <style>
-//修饰院所风貌和单位简介
+
 @import '@/design/xgs_webstyle.css';
 @import '@/design/bootstrap.css';
 </style>

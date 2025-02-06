@@ -40,19 +40,25 @@ export const deleteOne = (params,handleSuccess) => {
  * 批量删除
  * @param params
  */
-export const batchDelete = (params, handleSuccess) => {
-  createConfirm({
-    iconType: 'warning',
-    title: '确认删除',
-    content: '是否删除选中数据',
-    okText: '确认',
-    cancelText: '取消',
-    onOk: () => {
-      return defHttp.delete({url: Api.deleteBatch, data: params}, {joinParamsToUrl: true}).then(() => {
-        handleSuccess();
-      });
-    }
-  });
+export const batchDelete = (params, handleSuccess, showConfirm = true) => {
+  if (showConfirm) {
+    createConfirm({
+      iconType: 'warning',
+      title: '确认删除',
+      content: '是否删除选中数据',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        return defHttp.delete({ url: Api.deleteBatch, data: params }, { joinParamsToUrl: true }).then(() => {
+          handleSuccess();
+        });
+      }
+    });
+  } else {
+    return defHttp.delete({ url: Api.deleteBatch, data: params }, { joinParamsToUrl: true }).then(() => {
+      handleSuccess();
+    });
+  }
 }
 /**
  * 保存或者更新

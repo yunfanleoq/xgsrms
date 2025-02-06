@@ -116,11 +116,16 @@
    */
   const handleAutoSync = async () => {
     try {
+      // 先获取所有数据的id
+      const allData = await list({});
+      const allIds = allData.records.map((item) => item.id);
+      // 调用批量删除函数删除所有数据
+      batchDelete({ ids: allIds }, handleSuccess, false);
+      //获取数据
       const response = await axios.get('http://www.iie.cas.cn/jggk2020/dwjj2020/');
       const parser = new DOMParser();
       const doc = parser.parseFromString(response.data, 'text/html');
       const targetDiv = doc.querySelector('div.t3d');
-      console.log(doc);
       if (targetDiv) {
         const record = {
           //组装数据
@@ -131,7 +136,7 @@
           type: '单位简介', // 概况类型的实际值
         };
         //将最新数据放置到数据库中
-        await saveOrUpdate(record, true); // false 表示新增
+        await saveOrUpdate(record, false); // false 表示新增
         await reload();
       }
       const response1 = await axios.get('http://www.iie.cas.cn/jggk2020/ysfm2020/');
@@ -161,7 +166,7 @@
             type: '院所风貌', // 概况类型的实际值
           };
           //将最新数据放置到数据库中
-          await saveOrUpdate(record, true); // false 表示新增
+          await saveOrUpdate(record, false); // false 表示新增
           await reload();
         }
       }
