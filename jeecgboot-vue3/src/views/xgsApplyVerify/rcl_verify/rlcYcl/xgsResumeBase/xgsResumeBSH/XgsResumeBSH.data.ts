@@ -417,7 +417,7 @@ export const formSchema: FormSchema[] = [
     field: 'labIdea',
     dynamicDisabled: true,
     component: 'Input',
-    dynamicDisabled: true,
+    // dynamicDisabled: true,
     componentProps: {
       dictCode: "研究室意见"
     },
