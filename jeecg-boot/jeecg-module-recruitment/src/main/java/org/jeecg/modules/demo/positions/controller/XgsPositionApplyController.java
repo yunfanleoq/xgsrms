@@ -187,6 +187,20 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 		 return Result.OK("在线申请添加岗位信息成功！");
 	 }
 
+	 /**
+	  *   在线申请添加岗位信息 检查岗位是否已申请过了
+	  *
+	  * @param xgsPositionApplyVO
+	  * @return
+	  */
+	 @AutoLog(value = "岗位申请-检查岗位是否已申请过了")
+	 @ApiOperation(value="岗位申请-检查岗位是否已申请过了", notes="岗位申请-检查岗位是否已申请过了")
+	 @PostMapping(value = "/checkHasApplied")
+	 public Result<Boolean> checkHasApplied(@RequestBody XgsPositionApplyVO xgsPositionApplyVO) {
+		 Boolean result = xgsPositionApplyService.checkHasApplied(xgsPositionApplyVO);
+		 return Result.OK(result);
+	 }
+
 	/**
 	 *  编辑
 	 *

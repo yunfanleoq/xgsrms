@@ -96,7 +96,12 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
             Map<String, Object> extraJson = new HashMap<>();
             extraJson.put("temperature", 0.5);
             JSONObject json = JSONObject.parseObject(xgsUserResumeFile.getResumeInfo());
-            String messageContent = String.format("请对以下个人简历信息进行分析，并且生成JSON格式：\n\n简历内容如下：\n%s}", json.getString("content"));
+//            String messageContent = String.format("请对以下个人简历信息进行分析，并且生成JSON格式：\n\n简历内容如下：\n%s}", json.getString("content"));
+            String[] jsonTemplate = getResumeInfoJsonTemplate();
+            String messageContent = String.format("请对以下个人简历信息进行分析，根据JSON模板生成JSON格式数据\n\n" +
+//                    "#JSON Key 注释\n%s\n\n" +
+                    "#JSON模板\n%s\n\n" +
+                    "#个人简历信息\n%s\n\n", jsonTemplate[0], json.getString("content"));
             List<ChatMessage> messages = new ArrayList<>();
             ChatMessage currentMessage = new ChatMessage(ChatMessageRole.USER.value(), messageContent);
             messages.add(currentMessage);
@@ -118,6 +123,81 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
         }
 
         return xgsUserResumeFile;
+    }
+
+    /**
+     * 获取JSON 模板的数据
+     * @return
+     */
+    private String[] getResumeInfoJsonTemplate() {
+        String[] jsonTemplate = new String[2];
+        jsonTemplate[0] = "\n" +
+                "//个人基本信息开始\n" +
+                "name //姓名\n" +
+                "photograph //本人照片\n" +
+                "sex //性别\n" +
+                "nativePlace //籍贯\n" +
+                "birthday //出生年月 yyyy-MM-dd\n" +
+                "nation //民族\n" +
+                "idNumber //身份证号\n" +
+                "politicBackground //政治面貌\n" +
+                "hukou //户口所在地\n" +
+                "yjbys //是否应届毕业生\n" +
+                "graduateCollege //毕业院校\n" +
+                "education //学历\n" +
+                "degree //学位\n" +
+                "profession //专业\n" +
+                "graduateDate //毕业时间 yyyy-MM-dd\n" +
+                "workDate //参加工作时间 yyyy-MM-dd\n" +
+                "workUnit //目前工作单位\n" +
+                "personFilesUnit //档案所在单位\n" +
+                "adminPosition //现行政职务\n" +
+                "adminPositionDate //任职时间 yyyy-MM-dd\n" +
+                "professionLevel //现岗位\n" +
+                "professionLevelDate //聘任时间 yyyy-MM-dd\n" +
+                "mobile //联系电话\n" +
+                "email //邮箱\n" +
+                "//个人基本信息结束\n" +
+                "//工作经历开始\n" +
+                "xgsResumeWorks //工作经历 数组\n" +
+                "  beginDate //开始日期 yyyy-MM-dd\n" +
+                "  endDate //终止日期 yyyy-MM-dd\n" +
+                "  workUnit //工作单位\n" +
+                "  deptment //工作部门\n" +
+                "  position //职务\n" +
+                "  professionLevel //专业技术岗位或职员职级\n" +
+                "//工作经历结束\n" +
+                "// 教育经历开始\n" +
+                "xgsResumeEdus //教育经历 数组\n" +
+                "  graduateCollege // 毕业院校\n" +
+                "  profession // 专业\n" +
+                "  education // 学历\n" +
+                "  degree // 学位\n" +
+                "  beginDate // 起始日期 yyyy-MM-dd\n" +
+                "  endDate // 终止日期 yyyy-MM-dd\n" +
+                "// 教育经历结束\n" +
+                "//家庭状况开始\n" +
+                "xgsResumeHome //家庭状况 数组\n" +
+                "  relation // 关系\n" +
+                "  name // 家属姓名\n" +
+                "  sex // 性别\n" +
+                "  nationality // 国籍\n" +
+                "  nativePlace // 籍贯\n" +
+                "  birthday // 出生年月 yyyy-MM-dd\n" +
+                "  nation // 民族\n" +
+                "  idNumber // 身份证号\n" +
+                "  politicBackground // 政治面貌\n" +
+                "  hukou // 户口所在地\n" +
+                "  graduateCollege // 毕业院校\n" +
+                "  education // 学历\n" +
+                "  degree // 学位\n" +
+                "  profession // 专业\n" +
+                "  graduateDate // 毕业时间 yyyy-MM-dd\n" +
+                "  workDate // 参加工作时间 yyyy-MM-dd\n" +
+                "  workUnit // 目前工作单位\n" +
+                "//家庭状况结束\n";
+        jsonTemplate[1] = "";
+        return jsonTemplate;
     }
 
     /**
