@@ -45,18 +45,18 @@
         </a-tabs>
       </a-card>
     </div>
-    <a-row>
-      <a-col :span="24">
-        <a-card :loading="loading" :bordered="false" title="最近一周访问量统计">
-          <div class="infoArea">
-            <HeadInfo title="今日IP" :iconColor="ipColor" :content="loginfo.todayIp" icon="environment" />
-            <HeadInfo title="今日访问" :iconColor="visitColor" :content="loginfo.todayVisitCount" icon="team" />
-            <HeadInfo title="总访问量" :iconColor="seriesColor" :content="loginfo.totalVisitCount" icon="rise" />
-          </div>
-          <LineMulti :chartData="lineMultiData" height="33vh" type="line" :option="{ legend: { top: 'bottom' } }" />
-        </a-card>
-      </a-col>
-    </a-row>
+<!--    <a-row>-->
+<!--      <a-col :span="24">-->
+<!--        <a-card :loading="loading" :bordered="false" title="最近一周访问量统计">-->
+<!--          <div class="infoArea">-->
+<!--            <HeadInfo title="今日IP" :iconColor="ipColor" :content="loginfo.todayIp" icon="environment" />-->
+<!--            <HeadInfo title="今日访问" :iconColor="visitColor" :content="loginfo.todayVisitCount" icon="team" />-->
+<!--            <HeadInfo title="总访问量" :iconColor="seriesColor" :content="loginfo.totalVisitCount" icon="rise" />-->
+<!--          </div>-->
+<!--          <LineMulti :chartData="lineMultiData" height="33vh" type="line" :option="{ legend: { top: 'bottom' } }" />-->
+<!--        </a-card>-->
+<!--      </a-col>-->
+<!--    </a-row>-->
   </div>
 </template>
 <script lang="ts" setup>
