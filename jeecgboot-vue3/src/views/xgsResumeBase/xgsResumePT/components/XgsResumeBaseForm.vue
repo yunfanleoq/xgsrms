@@ -203,8 +203,12 @@
     await setFieldsValue({
       ...data.value,
     });
+    xgsResumeWorksTable.dataSource = data.value.xgsResumeWorks;
+    xgsResumeEdusTable.dataSource = data.value.xgsResumeEdus;
+    xgsResumeHomeTable.dataSource = data.value.xgsResumeHome;
   }
   defineExpose({
+    reset,
     handleSubmit,
     setDataByPDF,
   });

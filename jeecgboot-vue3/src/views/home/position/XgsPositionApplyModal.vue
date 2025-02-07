@@ -4,7 +4,7 @@
     :width="width"
     :visible="visible"
     @ok="handleOk"
-    :okButtonProps="{ class: { 'jee-hidden': disableSubmit } }"
+    :okButtonProps="{ class: { 'jee-hidden': disableSubmitButton } }"
     @cancel="handleCancel"
     cancelText="关闭"
   >
@@ -16,11 +16,14 @@
   import { ref, nextTick, defineExpose, onMounted } from 'vue';
   import XgsPositionApplyForm from './XgsPositionApplyForm.vue';
   import JModal from '/@/components/Modal/src/JModal/JModal.vue';
+  import { defHttp } from '@/utils/http/axios';
+  import {useMessage} from "@/hooks/web/useMessage";
 
   const title = ref<string>('');
   const width = ref<number>(1200);
   const visible = ref<boolean>(false);
   const disableSubmit = ref<boolean>(false);
+  const disableSubmitButton = ref<boolean>(false);
   const registerForm = ref();
   const emit = defineEmits(['register', 'success']);
   const props = defineProps({
@@ -60,10 +63,30 @@
     });
   }
 
+  const { createMessage } = useMessage();
+  // 检查 是否已经申请
+  function checkHasApplied(record) {
+    let params = {
+      createBy: record.createBy,
+      positionDept: record.dept_dictText,
+      positionName: record.positionName,
+      positionType: record.category,
+    };
+    defHttp.post({ url: '/positions/xgsPositionApply/checkHasApplied', timeout: 600000, data: { xgsPositionApply: params } }).then((data) => {
+      if (data) {
+        createMessage.warning('岗位已申请，请勿重复申请！');
+        disableSubmitButton.value = true;
+      }
+    });
+  }
+
   function addJob(record) {
+    checkHasApplied(record);
     title.value = '在线申请';
     visible.value = true;
     nextTick(() => {
+      let wrap = Array.from(document.getElementsByClassName('ant-modal-body'));
+      wrap[0].scrollTop = 0;
       registerForm.value.add(record);
     });
   }
