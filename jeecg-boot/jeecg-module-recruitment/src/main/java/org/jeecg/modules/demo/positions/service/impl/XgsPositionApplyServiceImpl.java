@@ -13,6 +13,7 @@ import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeBaseMapper;
 import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeEdusMapper;
 import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeHomeMapper;
 import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeWorksMapper;
+import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.mapper.XgsFlowOpinionsMapper;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
@@ -56,9 +57,10 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
     public void doPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {
 
         XgsResumeBase xgsResumeBase = new XgsResumeBase();
-        BeanUtils.copyProperties(xgsPositionApplyVO, xgsResumeBase);
+        XgsResumeBasePage xgsResumeBasePage = xgsPositionApplyVO.getXgsResumeBasePage();
+        BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
         xgsResumeBaseMapper.insert(xgsResumeBase);
-        List<XgsResumeWorks> xgsResumeWorksList = xgsPositionApplyVO.getXgsResumeWorksList();
+        List<XgsResumeWorks> xgsResumeWorksList = xgsResumeBasePage.getXgsResumeWorksList();
         if(xgsResumeWorksList!=null && xgsResumeWorksList.size()>0) {
             for(XgsResumeWorks entity:xgsResumeWorksList) {
                 //外键设置
@@ -66,7 +68,7 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
                 xgsResumeWorksMapper.insert(entity);
             }
         }
-        List<XgsResumeEdus> xgsResumeEdusList = xgsPositionApplyVO.getXgsResumeEdusList();
+        List<XgsResumeEdus> xgsResumeEdusList = xgsResumeBasePage.getXgsResumeEdusList();
         if(xgsResumeEdusList!=null && xgsResumeEdusList.size()>0) {
             for(XgsResumeEdus entity:xgsResumeEdusList) {
                 //外键设置
@@ -74,7 +76,7 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
                 xgsResumeEdusMapper.insert(entity);
             }
         }
-        List<XgsResumeHome> xgsResumeHomeList = xgsPositionApplyVO.getXgsResumeHomeList();
+        List<XgsResumeHome> xgsResumeHomeList = xgsResumeBasePage.getXgsResumeHomeList();
         if(xgsResumeHomeList!=null && xgsResumeHomeList.size()>0) {
             for(XgsResumeHome entity:xgsResumeHomeList) {
                 //外键设置
@@ -110,5 +112,31 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         queryWrapper.eq("position_dept", xgsPositionApply.getPositionDept());
         long count = count(queryWrapper);
         return count > 0;
+    }
+
+
+    @Override
+    public XgsPositionApplyVO getPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {
+        XgsPositionApply xgsPositionApply = xgsPositionApplyVO.getXgsPositionApply();
+        if (xgsPositionApply == null || xgsPositionApply.getId() == null) {
+            return null;
+        }
+        XgsPositionApply positionApply = getById(xgsPositionApply.getId());
+        String resumeId = positionApply.getResumeId();
+        XgsResumeBase xgsResumeBase = xgsResumeBaseMapper.selectById(positionApply.getResumeId());
+        List<XgsResumeWorks> xgsResumeWorksList = xgsResumeWorksMapper.selectByMainId(resumeId);
+        List<XgsResumeEdus> xgsResumeEdusList = xgsResumeEdusMapper.selectByMainId(resumeId);
+        List<XgsResumeHome> xgsResumeHomeList = xgsResumeHomeMapper.selectByMainId(resumeId);
+
+        // 返回简历信息
+        XgsResumeBasePage xgsResumeBasePage = new XgsResumeBasePage();
+        BeanUtils.copyProperties(xgsResumeBase, xgsResumeBasePage);
+        xgsResumeBasePage.setXgsResumeEdusList(xgsResumeEdusList);
+        xgsResumeBasePage.setXgsResumeWorksList(xgsResumeWorksList);
+        xgsResumeBasePage.setXgsResumeHomeList(xgsResumeHomeList);
+        // 返回申请信息
+        xgsPositionApplyVO.setXgsPositionApply(positionApply);
+        xgsPositionApplyVO.setXgsResumeBasePage(xgsResumeBasePage);
+        return xgsPositionApplyVO;
     }
 }

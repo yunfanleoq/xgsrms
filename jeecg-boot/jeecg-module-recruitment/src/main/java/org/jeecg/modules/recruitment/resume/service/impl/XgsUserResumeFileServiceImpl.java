@@ -161,7 +161,7 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
                 "//工作经历开始\n" +
                 "xgsResumeWorks //工作经历 数组\n" +
                 "  beginDate //开始日期 yyyy-MM-dd\n" +
-                "  endDate //终止日期 yyyy-MM-dd\n" +
+                "  endDate //终止日期 格式 yyyy-MM-dd 如果是至今不填充\n" +
                 "  workUnit //工作单位\n" +
                 "  deptment //工作部门\n" +
                 "  position //职务\n" +
@@ -174,7 +174,7 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
                 "  education // 学历\n" +
                 "  degree // 学位\n" +
                 "  beginDate // 起始日期 yyyy-MM-dd\n" +
-                "  endDate // 终止日期 yyyy-MM-dd\n" +
+                "  endDate // 终止日期 格式 yyyy-MM-dd 如果是至今不填充 \n" +
                 "// 教育经历结束\n" +
                 "//家庭状况开始\n" +
                 "xgsResumeHome //家庭状况 数组\n" +

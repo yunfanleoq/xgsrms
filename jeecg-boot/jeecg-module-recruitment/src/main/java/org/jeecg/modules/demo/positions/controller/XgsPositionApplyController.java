@@ -188,6 +188,20 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 	 }
 
 	 /**
+	  *   在线申请添加岗位信息
+	  *
+	  * @param xgsPositionApplyVO
+	  * @return
+	  */
+	 @AutoLog(value = "岗位申请-获取岗位信息")
+	 @ApiOperation(value="岗位申请-获取岗位信息", notes="岗位申请-获取岗位信息")
+	 @PostMapping(value = "/getPositionApply")
+	 public Result<XgsPositionApplyVO> getPositionApply(@RequestBody XgsPositionApplyVO xgsPositionApplyVO) {
+		 XgsPositionApplyVO resumtInfo = xgsPositionApplyService.getPositionApply(xgsPositionApplyVO);
+		 return Result.OK("获取岗位信息成功！", resumtInfo);
+	 }
+
+	 /**
 	  *   在线申请添加岗位信息 检查岗位是否已申请过了
 	  *
 	  * @param xgsPositionApplyVO

@@ -325,9 +325,11 @@
         }
       }
     }
+    // 附件路径
+    model.value.resumeFile = formData.value.filePath;
     let params = {
       xgsPositionApply: model.value,
-      resumeFormData,
+      xgsResumeBasePage: resumeFormData,
     };
     doPositionApply(params)
       .then((res) => {

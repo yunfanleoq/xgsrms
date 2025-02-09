@@ -58,10 +58,10 @@
         </a-form>
         <!--        //此处引入简历组件，展示简历填报页面-->
         <div>
-          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeFGForm v-else-if="formData.positionType === '副高级以上岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
+          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
+          <xgsResumeFGForm v-else-if="formData.positionType === '副高级以上岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
+          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
             未知的 positionType
@@ -84,7 +84,7 @@
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { getValueType } from '/@/utils';
-  import { saveOrUpdate } from '../XgsPositionApply.api';
+  import { saveOrUpdate, getPositionApplyInfo } from '../XgsPositionApply.api';
   import { Form } from 'ant-design-vue';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   const positionApplyStore = usePositionApplyStoreWithOut();
@@ -140,13 +140,6 @@
   });
 
   const initFormData = async () => {
-    resumeFormData.value = {
-      userName: formData.value.userName,
-      resumeName: formData.value.resumeName,
-      resumeId: formData.value.resumeId,
-      dataId: formData.value.resumeId,
-      disabled: formData.value.disabled,
-    };
   };
   onMounted(() => {
     // initFormData();
@@ -162,14 +155,15 @@
 
   // 表单禁用
   const disabled = computed(() => {
-    if (props.formBpm === true) {
-      if (props.formData.disabled === false) {
-        return false;
-      } else {
-        return true;
-      }
-    }
-    return props.formDisabled;
+    return false;
+    // if (props.formBpm === true) {
+    //   if (props.formData.disabled === false) {
+    //     return false;
+    //   } else {
+    //     return true;
+    //   }
+    // }
+    // return props.formDisabled;
   });
 
   //页面完全加载完成并 显示一秒后 打印 formData，
@@ -214,36 +208,16 @@
    * 编辑
    */
   function edit(record) {
-    console.log('edit>>>>>>>>>', record);
     nextTick(() => {
       resetFields();
-      let tmpData = {};
-      record.realname = userStore.getUserInfo.realname;
-      record.username = userStore.getUserInfo.username;
-
-      console.log('record', record);
-
-      tmpData['positionDept'] = record.positionDept;
-      tmpData['positionName'] = record.positionName;
-      tmpData['positionType'] = record.positionType;
-      tmpData['resumeName'] = record.realname + record.username + '_' + record.positionName;
-      tmpData['userName'] = record.realname;
-      tmpData['resumeId'] = '';
-
-      console.log('edit>>>>>positionDept>>>>', record.positionDept, '<<<<<<<', tmpData['positionName']);
-      console.log('tmpData', tmpData);
-      // Object.keys(formData).forEach((key) => {
-      //   if(record.hasOwnProperty(key)){
-      //     tmpData[key] = record[key]
-      //   }
-      // })
-      //赋值
-      Object.assign(formData.value, tmpData);
-      //
-      // formData.value = tmpData;
-      console.log('formData', formData);
+      Object.assign(formData.value, record);
+      getPositionApplyInfo({ xgsPositionApply: record }).then((data) => {
+        Object.assign(formData.value, data.xgsPositionApply);
+        resumeFormData.value.dataId = data.xgsPositionApply.resumeId;
+        // Object.assign(resumeFormData.value, data.xgsResumeBasePage);
+      });
     });
-    console.log('edit>>>>end>>>>>', formData);
+    console.log('edit>>>>', formData);
   }
 
   /**

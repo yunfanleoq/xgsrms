@@ -24,4 +24,10 @@ public interface IXgsPositionApplyService extends IService<XgsPositionApply> {
      * @return
      */
     Boolean checkHasApplied(XgsPositionApplyVO xgsPositionApplyVO);
+
+    /**
+     * 获取 岗位信息
+     * @param xgsPositionApplyVO
+     */
+    XgsPositionApplyVO getPositionApply(XgsPositionApplyVO xgsPositionApplyVO);
 }
