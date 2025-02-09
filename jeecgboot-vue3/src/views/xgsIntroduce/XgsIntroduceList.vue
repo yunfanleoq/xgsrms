@@ -122,7 +122,7 @@
       // 调用批量删除函数删除所有数据
       batchDelete({ ids: allIds }, handleSuccess, false);
       //获取数据
-      const response = await axios.get('http://www.iie.cas.cn/jggk2020/dwjj2020/');
+      const response = await axios.get('/iie/jggk2020/dwjj2020/');
       const parser = new DOMParser();
       const doc = parser.parseFromString(response.data, 'text/html');
       const targetDiv = doc.querySelector('div.t3d');
@@ -139,7 +139,7 @@
         await saveOrUpdate(record, false); // false 表示新增
         await reload();
       }
-      const response1 = await axios.get('http://www.iie.cas.cn/jggk2020/ysfm2020/');
+      const response1 = await axios.get('/iie/jggk2020/ysfm2020/');
       const parser1 = new DOMParser();
       const doc1 = parser1.parseFromString(response1.data, 'text/html');
       const targetDiv1 = doc1.querySelector('div.new-graphics');

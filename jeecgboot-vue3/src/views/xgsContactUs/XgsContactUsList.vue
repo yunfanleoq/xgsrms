@@ -119,7 +119,7 @@
       // 调用批量删除函数删除所有数据
       batchDelete({ ids: allIds }, handleSuccess, false);
       //获取数据
-      const response = await axios.get('https://www.iie.ac.cn/lxwm/');
+      const response = await axios.get('/iie/lxwm/');
       const parser = new DOMParser();
       const doc = parser.parseFromString(response.data, 'text/html');
       const targetDiv = doc.querySelector('div.list-news.t3d');

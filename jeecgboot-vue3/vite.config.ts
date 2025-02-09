@@ -8,6 +8,9 @@ import { createProxy } from './build/vite/proxy';
 import { wrapperEnv } from './build/utils';
 import { createVitePlugins } from './build/vite/plugin';
 import { OUTPUT_DIR } from './build/constant';
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
 
 function pathResolve(dir: string) {
   return resolve(process.cwd(), '.', dir);
@@ -19,6 +22,7 @@ const __APP_INFO__ = {
   lastBuildTime: dayjs().format('YYYY-MM-DD HH:mm:ss'),
 };
 
+// @ts-ignore
 export default ({ command, mode }: ConfigEnv): UserConfig => {
   const root = process.cwd();
 
@@ -79,7 +83,14 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       https: false,
       port: VITE_PORT,
       // Load proxy configuration from .env
-      proxy: createProxy(VITE_PROXY),
+      proxy: {
+        ...createProxy(VITE_PROXY),
+        '/iie': {
+          target: 'https://www.iie.ac.cn',
+          changeOrigin: true, // 开启跨域
+          rewrite: (path) => path.replace(/^\/iie/, '')
+        }
+      },
       // 合并 server 配置
       ...serverOptions,
     },
