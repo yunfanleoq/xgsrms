@@ -28,8 +28,7 @@
           <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
       </template>
       <!--字段回显插槽-->
-      <template v-slot:bodyCell="{ column, record, index, text }">
-      </template>
+      <template v-slot:bodyCell="{ column, record, index, text }">      </template>
       </BasicTable>
       <!-- 表单区域 -->
       <XgsFavoriteJobModal @register="registerModal" @success="handleSuccess"></XgsFavoriteJobModal>

@@ -40,7 +40,7 @@
   <XgsPositionApplyModal ref="registerModalRef" :form-data="record" :formBpm="true" />
 </template>
 
-<script setup lang="ts">
+<script setup lang="ts" name="PositionDetail">
   import { ref, onMounted, computed } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { getJobById } from '@/api/xgsrms/home';
@@ -52,6 +52,10 @@
   // import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
   import { message } from 'ant-design-vue';
   import { useModal } from '@/components/Modal';
+  // 接收父组件传递的参数，获取职位 ID,当id变化时，重新获取职位信息
+  const props = defineProps({
+      id: { type: String, default: '' },
+    });
 
   const registerModalRef = ref();
   const positionApplyStore = usePositionApplyStoreWithOut();
@@ -73,7 +77,9 @@
   const userStore = useUserStore();
   const goBack = () => {
     // router.go(-1); // 返回上一页
-    router.push({ name: 'homePositions' });
+    router.push({ name: 'homePositions',  query: { showPositionList: 'true' }});
+
+
   };
 
   console.log(jobId);

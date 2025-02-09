@@ -10,11 +10,11 @@ export const columns: BasicColumn[] = [
     align:"center",
     dataIndex: 'journalismHead'
    },
-   {
-    title: '新闻内容',
-    align:"center",
-    dataIndex: 'journalismText',
-   },
+   // {
+   //  title: '新闻内容',
+   //  align:"center",
+   //  dataIndex: 'journalismText',
+   // },
    {
     title: '新闻类型',
     align:"center",

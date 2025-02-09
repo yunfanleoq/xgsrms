@@ -73,7 +73,7 @@
           <xgsResumeTJForm ref="formTJ" v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="true" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
-            未知的 positionType
+            未知的岗位类型
           </div>
         </div>
         <!--        <component :is="currentComponent" :form-data="formData" :form-bpm="formBpm" />-->
@@ -90,6 +90,9 @@
   import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
   import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
 
+  import { useUserStore } from '/@/store/modules/user';
+  import JUpload from '../../../components/Form/src/jeecg/components/JUpload/JUpload.vue';
+  import {render} from "@/utils/common/renderUtils";
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { getValueType } from '/@/utils';
@@ -176,76 +179,10 @@
       });
   }
   function fillResumeInfo(resumeData) {
-    console.log(resumeData);
-    // {
-    //   "教育背景": {
-    //   "学校": "上海大学",
-    //     "时间": "2012.09-2016.07",
-    //     "学位": "本科",
-    //     "主修课程": [
-    //     "基础会计学",
-    //   ]
-    // },
-    //   "工作经验": [
-    //   {
-    //     "时间": "2016.03-至今",
-    //     "公司": "贵泽实业有限公司",
-    //     "职责": [
-    //       "负责本部的行政人事管理和日常事务，协助总监搞好各部门之间的综合协调，落实公司规章制度，沟通内外联系，保证上情下达和下情上报，负责对会议文件决定的事项进行催办、查办和落实，负责全公司组织系统及工作职责研讨和修订。",
-    //       "编制公司人事管理制度，规避各项人事风险。",
-    //       "负责招聘工作，制定公司的人力资源发展计划，确保人才梯队发展和人才储备及培养。",
-    //       "督导公司各项行政、人事制度的执行，以及各项行政人事工作的进展情况，并采取必要的措施。"
-    //     ],
-    //     "职位": "行政主管"
-    //   },
-    //   {
-    //     "时间": "2015.03-2016.01",
-    //     "公司": "一路网络科技有限公司",
-    //     "职责": [
-    //       "负责中心的接待工作；",
-    //       "负责中心的行政事务及前台管理；",
-    //       "协助处理客户服务及简单客诉；",
-    //       "负责中心简单财务管理，资产管控；"
-    //     ],
-    //     "职位": "行政助理"
-    //   }
-    // ]
-    // }
-    // {title: '本人照片', align: 'center', dataIndex: 'photograph', customRender: render.renderImage,},
-    // {title: '性别', align: 'center', dataIndex: 'sex_dictText',},
-    // {title: '籍贯', align: 'center', dataIndex: 'nativePlace',},
-    // {title: '出生年月', align: 'center', dataIndex: 'birthday', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
-    // {title: '民族', align: 'center', dataIndex: 'nation',},
-    // {title: '身份证号', align: 'center', dataIndex: 'idNumber',},
-    // {title: '政治面貌', align: 'center', dataIndex: 'politicBackground',},
-    // {title: '户口所在地', align: 'center', dataIndex: 'hukou',},
-    // {title: '是否应届毕业生', align: 'center', dataIndex: 'yjbys_dictText',},
-    // {title: '毕业院校', align: 'center', dataIndex: 'graduateCollege',},
-    // {title: '学位', align: 'center', dataIndex: 'degree',},
-    // {title: '专业', align: 'center', dataIndex: 'profession',},
-    // {title: '毕业时间', align: 'center', dataIndex: 'graduateDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
-    // {title: '参加工作时间', align: 'center', dataIndex: 'workDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
-    // {title: '目前工作单位', align: 'center', dataIndex: 'workUnit',},
-    // {title: '档案所在单位', align: 'center', dataIndex: 'personFilesUnit',},
-    // {title: '现行政职务', align: 'center', dataIndex: 'adminPosition',},
-    // {title: '任职时间', align: 'center', dataIndex: 'adminPositionDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
-    // {title: '现岗位', align: 'center', dataIndex: 'professionLevel',},
-    // {title: '聘任时间', align: 'center', dataIndex: 'professionLevelDate', customRender: ({ text }) => {text = !text ? '' : text.length > 10 ? text.substr(0, 10) : text;return text;},},
+    // console.log(resumeData);
     // 在这里根据解析结果填充表单数据
     const pdfData = ref({
-      name: resumeData['基本信息']['姓名'],
-      email: resumeData['基本信息']['邮箱'],
-      mobile: resumeData['基本信息']['手机'],
-      education: resumeData['基本信息']['学历'],
-      // formData.value.userName = resumeData['基本信息']['姓名'];
-      // formData.value.userName = resumeData['基本信息']['邮箱'];
-      // formData.value.userName = resumeData['基本信息']['手机'];
-      // formData.value.userName = resumeData['基本信息']['微信'];
-      // formData.value.userName = resumeData['基本信息']['地址'];
-      // formData.value.userName = resumeData['基本信息']['学历'];
-      // formData.value.userName = resumeData['基本信息']['年龄'];
-      // formData.value.userName = resumeData['基本信息']['求职意向'];
-      // formData.value.positionName = resumeData.position;
+      ...resumeData,
     });
     if (formData.value.positionType === '普通岗位') {
       formPT.value.setDataByPDF(pdfData);
@@ -298,45 +235,18 @@
     return props.formDisabled;
   });
 
-  // //页面完全加载完成并 显示一秒后 打印 formData，
-  // setTimeout(() => {
-  //   nextTick(() => {
-  //     console.log('...............................props', props);
-  //     console.log('》》》》》》》》》》》》》》》props.formData', props.formData);
-  //     // Object.assign(formData , props.formData);
-  //     formData.value.positionType = props.formData.category || '普通岗位';
-  //     console.log('===============================');
-  //     formData.value.resumeId = props.formData.resumeId || '';
-  //     console.log('-------------------------------');
-  //     formData.value.positionId = props.formData.positionId || '';
-  //     formData.value.applyId = props.formData.applyId || '';
-  //     formData.value.userName = props.formData.userName || '';
-  //     formData.value.positionName = props.formData.positionName || '';
-  //     formData.value.positionDept = props.formData.positionDept || '';
-  //     formData.value.status = props.formData.status || '';
-  //     formData.value.resumeName = props.formData.resumeName || '';
-  //     formData.value.mark = props.formData.mark || '';
-  //
-  //     console.log('》》》》》》》》》》》》》》》formData', formData);
-  //     // initFormdata();
-  //   });
-  // }, 1000);
   /**
    * 新增
    */
   function add(record) {
     // 先根据 岗位id，userid 查询是否已存在，如果存在，则直接编辑，否则新增
-    console.log('add111111111', record);
-
+    // console.log('add111111111', record);
     // positionApplyStore.currPositionApply = record;
     // record = positionStore.currApplyPosition;
-    console.log('add222222222', positionApplyStore.currPositionApply);
+    // console.log('add222222222', positionApplyStore.currPositionApply);
+    formData.value.positionType = '';
     edit(record);
   }
-
-  import { useUserStore } from '/@/store/modules/user';
-  import JUpload from '../../../components/Form/src/jeecg/components/JUpload/JUpload.vue';
-  import {render} from "@/utils/common/renderUtils";
   const userStore = useUserStore();
   /**
    * 编辑
@@ -348,6 +258,7 @@
       record.realname = userStore.getUserInfo.realname;
       record.username = userStore.getUserInfo.username;
 
+      tmpData['filePath'] = '';
       tmpData['positionDept'] = record.dept_dictText;
       tmpData['positionName'] = record.positionName;
       tmpData['positionType'] = record.category;

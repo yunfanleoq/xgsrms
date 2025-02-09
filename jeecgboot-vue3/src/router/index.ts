@@ -3,6 +3,7 @@ import type { App } from 'vue';
 
 import { basicRoutes } from './routes';
 import { createRouter as createVueRouter, destroyRouter, router } from './router';
+import {createWebHistory} from "vue-router";
 
 // 白名单应该包含基本静态路由
 const WHITE_NAME_LIST: string[] = [];
@@ -18,6 +19,7 @@ console.log('>>>>>>>>>>>>>>>WHITE_NAME_LIST', WHITE_NAME_LIST);
  */
 export function createRouter() {
   const router = createVueRouter({
+    history: createWebHistory(),
     routes: basicRoutes as unknown as RouteRecordRaw[],
     strict: true,
     scrollBehavior: () => ({ left: 0, top: 0 }),

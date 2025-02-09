@@ -177,7 +177,7 @@ public class ChatServiceImpl implements ChatService {
             extraJson.put("temperature", 0.5);
 //            extraJson.put("max_tokens", 50);
             ChatCompletionRequest chatCompletionRequest = ChatCompletionRequest.builder()
-                    .model(Constants.ModelChatGLM4)
+                    .model("GLM-4-Plus")
                     .stream(Boolean.TRUE)
                     .invokeMethod(Constants.invokeMethod)
                     .messages(msgHistory)

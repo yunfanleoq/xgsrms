@@ -1,5 +1,6 @@
 package org.jeecg.modules.demo.positions.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
@@ -84,5 +85,16 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         xgsPositionApply.setResumeId(xgsResumeBase.getId());
         xgsPositionApply.setResumeName(xgsResumeBase.getResumeName());
         save(xgsPositionApply);
+    }
+
+    @Override
+    public Boolean checkHasApplied(XgsPositionApplyVO xgsPositionApplyVO) {
+        XgsPositionApply xgsPositionApply = xgsPositionApplyVO.getXgsPositionApply();
+        QueryWrapper<XgsPositionApply> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by", xgsPositionApply.getCreateBy());
+        queryWrapper.eq("position_type", xgsPositionApply.getPositionType());
+        queryWrapper.eq("position_dept", xgsPositionApply.getPositionDept());
+        long count = count(queryWrapper);
+        return count > 0;
     }
 }

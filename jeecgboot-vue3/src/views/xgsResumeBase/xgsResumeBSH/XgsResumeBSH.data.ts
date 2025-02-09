@@ -147,7 +147,7 @@ export const columns: BasicColumn[] = [
     dataIndex: 'technicalPosition',
   },
   {
-    title: '在站期间研究内容有无涉密内容',
+    title: '在站期间有无涉密',
     align: 'center',
     dataIndex: 'secretText_dictText',
   },
@@ -364,7 +364,7 @@ export const formSchema: FormSchema[] = [
     dynamicDisabled: false,
   },
   {
-    label: '博士学位证书 获得时间',
+    label: '博士学位时间',
     field: 'certificateTime',
     dynamicDisabled: false,
     component: 'DatePicker',
@@ -379,7 +379,7 @@ export const formSchema: FormSchema[] = [
     dynamicDisabled: false,
   },
   {
-    label: '在站期间研究内容有无涉密内容',
+    label: '有无涉密内容',
     field: 'secretText',
     dynamicDisabled: false,
     component: 'JDictSelectTag',
@@ -408,18 +408,18 @@ export const formSchema: FormSchema[] = [
   //       fileMax: 0
   //     },
   // },
-  {
-    label: '研究室意见',
-    field: 'labIdea',
-    dynamicDisabled: false,
-    component: 'Input',
-    colProps: {
-      span: 24,
-    },
-    componentProps: {
-      dictCode: '研究室意见',
-    },
-  },
+  // {
+  //   label: '研究室意见',
+  //   field: 'labIdea',
+  //   dynamicDisabled: false,
+  //   component: 'Input',
+  //   colProps: {
+  //     span: 24,
+  //   },
+  //   componentProps: {
+  //     dictCode: '研究室意见',
+  //   },
+  // },
   // {
   //   label: '研究室负责人签字',
   //   field: 'labSignature',
@@ -428,20 +428,20 @@ export const formSchema: FormSchema[] = [
   //       fileMax: 0
   //     },
   // },
-  {
-    label: '人力资源处意见',
-    field: 'resourcesIdea',
-    component: 'InputTextArea',
-    colProps: {
-      span: 24,
-    },
-    rules: [
-      {
-        required: true,
-        message: '请填写人力资源处意见',
-      },
-    ],
-  },
+  // {
+  //   label: '人力资源处意见',
+  //   field: 'resourcesIdea',
+  //   component: 'InputTextArea',
+  //   colProps: {
+  //     span: 24,
+  //   },
+  //   rules: [
+  //     {
+  //       required: false,
+  //       message: '请填写人力资源处意见',
+  //     },
+  //   ],
+  // },
   // {
   //   label: '人力资源处签字',
   //   field: 'resourceSsignature',

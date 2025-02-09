@@ -15,6 +15,7 @@
       </ul>
     </aside>
     <main class="content">
+
       <section v-if="showAnnouncementList" class="announcement-list">
         <h2>招聘公告</h2>
         <ul>
@@ -36,7 +37,7 @@
           <button @click="nextPage" :disabled="announce_currentPage === announce_totalPages">下一页</button>
         </div>
       </section>
-      <div v-else>
+      <div v-else-if="showPositionList">
         <section class="filters">
           <div class="categories">
             <button v-for="dept in depts" :key="dept.id" @click="filterDept(dept)" :class="{ active: selectedDept.id === dept.id }">
@@ -94,6 +95,9 @@
           </div>
         </div>
       </div>
+      <div>
+        <router-view></router-view>
+      </div>
     </main>
   </div>
 </template>
@@ -103,14 +107,23 @@
   import { ref, computed, onMounted, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { usePositionStore } from '@/store/modules/positions';
-  import { getDictItems, getPositionList, getDeptList } from '@/api/xgsrms/home';
+  import {getDictItems, getPositionList, getDeptList, getJobById} from '@/api/xgsrms/home';
   import Line from "@/views/demo/charts/Line.vue";
   import {defHttp} from "@/utils/http/axios";
+  // import positionDetail from "@/views/home/positionDetail.vue"
+  import PositionDetail from "@/views/home/positionDetail.vue";
+  import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
 
+  const positionApplyStore = usePositionApplyStoreWithOut();
+
+  // export default {
+  //   components: {PositionDetail}
+  // }
   const positionStore = usePositionStore();
 
   const jobCategories = ref([]);
-
+  const showPositionDetail = ref(false);
+  const selectedPosition = ref({});
   // 招聘公告相关数据
   const announcements = ref([]); // 用于存储招聘公告数据
   const showAnnouncementList = ref(false); // 控制招聘公告列表的显示
@@ -170,11 +183,44 @@
     router.push({ name: 'announcementDetail', params: { id: announcementId } });
   };
 
-  // -----------------
+  // 切换招聘公告页码 showPositionList
+  const showPositionList = ref(true);
+  // 从router 获取id 参数
+  const router = useRouter();
+  watch(
+    () => router.currentRoute.value.query.showPositionList,
+    (newId) => {
+      if (newId) {
+        showPositionList.value = true;
+      }
+    }
+  );
 
-  //
-  const goToPositionDetail = (positionId: number) => {
+  const goToPositionDetail = async (positionId: number) => {
+    console.log('Navigating to positionDetail with id:', positionId);
+    selectedPosition.value = {id: positionId};
+    // const fetchCurrApplyPosition = async () => {
+    try {
+      let params = {
+        id: positionId,
+      };
+      const response = await getJobById(params);
+      // job.value = response.result.records[0];
+      // 将job存pinia
+      // 获取 Pinia store 实例
+
+      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
+      positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
+      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
+    } catch (error) {
+      console.error('获取职位信息失败:', error);
+    }
+    // };
+    // 显示职位详情组件，并传递职位信息
+    showPositionDetail.value = true;
     router.push({ name: 'positionDetail', params: { id: positionId } });
+    showPositionList.value = false;
+    console.log('Navigation completed.');
   };
 
   const filterJobCategory = (category) => {
@@ -388,7 +434,7 @@
   });
 
   // 路由操作
-  const router = useRouter();
+  // const router = useRouter();
   const goToLoginPage = () => {
     router.push('/login');
   };
