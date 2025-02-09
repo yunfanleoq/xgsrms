@@ -133,7 +133,8 @@
   //渲染流程表单数据
   const queryByIdUrl = '/xgsResume/xgsResumeBSH/queryById';
   async function initFormData() {
-    if (props.formBpm === true && props.formData.dataId) {
+    console.log(111, props.formData);
+    if (props.formData.dataId) {
       await reset();
       let params = { id: props.formData.dataId };
       const data = await defHttp.get({ url: queryByIdUrl, params });

@@ -5,6 +5,7 @@ const { createConfirm } = useMessage();
 
 enum Api {
   list = '/positions/xgsPositionApply/list',
+  getPositionApply = '/positions/xgsPositionApply/getPositionApply',
   save = '/positions/xgsPositionApply/add',
   edit = '/positions/xgsPositionApply/edit',
   deleteOne = '/positions/xgsPositionApply/delete',
@@ -26,6 +27,14 @@ export const getImportUrl = Api.importExcel;
  * @param params
  */
 export const list = (params) => defHttp.get({ url: Api.list, params });
+
+/**
+ * 获取岗位申请信息
+ * @param params
+ */
+export const getPositionApplyInfo = (params) => {
+  return defHttp.post({ url: Api.getPositionApply, params });
+};
 
 /**
  * 删除单个

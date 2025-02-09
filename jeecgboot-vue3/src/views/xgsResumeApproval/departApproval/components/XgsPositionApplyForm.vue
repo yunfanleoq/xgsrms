@@ -214,6 +214,7 @@
       getPositionApplyInfo({ xgsPositionApply: record }).then((data) => {
         Object.assign(formData.value, data.xgsPositionApply);
         resumeFormData.value.dataId = data.xgsPositionApply.resumeId;
+        // cons
         // Object.assign(resumeFormData.value, data.xgsResumeBasePage);
       });
     });

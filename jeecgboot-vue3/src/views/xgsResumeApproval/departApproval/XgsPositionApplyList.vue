@@ -20,7 +20,7 @@
               </a-menu-item>
             </a-menu>
           </template>
-          <a-button v-auth="'resume:xgs_position_apply:deleteBatch'"
+          <a-button v-auth="'positions:xgs_position_apply:deleteBatch'"
             >批量操作
             <Icon icon="mdi:chevron-down" />
           </a-button>

@@ -133,7 +133,7 @@
   //渲染流程表单数据
   const queryByIdUrl = '/xgsResume/xgsResumeTJ/queryById';
   async function initFormData() {
-    if (props.formBpm === true && props.formData.dataId) {
+    if (props.formData.dataId) {
       await reset();
       let params = { id: props.formData.dataId };
       const data = await defHttp.get({ url: queryByIdUrl, params });
@@ -195,14 +195,14 @@
     return new Promise((resolve, reject) => {
       resolve(values);
     });
-    xgsResumeWorksTable.dataSource = data.value.xgsResumeWorks;
-    xgsResumeEdusTable.dataSource = data.value.xgsResumeEdus;
-    xgsResumeHomeTable.dataSource = data.value.xgsResumeHome;
   }
   function setDataByPDF(data) {
     setFieldsValue({
       ...data.value,
     });
+    xgsResumeWorksTable.dataSource = data.value.xgsResumeWorks;
+    xgsResumeEdusTable.dataSource = data.value.xgsResumeEdus;
+    xgsResumeHomeTable.dataSource = data.value.xgsResumeHome;
   }
   defineExpose({
     handleSubmit,
