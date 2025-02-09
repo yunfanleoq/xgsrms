@@ -1,6 +1,6 @@
 <template>
   <div class="p-4">
-<!--    <ChartGroupCard class="enter-y" :loading="loading" type="bdc" />-->
+    <ChartGroupCard class="enter-y" :loading="loading" type="bdc" />
     <div class="!my-4 enter-y">
       <a-card :loading="loading" :class="{ 'anty-list-cust': true }" :bordered="false">
         <a-tabs v-model:activeKey="indexBottomTab" size="large" :tab-bar-style="{ marginBottom: '24px', paddingLeft: '16px' }">

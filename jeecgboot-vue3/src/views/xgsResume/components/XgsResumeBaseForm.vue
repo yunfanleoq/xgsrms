@@ -118,7 +118,7 @@
       }
       return false
     });
-    
+
     //表单配置
     const [registerForm, {setProps,resetFields, setFieldsValue, validate}] = useForm({
         labelWidth: 150,
