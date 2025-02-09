@@ -195,6 +195,9 @@
     return new Promise((resolve, reject) => {
       resolve(values);
     });
+    xgsResumeWorksTable.dataSource = data.value.xgsResumeWorks;
+    xgsResumeEdusTable.dataSource = data.value.xgsResumeEdus;
+    xgsResumeHomeTable.dataSource = data.value.xgsResumeHome;
   }
   function setDataByPDF(data) {
     setFieldsValue({
