@@ -13,12 +13,12 @@ export const columns: BasicColumn[] = [
   {
     title: '审批环节',
     align: 'center',
-    dataIndex: 'approvalNode_dictText',
+    dataIndex: 'approvalNode',
   },
   {
     title: '审批结果',
     align: 'center',
-    dataIndex: 'approvalStatus_dictText',
+    dataIndex: 'approvalStatus',
   },
   {
     title: '办理意见',

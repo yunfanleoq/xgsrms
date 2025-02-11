@@ -24,7 +24,11 @@
     setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
     isUpdate.value = !!data?.isUpdate;
     isDetail.value = !!data?.showFooter;
-    positionApply.value = data.record;
+    positionApply.value = null;
+    // flowListRef.value.reload();
+    setTimeout(() => {
+      positionApply.value = data.record;
+    }, 100);
   });
   //设置标题
   const title = ref('办理过程');

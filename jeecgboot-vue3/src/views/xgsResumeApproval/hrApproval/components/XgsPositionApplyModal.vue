@@ -81,6 +81,17 @@
   }
 
   /**
+   * 编辑
+   * @param record
+   */
+  function detail(record) {
+    title.value = '详情';
+    visible.value = true;
+    nextTick(() => {
+      registerForm.value.detail(record);
+    });
+  }
+  /**
    * 确定按钮点击事件
    */
   function handleOk() {
@@ -106,6 +117,7 @@
     add,
     addJob,
     edit,
+    detail,
     disableSubmit,
   });
 </script>

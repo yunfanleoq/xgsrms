@@ -64,7 +64,7 @@
           <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
-            未知的 positionType
+            载入中...
           </div>
         </div>
         <!--        <component :is="currentComponent" :form-data="formData" :form-bpm="formBpm" />-->
@@ -193,9 +193,6 @@
    * 新增
    */
   function add(record) {
-    // 先根据 岗位id，userid 查询是否已存在，如果存在，则直接编辑，否则新增
-    console.log('add111111111', record);
-
     // positionApplyStore.currPositionApply = record;
     // record = positionStore.currApplyPosition;
     console.log('add222222222', positionApplyStore.currPositionApply);
@@ -208,17 +205,54 @@
    * 编辑
    */
   function edit(record) {
+    console.log('edit>>>>>>>>>', record);
     nextTick(() => {
       resetFields();
-      Object.assign(formData.value, record);
+      let tmpData = {};
+      record.realname = userStore.getUserInfo.realname;
+      record.username = userStore.getUserInfo.username;
+
+      console.log('record', record);
+
+      tmpData['positionDept'] = record.positionDept;
+      tmpData['positionName'] = record.positionName;
+      tmpData['positionType'] = record.positionType;
+      tmpData['resumeName'] = record.realname + record.username + '_' + record.positionName;
+      tmpData['userName'] = record.realname;
+      tmpData['resumeId'] = '';
+
+      console.log('edit>>>>>positionDept>>>>', record.positionDept, '<<<<<<<', tmpData['positionName']);
+      console.log('tmpData', tmpData);
+      // Object.keys(formData).forEach((key) => {
+      //   if(record.hasOwnProperty(key)){
+      //     tmpData[key] = record[key]
+      //   }
+      // })
+      //赋值
+      Object.assign(formData.value, tmpData);
+      //
+      // formData.value = tmpData;
+      console.log('formData', formData);
+    });
+    console.log('edit>>>>end>>>>>', formData);
+  }
+
+  /**
+   * 编辑
+   */
+  function detail(record) {
+    nextTick(() => {
+      resetFields();
+      // Object.assign(formData.value, record);
       getPositionApplyInfo({ xgsPositionApply: record }).then((data) => {
         Object.assign(formData.value, data.xgsPositionApply);
         resumeFormData.value.dataId = data.xgsPositionApply.resumeId;
+        formData.value.disabled = true;
+        resumeFormData.value.disabled = true;
         // cons
         // Object.assign(resumeFormData.value, data.xgsResumeBasePage);
       });
     });
-    console.log('edit>>>>', formData);
   }
 
   /**
@@ -272,6 +306,7 @@
   defineExpose({
     add,
     edit,
+    detail,
     submitForm,
   });
 </script>
