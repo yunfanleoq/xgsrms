@@ -15,6 +15,12 @@ const ListMixin = {
 				  time : null
 				}
 			},
+			positionsList:{
+				page:{
+				  num : 0 ,
+				  size : 1000 
+				},
+			},
 			queryParam:{
 				pageNo:1,
 				pageSize:8
@@ -32,9 +38,14 @@ const ListMixin = {
 		},
 		/*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
 		upCallback(page) {
+			console.log("upCallback+++==page::",page)
 			let param = this.queryParam
 				param.pageNo= page.num,
 				param.pageSize= page.size
+			
+			if(page.status == null || page.status == undefined || page.status == ""){
+				param.status = "招聘中"
+			}
 			
 			if(page.num == 1){
 				this.list = [];
