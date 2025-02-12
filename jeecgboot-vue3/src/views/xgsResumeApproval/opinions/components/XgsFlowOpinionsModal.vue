@@ -5,14 +5,14 @@
         <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
       </a-tab-pane>
       <a-tab-pane key="2" tab="简历信息" force-render>
-        <XgsPositionApplyForm ref="registerFormResume" @ok="submitCallback" :formData="formDataResume" :formDisabled="true" :formBpm="false" />
+        <XgsPositionApplyForm ref="registerFormResume" @ok="submitCallback" :formDisabled="true" :formBpm="false" />
       </a-tab-pane>
     </a-tabs>
   </BasicModal>
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, unref } from 'vue';
+import {ref, computed, unref, nextTick} from 'vue';
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsFlowOpinions.data';
@@ -25,7 +25,6 @@
   const isDetail = ref(false);
   const activeKey = ref('1');
   const positionApply = ref({});
-  const formDataResume = ref({});
   const registerFormResume = ref();
   const userStore = useUserStore();
 
@@ -64,14 +63,11 @@
         parentId: data.record.id,
       });
     }
-    let resumeId = data.record.resumeId;
-    // await getResumeData({ id: resumeId }).then((data) => {
-    //   formDataResume.value = data;
-    // });
-    registerFormResume.value.edit(data.record);
+    registerFormResume.value.detail(data.record);
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
   });
+
   //设置标题
   const title = computed(() => (!unref(isUpdate) ? '审批' : !unref(isDetail) ? '详情' : '审批'));
   //表单提交事件

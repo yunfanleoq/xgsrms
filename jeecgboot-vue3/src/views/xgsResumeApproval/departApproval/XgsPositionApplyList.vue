@@ -142,7 +142,7 @@
     openListModal(true, {
       record,
       isUpdate: false,
-      showFooter: true,
+      showFooter: false,
     });
   }
   /**
@@ -150,7 +150,7 @@
    */
   function handleDetail(record: Recordable) {
     registerModal.value.disableSubmit = true;
-    registerModal.value.edit(record);
+    registerModal.value.detail(record);
   }
 
   /**

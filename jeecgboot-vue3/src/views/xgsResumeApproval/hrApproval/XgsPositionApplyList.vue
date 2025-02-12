@@ -43,7 +43,7 @@
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
-  import XgsPositionApplyModal from './components/XgsPositionApplyModal.vue';
+  import XgsPositionApplyModal from '../departApproval/components/XgsPositionApplyModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositionApply.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositionApply.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
@@ -146,11 +146,8 @@
    * 详情
    */
   function handleDetail(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: false,
-    });
+    registerModal.value.disableSubmit = true;
+    registerModal.value.detail(record);
   }
   /**
    * 删除事件

@@ -209,6 +209,9 @@
   }
 
   import { useUserStore } from '/@/store/modules/user';
+  import {
+    getPositionApplyInfo
+  } from "@/views/xgsResumeApproval/departApproval/XgsPositionApply.api";
   const userStore = useUserStore();
   /**
    * 编辑
@@ -244,6 +247,24 @@
       console.log('formData', formData);
     });
     console.log('edit>>>>end>>>>>', formData);
+  }
+
+  /**
+   * 编辑
+   */
+  function detail(record) {
+    nextTick(() => {
+      resetFields();
+      // Object.assign(formData.value, record);
+      getPositionApplyInfo({ xgsPositionApply: record }).then((data) => {
+        Object.assign(formData.value, data.xgsPositionApply);
+        resumeFormData.value.dataId = data.xgsPositionApply.resumeId;
+        formData.value.disabled = true;
+        resumeFormData.value.disabled = true;
+        // cons
+        // Object.assign(resumeFormData.value, data.xgsResumeBasePage);
+      });
+    });
   }
 
   /**
