@@ -24,12 +24,22 @@ const routes = [
 	{
 	    //注意：path必须跟pages.json中的地址对应，最前面别忘了加'/'哦
 	  path: '/pages/home/home',
+	  // path: '/pages/positions/xgsPositionsList',
 	  //aliasPath:'/',  //对于h5端你必须在首页加上aliasPath并设置为/
 	  name: 'home',
 	    meta: {
 	        title: '首页',
 	    },
 	},
+	
+	{
+	    path: '/pages/positions/xgsPositionsList',
+	    name: 'peoplelis',
+	    meta: {
+	        title: '个人中心',
+	    },
+	},
+	
     {
 	    path: '/pages/user/people',
         name: 'people',

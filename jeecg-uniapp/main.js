@@ -30,7 +30,8 @@ Vue.prototype.$http = http
 
 import home from './pages/home/home.vue'
 Vue.component('home',home)
-
+import xgsPositionsList from './pages/positions/xgsPositionsList.vue'
+Vue.component('xgsPositionsList',xgsPositionsList)
 
 import people from './pages/user/people.vue'
 Vue.component('people',people)

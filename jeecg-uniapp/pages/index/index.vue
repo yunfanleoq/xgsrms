@@ -2,6 +2,7 @@
 	<view>
 		<home :cur="PageCur" v-if="PageCur=='home'" :key="commponent1Key"></home>
 		<people v-if="PageCur=='people'" :key="commponent2Key"></people>
+		<xgsPositionsList :cur="PageCur" v-if="PageCur=='peoplelis'" :key="commponent3Key"></xgsPositionsList>
 		<view class="cu-bar tabbar bg-white shadow foot">
 			<view :class="PageCur=='home'?'action text-green':'action text-gray'" @click="NavChange" data-cur="home">
 				<view class='cuIcon-homefill'></view>主页

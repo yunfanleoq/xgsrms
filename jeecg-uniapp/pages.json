@@ -9,6 +9,10 @@
 			"style": {}
 		},
 		{
+			"path": "pages/positions/xgsPositionsList",
+			"style": {}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {}
 		},
