@@ -52,14 +52,14 @@ export const formSchema: FormSchema[] = [
       return true;
     },
   },
-  {
-    label: '审批环节',
-    field: 'approvalNode',
-    component: 'JDictSelectTag',
-    dynamicDisabled: ({ values }) => {
-      return true;
-    },
-  },
+  // {
+  //   label: '审批环节',
+  //   field: 'approvalNode',
+  //   component: 'JDictSelectTag',
+  //   dynamicDisabled: ({ values }) => {
+  //     return true;
+  //   },
+  // },
   {
     label: '审批结果',
     field: 'approvalStatus',
@@ -70,7 +70,7 @@ export const formSchema: FormSchema[] = [
     },
   },
   {
-    label: '办理意见',
+    label: '审批意见',
     field: 'opinions',
     component: 'InputTextArea',
   },

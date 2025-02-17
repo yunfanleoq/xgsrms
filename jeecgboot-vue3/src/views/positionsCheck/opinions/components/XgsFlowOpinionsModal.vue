@@ -6,7 +6,6 @@
       </a-tab-pane>
       <a-tab-pane key="2" tab="岗位信息" force-render>
         <XgsPositionsForm ref="registerFormPosition" @ok="submitCallback" :formDisabled="true" :formData="positionApply" :formBpm="false" />
-
       </a-tab-pane>
     </a-tabs>
   </BasicModal>
@@ -53,11 +52,6 @@ import {ref, computed, unref, nextTick} from 'vue';
     isDetail.value = !!data?.showFooter;
     positionApply.value = data.record;
     if (unref(isUpdate)) {
-      //表单赋值
-      await setFieldsValue({
-        ...data.record,
-      });
-    } else {
       await setFieldsValue({
         approvalUser: userStore.userInfo.realname,
         approvalNode: data.record.approvalNode,

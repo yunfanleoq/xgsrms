@@ -39,15 +39,13 @@
         return true;
       });
 
-      let formData = {};
       const queryByIdUrl = '/positions/xgsPositions/queryById';
       async function initFormData() {
-        console.log('props.formData', props.formData);
-        let params = { id: props.formData.dataId };
+        let params = { id: props.formData.id };
         const data = await defHttp.get({ url: queryByIdUrl, params });
-        formData = { ...data };
+        let formObj = { ...data };
         //设置表单的值
-        await setFieldsValue(formData);
+        await setFieldsValue(formObj);
         //默认是禁用
         await setProps({ disabled: formDisabled.value });
       }
