@@ -33,6 +33,9 @@ Vue.component('home',home)
 import xgsPositionsList from './pages/positions/xgsPositionsList.vue'
 Vue.component('xgsPositionsList',xgsPositionsList)
 
+import xgsPositionsForm from './pages/positions/xgsPositionsForm.vue'
+Vue.component('xgsPositionsForm',xgsPositionsForm)
+
 import people from './pages/user/people.vue'
 Vue.component('people',people)
 

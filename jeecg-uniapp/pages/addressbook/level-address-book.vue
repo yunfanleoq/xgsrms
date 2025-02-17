@@ -188,10 +188,7 @@ export default {
 			}
 		},
 		goMemberInfo: function (item){
-			console.log("item",item)
-			
 			let parmas = {...item}
-			console.log("parmas",parmas)
 			parmas.page='levelAddressBook'
 			this.$Router.push({name: 'addressDetail',params:parmas})
 		},

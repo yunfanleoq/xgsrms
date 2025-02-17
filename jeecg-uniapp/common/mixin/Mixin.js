@@ -38,7 +38,6 @@ const ListMixin = {
 		},
 		/*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
 		upCallback(page) {
-			console.log("upCallback+++==page::",page)
 			let param = this.queryParam
 				param.pageNo= page.num,
 				param.pageSize= page.size
@@ -50,7 +49,6 @@ const ListMixin = {
 			if(page.num == 1){
 				this.list = [];
 			}
-		 console.log("upCallback==param::",param)
 		 this.$http.get(this.url,{params:param}).then(res=>{
 		 	 console.log("upCallback请求返回res",res)
 		 	 if(res.data.success){

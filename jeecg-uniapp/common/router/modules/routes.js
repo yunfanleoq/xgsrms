@@ -39,6 +39,13 @@ const routes = [
 	        title: '个人中心',
 	    },
 	},
+	{
+	    path: '/pages/positions/xgsPositionsForm',
+	    name: 'positionsThis',
+	    meta: {
+	        title: '岗位详情',
+	    },
+	},
 	
     {
 	    path: '/pages/user/people',

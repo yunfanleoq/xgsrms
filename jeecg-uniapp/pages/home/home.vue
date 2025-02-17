@@ -94,6 +94,7 @@
 			    this.loadCount(0);
 			},
 			goPage(page){
+				console.log("page...",page)
 				if(!page){
 					return false;
 				}

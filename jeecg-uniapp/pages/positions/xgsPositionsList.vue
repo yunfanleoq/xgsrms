@@ -8,11 +8,14 @@
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="positionsList" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goHome">
+				<view class="cu-item" v-for="(item,index) in list" :key="index" @tap="goToDetail(item)" :formData="formData">
 					<view class="flex" style="width:100%">
                         <text class="text-lg" style="color: #000;">
                              {{ item.positionName}}
                         </text>
+						<text class="text-lg" style="color: #999; font-size: 12px;">
+						     {{ item.dept_dictText}}
+						</text>
 					</view>
 				</view>
 			</view>
@@ -32,13 +35,13 @@
 				CustomBar:this.CustomBar,
 				NavBarColor:this.NavBarColor,
 				url: "/positions/xgsPositions/list",
-				list:[]
+				list:[],
+				formData:{}
 			};
 		},
 		methods: {
 			goHome(){
                 this.$Router.push({name: "index"})
-				
 			},
 			// 请求后端接口的方法
 			fetchData() {
@@ -48,6 +51,15 @@
 					console.error("请求失败：", err); // 打印错误信息
 				});
 			},
+			goToDetail(item){
+				let parmas = {...item}
+				parmas.page = 'peoplelis'
+				parmas.htmlType = '招聘'
+				this.$Router.push({
+								name: "positionsThis", // 新页面的路由名称
+								params:parmas, // 通过 parmas 传递 id
+							});
+			}
 		}
 	}
 </script>
