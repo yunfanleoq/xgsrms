@@ -217,7 +217,7 @@
     }
     // };
     // 显示职位详情组件，并传递职位信息
-    showPositionDetail.value = true;
+    showPositionDetail.value = false;
     router.push({ name: 'positionDetail', params: { id: positionId } });
     showPositionList.value = false;
     console.log('Navigation completed.');
