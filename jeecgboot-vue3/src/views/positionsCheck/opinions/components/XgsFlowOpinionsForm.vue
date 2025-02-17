@@ -1,6 +1,6 @@
 <template>
   <div style="min-height: 400px">
-    <BasicForm @register="registerForm"></BasicForm>
+    <BasicForm @register="registerForm" />
     <div style="width: 100%; text-align: center" v-if="!formDisabled">
       <a-button @click="submitForm" pre-icon="ant-design:check" type="primary">提 交</a-button>
     </div>
@@ -8,15 +8,15 @@
 </template>
 
 <script lang="ts">
-  import { BasicForm, useForm } from '/src/components/Form';
+  import { BasicForm, useForm } from '/@/components/Form/index';
   import { computed, defineComponent } from 'vue';
-  import { defHttp } from '/src/utils/http/axios';
-  import { propTypes } from '/src/utils/propTypes';
-  import { getBpmFormSchema } from '../XgsPositions.data';
-  import { saveOrUpdate } from '../XgsPositions.api';
+  import { defHttp } from '/@/utils/http/axios';
+  import { propTypes } from '/@/utils/propTypes';
+  import { getBpmFormSchema } from '../XgsFlowOpinions.data';
+  import { saveOrUpdate } from '../XgsFlowOpinions.api';
 
   export default defineComponent({
-    name: 'XgsPositionsForm',
+    name: 'XgsFlowOpinionsForm',
     components: {
       BasicForm,
     },
@@ -29,7 +29,7 @@
         labelWidth: 150,
         schemas: getBpmFormSchema(props.formData),
         showActionButtonGroup: false,
-        baseColProps: { span: 12 },
+        baseColProps: { span: 24 },
       });
 
       const formDisabled = computed(() => {
@@ -40,9 +40,8 @@
       });
 
       let formData = {};
-      const queryByIdUrl = '/positions/xgsPositions/queryById';
+      const queryByIdUrl = '/resume/xgsFlowOpinions/queryById';
       async function initFormData() {
-        console.log('props.formData', props.formData);
         let params = { id: props.formData.dataId };
         const data = await defHttp.get({ url: queryByIdUrl, params });
         formData = { ...data };

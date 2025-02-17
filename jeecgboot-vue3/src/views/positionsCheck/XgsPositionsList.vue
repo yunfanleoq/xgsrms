@@ -45,7 +45,8 @@
       </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsPositionsModal @register="registerModal" @success="handleSuccess"></XgsPositionsModal>
+<!--    <XgsPositionsModal @register="registerModal" @success="handleSuccess"></XgsPositionsModal>-->
+    <XgsFlowOpinionsModal @register="registerModal" @success="handleSuccess"></XgsFlowOpinionsModal>
   </div>
 </template>
 
@@ -55,6 +56,7 @@
   import { useModal } from '/src/components/Modal';
   import { useListPage } from '/src/hooks/system/useListPage';
   import XgsPositionsModal from './components/XgsPositionsModal.vue';
+  import XgsFlowOpinionsModal from './opinions/components/XgsFlowOpinionsModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositions.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
@@ -128,6 +130,8 @@
    * 审核事件
    */
   function handleCheck(record: Recordable) {
+    // 判断记录的 status 是否为 '待审核'，如果是则执行后续操作
+    console.log('handleCheckhandleCheckhandleCheckhandleCheck', record.status);
     if (record.status === '待审核') {
       const record1 = {
         ...record, // 合并 record 的值
