@@ -11,13 +11,13 @@
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">招聘部门：</text></view>
-                  <input  placeholder="请输入招聘部门" v-model="model.dept" :disabled="htmlTypeStatce"/>
+                  <input  placeholder="请输入招聘部门" v-model="model.dept_dictText" :disabled="htmlTypeStatce"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">课题组：</text></view>
-                  <input  placeholder="请输入课题组" v-model="model.ktz" :disabled="htmlTypeStatce"/>
+                  <input  placeholder="请输入课题组" v-model="model.ktz_dictText" :disabled="htmlTypeStatce"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -115,6 +115,7 @@
 
 <script>
     import myDate from '@/components/my-componets/my-date.vue'
+	import api from '@/api/api'
 
     export default {
         name: "XgsPositionsForm",
@@ -134,24 +135,70 @@
                 model: {},
                 backRouteName:'index',
                 url: {
-                  queryById: "/positions/xgsPositions/queryById",
-                  add: "/positions/xgsPositions/add",
-                  edit: "/positions/xgsPositions/edit",
+					queryById: "/positions/xgsPositions/queryById",
+					add: "/positions/xgsPositions/add",
+					edit: "/positions/xgsPositions/edit",
+					userUrl:'/sys/user/queryById',
+					xgsFavoriteJobAddUrl:'/positions/xgsFavoriteJob/add',
+					xgsFavoriteJobDelUrl: '/positions/xgsFavoriteJob/delete',
+					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
                 },
 				htmlTypeStatce: true,
-				isCollected: false
+				isCollected: false,
+				favoriteJob: "",
+				params: {
+					userId: "",
+					userName: "",
+					positionId: "",
+					positionName: "",
+					positionDept: "",
+					positionKtz: "",
+					positionCount: "",
+				}
             }
         },
+		watch: {
+			cur: {
+				immediate: true,
+				handler() {
+					console.log('watch',this.cur)
+				    this.userId=this.$store.getters.userid;
+					this.load()
+				},
+			},
+		},
         created(){
              this.initFormData();
         },
         methods:{
            initFormData(){
+			   //获取岗位信息
 			   this.model = this.$Route.query;
-			   console.log("this.model===========",this.model)
+			   this.params.positionId = this.model.id;
+			   this.params.positionName = this.model.positionName;
+			   this.params.positionDept = this.model.dept_dictText;
+			   this.params.positionKtz = this.model.ktz_dictText;
+			   this.params.positionCount = this.model.personCount;
 			   
-			   let userInfo = uni.getStorageSync('userInfo');
-			   console.log("userInfo===========",userInfo)
+			   //获取用户信息
+			   let userId = this.$store.getters.userid;
+			   this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
+					console.log("res",res)
+					if (res.data.success) {
+						let perArr = res.data.result
+						let avatar=(perArr.avatar && perArr.avatar.length > 0)? api.getFileAccessHttpUrl(perArr.avatar):'/static/avatar_boy.png'
+						this.params.userId = perArr.id
+						this.params.userName = perArr.username
+				   
+						console.log("params=-=========",this.params)
+						this.onCollectList()
+					}
+			   }).catch(err => {
+			   	console.log(err);
+			   });
+			   
+			   console.log("model===========",this.model)
+			   
 			   //根据岗位id进行查询
                // if(this.formData){
                //      let dataId = this.formData.dataId;
@@ -178,16 +225,58 @@
             },
 			//岗位申请（对于‘招聘’）
 			onApply(){
-				
+				// onCollectAdd(){
+				// 	this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
+				// 						console.log("res",res)
+										
+				// 	}).catch(err => {
+				// 		console.log(err);
+				// 	});
+				// },
 			},
 			//收藏岗位
 			onCollectAdd(){
-				
+				console.log("params",this.params)
+				this.$http.post(this.url.xgsFavoriteJobAddUrl,this.params).then(res=>{
+					console.log("res",res)
+					if (res.data.code == 200) {
+						this.isCollected = true;
+						this.$tip.success("收藏职位成功")
+					} else {
+						this.$tip.alert(res.data.message);
+					}
+				}).catch(err => {
+					console.log(err);
+				});
 			},
 			//取消收藏岗位
 			onCollectDel(){
-				
-			}
+				if(this.favoriteJob === ""){
+					return
+				}
+				this.$http.delete(this.url.xgsFavoriteJobDelUrl + "?id=" + this.favoriteJob).then(res=>{
+					console.log("res",res)
+					if (res.data.code === 200) {
+						this.isCollected = false;
+						this.$tip.success("取消收藏职位成功")
+					} else {
+						this.$tip.success("取消收藏职位失败")
+					}
+				}).catch(err => {
+					console.log(err);
+				});
+			},
+			//查看岗位是否收藏
+			onCollectList(){
+				this.$http.get(this.url.xgsFavoriteJobListUrl,{params:{userId: this.params.userId, positionId: this.params.positionId}}).then(res=>{
+					if (res.data.result.records.length > 0) {
+					        this.isCollected = true;
+					        this.favoriteJob = res.data.result.records[0].id;
+					}
+				}).catch(err => {
+					console.log(err);
+				});
+			},
         }
     }
 </script>

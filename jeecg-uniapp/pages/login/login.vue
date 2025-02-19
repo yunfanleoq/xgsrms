@@ -143,6 +143,7 @@
 					this.loading=true;
 			        this.mLogin(loginParams).then((res) => {
 					  this.loading=false;
+					  console.log("res+nm;lken-----",res)
 			          if(res.data.success){
 						 // #ifdef APP-PLUS
 						  this.saveClientId()
