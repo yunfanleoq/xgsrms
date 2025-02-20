@@ -109,7 +109,7 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 	 */
 	@AutoLog(value = "审批办理过程表-编辑")
 	@ApiOperation(value="审批办理过程表-编辑", notes="审批办理过程表-编辑")
-	@RequiresPermissions("resume:xgs_flow_opinions:edit")
+//	@RequiresPermissions("resume:xgs_flow_opinions:edit")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody XgsFlowOpinions xgsFlowOpinions) {
 		xgsFlowOpinionsService.updateById(xgsFlowOpinions);
