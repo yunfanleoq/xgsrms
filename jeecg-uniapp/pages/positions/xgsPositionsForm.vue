@@ -197,17 +197,6 @@
 			   });
 			   
 			   console.log("model===========",this.model)
-			   
-			   //根据岗位id进行查询
-               // if(this.formData){
-               //      let dataId = this.formData.dataId;
-               //      this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-               //          if(res.data.success){
-               //              console.log("表单数据",res);
-               //              this.model = res.data.result;
-               //          }
-               //      })
-               //  }
             },
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
