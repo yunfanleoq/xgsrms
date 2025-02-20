@@ -36,7 +36,7 @@ const ListMixin = {
 		//加载列表数据
 		  this.loadList('down');
 		},
-		/*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
+		/*查询招聘中的信息数组*/
 		upCallback(page) {
 			let param = this.queryParam
 				param.pageNo= page.num,
@@ -49,6 +49,30 @@ const ListMixin = {
 			if(page.num == 1){
 				this.list = [];
 			}
+
+			 this.$http.get(this.url,{params:param}).then(res=>{
+				 console.log("upCallback请求返回res",res)
+				 if(res.data.success){
+					let rec=res.data.result.records;
+					let hasNext=true;
+					if(!rec || rec.length<this.pageSize){
+					  console.log("加载完成!没有更多了")
+					  hasNext=false;
+					}
+					 console.log("hasNext",hasNext)
+					this.mescroll.endSuccess(rec.length);
+					
+					//设置列表数据
+					this.list=this.list.concat(rec);
+					this.$forceUpdate();
+				  }else{
+					this.mescroll.endErr();
+				  }
+			  }).catch(()=>{
+					//加载失败, 结束
+					this.mescroll.endErr();
+			 })
+
 		 this.$http.get(this.url,{params:param}).then(res=>{
 		 	 console.log("upCallback请求返回res",res)
 		 	 if(res.data.success){
@@ -59,11 +83,11 @@ const ListMixin = {
 				  hasNext=false;
 				}
 				 console.log("hasNext",hasNext)
-				//方法四 (不推荐),会存在一个小问题:比如列表共有20条数据,每页加载10条,共2页.如果只根据当前页的数据个数判断,则需翻到第三页才会知道无更多数据.
 				this.mescroll.endSuccess(rec.length);
 				
 				//设置列表数据
 				this.list=this.list.concat(rec);
+				console.log('mixin.js>>>>>this.list>>>>>:::',this.list)
 				this.$forceUpdate();
 		 	  }else{
 		 		this.mescroll.endErr();
@@ -72,7 +96,9 @@ const ListMixin = {
 		 		//加载失败, 结束
 		 		this.mescroll.endErr();
 		 })
+
 		},
+		/*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
 		loadList(flag){
 		    let param = this.queryParam
 				param.pageNo=this.pageNo,

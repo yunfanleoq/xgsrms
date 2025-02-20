@@ -93,18 +93,18 @@
                 </view>
               </view>
 				<view class="padding" v-if="model.htmlType == '编辑' || model.htmlType == '新增'">
-					<button class="cu-btn block bg-blue margin-tb-sm lg" @click="onSubmit">
+					<button class="cu-btn block bg-blue margin-tb-sm lg" @tap="onSubmit">
 						<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>提交
 					</button>
 				</view>
 				<view class="padding" v-else-if="model.htmlType == '招聘'">
-					<button class="cu-btn block bg-blue margin-tb-sm lg" @click="onCollectDel" v-if="isCollected">
+					<button class="cu-btn block bg-red margin-tb-sm lg" @tap="onCollectDel" v-show="isCollected">
 						已收藏
 					</button>
-					<button class="cu-btn block bg-blue margin-tb-sm lg" @click="onCollectAdd" v-else>
+					<button class="cu-btn block bg-not-blue margin-tb-sm lg" @tap="onCollectAdd" v-show="!isCollected">
 						收藏岗位
 					</button>
-					<button class="cu-btn block bg-blue margin-tb-sm lg" @click="onApply">
+					<button class="cu-btn block bg-blue margin-tb-sm lg" @tap="onApply">
 						<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>申请
 					</button>
 				</view>
@@ -163,7 +163,6 @@
 				handler() {
 					console.log('watch',this.cur)
 				    this.userId=this.$store.getters.userid;
-					this.load()
 				},
 			},
 		},
@@ -198,17 +197,6 @@
 			   });
 			   
 			   console.log("model===========",this.model)
-			   
-			   //根据岗位id进行查询
-               // if(this.formData){
-               //      let dataId = this.formData.dataId;
-               //      this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-               //          if(res.data.success){
-               //              console.log("表单数据",res);
-               //              this.model = res.data.result;
-               //          }
-               //      })
-               //  }
             },
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
@@ -242,6 +230,7 @@
 					if (res.data.code == 200) {
 						this.isCollected = true;
 						this.$tip.success("收藏职位成功")
+						this.onCollectList()
 					} else {
 						this.$tip.alert(res.data.message);
 					}
@@ -259,6 +248,7 @@
 					if (res.data.code === 200) {
 						this.isCollected = false;
 						this.$tip.success("取消收藏职位成功")
+						this.favoriteJob = ""
 					} else {
 						this.$tip.success("取消收藏职位失败")
 					}
