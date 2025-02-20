@@ -49,6 +49,7 @@ const ListMixin = {
 			if(page.num == 1){
 				this.list = [];
 			}
+
 			 this.$http.get(this.url,{params:param}).then(res=>{
 				 console.log("upCallback请求返回res",res)
 				 if(res.data.success){
@@ -71,6 +72,31 @@ const ListMixin = {
 					//加载失败, 结束
 					this.mescroll.endErr();
 			 })
+
+		 this.$http.get(this.url,{params:param}).then(res=>{
+		 	 console.log("upCallback请求返回res",res)
+		 	 if(res.data.success){
+		 		let rec=res.data.result.records;
+				let hasNext=true;
+				if(!rec || rec.length<this.pageSize){
+				  console.log("加载完成!没有更多了")
+				  hasNext=false;
+				}
+				 console.log("hasNext",hasNext)
+				this.mescroll.endSuccess(rec.length);
+				
+				//设置列表数据
+				this.list=this.list.concat(rec);
+				console.log('mixin.js>>>>>this.list>>>>>:::',this.list)
+				this.$forceUpdate();
+		 	  }else{
+		 		this.mescroll.endErr();
+		 	  }
+		  }).catch(()=>{
+		 		//加载失败, 结束
+		 		this.mescroll.endErr();
+		 })
+
 		},
 		/*上拉加载的回调: 其中page.num:当前页 从1开始, page.size:每页数据条数,默认10 */
 		loadList(flag){
