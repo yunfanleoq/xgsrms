@@ -28,7 +28,7 @@
 	import Mixin from "@/common/mixin/Mixin.js";
 
 	export default {
-		name: '岗位列表',
+		// name: '岗位列表',
 		mixins: [MescrollMixin,Mixin],
 		data() {
 			return {
