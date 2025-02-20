@@ -1,8 +1,8 @@
 <template>
 	<view>
 	   <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor" isBack>
-			<block slot="backText">返回</block>
+		<cu-custom :bgColor="NavBarColor">
+			<!-- <block slot="backText">返回</block> -->
 			<block slot="content">岗位列表</block>
 		</cu-custom>
 		<!--滚动加载列表-->

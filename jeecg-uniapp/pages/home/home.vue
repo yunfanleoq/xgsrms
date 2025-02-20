@@ -128,7 +128,6 @@
 				console.log("loadCount::flag",flag)
 				let url = '/sys/annountCement/listByUser';
 				this.$http.get(url).then(res=>{
-					console.log("res::",res)
 				  if(res.data.success){
 					let msg1Count = res.data.result.anntMsgTotal;
 					let msg2Count = res.data.result.sysMsgTotal;
