@@ -8,10 +8,10 @@
 				<view class='cuIcon-homefill'></view>主页
 			</view>
 			<view :class="PageCur=='peoplelis'?'action text-green':'action text-gray'" @click="NavChange" data-cur="peoplelis">
-				<view class='cuIcon-peoplelist'></view>审批
+				<view class='cuIcon-peoplelist'></view>岗位
 			</view>
 			<view :class="PageCur=='profile'?'action text-green':'action text-gray'" @click="NavChange" data-cur="profile">
-				<view class='cuIcon-profile'></view>发起
+				<view class='cuIcon-profile'></view>简历
 			</view>
 			<view :class="PageCur=='people'?'action text-green':'action text-gray'" @click="NavChange" data-cur="people">
 				<view class='cuIcon-people'></view>个人
