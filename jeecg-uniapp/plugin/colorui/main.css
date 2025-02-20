@@ -3438,6 +3438,16 @@ scroll-view.cu-steps .cu-item {
 	color: #ffffff;
 }
 
+.bg-not-blue {
+	background-color: #ffffff;
+	color: #0081ff;
+}
+
+.bg-red {
+	background-color: #f66;
+	color: #ffffff;
+}
+
 .bg-purple {
 	background-color: #6739b6;
 	color: #ffffff;

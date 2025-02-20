@@ -5,7 +5,7 @@
         <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
       </a-tab-pane>
       <a-tab-pane key="2" tab="岗位信息" force-render>
-        <XgsPositionsForm ref="registerFormPosition" @ok="submitCallback" :formDisabled="true" :formData="positionApply" :formBpm="false" />
+        <XgsPositionsForm v-if="formBool" ref="registerFormPosition" @ok="submitCallback" :formDisabled="true" :formData="positionApply" :formBpm="false" />
       </a-tab-pane>
     </a-tabs>
   </BasicModal>
@@ -27,6 +27,8 @@ import {ref, computed, unref, nextTick} from 'vue';
   const positionApply = ref({});
   const registerFormPosition = ref();
   const userStore = useUserStore();
+
+  const formBool = ref(false);
 
   /**
    * form保存回调事件
@@ -58,6 +60,7 @@ import {ref, computed, unref, nextTick} from 'vue';
         approvalStatus: '同意',
         parentId: data.record.id,
       });
+      formBool.value = true
     }
     // registerFormPosition.value = data.record;
     // 隐藏底部时禁用整个表单
