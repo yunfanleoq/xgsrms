@@ -6,22 +6,27 @@
 			<block slot="content">简历填写</block>
 		</cu-custom>
 		 <!--表单区域-->
-		<view>
-			<resumeApplyForm style="display: none;"></resumeApplyForm>
-			<resumeBaseForm v-show="formNumber === 1">1</resumeBaseForm>
-			<resumeWorkForm v-show="formNumber === 2">2</resumeWorkForm>
-			<resumeEduForm v-show="formNumber === 3">3</resumeEduForm>
-			<resumeHomeForm v-show="formNumber === 4">4</resumeHomeForm>
+		<view v-if="labelStatus">
+			<view>
+				<resumeApplyForm style="display: none;" :formData="params"></resumeApplyForm>
+				<resumeBaseForm ref="resumeBaseForm" v-show="formNumber === 1">1</resumeBaseForm>
+				<resumeWorkForm ref="resumeWorkForm" v-show="formNumber === 2">2</resumeWorkForm>
+				<resumeEduForm ref="resumeEduForm" v-show="formNumber === 3">3</resumeEduForm>
+				<resumeHomeForm ref="resumeHomeForm" v-show="formNumber === 4">4</resumeHomeForm>
+			</view>
+			<button v-if="formNumber > 1" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onUpPage">
+				<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>上一步
+			</button>
+			<button v-if=" 0 < formNumber && formNumber < 4" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onNextPage">
+				<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>下一步
+			</button>
+			<button v-if=" formNumber === 4" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onSubmit">
+				<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>提交
+			</button>
 		</view>
-		<button v-if="formNumber > 1" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onUpPage">
-			<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>上一步
-		</button>
-		<button v-if=" 0 < formNumber && formNumber < 4" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onNextPage">
-			<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>下一步
-		</button>
-		<button v-if=" formNumber === 4" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onSubmit">
-			<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>提交
-		</button>
+		<view v-else>
+			若长时间未加载出信息请重新登录
+		</view>
     </view>
 </template>
 
@@ -37,13 +42,7 @@
     export default {
         name: "简历填写",
         components:{ myDate },
-        props:{
-			formData:{
-				type:Object,
-				default:()=>{},
-				required:false,
-			}
-        },
+        props:{},
         data(){
             return {
 				CustomBar: this.CustomBar,
@@ -59,6 +58,7 @@
 					xgsFavoriteJobAddUrl:'/positions/xgsFavoriteJob/add',
 					xgsFavoriteJobDelUrl: '/positions/xgsFavoriteJob/delete',
 					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
+					submissionUrl:'/positions/xgsPositionApply/doPositionApply'
                 },
 				htmlTypeStatce: true,
 				isCollected: false,
@@ -72,7 +72,8 @@
 					positionKtz: "",
 					positionCount: "",
 				},
-				formNumber: 0
+				formNumber: 0,
+				labelStatus: false
             }
         },
 		watch: {
@@ -96,6 +97,9 @@
 			   this.params.positionKtz = this.model.ktz_dictText;
 			   this.params.positionCount = this.model.personCount;
 			   
+			   this.params.status = "草稿";
+			   this.params.positionType = this.model.category;
+			   
 			   //获取用户信息
 			   let userId = this.$store.getters.userid;
 			   this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
@@ -104,6 +108,7 @@
 						let avatar=(perArr.avatar && perArr.avatar.length > 0)? api.getFileAccessHttpUrl(perArr.avatar):'/static/avatar_boy.png'
 						this.params.userId = perArr.id
 						this.params.userName = perArr.username
+						this.labelStatus = true
 					}
 			   }).catch(err => {
 					console.log(err);
@@ -117,14 +122,43 @@
 			},
 			//下一步
 			onNextPage(){
-				if(resumeApplyForm.onNextPage()){
-					console.log("aaa/")
-				}
-				this.formNumber ++
+				if(this.validateAndNext()){		
+					this.formNumber ++
+				}else{
+					this.$tip.toast('有信息未填写');
+				}	
 			},
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
+				if(this.validateAndNext()){
+					
+				}else{
+					this.$tip.toast('有信息未填写');
+				}
             },
+			//判断信息是否全部填写
+			validateAndNext(){
+				let inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea');
+				let allFilled = true;
+				// 遍历每个input元素并检查其值
+				inputs.forEach(function(input) {
+					// 检查输入框是否可见
+					if (input.offsetParent !== null) { // offsetParent为null表示元素不可见
+						// 忽略disabled和readonly的input元素
+						if (!input.value || input.value.trim() === '') {
+							allFilled = false;
+						}
+					}
+				});
+				// 根据检查结果显示消息
+				if (allFilled) {
+					console.log('所有输入字段都已填写。');
+					return true
+				} else {
+					console.log('有输入字段未填写。');
+					return false
+				}
+			}
         }
     }
 </script>

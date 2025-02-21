@@ -1,10 +1,10 @@
 <template>
     <view>
         <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
+		<!-- <cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
 			<block slot="backText">返回</block>
 			<block slot="content">工作经历测试</block>
-		</cu-custom>
+		</cu-custom> -->
 		 <!--表单区域-->
 		<view>
 			<form>
@@ -32,27 +32,27 @@
                   <input  placeholder="请输入职称" v-model="model.professionLevel"/>
                 </view>
               </view>
-              <view class="cu-form-group">
+              <view class="cu-form-group" style="display: none;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">创建者：</text></view>
                   <input  placeholder="请输入创建者" v-model="model.createBy"/>
                 </view>
               </view>
-              <my-date label="创建时间：" v-model="model.createTime" placeholder="请输入创建时间"></my-date>
-              <view class="cu-form-group">
+              <my-date label="创建时间：" v-model="model.createTime" placeholder="请输入创建时间" style="display: none;"></my-date>
+              <view class="cu-form-group" style="display: none;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">更新者：</text></view>
                   <input  placeholder="请输入更新者" v-model="model.updateBy"/>
                 </view>
               </view>
-              <my-date label="更新时间：" v-model="model.upateTime" placeholder="请输入更新时间"></my-date>
+              <my-date label="更新时间：" v-model="model.upateTime" placeholder="请输入更新时间" style="display: none;"></my-date>
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">是否删除：</text></view>
                   <input  placeholder="请输入是否删除" v-model="model.deleted"/>
                 </view>
               </view>
-              <view class="cu-form-group">
+              <view class="cu-form-group" style="display: none;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">租户ID：</text></view>
                   <input  placeholder="请输入租户ID" v-model="model.tenantId"/>

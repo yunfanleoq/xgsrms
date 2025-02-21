@@ -11,13 +11,13 @@
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">姓名：</text></view>
-                  <input  placeholder="请输入姓名" v-model="model.name"/>
+                  <input placeholder="请输入姓名" v-model="model.name"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">性别：</text></view>
-                  <input  placeholder="请输入性别" v-model="model.sex"/>
+                  <input placeholder="请输入性别" v-model="model.sex"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -136,9 +136,13 @@
                 </view>
               </view>
               <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">与本所职工(包括在读研究生)是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系(若有请写出姓名)?(请务必勾选)：</text></view>
-                  <input  placeholder="请输入与本所职工(包括在读研究生)是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系(若有请写出姓名)?(请务必勾选)" v-model="model.xgsRelation"/>
+                <view class="flex align-center" style="flex-wrapv: wrap; height: auto;">
+					<view class="title" style="white-space: normal; word-break: break-all; height: auto;">
+						<text space="ensp">与本所职工(包括在读研究生)是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系(若有请写出姓名)?(请务必勾选)：</text>
+					</view>
+					<view style="width: 100%; margin-top: 10px;">
+						<input  placeholder="请输入与本所职工(包括在读研究生)是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系(若有请写出姓名)?(请务必勾选)" v-model="model.xgsRelation" style="width: 100%;"/>
+					</view>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -513,7 +517,7 @@
                   <input  placeholder="请输入所属部门" v-model="model.sysOrgCode"/>
                 </view>
               </view>
-              <view class="cu-form-group">
+              <view class="cu-form-group" style="display: none;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">外键：</text></view>
                   <input  placeholder="请输入外键" v-model="model.baseId"/>
@@ -552,7 +556,6 @@
             }
         },
         created(){
-             // this.onNextPage();
         },
         methods:{
            initFormData(){
@@ -566,27 +569,6 @@
                     })
                 }
             },
-			onNextPage(){
-				let inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea');
-				let allFilled = true;
-				
-				// 遍历每个input元素并检查其值
-					inputs.forEach(function(input) {
-						// 忽略disabled和readonly的input元素
-						if (!input.disabled && !input.readonly && (!input.value || input.value.trim() === '')) {
-							allFilled = false;
-						}
-					});
-		 
-					// 根据检查结果显示消息
-					if (allFilled) {
-						return true
-						console.log('所有输入字段都已填写。');
-					} else {
-						return fasle
-						console.log('有输入字段未填写。');
-					}
-			}
         }
     }
 </script>

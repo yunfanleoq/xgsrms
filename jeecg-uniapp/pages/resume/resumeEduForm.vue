@@ -1,10 +1,10 @@
 <template>
     <view>
         <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
+		<!-- <cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
 			<block slot="backText">返回</block>
 			<block slot="content">教育经历测试</block>
-		</cu-custom>
+		</cu-custom> -->
 		 <!--表单区域-->
 		<view>
 			<form>

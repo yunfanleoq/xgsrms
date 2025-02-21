@@ -1,13 +1,19 @@
 <template>
     <view>
         <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
+<!-- 		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
 			<block slot="backText">返回</block>
 			<block slot="content">申请测试</block>
-		</cu-custom>
+		</cu-custom> -->
 		 <!--表单区域-->
 		<view>
 			<form>
+				<view class="cu-form-group">
+				  <view class="flex align-center">
+				    <view class="title"><text space="ensp">申请人ID：</text></view>
+				    <input  placeholder="请输入申请人ID" v-model="model.userId"/>
+				  </view>
+				</view>
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">申请人：</text></view>
@@ -71,20 +77,15 @@
             }
         },
         created(){
-             this.initFormData();
+             this.parameterConfig();
         },
         methods:{
-           initFormData(){
-               if(this.formData){
-                    let dataId = this.formData.dataId;
-                    this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-                        if(res.data.success){
-                            console.log("表单数据",res);
-                            this.model = res.data.result;
-                        }
-                    })
-                }
+           formSubmission(){
+               
             },
+			parameterConfig(){
+				this.model = {...this.formData}
+			}
         }
     }
 </script>
