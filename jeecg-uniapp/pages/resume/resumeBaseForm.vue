@@ -552,7 +552,7 @@
             }
         },
         created(){
-             this.onNextPage();
+             // this.onNextPage();
         },
         methods:{
            initFormData(){
@@ -573,7 +573,6 @@
 				// 遍历每个input元素并检查其值
 					inputs.forEach(function(input) {
 						// 忽略disabled和readonly的input元素
-						console.log('所有输入字段都已填写。',input.disabled);
 						if (!input.disabled && !input.readonly && (!input.value || input.value.trim() === '')) {
 							allFilled = false;
 						}
@@ -581,8 +580,10 @@
 		 
 					// 根据检查结果显示消息
 					if (allFilled) {
+						return true
 						console.log('所有输入字段都已填写。');
 					} else {
+						return fasle
 						console.log('有输入字段未填写。');
 					}
 			}

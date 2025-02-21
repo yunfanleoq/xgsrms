@@ -13,6 +13,15 @@
 			<resumeEduForm v-show="formNumber === 3">3</resumeEduForm>
 			<resumeHomeForm v-show="formNumber === 4">4</resumeHomeForm>
 		</view>
+		<button v-if="formNumber > 1" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onUpPage">
+			<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>上一步
+		</button>
+		<button v-if=" 0 < formNumber && formNumber < 4" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onNextPage">
+			<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>下一步
+		</button>
+		<button v-if=" formNumber === 4" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onSubmit">
+			<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>提交
+		</button>
     </view>
 </template>
 
@@ -63,7 +72,7 @@
 					positionKtz: "",
 					positionCount: "",
 				},
-				formNumber: 1
+				formNumber: 0
             }
         },
 		watch: {
@@ -99,7 +108,20 @@
 			   }).catch(err => {
 					console.log(err);
 			   });
+			   
+			   this.formNumber = 1;
             },
+			//上一步
+			onUpPage(){
+				this.formNumber --
+			},
+			//下一步
+			onNextPage(){
+				if(resumeApplyForm.onNextPage()){
+					console.log("aaa/")
+				}
+				this.formNumber ++
+			},
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
             },

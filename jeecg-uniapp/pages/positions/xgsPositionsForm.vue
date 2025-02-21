@@ -118,7 +118,7 @@
 	import api from '@/api/api'
 
     export default {
-        name: "XgsPositionsForm",
+        name: "岗位详情",
         components:{ myDate },
         props:{
 			formData:{

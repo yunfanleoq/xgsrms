@@ -34,14 +34,14 @@ const routes = [
 	
 	{
 	    path: '/pages/positions/xgsPositionsList',
-	    name: 'peoplelis',
+	    name: 'positionsList',
 	    meta: {
-	        title: '个人中心',
+	        title: '岗位列表',
 	    },
 	},
 	{
 	    path: '/pages/positions/xgsPositionsForm',
-	    name: 'positionsThis',
+	    name: 'positionsDetail',
 	    meta: {
 	        title: '岗位详情',
 	    },
