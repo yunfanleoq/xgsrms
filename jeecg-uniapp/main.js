@@ -30,11 +30,15 @@ Vue.prototype.$http = http
 
 import home from './pages/home/home.vue'
 Vue.component('home',home)
+
+// xgs pages begin
 import xgsPositionsList from './pages/positions/xgsPositionsList.vue'
 Vue.component('xgsPositionsList',xgsPositionsList)
-
 import xgsPositionsForm from './pages/positions/xgsPositionsForm.vue'
 Vue.component('xgsPositionsForm',xgsPositionsForm)
+import XgsMyresumeList from './pages/xgs/myresume/XgsMyresumeList.vue'
+Vue.component('XgsMyresumeList',XgsMyresumeList)
+// xgs pages end
 
 import people from './pages/user/people.vue'
 Vue.component('people',people)
@@ -46,11 +50,8 @@ Vue.component('mySelect',mySelect)
 import myImageUpload from './components/my-componets/my-image-upload.vue'
 Vue.component('myImageUpload',myImageUpload)
 
-
 import myPage from './components/my-componets/my-page.vue'
 Vue.component('myPage',myPage)
-
-
 
 import basics from './pages/basics/home.vue'
 Vue.component('basics',basics)

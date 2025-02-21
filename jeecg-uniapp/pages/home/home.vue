@@ -10,40 +10,21 @@
 				</swiper-item>
 			</swiper>
 			
-			<!-- 常用服务 -->
 			<view class="cu-bar bg-white solid-bottom" :style="[{animation: 'show 0.5s 1'}]">
 				<view class="action">
-					<text class='cuIcon-title text-blue'></text>常用服务
+					<text class='cuIcon-title text-blue'>新闻头条</text>
 				</view>
 			</view>
-				
-			<view class="cu-list grid col-4 text-sm">
-				<view class="cu-item animation-slide-bottom" :style="[{animationDelay: (index + 1)*0.05 + 's'}]" v-for="(item,index) in usList" :key="index" @tap="goPage(item.page)">
-					<view class="padding text-center">
-						<image :src="item.icon" style="width:28px;height:28px;">
-							<view class="cu-tag badge margin-top-sm" style="margin-left:1.2em" v-if="getTtemDotInfo(item)">
-							   <block v-if="getTtemDotInfo(item)">{{getTtemDotInfo(item)}}</block>
-							</view>
-						</image>
-						<view class="margin-top-xs">{{item.title}}</view>
-					</view>
-				</view>
-			</view>
-				
-			<!-- 其他服务 -->
-			<view class="cu-bar bg-white solid-bottom margin-top"  :style="[{animation: 'show 0.6s 1'}]">
+			<div class='clearfix'>
+				<XgsJournalismList  ></XgsJournalismList >
+			</div>
+			<!-- <view class="cu-bar bg-white solid-bottom margin-top"  :style="[{animation: 'show 0.6s 1'}]">
 				<view class="action">
-					 <text class='cuIcon-title text-yellow'></text>其他服务
+					 <text class='cuIcon-title text-yellow'>招聘公告</text>
 				</view>
 			</view>
-			<view class="cu-list grid col-4 text-sm">
-				<view class="cu-item animation-slide-bottom" :style="[{animationDelay: (index + 1)*0.1 + 's'}]" v-for="(item,index) in osList" :key="index" @tap="goPage(item.page)">
-					<view class="padding text-center">
-						<image :src="item.icon" style="width:28px;height:28px;"/>
-						<view class="margin-top-xs">{{item.title}}</view>
-					</view>
-				</view>
-			</view>
+
+			<Xgszpgg :style="[{animation: 'show 0.5s 1'}]" ></Xgszpgg > -->
 		</scroll-view>
 		<view class="cu-tabbar-height margin-top"></view>
 	</view>
@@ -52,8 +33,15 @@
 <script>
 	import { us,os } from '@/common/util/work.js'
 	import socket from '@/common/js-sdk/socket/socket.js'
+	import XgsJournalismList from '@/pages/home/XgsJournalismList.vue'
+	import Xgszpgg from '@/pages/home/Xgszpgg.vue'
+	
 	export default {
 		name: 'home',
+		components:{
+			XgsJournalismList,
+			Xgszpgg
+		},
 		props:{
 			cur:String,
 		},
@@ -80,6 +68,7 @@
 				],
 				usList:us.data,
 				osList:os.data,
+				
 				msgCount:0,
 				dot:{
 				  mailHome:false
@@ -128,6 +117,8 @@
 				console.log("loadCount::flag",flag)
 				let url = '/sys/annountCement/listByUser';
 				this.$http.get(url).then(res=>{
+					console.log("res::",res)
+					console.log("loadCount res::",res)
 				  if(res.data.success){
 					let msg1Count = res.data.result.anntMsgTotal;
 					let msg2Count = res.data.result.sysMsgTotal;
@@ -144,7 +135,83 @@
 				  return this.msgCount
 				}
 				return '';
+			},
+			loadswiperList(page = 1, size = 5){
+				// 获取轮播图数据的函数					
+				console.log("处理前的 carouselImages",this.swiperList)
+				console.log("loadswiperList::begin")
+				let url = '/xgsHome/xgsHome/list';
+				this.$http.get( url).then(res=>{
+					console.log("loadswiperList res::",res)
+					if(res.data.success){
+						this.swiperList = res.data.result.records.map((item,index) => {
+						const imgTag = item.photograph;  // 获取 HTML 字符串
+						let imgUrl = "";  // 用于存储图片链接
+						// 如果是 HTML 格式的 <img> 标签，提取 src 属性
+						if (imgTag && imgTag.includes('<img')) {
+							const match = imgTag.match(/src="(.*?)"/);  // 提取 <img> 标签中的 src 链接
+							imgUrl = match ? match[1] : "";
+						}
+						  // 如果是纯图片链接，直接使用该链接
+						else if (imgTag && !imgTag.includes('<img')) {
+							imgUrl = imgTag;
+						}
+						return {
+							id: index,
+							link: imgUrl,  // 将图片链接放入 image 字段
+							type: 'image',
+							url: imgUrl,
+						  };
+						})
+						.sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+						.slice(0, 5); // 截取前5张轮播图
+					  console.log("处理后的 carouselImages",this.swiperList)
+				  }
+				})
 			}
+				// try {
+				// 	// const response = [];
+				// 	this.$http.get({
+				// 	  url: "/xgsHome/xgsHome/list", // 替换为你的轮播图数据接口
+				// 	  params: { pageNo: 1, pageSize: 1000 },
+				// 	}).then(
+				// 	res=>{
+				// 		console.log("loadswiperList res::",res)
+				// 		}
+				// 		)
+					// 	console.log('loadswiperList', response)
+					
+					// 	if (response && response.records) {
+					// 	  this.swiperList = response.records.map((item) => {
+					// 		  const imgTag = item.photograph;  // 获取 HTML 字符串
+					// 		  let imgUrl = "";  // 用于存储图片链接
+					// 		  // 如果是 HTML 格式的 <img> 标签，提取 src 属性
+					// 		  if (imgTag && imgTag.includes('<img')) {
+					// 			const match = imgTag.match(/src="(.*?)"/);  // 提取 <img> 标签中的 src 链接
+					// 			imgUrl = match ? match[1] : "";
+					// 		  }
+					// 		  // 如果是纯图片链接，直接使用该链接
+					// 		  else if (imgTag && !imgTag.includes('<img')) {
+					// 			imgUrl = imgTag;
+					// 		  }
+					// 		  return {
+					// 			image: imgUrl,  // 将图片链接放入 image 字段
+					// 			createTime: item.createTime || "",
+					// 		  };
+					// 		})
+					// 		.sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
+					// 		.slice(0, 5); // 截取前5张轮播图
+					// 	  console.log("处理后的 carouselImages",carouselImages.value)
+				
+					
+				// } catch (error) {
+				// 	console.error("请求轮播图数据失败:", error);
+				// }
+			// }
+
+		},
+		mounted(){
+			this.loadswiperList()
 		}
 	}
 </script>
@@ -157,5 +224,11 @@
 	  width: 60px;
 	  height: 60px;
     }
-	
+
+	.clearfix::after {
+	  content: "";
+	  display: table;
+	  clear: both;
+	}
+
 </style>
