@@ -64,6 +64,20 @@ Vue.component('plugin',plugin)
 import cuCustom from './plugin/colorui/components/cu-custom.vue'
 Vue.component('cu-custom',cuCustom)
 
+//简历部分
+import resumeForm from './pages/resume/resumeForm.vue'
+Vue.component('resumeForm',resumeForm)
+import resumeApplyForm from './pages/resume/resumeApplyForm.vue'
+Vue.component('resumeApplyForm',resumeApplyForm)
+import resumeBaseForm from './pages/resume/resumeBaseForm.vue'
+Vue.component('resumeBaseForm',resumeBaseForm)
+import resumeWorkForm from './pages/resume/resumeWorkForm.vue'
+Vue.component('resumeWorkForm',resumeWorkForm)
+import resumeEduForm from './pages/resume/resumeEduForm.vue'
+Vue.component('resumeEduForm',resumeEduForm)
+import resumeHomeForm from './pages/resume/resumeHomeForm.vue'
+Vue.component('resumeHomeForm',resumeHomeForm)
+
 // import VConsole from './js_sdk/vconsole.min'
 
 //   var vConsole = new VConsole();

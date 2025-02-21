@@ -170,6 +170,24 @@
 		},{
 			"path": "pages/common/helloWorld",
 			"style": {}
+		},{
+			"path": "pages/resume/resumeForm",
+			"style": {}
+		},{
+			"path": "pages/resume/resumeApplyForm",
+			"style": {}
+		},{
+			"path": "pages/resume/resumeBaseForm",
+			"style": {}
+		},{
+			"path": "pages/resume/resumeWorkForm",
+			"style": {}
+		},{
+			"path": "pages/resume/resumeEduForm",
+			"style": {}
+		},{
+			"path": "pages/resume/resumeHomeForm",
+			"style": {}
 		}
 		
 	],

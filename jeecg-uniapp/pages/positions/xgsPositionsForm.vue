@@ -104,7 +104,7 @@
 					<button class="cu-btn block bg-not-blue margin-tb-sm lg" @tap="onCollectAdd" v-show="!isCollected">
 						收藏岗位
 					</button>
-					<button class="cu-btn block bg-blue margin-tb-sm lg" @tap="onApply">
+					<button class="cu-btn block bg-blue margin-tb-sm lg" @tap="onApply(model)">
 						<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>申请
 					</button>
 				</view>
@@ -188,15 +188,12 @@
 						let avatar=(perArr.avatar && perArr.avatar.length > 0)? api.getFileAccessHttpUrl(perArr.avatar):'/static/avatar_boy.png'
 						this.params.userId = perArr.id
 						this.params.userName = perArr.username
-				   
-						console.log("params=-=========",this.params)
 						this.onCollectList()
 					}
 			   }).catch(err => {
 			   	console.log(err);
 			   });
 			   
-			   console.log("model===========",this.model)
             },
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
@@ -212,15 +209,13 @@
 				});
             },
 			//岗位申请（对于‘招聘’）
-			onApply(){
-				// onCollectAdd(){
-				// 	this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
-				// 						console.log("res",res)
-										
-				// 	}).catch(err => {
-				// 		console.log(err);
-				// 	});
-				// },
+			onApply(item){
+				let parmas = {...item}
+				parmas.htmlType = '招聘'
+				this.$Router.push({
+					name: "resumeForm", // 新页面的路由名称
+					params:parmas, // 通过 parmas 传递 id
+				});
 			},
 			//收藏岗位
 			onCollectAdd(){
