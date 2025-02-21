@@ -17,6 +17,14 @@
 			"style": {}
 		},
 		{
+			"path": "pages/xgs/myresume/XgsMyresumeList",
+			"style": {}
+		},
+		{
+			"path": "pages/xgs/myresume/XgsMyresumeForm",
+			"style": {}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {}
 		},
