@@ -11,11 +11,6 @@
 		      <view class="text-xl text-orange">{{personalList.username}}</view>
 			  <view class="margin-top-sm"><text class="cuIcon-people"></text> 用户</view>
 		    </view>
-		    
-		    <view class="flex flex-sub flex-direction animation-slide-top" :style="[{animationDelay: '0.2s'}]">
-		      <view class="text-xl text-green">{{personalList.post?personalList.post:'员工'}}</view>
-		      <view class="margin-top-sm"><text class="cuIcon-news"></text> 职务</view>
-		    </view>
 		  </view>
 		  <!-- 列表list-->
 		  <view class="cu-list menu card-menu margin-top-xl margin-bottom-xl shadow-lg radius">
@@ -25,24 +20,12 @@
 		        <text class="text-grey">收藏</text>
 		      </view>
 		    </view>
-		    <view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.2s'}]">
-		      <view class="content">
-		        <text class="cuIcon-redpacket_fill text-red"></text>
-		        <text class="text-grey">红包</text>
-		      </view>
-		    </view>
 			<view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.3s'}]" @tap="scan">
 			  <view class="content">
 			    <text class="cuIcon-scan text-red"></text>
 			    <text class="text-grey">扫码</text>
 			  </view>
 			</view>
-			<navigator class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.4s'}]" url="/pages/user/location" hover-class="none">
-				<view class="content" >
-				    <text class="cuIcon-location text-cyan"></text>
-					<text class="text-grey">定位</text>
-				</view>
-			</navigator>
 			<navigator class="cu-item arrow animation-slide-bottom" url="/pages/user/userdetail" :style="[{animationDelay: '0.6s'}]">
 			     <view class="content">
 				    <text class="cuIcon-settingsfill text-cyan"></text>

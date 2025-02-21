@@ -32,6 +32,21 @@ const routes = [
 	    },
 	},
 	
+	{
+	    path: '/pages/positions/xgsPositionsList',
+	    name: 'positionsList',
+	    meta: {
+	        title: '岗位列表',
+	    },
+	},
+	{
+	    path: '/pages/positions/xgsPositionsForm',
+	    name: 'positionsDetail',
+	    meta: {
+	        title: '岗位详情',
+	    },
+	},
+	
     {
 	    path: '/pages/user/people',
         name: 'people',
@@ -127,6 +142,48 @@ const routes = [
 	    name: 'helloWorld',
 	    meta: {
 	        title: 'helloWorld',
+	    },
+	},
+	{
+	    path: '/pages/resume/resumeForm',
+	    name: 'resumeForm',
+	    meta: {
+	        title: '信息填写',
+	    },
+	},
+	{
+	    path: '/pages/resume/resumeApplyForm',
+	    name: 'resumeApplyForm',
+	    meta: {
+	        title: '简历表头',
+	    },
+	},
+	{
+	    path: '/pages/resume/resumeBaseForm',
+	    name: 'resumeBaseForm',
+	    meta: {
+	        title: '简历基本信息',
+	    },
+	},
+	{
+	    path: '/pages/resume/resumeWorkForm',
+	    name: 'resumeWorkForm',
+	    meta: {
+	        title: '简历工作经历',
+	    },
+	},
+	{
+	    path: '/pages/resume/resumeEduForm',
+	    name: 'resumeEduForm',
+	    meta: {
+	        title: '简历教育经历',
+	    },
+	},
+	{
+	    path: '/pages/resume/resumeHomeForm',
+	    name: 'resumeHomeForm',
+	    meta: {
+	        title: '简历家庭状况',
 	    },
 	},
 ]
