@@ -28,7 +28,7 @@
 	import Mixin from "@/common/mixin/Mixin.js";
 
 	export default {
-		// name: '岗位列表',
+		name: '岗位列表',
 		mixins: [MescrollMixin,Mixin],
 		data() {
 			return {
@@ -44,12 +44,12 @@
 			},
 			goToDetail(item){
 				let parmas = {...item}
-				parmas.page = 'peoplelis'
+				parmas.page = 'positionsList'
 				parmas.htmlType = '招聘'
 				this.$Router.push({
-								name: "positionsThis", // 新页面的路由名称
-								params:parmas, // 通过 parmas 传递 id
-							});
+					name: "positionsDetail", // 新页面的路由名称
+					params:parmas, // 通过 parmas 传递 id
+				});
 			}
 		}
 	}

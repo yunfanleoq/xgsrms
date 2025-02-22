@@ -2,12 +2,13 @@
 	<view>
 	   <!--标题和返回-->
 		<cu-custom :bgColor="NavBarColor" isBack>
-			<block slot="content">我的简历列表</block>
+			<block slot="backText">返回</block>
+			<block slot="content">工作经历测试</block>
 		</cu-custom>
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="upOption" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goForm">
+				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goHome">
 					<view class="flex" style="width:100%">
                         <text class="text-lg" style="color: #000;">
                              {{ item.createBy}}
@@ -24,21 +25,18 @@
 	import Mixin from "@/common/mixin/Mixin.js";
 
 	export default {
-		name: '我的简历列表',
+		name: '工作经历测试',
 		mixins: [MescrollMixin,Mixin],
 		data() {
 			return {
 				CustomBar:this.CustomBar,
 				NavBarColor:this.NavBarColor,
-				url: "/xgsMyresume/xgsMyresume/list",
+				url: "/xgsUserResumes/workTest/list",
 			};
 		},
 		methods: {
-			goForm(){
-                // this.$Router.push({name: "XgsMyresumeForm"})
-				 uni.navigateTo({
-				        url: '/pages/xgs/myresume/XgsMyresumeForm'
-				      });
+			goHome(){
+                this.$Router.push({name: "index"})
 			}
 		}
 	}

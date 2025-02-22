@@ -1,19 +1,5 @@
 const routes = [
 	{
-	    path: '/pages/positions/xgsPositionsList',
-	    name: 'peoplelis',
-	    meta: {
-	        title: '岗位列表',
-	    },
-	},
-	{
-	    path: '/pages/positions/xgsPositionsForm',
-	    name: 'positionsThis',
-	    meta: {
-	        title: '岗位详情',
-	    },
-	},
-	{
 	    path: '/pages/xgs/myresume/XgsMyresumeList',
 	    name: 'XgsMyresumeList',
 	    meta: {
