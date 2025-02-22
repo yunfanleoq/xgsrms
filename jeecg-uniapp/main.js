@@ -34,8 +34,13 @@ Vue.component('home',home)
 // xgs pages begin
 import xgsPositionsList from './pages/positions/xgsPositionsList.vue'
 Vue.component('xgsPositionsList',xgsPositionsList)
+
+import XgsJournalismForm from './pages/home/XgsJournalismForm.vue'
+Vue.component('XgsJournalismForm',XgsJournalismForm)
+
 import xgsPositionsForm from './pages/positions/xgsPositionsForm.vue'
 Vue.component('xgsPositionsForm',xgsPositionsForm)
+
 import XgsMyresumeList from './pages/xgs/myresume/XgsMyresumeList.vue'
 Vue.component('XgsMyresumeList',XgsMyresumeList)
 // xgs pages end

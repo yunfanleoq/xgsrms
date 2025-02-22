@@ -8,7 +8,7 @@
 		<!--滚动加载列表-->
 		<mescroll-body class="mescroll-body" ref="mescrollRef" bottom="0"  @init="mescrollInit" :up="upOption" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goNewsDetail">
+				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goNewsDetail(item)">
 					
 					<view class="flex" style="width:100%">
                         <text class="text-lg" style="color: #000;">
@@ -38,14 +38,18 @@ export default {
         };
     },
     methods: {
-        goNewsDetail() {
+        goNewsDetail(item) {
             // 使用 this.$router 进行路由跳转
-            this.$router.push({ name: "newsDetail" });
-        },
-   //      GetList() {
-   //          this.list = [{'createBy': 'b'},{'createBy': 'c'}];
-			// console.log('>>>>>>>>>',this.list)
-   //      }
+			let parmas = {...item}
+			parmas.page = 'XgsJournalismForm'
+			parmas.htmlType = 'news'
+			console.log('>>>>xxx>>>>>',parmas)
+			this.$Router.push({
+								name: "XgsJournalismForm", // 新页面的路由名称
+								params:parmas, // 通过 parmas 传递 id
+							});
+			}
+           
     },
     mounted() {
         // 调用 GetList 方法

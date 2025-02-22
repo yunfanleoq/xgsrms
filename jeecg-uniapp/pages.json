@@ -9,6 +9,10 @@
 			"style": {}
 		},
 		{
+			"path": "pages/home/XgsJournalismForm",
+			"style": {}
+		},	
+		{
 			"path": "pages/positions/xgsPositionsList",
 			"style": {}
 		},

@@ -31,7 +31,13 @@ const routes = [
 	        title: '首页',
 	    },
 	},
-	
+	{
+	    path: '/pages/home/XgsJournalismForm',
+	    name: 'XgsJournalismForm',
+	    meta: {
+	        title: '新闻内容',
+	    },
+	},
 	{
 	    path: '/pages/positions/xgsPositionsList',
 	    name: 'peoplelis',
