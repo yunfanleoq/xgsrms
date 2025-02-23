@@ -1,18 +1,22 @@
 package org.jeecg.modules.demo.xgsMyresume.controller;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.exception.JeecgBootException;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.CommonUtils;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.demo.xgsMyresume.entity.XgsMyresume;
 import org.jeecg.modules.demo.xgsMyresume.service.IXgsMyresumeService;
@@ -29,6 +33,8 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
@@ -50,9 +56,17 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 @RequestMapping("/xgsMyresume/xgsMyresume")
 @Slf4j
 public class XgsMyresumeController extends JeecgController<XgsMyresume, IXgsMyresumeService> {
-	@Autowired
-	private IXgsMyresumeService xgsMyresumeService;
-	
+	 @Autowired
+	 private IXgsMyresumeService xgsMyresumeService;
+	 @Autowired
+	 private ISysBaseAPI sysBaseApi;
+
+	 @Value("${jeecg.path.upload}")
+	 private String upLoadPath;
+
+	 @Value(value="${jeecg.uploadType}")
+	 private String uploadType;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -71,6 +85,15 @@ public class XgsMyresumeController extends JeecgController<XgsMyresume, IXgsMyre
 								   HttpServletRequest req) {
         QueryWrapper<XgsMyresume> queryWrapper = QueryGenerator.initQueryWrapper(xgsMyresume, req.getParameterMap());
 		Page<XgsMyresume> page = new Page<XgsMyresume>(pageNo, pageSize);
+		// 控制权限
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		Set<String> roles = sysBaseApi.getUserRoleSetById(loginUser.getId());
+		if (roles.contains("admin")) {
+			queryWrapper.eq("create_by", loginUser.getUsername());
+			// show all
+		} else {
+			queryWrapper.eq("create_by", loginUser.getUsername());
+		}
 		IPage<XgsMyresume> pageList = xgsMyresumeService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
@@ -176,5 +199,67 @@ public class XgsMyresumeController extends JeecgController<XgsMyresume, IXgsMyre
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, XgsMyresume.class);
     }
+
+	 /**
+	  * 通过excel导入数据
+	  *
+	  * @param request
+	  * @param response
+	  * @return
+	  */
+	 @RequestMapping(value = "/uploadPdf", method = RequestMethod.POST)
+	 public Result<?> uploadPdf(HttpServletRequest request, HttpServletResponse response) {
+		 // 上传文件
+		 MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+		 Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+		 for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+			 MultipartFile upFile = entity.getValue();// 获取上传文件对象
+			 String upFileName = upFile.getOriginalFilename();
+			 String upFileType = upFileName.substring(upFileName.lastIndexOf("."));
+			 if(!".pdf".equals(upFileType)) {
+				 return Result.error("请上传pdf格式的文件！");
+			 }
+
+			 String bizPath = "xgsMyResume";
+			 try {
+				 String fileName = null;
+				 File file = new File(upLoadPath + File.separator + bizPath + File.separator);
+				 if (!file.exists()) {
+					 file.mkdirs();// 创建文件根目录
+				 }
+				 String orgName = upFile.getOriginalFilename();// 获取文件名
+				 orgName = CommonUtils.getFileName(orgName);
+				 if (orgName.indexOf(".") != -1) {
+					 fileName = orgName.substring(0, orgName.lastIndexOf(".")) + "_" + System.currentTimeMillis() + orgName.substring(orgName.indexOf("."));
+				 } else {
+					 fileName = orgName + "_" + System.currentTimeMillis();
+				 }
+				 String savePath = file.getPath() + File.separator + fileName;
+				 File savefile = new File(savePath);
+				 FileCopyUtils.copy(upFile.getBytes(), savefile);
+				 String dbpath = null;
+				 if (oConvertUtils.isNotEmpty(bizPath)) {
+					 dbpath = bizPath + File.separator + fileName;
+				 } else {
+					 dbpath = fileName;
+				 }
+				 if (dbpath.contains("\\")) {
+					 dbpath = dbpath.replace("\\", "/");
+				 }
+
+				 LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+
+				 XgsMyresume xgsMyresume = new XgsMyresume();
+				 xgsMyresume.setName(loginUser.getRealname());
+				 xgsMyresume.setResumeFile(dbpath);
+				 xgsMyresumeService.save(xgsMyresume);
+				 xgsMyresumeService.analysisResume(xgsMyresume);
+			 } catch (IOException e) {
+				 log.error(e.getMessage(), e);
+			 }
+		 }
+
+		 return Result.OK("上传成功！");
+	 }
 
 }

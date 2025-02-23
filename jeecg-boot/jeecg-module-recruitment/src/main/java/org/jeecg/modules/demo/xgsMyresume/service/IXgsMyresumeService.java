@@ -11,4 +11,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IXgsMyresumeService extends IService<XgsMyresume> {
 
+    /**
+     * 分析简历
+     * @param xgsMyresume
+     */
+    void analysisResume(XgsMyresume xgsMyresume);
 }

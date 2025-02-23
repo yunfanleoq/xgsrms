@@ -381,4 +381,8 @@ public class XgsMyresume implements Serializable {
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
     private java.lang.String sysOrgCode;
+	/**简历文件*/
+	@Excel(name = "简历文件", width = 15)
+	@ApiModelProperty(value = "简历文件")
+	private java.lang.String resumeFile;
 }
