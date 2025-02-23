@@ -3,7 +3,7 @@
         <!--标题和返回-->
 		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
 			<block slot="backText">返回</block>
-			<block slot="content">简历列表</block>
+			<block slot="content">简历详情</block>
 		</cu-custom>
 		 <!--表单区域-->
 		<view>
@@ -272,15 +272,24 @@
                 model: {},
                 backRouteName:'index',
                 url: {
-                  queryById: "/positions/xgsMyresume/queryById",
-                  add: "/positions/xgsMyresume/add",
-                  edit: "/positions/xgsMyresume/edit",
+                  queryById: "/xgsMyresume/xgsMyresume/queryById",
+                  add: "/xgsMyresume/xgsMyresume/add",
+                  edit: "/xgsMyresume/xgsMyresume/edit",
                 },
             }
         },
         created(){
              this.initFormData();
         },
+		onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+			let dataId = option.id;
+			this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
+				if(res.data.success){
+					console.log("表单数据",res);
+					this.model = res.data.result;
+				}
+			})
+		},
         methods:{
            initFormData(){
                if(this.formData){
