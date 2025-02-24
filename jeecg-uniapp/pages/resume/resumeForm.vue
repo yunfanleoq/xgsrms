@@ -8,8 +8,10 @@
 		 <!--表单区域-->
 		<view v-if="labelStatus">
 			<view>
-				<resumeApplyForm style="display: none;" :formData="params"></resumeApplyForm>
-				<resumeBaseForm ref="resumeBaseForm" v-show="formNumber === 1">1</resumeBaseForm>
+				<resumeApplyForm ref="resumeApplyForm" style="display: none;" :formData="params"></resumeApplyForm>
+				<view v-show="formNumber === 1">
+					<resumeBaseForm ref="resumeBaseForm">1</resumeBaseForm>
+				</view>
 				<resumeWorkForm ref="resumeWorkForm" v-show="formNumber === 2">2</resumeWorkForm>
 				<resumeEduForm ref="resumeEduForm" v-show="formNumber === 3">3</resumeEduForm>
 				<resumeHomeForm ref="resumeHomeForm" v-show="formNumber === 4">4</resumeHomeForm>
@@ -90,7 +92,8 @@
         methods:{
            initFormData(){
 			   //获取岗位信息
-			   this.model = this.$Route.query;
+			   // this.model = this.$Route.query;
+			   this.model = uni.$globalParams;;
 			   this.params.positionId = this.model.id;
 			   this.params.positionName = this.model.positionName;
 			   this.params.positionDept = this.model.dept_dictText;
@@ -131,7 +134,9 @@
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
 				if(this.validateAndNext()){
-					
+					let xgsPositionApplyVO = {}
+					xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
+					xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
 				}else{
 					this.$tip.toast('有信息未填写');
 				}
@@ -140,16 +145,33 @@
 			validateAndNext(){
 				let inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea');
 				let allFilled = true;
+				
+				let radios = document.querySelectorAll('uni-radio-group');
+				console.log("radioNum",this.$refs.resumeBaseForm.radioNum);
+				if(radios.length === this.$refs.resumeBaseForm.radioNum){
+					console.log("ok")
+				}else{
+					console.log("不ok")
+				}
+				
+				let num1 = 0;
+				let num2 = 0;
 				// 遍历每个input元素并检查其值
 				inputs.forEach(function(input) {
 					// 检查输入框是否可见
 					if (input.offsetParent !== null) { // offsetParent为null表示元素不可见
+						num1++
 						// 忽略disabled和readonly的input元素
 						if (!input.value || input.value.trim() === '') {
+							num2++
 							allFilled = false;
 						}
 					}
 				});
+				
+				console.log("num1",num1)
+				console.log("num2",num2)
+				
 				// 根据检查结果显示消息
 				if (allFilled) {
 					console.log('所有输入字段都已填写。');

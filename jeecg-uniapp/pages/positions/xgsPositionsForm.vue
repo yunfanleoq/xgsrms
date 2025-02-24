@@ -210,16 +210,19 @@
             },
 			//岗位申请（对于‘招聘’）
 			onApply(item){
-				let parmas = {...item}
-				parmas.htmlType = '招聘'
-				this.$Router.push({
-					name: "resumeForm", // 新页面的路由名称
-					params:parmas, // 通过 parmas 传递 id
-				});
+				let params = {...item}
+				params.htmlType = '招聘'
+				// this.$Router.push({
+				// 	name: "resumeForm", // 新页面的路由名称
+				// 	params:parmas, // 通过 parmas 传递 id
+				// });
+				uni.$globalParams = params;
+				uni.redirectTo({
+					url:"/pages/resume/resumeForm"
+				})
 			},
 			//收藏岗位
 			onCollectAdd(){
-				console.log("params",this.params)
 				this.$http.post(this.url.xgsFavoriteJobAddUrl,this.params).then(res=>{
 					console.log("res",res)
 					if (res.data.code == 200) {

@@ -17,7 +17,21 @@
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">性别：</text></view>
-                  <input placeholder="请输入性别" v-model="model.sex"/>
+                  <!-- <input placeholder="请输入性别" v-model="model.sex"/> -->
+				  <radio-group @change="(e) => radioChange(e,'sex')">
+					<label :key="model.sex">
+						<view>
+							<radio value="男" :checked="model.sex === '男'"/>
+						</view>
+						<view>男</view>
+					</label>
+					<label>
+						<view>
+							<radio value="女" :checked="model.sex === '女'"/>
+						</view>
+						<view>女</view>
+					</label>
+				  </radio-group>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -26,7 +40,20 @@
                   <input  placeholder="请输入籍贯" v-model="model.nativePlace"/>
                 </view>
               </view>
-              <my-date label="出生年月：" v-model="model.birthday" placeholder="请输入出生年月"></my-date>
+              <!-- <my-date label="出生年月：" v-model="model.birthday" placeholder="请输入出生年月"></my-date> -->
+			  <view class="cu-form-group">
+			    <view class="flex align-center">
+					<view class="title"><text space="ensp">出生年月：</text></view>
+					<view class="uni-list-cell-db">
+						<picker mode="date" :value="model.birthday" :start="startDate" :end="endDate" @change="bindDateChange">
+							<view class="uni-input" v-if="birthday">{{birthday}}</view>
+							<view class="uni-input" v-else>
+								<input  placeholder="请输入出生年月"/>
+							</view>
+						</picker>
+					</view>
+			    </view>
+			  </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">民族：</text></view>
@@ -553,9 +580,17 @@
                   add: "/xgsUserResumes/baseTest/add",
                   edit: "/xgsUserResumes/baseTest/edit",
                 },
+				radioNum: 0,
+				radioList: [],
+				startDate: "",
+				endDate: "",
+				birthday: ""
             }
         },
         created(){
+			this.getStartDate();
+			this.getEndDate();
+			this.currentDate();
         },
         methods:{
            initFormData(){
@@ -569,6 +604,46 @@
                     })
                 }
             },
+			formSubmission(){
+				return this.model
+            },
+			radioChange(evt, radioName){
+				this.model.sex = evt.detail.value;
+				if (!this.radioList.includes(radioName)) {
+					this.radioList.push(radioName);
+					this.radioNum++
+				}
+			},
+			bindDateChange: function(e) {
+				this.model.birthday = e.detail.value
+				this.birthday = this.model.birthday
+				
+				console.log("this.endDate", this.endDate)
+			},
+			getDate(type) {
+				const date = new Date();
+				let year = date.getFullYear();
+				let month = date.getMonth() + 1;
+				let day = date.getDate();
+				
+				if(type === 'start'){
+					year = year  - 100;
+				}
+				
+				month = month > 9 ? month : '0' + month;
+				day = day > 9 ? day : '0' + day;
+				return `${year}-${month}-${day}`;
+			},
+			getStartDate() {
+				this.startDate = this.getDate('start');
+			},
+			getEndDate() {
+				this.endDate = this.getDate('end');
+			},
+			currentDate(){
+				this.birthday = this.getDate('news');
+			}
+			
         }
     }
 </script>
