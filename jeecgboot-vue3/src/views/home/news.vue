@@ -184,7 +184,7 @@ onMounted(selectY)
  */
 function truncatedText(htmlText) {
   const maxLength = 120;
-  if (htmlText.length > maxLength) {
+  if (htmlText && htmlText.length > maxLength) {
     return htmlText.slice(0, maxLength) + '...';
   }
   return htmlText;

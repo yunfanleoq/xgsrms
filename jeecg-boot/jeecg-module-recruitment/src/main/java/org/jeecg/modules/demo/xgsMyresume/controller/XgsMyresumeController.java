@@ -88,12 +88,18 @@ public class XgsMyresumeController extends JeecgController<XgsMyresume, IXgsMyre
 		// 控制权限
 		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		Set<String> roles = sysBaseApi.getUserRoleSetById(loginUser.getId());
+		//打印日志
+		log.info("get loginUser info: {}", loginUser);
 		if (roles.contains("admin")) {
 			queryWrapper.eq("create_by", loginUser.getUsername());
 			// show all
 		} else {
 			queryWrapper.eq("create_by", loginUser.getUsername());
+
 		}
+		// 显示queryWrapper 的具体内容
+
+		log.info("get queryWrapper info: {}", queryWrapper.getSqlSegment());
 		IPage<XgsMyresume> pageList = xgsMyresumeService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
