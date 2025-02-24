@@ -29,6 +29,30 @@
 			"style": {}
 		},
 		{
+			"path": "pages/resume/resumeForm",
+			"style": {}
+		},
+		{
+			"path": "pages/resume/resumeApplyForm",
+			"style": {}
+		},
+		{
+			"path": "pages/resume/resumeBaseForm",
+			"style": {}
+		},
+		{
+			"path": "pages/resume/resumeWorkForm",
+			"style": {}
+		},
+		{
+			"path": "pages/resume/resumeHomeForm",
+			"style": {}
+		},
+		{
+			"path": "pages/resume/resumeEduForm",
+			"style": {}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {}
 		},

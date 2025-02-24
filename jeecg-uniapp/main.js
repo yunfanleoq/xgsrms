@@ -43,6 +43,22 @@ Vue.component('xgsPositionsForm',xgsPositionsForm)
 
 import XgsMyresumeList from './pages/xgs/myresume/XgsMyresumeList.vue'
 Vue.component('XgsMyresumeList',XgsMyresumeList)
+
+import resumeApplyForm from './pages/resume/resumeApplyForm.vue'
+Vue.component('resumeApplyForm',resumeApplyForm)
+
+import resumeBaseForm from './pages/resume/resumeBaseForm.vue'
+Vue.component('resumeBaseForm',resumeBaseForm)
+
+import resumeWorkForm from './pages/resume/resumeWorkForm.vue'
+Vue.component('resumeWorkForm',resumeWorkForm)
+
+import resumeEduForm from './pages/resume/resumeEduForm.vue'
+Vue.component('resumeEduForm',resumeEduForm)
+
+import resumeHomeForm from './pages/resume/resumeHomeForm.vue'
+Vue.component('resumeHomeForm',resumeHomeForm)
+
 // xgs pages end
 
 import people from './pages/user/people.vue'

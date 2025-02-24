@@ -80,8 +80,9 @@
              this.parameterConfig();
         },
         methods:{
-           formSubmission(){
-               
+			formSubmission(){
+				this.model.status = "审核中"
+				return this.model
             },
 			parameterConfig(){
 				this.model = {...this.formData}
