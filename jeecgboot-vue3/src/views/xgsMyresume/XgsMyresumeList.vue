@@ -99,7 +99,11 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
+        // return Object.assign(params, queryParam);
+        // 获取当前登录用户的ID
+        const currentUserId = userStore.getUserInfo.id;
+        // 添加用户ID作为过滤条件
+        return Object.assign(params, queryParam, { userId: currentUserId });
       },
     },
     exportConfig: {

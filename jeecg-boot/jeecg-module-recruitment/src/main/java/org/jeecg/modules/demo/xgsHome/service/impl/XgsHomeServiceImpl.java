@@ -61,9 +61,10 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
             // 创建集合来分别存储图片地址、新闻标题和招聘公告
             List<String> photographUrls = new ArrayList<>();
             List<String> newsTitles = new ArrayList<>();
+            List<String> newsTexts = new ArrayList<>();
             List<String> recruitAnnouncements = new ArrayList<>();
 
-            // 提取图片地址
+            // 提取轮播图片地址
             document.select(".hotnews .slides li img").forEach(element -> {
                 String photographUrl = element.attr("src");
                 // 去掉 "." 符号
@@ -72,21 +73,64 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 photographUrls.add(photographUrl); // 将图片地址添加到集合中
             });
 
-            // 提取新闻标题
-            document.select(".ban_grtnews ul li a").forEach(element -> {
+            // 提取新闻标题  /html/body/div[5]/div/div/div/div[1]/div/div/ul[1]/li[1]/p/a
+            document.select(".hotnews .slides li p a").forEach(element -> {
                 String newTitle = element.attr("title");
                 newsTitles.add(newTitle); // 将新闻标题添加到集合中
+
+//                // 提取新闻正文内容
+//                String newsUrl = element.attr("href"); // 假设新闻链接在 href 属性中
+//                if (!newsUrl.isEmpty()) {
+//                    try {
+//                        // 发起 GET 请求获取新闻详情页 HTML
+//                        HttpHeaders headersd = new HttpHeaders();
+//                        headers.set("User-Agent", "Mozilla/5.0"); // 设置请求头，避免被拦截
+//                        HttpEntity<String> entityd = new HttpEntity<>(headersd);
+//                        if(newsUrl.startsWith(".")) {
+//                            newsUrl = apiUrl + newsUrl.substring(1); // apiUrl + newsUrl.substring(1)
+//                        }
+//                        ResponseEntity<String> responsed = restTemplate.exchange(
+//                                newsUrl, HttpMethod.GET, entityd, String.class);
+//                        // 获取响应体中的 HTML 内容
+//                        String newsHtmlContent = responsed.getBody();
+//                        if (newsHtmlContent == null) {
+//                            throw new Exception("获取新闻详情页内容失败");
+//                        }
+//
+//                        // 设置网页字符编码为 UTF-8，避免乱码问题
+//                        newsHtmlContent = new String(newsHtmlContent.getBytes("ISO-8859-1"), "UTF-8");
+//                        // 使用 Jsoup 解析 HTML
+//                        org.jsoup.nodes.Document newsDocument = org.jsoup.Jsoup.parse(newsHtmlContent);
+//
+//                        // 提取新闻正文内容
+//                        String newsText = newsDocument.select("#zoom div").text(); // 假设新闻正文在 .news-content p 标签中
+//                        newsTexts.add(newsText); // 将新闻正文内容添加到集合中
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+
             });
+            // 打印分割字符 20个
+//            System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
+//
+//            // 打印 newsTexts
+//            for (String newsText : newsTexts) {
+//                System.out.println(newsText);
+//            }
+//            System.out.println("---------------------------------------------------------------------------------------------------------------------------------------------------");
 
             // 提取招聘公告标题
             document.select(".notice_students .tab_con:eq(1) ul li h3").forEach(element -> {
                 String recruitAnnouncementTitle = element.text();
                 recruitAnnouncements.add(recruitAnnouncementTitle); // 将招聘公告添加到集合中
             });
+
             int maxSize = Math.max(photographUrls.size(), Math.max(newsTitles.size(), recruitAnnouncements.size()));
             // 检查是否有数据缺失，如果有则跳过这条数据
 
-            for (int i = 0; i < maxSize; i++) {
+            // 插入轮播图 图片 新闻 新闻正文
+            for (int i = 0; i < photographUrls.size(); i++) {
                 // 检查集合是否有足够的元素
                 if (i >= photographUrls.size() || i >= newsTitles.size() || i >= recruitAnnouncements.size()) {
                     continue; // 如果某个集合没有足够的元素，则跳过这次循环
@@ -96,7 +140,7 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 //同步的新闻属于头条新闻,也需要同步到数据库中
                 XgsJournalism xgsJournalism = new XgsJournalism();
                 xgsJournalism.setJournalismHead(newsTitles.get(i));
-                xgsJournalism.setJournalismText(" ");
+//                xgsJournalism.setJournalismText(newsTexts.get(i));
                 xgsJournalism.setState("已发布");
                 xgsJournalism.setType("头条新闻");
                 xgsJournalism.setCreateTime(new Date());
@@ -126,7 +170,7 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 // 保存到数据库
                 xgsHomeMapper.insert(homeData);  // 插入到数据库
                 // 打印调试信息
-                System.out.println("首页数据已保存：" + homeData);
+//                System.out.println("首页数据已保存：" + homeData);
             }
 
             return true;
