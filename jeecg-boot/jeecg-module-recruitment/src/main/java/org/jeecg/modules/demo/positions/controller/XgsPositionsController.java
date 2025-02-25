@@ -212,6 +212,7 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	@ApiOperation(value="招聘岗位列表-通过id查询", notes="招聘岗位列表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<XgsPositions> queryById(@RequestParam(name="id",required=true) String id) {
+		log.info("queryById查询参数:" + id);
 		XgsPositions xgsPositions = xgsPositionsService.getById(id);
 		if(xgsPositions==null) {
 			return Result.error("未找到对应数据");

@@ -46,10 +46,10 @@ const routes = [
 	    },
 	},
 	{
-	    path: '/pages/positions/xgsPositionsForm',
-	    name: 'positionsDetail',
+	    path: '/pages/user/favoriteDetail',
+	    name: 'favoriteDetail',
 	    meta: {
-	        title: '岗位详情',
+	        title: '收藏详情',
 	    },
 	},
 	
@@ -58,6 +58,13 @@ const routes = [
         name: 'people',
         meta: {
 	        title: '个人中心',
+	    },
+	},
+	{
+	    path: '/pages/user/favorite',
+	    name: 'favorite',
+	    meta: {
+	        title: '收藏',
 	    },
 	},
 	{
