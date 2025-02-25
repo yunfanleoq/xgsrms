@@ -1,15 +1,20 @@
 <template name="user">
 	<view>
-		<view class="cu-custom ">
+		<!-- <view class="cu-custom ">
 			<view class="cu-bar fixed animation-slide-top" :style="[{height: CustomBar + 'px', animationDelay: '0.1s'}]">
 				<view class="action" @tap="goBack">
 					<text class="cuIcon-back text-white"></text>
 					<text class="text-white text-bold text-shadow">返回</text>
 				</view>
 			</view>
-		</view>
+		</view> -->
+		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
+			<block slot="backText">返回</block>
+			<block slot="content">退出登录</block>
+		</cu-custom>
+
 		<scroll-view scroll-y class="page">
-			<image src="/static/blue.png" mode="widthFix" class="response" style="margin-top: 0;"></image>
+			<!-- <image src="/static/blue.png" mode="widthFix" class="response" style="margin-top: 0;"></image> -->
 			<view class="nav-list margin-top-xl">
 				<navigator hover-class="none" :url="'/pages/common/' + item.name" class="nav-li" navigateTo :class="'bg-'+item.color"
 				 :style="[{animation: 'show ' + ((index+1)*0.2+1) + 's 1'}]" v-for="(item,index) in elements" :key="index">
