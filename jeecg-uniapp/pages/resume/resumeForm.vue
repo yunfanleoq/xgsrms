@@ -6,15 +6,36 @@
 			<block slot="content">简历填写</block>
 		</cu-custom>
 		 <!--表单区域-->
-		<view v-if="labelStatus">
+		<view v-if="labelStatus == 2">
+			 <view class="cu-form-group">
+			   <view class="flex align-center">
+				<view class="title"><text space="ensp">简历名称：</text></view>
+					<picker @change="bindPickerChange" :value="myResumeIndex" :range="myResumeNameList">
+						<view class="uni-input">{{myResumeNameList[myResumeIndex]}}</view>
+					</picker>
+			   </view>
+			 </view>
 			<view>
 				<resumeApplyForm ref="resumeApplyForm" style="display: none;" :formData="params"></resumeApplyForm>
-				<view v-show="formNumber === 1">
-					<resumeBaseForm ref="resumeBaseForm">1</resumeBaseForm>
+				<view v-show="formNumber === 1 && formTest">
+					<resumeBaseForm ref="resumeBaseForm" :formData="formData"></resumeBaseForm>
 				</view>
-				<resumeWorkForm ref="resumeWorkForm" v-show="formNumber === 2">2</resumeWorkForm>
-				<resumeEduForm ref="resumeEduForm" v-show="formNumber === 3">3</resumeEduForm>
-				<resumeHomeForm ref="resumeHomeForm" v-show="formNumber === 4">4</resumeHomeForm>
+				<view v-show="formNumber === 1 && params.positionType === '普通岗位' && !formTest">
+					<!-- <resumeBaseForm ref="resumeBaseForm"></resumeBaseForm> -->
+					<resumeBaseFormPT ref="resumeBaseFormPT"></resumeBaseFormPT>
+				</view>
+				<view v-show="formNumber === 1 && params.positionType === '副高级以上岗位' && !formTest">
+					<resumeBaseForm ref="resumeBaseForm"></resumeBaseForm>
+				</view>
+				<view v-show="formNumber === 1 && params.positionType === '博士后岗位' && !formTest">
+					<resumeBaseForm ref="resumeBaseForm"></resumeBaseForm>
+				</view>
+				<view v-show="formNumber === 1 && params.positionType === '人才派遣岗位' && !formTest">
+					<resumeBaseForm ref="resumeBaseForm"></resumeBaseForm>
+				</view>
+				<resumeWorkForm ref="resumeWorkForm" v-show="formNumber === 2"></resumeWorkForm>
+				<resumeEduForm ref="resumeEduForm" v-show="formNumber === 3"></resumeEduForm>
+				<resumeHomeForm ref="resumeHomeForm" v-show="formNumber === 4"></resumeHomeForm>
 			</view>
 			<button v-if="formNumber > 1" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onUpPage">
 				<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>上一步
@@ -37,12 +58,13 @@
 	import api from '@/api/api'
 	import resumeApplyForm from '@/pages/resume/resumeApplyForm.vue'
 	import resumeBaseForm from '@/pages/resume/resumeBaseForm.vue'
+	import resumeBaseFormPT from '@/pages/resume/resumeBaseFormPT.vue'
 	import resumeWorkForm from '@/pages/resume/resumeWorkForm.vue'
 	import resumeEduForm from '@/pages/resume/resumeEduForm.vue'
 	import resumeHomeForm from '@/pages/resume/resumeHomeForm.vue'
 
     export default {
-        name: "简历填写",
+        name: "resume_form",
         components:{ myDate },
         props:{},
         data(){
@@ -60,7 +82,8 @@
 					xgsFavoriteJobAddUrl:'/positions/xgsFavoriteJob/add',
 					xgsFavoriteJobDelUrl: '/positions/xgsFavoriteJob/delete',
 					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
-					submissionUrl:'/positions/xgsPositionApply/doPositionApply'
+					submissionUrl: '/positions/xgsPositionApply/doPositionApply',
+					myResumeUrl: '/xgsResume/xgsResumeBase/listMine'
                 },
 				htmlTypeStatce: true,
 				isCollected: false,
@@ -74,8 +97,14 @@
 					positionKtz: "",
 					positionCount: "",
 				},
+				xgsPositionApplyVO: {},
 				formNumber: 0,
-				labelStatus: false
+				labelStatus: 0,
+				formTest: true,
+				myResumeIndex: 0,
+				myResumeList: [{"resumeName": "不选择"}],
+				myResumeNameList: [],
+				formData: {},
             }
         },
 		watch: {
@@ -85,11 +114,24 @@
 				    this.userId=this.$store.getters.userid;
 				},
 			},
+			myResumeIndex(newVal, oldVal){
+				if(newVal != oldVal){
+					if(this.myResumeIndex > 0){
+						this.xgsPositionApplyVO = this.myResumeList[this.myResumeIndex]
+					}else{
+						this.xgsPositionApplyVO = {}
+					}
+					this.formData = this.xgsPositionApplyVO
+					console.log("d)))))))))))))", this.formData)
+					labelStatus--
+					labelStatus++
+				}
+			},
 		},
         created(){
              this.initFormData();
         },
-        methods:{
+        methods : {
            initFormData(){
 			   //获取岗位信息
 			   // this.model = this.$Route.query;
@@ -111,11 +153,33 @@
 						let avatar=(perArr.avatar && perArr.avatar.length > 0)? api.getFileAccessHttpUrl(perArr.avatar):'/static/avatar_boy.png'
 						this.params.userId = perArr.id
 						this.params.userName = perArr.username
-						this.labelStatus = true
+						this.labelStatus++
 					}
 			   }).catch(err => {
 					console.log(err);
 			   });
+			   
+			   //获取简历集合
+			   this.$http.get(this.url.myResumeUrl,{params:{pageSize: 1000}}).then(res=>{
+					if (res.data.success) {
+						let resumeList = res.data.result.records
+						this.myResumeNameList = this.myResumeList.map(item => item.resumeName);
+						resumeList.forEach((input, index) => {
+							if(input.resumeName){
+								this.myResumeNameList.push(input.resumeName)
+							}else{
+								this.myResumeNameList.push("简历"+index)
+							}
+						})
+						if(resumeList.length > 0){
+							this.myResumeList = [...this.myResumeList, ...resumeList];
+						}
+					}
+			   }).catch(err => {
+					console.log(err);
+			   }).finally(() =>{
+				   this.labelStatus++
+			   })
 			   
 			   this.formNumber = 1;
             },
@@ -134,53 +198,66 @@
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
 				if(this.validateAndNext()){
-					let xgsPositionApplyVO = {}
-					xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
-					xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
+					this.xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
+					this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
 				}else{
 					this.$tip.toast('有信息未填写');
 				}
             },
 			//判断信息是否全部填写
 			validateAndNext(){
-				let inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea');
-				let allFilled = true;
+				//测试使用（^_^;
+				// this.xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
+				// this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
+				// console.log("vo",this.xgsPositionApplyVO)
 				
+				//判断单选框是否全部选择
 				let radios = document.querySelectorAll('uni-radio-group');
-				console.log("radioNum",this.$refs.resumeBaseForm.radioNum);
-				if(radios.length === this.$refs.resumeBaseForm.radioNum){
-					console.log("ok")
+				radios = Array.from(radios).filter(radio => radio.offsetParent !== null);
+				let radioNum = -1;
+				if(this.formTest){
+					radioNum = this.$refs.resumeBaseForm.radioNum;
 				}else{
-					console.log("不ok")
+					switch(this.params.positionType){
+						case '普通岗位':
+							radioNum = this.$refs.resumeBaseFormPT.radioNum;
+							break;
+						case '副高级以上岗位':
+							radioNum = this.$refs.resumeBaseFormPT.radioNum;
+							break;
+						case '博士后岗位	':
+							radioNum = this.$refs.resumeBaseFormPT.radioNum;
+							break;
+						case '人才派遣岗位':
+							radioNum = this.$refs.resumeBaseFormPT.radioNum;
+							break;
+					}
 				}
 				
-				let num1 = 0;
-				let num2 = 0;
+				console.log(radios.length,"111",radioNum)
+				if(radios.length === radioNum){
+				}else{
+					return false
+				}
+				//判断输入框是否全部选择
+				let inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea');
+				let allFilled = true;
 				// 遍历每个input元素并检查其值
 				inputs.forEach(function(input) {
 					// 检查输入框是否可见
 					if (input.offsetParent !== null) { // offsetParent为null表示元素不可见
-						num1++
 						// 忽略disabled和readonly的input元素
 						if (!input.value || input.value.trim() === '') {
-							num2++
 							allFilled = false;
 						}
 					}
 				});
-				
-				console.log("num1",num1)
-				console.log("num2",num2)
-				
-				// 根据检查结果显示消息
-				if (allFilled) {
-					console.log('所有输入字段都已填写。');
-					return true
-				} else {
-					console.log('有输入字段未填写。');
-					return false
-				}
-			}
+				return allFilled
+			},
+			//简历选择
+			bindPickerChange: function(e) {
+				this.myResumeIndex = e.detail.value
+			},
         }
     }
 </script>

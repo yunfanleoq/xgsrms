@@ -161,7 +161,6 @@
 			cur: {
 				immediate: true,
 				handler() {
-					console.log('watch',this.cur)
 				    this.userId=this.$store.getters.userid;
 				},
 			},
@@ -182,7 +181,6 @@
 			   //获取用户信息
 			   let userId = this.$store.getters.userid;
 			   this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
-					console.log("res",res)
 					if (res.data.success) {
 						let perArr = res.data.result
 						let avatar=(perArr.avatar && perArr.avatar.length > 0)? api.getFileAccessHttpUrl(perArr.avatar):'/static/avatar_boy.png'
@@ -201,7 +199,6 @@
                 this.loading = true;
                 let url = myForm.id?this.url.edit:this.url.add;
 				this.$http.post(url,myForm).then(res=>{
-				   console.log("res",res)
 				   this.loading = false
 				   this.$Router.push({name:this.backRouteName})
 				}).catch(()=>{
@@ -224,7 +221,6 @@
 			//收藏岗位
 			onCollectAdd(){
 				this.$http.post(this.url.xgsFavoriteJobAddUrl,this.params).then(res=>{
-					console.log("res",res)
 					if (res.data.code == 200) {
 						this.isCollected = true;
 						this.$tip.success("收藏职位成功")
@@ -242,7 +238,6 @@
 					return
 				}
 				this.$http.delete(this.url.xgsFavoriteJobDelUrl + "?id=" + this.favoriteJob).then(res=>{
-					console.log("res",res)
 					if (res.data.code === 200) {
 						this.isCollected = false;
 						this.$tip.success("取消收藏职位成功")

@@ -3920,3 +3920,18 @@ scroll-view.cu-steps .cu-item {
 .lines-white {
 	color: #ffffff;
 }
+
+.horizontal-radio-group {
+    display: flex; /* 横向排列 */
+}
+
+.radio-label {
+    display: flex; /* 单选框和文字横向排列 */
+    align-items: center; /* 垂直居中对齐 */
+    margin-right: 20px; /* 单选框之间的间距 */
+}
+
+.radio-container {
+    margin-right: 8px; /* 单选框和文字之间的间距 */
+}
+

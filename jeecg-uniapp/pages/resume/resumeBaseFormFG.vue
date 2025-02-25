@@ -8,12 +8,6 @@
 		 <!--表单区域-->
 		<view>
 			<form>
-				<view class="cu-form-group" style="display: none;">
-				  <view class="flex align-center">
-				    <view class="title"><text space="ensp">简历名称：</text></view>
-				    <input  placeholder="请输入简历名称" v-model="model.resumeName"/>
-				  </view>
-				</view>				
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">姓名：</text></view>
@@ -40,13 +34,7 @@
 				  </radio-group>
                 </view>
               </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">籍贯：</text></view>
-                  <input  placeholder="请输入籍贯" v-model="model.nativePlace"/>
-                </view>
-              </view>
-              <!-- <my-date label="出生年月：" v-model="model.birthday" placeholder="请输入出生年月"></my-date> -->
+			  <!-- <my-date label="出生年月：" v-model="model.birthday" placeholder="请输入出生年月"></my-date> -->
 			  <view class="cu-form-group">
 			    <view class="flex align-center">
 					<view class="title"><text space="ensp">出生年月：</text></view>
@@ -62,14 +50,14 @@
 			  </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">民族：</text></view>
-                  <input  placeholder="请输入民族" v-model="model.nation"/>
+                  <view class="title"><text space="ensp">籍贯：</text></view>
+                  <input  placeholder="请输入籍贯" v-model="model.nativePlace"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">身份证号：</text></view>
-                  <input  placeholder="请输入身份证号" v-model="model.idNumber"/>
+                  <view class="title"><text space="ensp">婚姻状况：</text></view>
+                  <input  placeholder="请输入婚姻状况" v-model="model.maritalStatus"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -80,11 +68,52 @@
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
+                  <view class="title"><text space="ensp">国籍：</text></view>
+                  <input  placeholder="请输入国籍" v-model="model.nationality"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">身份证号：</text></view>
+                  <input  placeholder="请输入身份证号" v-model="model.idNumber"/>
+                </view>
+              </view>							
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">民族：</text></view>
+                  <input  placeholder="请输入民族" v-model="model.nation"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">从事专业：</text></view>
+                  <input  placeholder="请输入从事专业" v-model="model.profession"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">现工作单位及职位：</text></view>
+                  <input  placeholder="请输入现工作单位及职位" v-model="model.workUnit"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
                   <view class="title"><text space="ensp">户口所在地：</text></view>
                   <input  placeholder="请输入户口所在地" v-model="model.hukou"/>
                 </view>
               </view>
               <view class="cu-form-group">
+				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+						<text space="ensp">主要学术成就、科技成果及创新点：</text>
+					</view>
+					<view style="width: 100%; margin-top: 10px;">
+						<textarea placeholder="请输入主要学术成就、科技成果及创新点" v-model="model.reseachResult" maxlength="-1"/>
+					</view>
+				</view>
+              </view>
+			  
+              <view class="cu-form-group" style="display: none;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">是否应届毕业生：</text></view>
                   <!-- <input  placeholder="请输入是否应届毕业生" v-model="model.yjbys"/> -->
@@ -104,7 +133,7 @@
 					</radio-group>
                 </view>
               </view>
-              <view class="cu-form-group">
+              <view class="cu-form-group" style="display: none;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">是否统招统分：</text></view>
                   <!-- <input  placeholder="请输入是否统招统分" v-model="model.tztf"/> -->
@@ -144,12 +173,6 @@
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">专业：</text></view>
-                  <input  placeholder="请输入专业" v-model="model.profession"/>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
 					<view class="title"><text space="ensp">毕业时间：</text></view>
 				  <!-- <input  placeholder="请输入毕业时间" v-model="model.graduateDate"/> -->
 					<picker mode="date" :value="model.graduateDate" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'graduateDate')">
@@ -170,12 +193,6 @@
 							<input  placeholder="请输入参加工作时间" style="pointer-events: none;"/>
 						</view>
 					</picker>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">目前工作单位：</text></view>
-                  <input  placeholder="请输入目前工作单位" v-model="model.workUnit"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -261,16 +278,6 @@
               <view class="cu-form-group">
 				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
 					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
-						<text space="ensp">工作主要业绩：</text>
-					</view>
-					<view style="width: 100%; margin-top: 10px;">
-						<textarea placeholder="请输入工作主要业绩" v-model="model.reseachResult" maxlength="-1"/>
-					</view>
-				</view>
-              </view>
-              <view class="cu-form-group">
-				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
-					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
 						<text space="ensp">论文专著专利：</text>
 					</view>
 					<view style="width: 100%; margin-top: 10px;">
@@ -350,14 +357,14 @@
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">岗位类型：</text></view>
-                  <input  placeholder="请输入岗位类型" v-model="model.positionType"/>
+                  <view class="title"><text space="ensp">简历名称：</text></view>
+                  <input  placeholder="请输入简历名称" v-model="model.resumeName"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">国籍：</text></view>
-                  <input  placeholder="请输入国籍" v-model="model.nationality"/>
+                  <view class="title"><text space="ensp">岗位类型：</text></view>
+                  <input  placeholder="请输入岗位类型" v-model="model.positionType"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -376,12 +383,6 @@
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">应聘岗位名称：</text></view>
                   <input  placeholder="请输入应聘岗位名称" v-model="model.applyPosition"/>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">婚姻状况：</text></view>
-                  <input  placeholder="请输入婚姻状况" v-model="model.maritalStatus"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -728,7 +729,6 @@
 			this.getStartDate();
 			this.getEndDate();
 			// this.currentDate();
-			this.currentFormData();
         },
         methods:{
            initFormData(){
@@ -815,10 +815,8 @@
 			},
 			currentDate(){
 				this.birthday = this.getDate('news');
-			},
-			currentFormData(){
-				this.model = {...this.formData}
-			},
+			}
+			
         }
     }
 </script>

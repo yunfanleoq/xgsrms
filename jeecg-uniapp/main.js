@@ -50,6 +50,9 @@ Vue.component('resumeApplyForm',resumeApplyForm)
 import resumeBaseForm from './pages/resume/resumeBaseForm.vue'
 Vue.component('resumeBaseForm',resumeBaseForm)
 
+import resumeBaseFormPT from './pages/resume/resumeBaseFormPT.vue'
+Vue.component('resumeBaseFormPT',resumeBaseFormPT)
+
 import resumeWorkForm from './pages/resume/resumeWorkForm.vue'
 Vue.component('resumeWorkForm',resumeWorkForm)
 
