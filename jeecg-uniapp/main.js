@@ -67,6 +67,12 @@ Vue.component('resumeHomeForm',resumeHomeForm)
 import people from './pages/user/people.vue'
 Vue.component('people',people)
 
+import favorite from './pages/user/favorite.vue'
+Vue.component('favorite',favorite)
+
+// favoriteDetail
+import favoriteDetail from './pages/user/favoriteDetail.vue'
+Vue.component('favoriteDetail',favoriteDetail)
 // 自定义组件
 import mySelect from './components/my-componets/my-select.vue'
 Vue.component('mySelect',mySelect)
