@@ -6,29 +6,34 @@ import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
   {
-    title: '职位名称',
-    align:"center",
+    title: '岗位名称',
+    align: 'center',
     dataIndex: 'positionName'
   },
   {
-    title: '面试官',
-    align:"center",
-    dataIndex: 'interviewer'
+    title: '岗位部门',
+    align: 'center',
+    dataIndex: 'positionDept'
+  },
+  {
+    title: '岗位类型',
+    align: 'center',
+    dataIndex: 'positionType'
   },
   {
     title: '面试状态',
-    align:"center",
-    dataIndex: 'status_dictText'
+    align: 'center',
+    dataIndex: 'interviewStatus'
   },
   {
     title: '面试时间',
-    align:"center",
+    align: 'center',
     dataIndex: 'interviewDate'
   },
   {
-    title: '面试反馈',
-    align:"center",
-    dataIndex: 'interviewFeedback'
+    title: '面试信息',
+    align: 'center',
+    dataIndex: 'interviewInformation'
   },
 ];
 //查询数据
@@ -83,9 +88,28 @@ export const searchFormSchema: FormSchema[] = [
 //表单数据
 export const formSchema: FormSchema[] = [
   {
-    label: '面试官',
-    field: 'interviewer',
+    label: '岗位名称',
+    field: 'positionName',
     component: 'Input',
+    dynamicDisabled:true
+  },
+  {
+    label: '岗位部门',
+    field: 'positionDept',
+    component: 'Input',
+    dynamicDisabled:true
+  },
+  {
+    label: '岗位类型',
+    field: 'positionType',
+    component: 'Input',
+    dynamicDisabled:true
+  },
+  {
+    label: '面试信息',
+    field: 'interviewInformation',
+    component: 'Input',
+    dynamicDisabled:true,
     dynamicRules: ({model,schema}) => {
       return [
         { required: true, message: '请输入面试官!'},
@@ -96,9 +120,10 @@ export const formSchema: FormSchema[] = [
     label: '面试时间',
     field: 'interviewDate',
     component: 'DatePicker',
+    dynamicDisabled:true,
     componentProps: {
       showTime: true,
-      valueFormat: 'YYYY-MM-DD HH:mm:ss'
+      valueFormat: 'YYYY-MM-DD HH:mm:ss',
     },
     dynamicRules: ({model,schema}) => {
       return [
@@ -109,15 +134,18 @@ export const formSchema: FormSchema[] = [
   {
     label: '邀请状态',
     field: 'inviteStatus',
-    defaultValue: "待邀请",
+    defaultValue: '待邀请',
     component: 'JDictSelectTag',
-    componentProps:{
-      dictCode:"邀请状态"
+    componentProps: {
+      options: [
+        { label: '已接受邀请', value: '已接受邀请' },
+        { label: '已拒绝邀请', value: '已拒绝邀请' },
+        // { label: '已发送邀请', value: '已发送邀请' },
+        // { label: '待邀请', value: '待邀请' },
+      ]
     },
     dynamicRules: ({model,schema}) => {
-      return [
-        { required: true, message: '请输入邀请状态!'},
-      ];
+      return [{ required: true, message: '请输入邀请状态!' }];
     },
   },
   // TODO 主键隐藏字段，目前写死为ID
@@ -125,7 +153,7 @@ export const formSchema: FormSchema[] = [
     label: '',
     field: 'id',
     component: 'Input',
-    show: false
+    show: false,
   },
 ];
 

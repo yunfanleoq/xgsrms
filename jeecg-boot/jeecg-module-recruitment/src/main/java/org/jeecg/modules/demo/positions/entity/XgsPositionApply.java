@@ -131,4 +131,24 @@ public class XgsPositionApply implements Serializable {
     @Excel(name = "简历文件", width = 15)
     @ApiModelProperty(value = "简历文件")
     private java.lang.String resumeFile;
+    /**邀请状态*/
+    @Excel(name = "邀请状态", width = 15, dicCode = "邀请状态")
+    @Dict(dicCode = "邀请状态")
+    @ApiModelProperty(value = "邀请状态")
+    private java.lang.String inviteStatus;
+    /**面试时间*/
+    @Excel(name = "面试时间", width = 20, format = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
+    @ApiModelProperty(value = "面试时间")
+    private java.util.Date interviewDate;
+    /**面试信息*/
+    @Excel(name = "面试信息", width = 15)
+    @ApiModelProperty(value = "面试信息")
+    private java.lang.String interviewInformation;
+    /**面试状态*/
+    @Excel(name = "面试状态", width = 15, dicCode = "面试状态")
+    @Dict(dicCode = "面试状态")
+    @ApiModelProperty(value = "面试状态")
+    private java.lang.String interviewStatus;
 }

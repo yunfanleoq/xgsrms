@@ -38,11 +38,16 @@
        setProps({ disabled: !data?.showFooter })
     });
     //设置标题
-    const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));
+    const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '确认'));
     //表单提交事件
     async function handleSubmit(v) {
         try {
             let values = await validate();
+            if (!['已接受邀请', '已拒绝邀请'].includes(values.inviteStatus)) {
+            // 提示用户需要修改邀请状态
+            window.alert('请修改邀请状态');
+            return;
+            }
             setModalProps({confirmLoading: true});
             //提交表单
             await saveOrUpdate(values, isUpdate.value);

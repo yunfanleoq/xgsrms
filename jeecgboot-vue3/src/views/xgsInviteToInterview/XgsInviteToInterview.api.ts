@@ -4,13 +4,17 @@ import { useMessage } from "/@/hooks/web/useMessage";
 const { createConfirm } = useMessage();
 
 enum Api {
-  list = '/xgsInviteToInterview/xgsInviteToInterview/list',
-  save='/xgsInviteToInterview/xgsInviteToInterview/add',
-  edit='/xgsInviteToInterview/xgsInviteToInterview/edit',
-  deleteOne = '/xgsInviteToInterview/xgsInviteToInterview/delete',
-  deleteBatch = '/xgsInviteToInterview/xgsInviteToInterview/deleteBatch',
+  // list = '/xgsInviteToInterview/xgsInviteToInterview/list',
+  list = '/positions/xgsPositionApply2/list',
+  // save='/xgsInviteToInterview/xgsInviteToInterview/add',
+  save = '/positions/xgsPositionApply2/add',
+  // edit='/xgsInviteToInterview/xgsInviteToInterview/edit',
+  edit = '/positions/xgsPositionApply2/edit',
+  deleteOne = '/positions/xgsPositionApply2/delete',
+  deleteBatch = '/positions/xgsPositionApply2/deleteBatch',
   importExcel = '/xgsInviteToInterview/xgsInviteToInterview/importExcel',
-  exportXls = '/xgsInviteToInterview/xgsInviteToInterview/exportXls',
+  // exportXls = '/xgsInviteToInterview/xgsInviteToInterview/exportXls',
+  exportXls = '/positions/xgsPositionApply2/exportXls',
 }
 /**
  * 导出api

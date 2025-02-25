@@ -4,9 +4,9 @@
    <BasicTable @register="registerTable" :rowSelection="rowSelection">
      <!--插槽:table标题-->
       <template #tableTitle>
-          <a-button type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-          <a-button  type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
-          <j-upload-button type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>
+<!--          <a-button type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>-->
+          <a-button  type="primary" v-auth="'positions:xgs_position_apply:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button>
+<!--          <j-upload-button type="primary" v-auth="'xgsInviteToInterview:xgs_invite_to_interview:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button>-->
           <a-dropdown v-if="selectedRowKeys.length > 0">
               <template #overlay>
                 <a-menu>
@@ -16,7 +16,7 @@
                   </a-menu-item>
                 </a-menu>
               </template>
-              <a-button v-auth="'xgsInviteToInterview:xgs_invite_to_interview:deleteBatch'">批量操作
+              <a-button v-auth="'positions:xgs_position_apply:deleteBatch'">批量操作
                 <Icon icon="mdi:chevron-down"></Icon>
               </a-button>
         </a-dropdown>
@@ -25,13 +25,14 @@
       </template>
        <!--操作栏-->
       <template #action="{ record }">
-        <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
+        <TableAction :actions="getTableAction(record)"/>
       </template>
       <!--字段回显插槽-->
       <template v-slot:bodyCell="{ column, record, index, text }">
       </template>
     </BasicTable>
     <!-- 表单区域 -->
+    <XgsPositionApplyModal ref="userDetail" @success="handleSuccess"></XgsPositionApplyModal>
     <XgsInviteToInterviewModal @register="registerModal" @success="handleSuccess"></XgsInviteToInterviewModal>
   </div>
 </template>
@@ -46,11 +47,15 @@
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsInviteToInterview.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
+  import XgsPositionApplyModal
+    from "@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyModal.vue";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
   //注册model
-  const [registerModal, {openModal}] = useModal();
+  const [registerModal, { openModal }] = useModal();
+  //用于详情展示
+  const userDetail = ref();
   //注册table数据
   const { prefixCls,tableContext,onExportXls,onImportXls } = useListPage({
       tableProps:{
@@ -76,6 +81,11 @@
             beforeFetch: (params) => {
               return Object.assign(params, queryParam);
             },
+        beforeFetch: (params) => {
+          // 添加筛选条件，仅获取人力处通过的名单
+          params.approvalStatus = '人力处通过';
+          return Object.assign(params, queryParam);
+        }
       },
        exportConfig: {
             name:"面试",
@@ -88,7 +98,7 @@
           },
   })
 
-  const [registerTable, {reload},{ rowSelection, selectedRowKeys }] = tableContext
+  const [registerTable, { reload }, { rowSelection, selectedRowKeys }] = tableContext;
 
   // 高级查询配置
   const superQueryConfig = reactive(superQuerySchema);
@@ -125,11 +135,8 @@
     * 详情
    */
   function handleDetail(record: Recordable) {
-     openModal(true, {
-       record,
-       isUpdate: true,
-       showFooter: false,
-     });
+     userDetail.value.disableSubmit = true;
+     userDetail.value.detail(record);
    }
    /**
     * 删除事件
@@ -155,10 +162,14 @@
   function getTableAction(record){
        return [
          {
-           label: '编辑',
+           label: '邀请',
            onClick: handleEdit.bind(null, record),
-           auth: 'xgsInviteToInterview:xgs_invite_to_interview:edit'
-         }
+           auth: 'positions:xgs_position_apply:edit'
+         },
+         {
+           label: '详情',
+           onClick: handleDetail.bind(null, record),
+         },
        ]
    }
      /**
@@ -176,7 +187,7 @@
              confirm: handleDelete.bind(null, record),
              placement: 'topLeft',
            },
-           auth: 'xgsInviteToInterview:xgs_invite_to_interview:delete'
+           auth: 'positions:xgs_position_apply:delete'
          }
        ]
    }
