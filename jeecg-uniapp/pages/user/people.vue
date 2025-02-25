@@ -14,26 +14,26 @@
 		  </view>
 		  <!-- 列表list-->
 		  <view class="cu-list menu card-menu margin-top-xl margin-bottom-xl shadow-lg radius">
-		    <view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.1s'}]">
-		      <view class="content" >
+		    <navigator class="cu-item arrow animation-slide-bottom" url="/pages/user/favorite" open-type="navigate" :style="[{animationDelay: '0.1s'}]">
+		      <view class="content">
 		        <text class="cuIcon-favorfill text-yellow"></text>
 		        <text class="text-grey">收藏</text>
 		      </view>
-		    </view>
-			<view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.3s'}]" @tap="scan">
+		    </navigator>
+			<!-- <view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.3s'}]" @tap="scan">
 			  <view class="content">
 			    <text class="cuIcon-scan text-red"></text>
 			    <text class="text-grey">扫码</text>
 			  </view>
-			</view>
-			<navigator class="cu-item arrow animation-slide-bottom" url="/pages/user/userdetail" :style="[{animationDelay: '0.6s'}]">
+			</view> -->
+			<navigator class="cu-item arrow animation-slide-bottom" url="/pages/user/userdetail" open-type="navigate" :style="[{animationDelay: '0.6s'}]">
 			     <view class="content">
 				    <text class="cuIcon-settingsfill text-cyan"></text>
 					<text class="text-grey">设置</text>
 			    </view>
 			</navigator>
 		   
-			<navigator class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.7s'}]" url="/pages/user/userexit" hover-class="none">
+			<navigator class="cu-item arrow animation-slide-bottom" open-type="navigate" :style="[{animationDelay: '0.7s'}]" url="/pages/user/userexit" hover-class="none">
 				<view class="content" >
 				    <text class="cuIcon-exit text-cyan"></text>
 					<text class="text-grey">退出</text>

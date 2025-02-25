@@ -99,7 +99,7 @@ public class XgsMyresumeController extends JeecgController<XgsMyresume, IXgsMyre
 		}
 		// 显示queryWrapper 的具体内容
 
-		log.info("get queryWrapper info: {}", queryWrapper.getSqlSegment());
+		log.info("get queryWrapper info: {}", queryWrapper);
 		IPage<XgsMyresume> pageList = xgsMyresumeService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
