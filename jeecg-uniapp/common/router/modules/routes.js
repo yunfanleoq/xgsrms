@@ -46,6 +46,13 @@ const routes = [
 	    },
 	},
 	{
+	    path: '/pages/positions/xgsPositionsForm',
+	    name: 'xgsPositionsForm',
+	    meta: {
+	        title: '岗位详情',
+	    },
+	},
+	{
 	    path: '/pages/user/favoriteDetail',
 	    name: 'favoriteDetail',
 	    meta: {

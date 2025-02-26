@@ -10,6 +10,18 @@
 			<form>
               <view class="cu-form-group">
                 <view class="flex align-center">
+                  <view class="title"><text space="ensp">研究室：</text></view>
+                  <input  placeholder="请输入研究室" v-model="model.lob"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">研究方向：</text></view>
+                  <input  placeholder="请输入研究方向" v-model="model.researchOrientation"/>
+                </view>
+              </view>  
+              <view class="cu-form-group">
+                <view class="flex align-center">
                   <view class="title"><text space="ensp">姓名：</text></view>
                   <input placeholder="请输入姓名" v-model="model.name"/>
                 </view>
@@ -62,14 +74,20 @@
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">身份证号：</text></view>
-                  <input  placeholder="请输入身份证号" v-model="model.idNumber"/>
+                  <view class="title"><text space="ensp">政治面貌：</text></view>
+                  <input  placeholder="请输入政治面貌" v-model="model.politicBackground"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">政治面貌：</text></view>
-                  <input  placeholder="请输入政治面貌" v-model="model.politicBackground"/>
+                  <view class="title"><text space="ensp">婚姻状况：</text></view>
+                  <input  placeholder="请输入婚姻状况" v-model="model.maritalStatus"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">身份证号：</text></view>
+                  <input  placeholder="请输入身份证号" v-model="model.idNumber"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -78,86 +96,116 @@
                   <input  placeholder="请输入户口所在地" v-model="model.hukou"/>
                 </view>
               </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">是否应届毕业生：</text></view>
-                  <!-- <input  placeholder="请输入是否应届毕业生" v-model="model.yjbys"/> -->
-					<radio-group @change="(e) => radioChange(e,'yjbys')" class="horizontal-radio-group">
-						<label class="radio-label">
-							<view class="radio-container">
-								<radio value="是" :checked="model.yjbys === '是'"/>
+			  <view class="cu-form-group">
+                <view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+                  <view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+					  <text space="ensp">申请人当前身份：</text>
+				  </view>
+					<radio-group @change="(e) => radioChange(e,'proposerStatus')" class="horizontal-radio-group" style="flex-direction: column; height: auto; width: 100%;">
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="国家统招统分" :checked="model.proposerStatus === '国家统招统分'"/>
 							</view>
-							<view>是</view>
+							<view>国家统招统分</view>
 						</label>
-						<label class="radio-label">
-							<view class="radio-container">
-								<radio value="否" :checked="model.yjbys === '否'"/>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="定向委培" :checked="model.proposerStatus === '定向委培'"/>
 							</view>
-							<view>否</view>
+							<view>定向委培</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="在职人员" :checked="model.proposerStatus === '在职人员'"/>
+							</view>
+							<view>在职人员</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="现役军人" :checked="model.proposerStatus === '现役军人'"/>
+							</view>
+							<view>现役军人</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="留学回国" :checked="model.proposerStatus === '留学回国'"/>
+							</view>
+							<view>留学回国</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="其他" :checked="model.proposerStatus === '其他'"/>
+							</view>
+							<view>其他</view>
 						</label>
 					</radio-group>
+			    </view>
+			  </view>
+              <view class="cu-form-group">
+                <view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+                  <view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+					  <text space="ensp">申报博士后类型：</text>
+				  </view>
+				  <radio-group @change="(e) => radioChange(e,'postdoctorType')" class="horizontal-radio-group" style="flex-direction: column; height: auto; width: 100%;">
+				  	<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+				  		<view class="radio-container" style=" margin-right: 10px;">
+				  			<radio value="流动站招收" :checked="model.postdoctorType === '流动站招收'"/>
+				  		</view>
+				  		<view>流动站招收</view>
+				  	</label>
+				  	<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+				  		<view class="radio-container" style=" margin-right: 10px;">
+				  			<radio value="与工作站联合招收" :checked="model.postdoctorType === '与工作站联合招收'"/>
+				  		</view>
+				  		<view>与工作站联合招收</view>
+				  	</label>
+				  	<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+				  		<view class="radio-container" style=" margin-right: 10px;">
+				  			<radio value="留学博士计划外招收" :checked="model.postdoctorType === '留学博士计划外招收'"/>
+				  		</view>
+				  		<view>留学博士计划外招收</view>
+				  	</label>
+				  	<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+				  		<view class="radio-container" style=" margin-right: 10px;">
+				  			<radio value="其它" :checked="model.postdoctorType === '其它'"/>
+				  		</view>
+				  		<view>其它</view>
+				  	</label>
+				  </radio-group>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">是否统招统分：</text></view>
-                  <!-- <input  placeholder="请输入是否统招统分" v-model="model.tztf"/> -->
-					<radio-group @change="(e) => radioChange(e,'tztf')" class="horizontal-radio-group">
-						<label class="radio-label">
-							<view class="radio-container">
-								<radio value="是" :checked="model.tztf === '是'"/>
-							</view>
-							<view>是</view>
-						</label>
-						<label class="radio-label">
-							<view class="radio-container">
-								<radio value="否" :checked="model.tztf === '否'"/>
-							</view>
-							<view>否</view>
-						</label>
-					</radio-group>
+                  <view class="title"><text space="ensp">博士毕业院校：</text></view>
+                  <input  placeholder="请输入博士毕业院校" v-model="model.graduateInstitutions"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">毕业院校：</text></view>
-                  <input  placeholder="请输入毕业院校" v-model="model.graduateCollege"/>
+                  <view class="title"><text space="ensp">一级学科：</text></view>
+                  <input  placeholder="请输入一级学科" v-model="model.subject1"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">学历：</text></view>
-                  <input  placeholder="请输入学历" v-model="model.education"/>
+                  <view class="title"><text space="ensp">二级学科：</text></view>
+                  <input  placeholder="请输入二级学科" v-model="model.subject2"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">学位：</text></view>
-                  <input  placeholder="请输入学位" v-model="model.degree"/>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">专业：</text></view>
-                  <input  placeholder="请输入专业" v-model="model.profession"/>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-					<view class="title"><text space="ensp">毕业时间：</text></view>
-				  <!-- <input  placeholder="请输入毕业时间" v-model="model.graduateDate"/> -->
-					<picker mode="date" :value="model.graduateDate" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'graduateDate')">
-						<view class="uni-input" v-if="graduateDate">{{graduateDate}}</view>
+					<view class="title"><text space="ensp">博士学位证书 获得时间：</text></view>
+					<picker mode="date" :value="model.certificateTime" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'certificateTime')">
+						<view class="uni-input" v-if="certificateTime">{{certificateTime}}</view>
 						<view class="uni-input" v-else>
-							<input  placeholder="请输入毕业时间" style="pointer-events: none;"/>
+							<input  placeholder="请输入博士学位证书" style="pointer-events: none;"/>
 						</view>
-					</picker>
+					</picker>	
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
 					<view class="title"><text space="ensp">参加工作时间：</text></view>
-                  <!-- <input  placeholder="请输入参加工作时间" v-model="model.workDate"/> -->
 					<picker mode="date" :value="model.workDate" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'workDate')">
 						<view class="uni-input" v-if="workDate">{{workDate}}</view>
 						<view class="uni-input" v-else>
@@ -186,42 +234,33 @@
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-					<view class="title"><text space="ensp">任职时间：</text></view>
-					<!-- <input  placeholder="请输入任职时间" v-model="model.adminPositionDate"/> -->
-					<picker mode="date" :value="model.adminPositionDate" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'adminPositionDate')">
-						<view class="uni-input" v-if="adminPositionDate">{{adminPositionDate}}</view>
-						<view class="uni-input" v-else>
-							<input  placeholder="请输入任职时间" style="pointer-events: none;"/>
-						</view>
-					</picker>					
+                  <view class="title"><text space="ensp">现专业技术职务：</text></view>
+                  <input  placeholder="请输入现专业技术职务" v-model="model.technicalPosition"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-					<view class="title"><text space="ensp">现岗位：</text></view>
-					<input  placeholder="请输入现岗位" v-model="model.professionLevel"/>
+                  <view class="title"><text space="ensp">在站期间研究内容有无涉密内容：</text></view>
+				  <radio-group @change="(e) => radioChange(e,'secretText')" class="horizontal-radio-group">
+				  	<label class="radio-label">
+				  		<view class="radio-container">
+				  			<radio value="是" :checked="model.secretText === '是'"/>
+				  		</view>
+				  		<view>是</view>
+				  	</label>
+				  	<label class="radio-label">
+				  		<view class="radio-container">
+				  			<radio value="否" :checked="model.secretText === '否'"/>
+				  		</view>
+				  		<view>否</view>
+				  	</label>
+				  </radio-group>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-					<view class="title"><text space="ensp">聘任时间：</text></view>
-					<!-- <input  placeholder="请输入聘任时间" v-model="model.professionLevelData"/> -->
-					<picker mode="date" :value="model.professionLevelData" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'professionLevelData')">
-						<view class="uni-input" v-if="professionLevelData">{{professionLevelData}}</view>
-						<view class="uni-input" v-else>
-							<input  placeholder="请输入聘任时间" style="pointer-events: none;"/>
-						</view>
-					</picker>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center" style="flex-direction: column; height: auto;">
-					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
-						<text space="ensp">与本所职工(包括在读研究生)是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系(若有请写出姓名)?：</text>
-					</view>
-					<view style="width: 100%; margin-top: 10px;">
-						<input  placeholder='若有请写出姓名否则填"无"' v-model="model.xgsRelation" style="width: 100%;"/>
-					</view>
+                  <view class="title"><text space="ensp">一站单位名称（二站博士后填写）：</text></view>
+                  <input  placeholder="请输入一站单位名称" v-model="model.workFirst"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -237,93 +276,110 @@
                 </view>
               </view>
               <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">研究方向与专长：</text></view>
-                  <input  placeholder="请输入研究方向与专长" v-model="model.researchDirection"/>
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
-					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
-						<text space="ensp">承担科研、管理工作情况：（根据重要程度列举，不超5项）</text>
-					</view>
-					<view style="width: 100%; margin-top: 10px;">
-						<textarea placeholder="请输入承担科研、管理工作情况" v-model="model.researchWork" maxlength="-1"/>
-					</view>
-                </view>
-              </view>
-              <view class="cu-form-group">
 				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
 					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
-						<text space="ensp">工作主要业绩：（根据重要程度列举，不超5项）</text>
+						<text space="ensp">申请人在学术刊物或会议上发表的有代表性的论文和专著情况（请注明论文或专著名称、学术刊物或会议名称以及发表时间）：</text>
 					</view>
 					<view style="width: 100%; margin-top: 10px;">
-						<textarea placeholder="请输入工作主要业绩" v-model="model.reseachResult" maxlength="-1"/>
+						<textarea placeholder="请输入代表性的论文和专著" v-model="model.researchWorks" maxlength="-1"/>
 					</view>
 				</view>
               </view>
               <view class="cu-form-group">
 				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
 					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
-						<text space="ensp">近五年发表的代表性论文、专著及授权专利目录（最多列举10项）</text>
+						<text space="ensp">申请人获科研成果奖励、申请科学基金和专利情况（请注明奖励、基金和专利的具体名称和内容）：</text>
 					</view>
 					<view style="width: 100%; margin-top: 10px;">
-						<textarea placeholder="请输入论文专著专利" v-model="model.researchPaper" maxlength="-1"/>
+						<textarea placeholder="请输入相关奖励、基金和专利" v-model="model.researchPaper" maxlength="-1"/>
 					</view>
 				</view>
               </view>
               <view class="cu-form-group">
 				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
 					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
-						<text space="ensp">应聘岗位陈述（简述对岗位的理解、个人应聘优势、工作设想等）</text>
+						<text space="ensp">博士后研究工作计划：</text>
 					</view>
 					<view style="width: 100%; margin-top: 10px;">
-						<textarea placeholder="请输入应聘岗位陈述" v-model="model.positionDescription" maxlength="-1"/>
+						<textarea placeholder="请输入博士后研究工作计划" v-model="model.researchProposal" maxlength="-1"/>
 					</view>
 				</view>
               </view>
+			  <view class="cu-form-group">
+				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+						<text space="ensp">合作导师对申请人提出的研究计划的评价（如可行性、先进性、创新之处、理论和实用意义）及博士后经费的出处，请注明课题编号：</text>
+					</view>
+					<view style="width: 100%; margin-top: 10px;">
+						<textarea placeholder="请输入导师评价" v-model="model.teacherEvaluate" maxlength="-1"/>
+					</view>
+				</view>
+			  </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">岗位类型：</text></view>
-                  <!-- <input  placeholder="请输入岗位类型" v-model="model.positionType"/> -->
-					<radio-group @change="(e) => radioChange(e,'positionType')" class="horizontal-radio-group">
+                  <view class="title"><text space="ensp">合作导师签字：</text></view>
+                  <input  placeholder="请输入合作导师签字" v-model="model.teacherSignature"/>
+                </view>
+              </view>
+			  <view class="cu-form-group">
+				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+						<text space="ensp">研究室意见：</text>
+					</view>
+					<radio-group @change="(e) => radioChange(e,'labIdea')" class="horizontal-radio-group" style="width: 100%; margin-top: 10px;">
 						<label class="radio-label">
 							<view class="radio-container">
-								<radio value="科研" :checked="model.positionType === '科研'"/>
+								<radio value="科研" :checked="model.labIdea === '科研'"/>
 							</view>
 							<view>科研</view>
 						</label>
 						<label class="radio-label">
 							<view class="radio-container">
-								<radio value="管理" :checked="model.positionType === '管理'"/>
+								<radio value="在职" :checked="model.labIdea === '在职'"/>
 							</view>
-							<view>管理</view>
+							<view>在职</view>
 						</label>
 						<label class="radio-label">
 							<view class="radio-container">
-								<radio value="支撑" :checked="model.positionType === '支撑'"/>
+								<radio value="博士后" :checked="model.labIdea === '博士后'"/>
 							</view>
-							<view>支撑</view>
+							<view>博士后</view>
 						</label>
 					</radio-group>
+				</view>
+			  </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">研究室负责人：</text></view>
+                  <input  placeholder="请输入研究室负责人" v-model="model.labSignature"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+				<view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+						<text space="ensp">人力资源处意见：</text>
+					</view>
+					<view style="width: 100%; margin-top: 10px;">
+						<textarea placeholder="请输入人力资源处意见" v-model="model.resourcesIdea" maxlength="-1"/>
+					</view>
+				</view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <view class="title"><text space="ensp">人力资源处负责人：</text></view>
+                  <input  placeholder="请输入人力资源处负责人" v-model="model.resourceSsignature"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">应聘部门：</text></view>
-                  <input  placeholder="请输入应聘部门" v-model="model.applyDept"/>
+                  <view class="title"><text space="ensp">研究所意见：</text></view>
+                  <input  placeholder="请输入研究所意见" v-model="model.schoolSsignature"/>
                 </view>
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
-                  <view class="title"><text space="ensp">应聘岗位名称：</text></view>
-                  <input  placeholder="请输入应聘岗位名称" v-model="model.applyPosition"/>
-                </view>
-              </view>
-              <view class="cu-form-group" style="display: none;">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">本人照片：</text></view>
-                  <input  placeholder="请输入本人照片" v-model="model.photograph"/>
+                  <view class="title"><text space="ensp">主管所领导：</text></view>
+                  <input  placeholder="请输入主管所领导" v-model="model.schoolIdea"/>
                 </view>
               </view>
 			</form>
@@ -486,8 +542,8 @@
 			currentRadio(){
 				this.radioNum = 0
 				this.radioList = []
-				let radioValueList = [this.model.sex, this.model.yjbys, this.model.tztf, this.model.positionType]
-				let radioNameList = ["sex", "yjbys", "tztf", "positionType"]
+				let radioValueList = [this.model.sex, this.model.secretText, this.model.proposerStatus, this.model.postdoctorType]
+				let radioNameList = ["sex", "secretText", "proposerStatus", "postdoctorType"]
 				
 				radioValueList.forEach((radioValue, index) => {
 					if(radioValue){

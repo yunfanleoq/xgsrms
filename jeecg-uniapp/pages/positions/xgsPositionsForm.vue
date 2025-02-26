@@ -118,7 +118,7 @@
 	import api from '@/api/api'
 
     export default {
-        name: "岗位详情",
+        name: "positions_form",
         components:{ myDate },
         props:{
 			formData:{
@@ -171,12 +171,37 @@
         methods:{
            initFormData(){
 			   //获取岗位信息
-			   this.model = this.$Route.query;
-			   this.params.positionId = this.model.id;
-			   this.params.positionName = this.model.positionName;
-			   this.params.positionDept = this.model.dept_dictText;
-			   this.params.positionKtz = this.model.ktz_dictText;
-			   this.params.positionCount = this.model.personCount;
+			   this.model = uni.$globalParams;
+			   if(!this.model){
+				   this.model = {}
+				   this.model.id = sessionStorage.getItem("positionId")
+				   this.$http.get(this.url.queryById,{params:{id: this.model.id}}).then(res=>{
+						if (res.data.success) {
+							this.model = {...res.data.result}
+						   // this.model.positionName = sessionStorage.getItem("positionName")
+						   // this.model.dept_dictText = sessionStorage.getItem("positionDept")
+						   // this.model.ktz_dictText = sessionStorage.getItem("positionKtz")
+						   // this.model.personCount = sessionStorage.getItem("positionCount")
+						   this.model.dept_dictText = sessionStorage.getItem("dept_dictText")
+						   this.model.ktz_dictText = sessionStorage.getItem("ktz_dictText")
+						   this.model.htmlType = sessionStorage.getItem("htmlType")
+						   
+						   this.params.positionId = this.model.id;
+						   this.params.positionName = this.model.positionName;
+						   this.params.positionDept = this.model.dept_dictText;
+						   this.params.positionKtz = this.model.ktz_dictText;
+						   this.params.positionCount = this.model.personCount;
+						}
+				   }).catch(err => {
+				   	console.log(err);
+				   });
+			   }else{
+				   this.params.positionId = this.model.id;
+				   this.params.positionName = this.model.positionName;
+				   this.params.positionDept = this.model.dept_dictText;
+				   this.params.positionKtz = this.model.ktz_dictText;
+				   this.params.positionCount = this.model.personCount;
+			   }
 			   
 			   //获取用户信息
 			   let userId = this.$store.getters.userid;
@@ -209,6 +234,7 @@
 			onApply(item){
 				let params = {...item}
 				params.htmlType = '招聘'
+				sessionStorage.setItem("category", params.category)
 				// this.$Router.push({
 				// 	name: "resumeForm", // 新页面的路由名称
 				// 	params:parmas, // 通过 parmas 传递 id

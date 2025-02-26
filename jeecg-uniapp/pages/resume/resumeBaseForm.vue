@@ -351,7 +351,27 @@
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">岗位类型：</text></view>
-                  <input  placeholder="请输入岗位类型" v-model="model.positionType"/>
+                  <!-- <input  placeholder="请输入岗位类型" v-model="model.positionType"/> -->
+				  <radio-group @change="(e) => radioChange(e,'positionType')" class="horizontal-radio-group">
+				  	<label class="radio-label">
+				  		<view class="radio-container">
+				  			<radio value="科研" :checked="model.positionType === '科研'"/>
+				  		</view>
+				  		<view>科研</view>
+				  	</label>
+				  	<label class="radio-label">
+				  		<view class="radio-container">
+				  			<radio value="管理" :checked="model.positionType === '管理'"/>
+				  		</view>
+				  		<view>管理</view>
+				  	</label>
+				  	<label class="radio-label">
+				  		<view class="radio-container">
+				  			<radio value="支撑" :checked="model.positionType === '支撑'"/>
+				  		</view>
+				  		<view>支撑</view>
+				  	</label>
+				  </radio-group>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -395,9 +415,29 @@
 					<view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
 						<text space="ensp">研究室意见：</text>
 					</view>
-					<view style="width: 100%; margin-top: 10px;">
+					<!-- <view style="width: 100%; margin-top: 10px;">
 						<textarea placeholder="请输入研究室意见" v-model="model.labIdea" maxlength="-1"/>
-					</view>
+					</view> -->
+					<radio-group @change="(e) => radioChange(e,'labIdea')" class="horizontal-radio-group" style="width: 100%; margin-top: 10px;">
+						<label class="radio-label">
+							<view class="radio-container">
+								<radio value="科研" :checked="model.labIdea === '科研'"/>
+							</view>
+							<view>科研</view>
+						</label>
+						<label class="radio-label">
+							<view class="radio-container">
+								<radio value="在职" :checked="model.labIdea === '在职'"/>
+							</view>
+							<view>在职</view>
+						</label>
+						<label class="radio-label">
+							<view class="radio-container">
+								<radio value="博士后" :checked="model.labIdea === '博士后'"/>
+							</view>
+							<view>博士后</view>
+						</label>
+					</radio-group>
 				</view>
               </view>
               <view class="cu-form-group">
@@ -493,9 +533,37 @@
                 </view>
               </view>
               <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">申报博士后类型：</text></view>
-                  <input  placeholder="请输入申报博士后类型" v-model="model.postdoctorType"/>
+                <view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+                  <view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+					  <text space="ensp">申报博士后类型：</text>
+				  </view>
+					<!-- <input  placeholder="请输入申报博士后类型" v-model="model.postdoctorType"/> -->
+				  <radio-group @change="(e) => radioChange(e,'postdoctorType')" class="horizontal-radio-group" style="flex-direction: column; height: auto; width: 100%;">
+					<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+						<view class="radio-container" style=" margin-right: 10px;">
+							<radio value="流动站招收" :checked="model.postdoctorType === '流动站招收'"/>
+						</view>
+						<view>流动站招收</view>
+					</label>
+					<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+						<view class="radio-container" style=" margin-right: 10px;">
+							<radio value="与工作站联合招收" :checked="model.postdoctorType === '与工作站联合招收'"/>
+						</view>
+						<view>与工作站联合招收</view>
+					</label>
+					<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+						<view class="radio-container" style=" margin-right: 10px;">
+							<radio value="留学博士计划外招收" :checked="model.postdoctorType === '留学博士计划外招收'"/>
+						</view>
+						<view>留学博士计划外招收</view>
+					</label>
+					<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+						<view class="radio-container" style=" margin-right: 10px;">
+							<radio value="其它" :checked="model.postdoctorType === '其它'"/>
+						</view>
+						<view>其它</view>
+					</label>
+				  </radio-group>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -581,9 +649,49 @@
                 </view>
               </view>
               <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">申请人当前身份：</text></view>
-                  <input  placeholder="请输入申请人当前身份" v-model="model.proposerStatus"/>
+                <view class="flex align-center" style="flex-direction: column; height: auto; width: 100%;">
+                  <view class="title" style="white-space: normal; word-break: break-all; height: auto; width: 100%;">
+					  <text space="ensp">申请人当前身份：</text>
+				  </view>
+					<!-- <input  placeholder="请输入申请人当前身份" v-model="model.proposerStatus"/> -->
+					<radio-group @change="(e) => radioChange(e,'proposerStatus')" class="horizontal-radio-group" style="flex-direction: column; height: auto; width: 100%;">
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="国家统招统分" :checked="model.proposerStatus === '国家统招统分'"/>
+							</view>
+							<view>国家统招统分</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="定向委培" :checked="model.proposerStatus === '定向委培'"/>
+							</view>
+							<view>定向委培</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="在职人员" :checked="model.proposerStatus === '在职人员'"/>
+							</view>
+							<view>在职人员</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="现役军人" :checked="model.proposerStatus === '现役军人'"/>
+							</view>
+							<view>现役军人</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="留学回国" :checked="model.proposerStatus === '留学回国'"/>
+							</view>
+							<view>留学回国</view>
+						</label>
+						<label class="radio-label" style="align-items: center; margin-bottom: 10px;">
+							<view class="radio-container" style=" margin-right: 10px;">
+								<radio value="其他" :checked="model.proposerStatus === '其他'"/>
+							</view>
+							<view>其他</view>
+						</label>
+					</radio-group>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -724,10 +832,16 @@
 				certificateTime: "",
             }
         },
+		watch: {
+			formData() {
+				this.currentFormData()
+				this.currentDate()
+				this.currentRadio()
+			},
+		},
         created(){
 			this.getStartDate();
 			this.getEndDate();
-			// this.currentDate();
 			this.currentFormData();
         },
         methods:{
@@ -758,6 +872,18 @@
 						break;
 					case "secretText":
 						this.model.secretText = evt.detail.value;
+						break;
+					case "positionType":
+						this.model.positionType = evt.detail.value;
+						break;
+					case "proposerStatus":
+						this.model.proposerStatus = evt.detail.value;
+						break;
+					case "postdoctorType":
+						this.model.postdoctorType = evt.detail.value;
+						break;
+					case "labIdea":
+						this.model.labIdea = evt.detail.value;
 						break;
 				}
 				if (!this.radioList.includes(radioName)) {
@@ -814,11 +940,31 @@
 				this.endDate = this.getDate('end');
 			},
 			currentDate(){
-				this.birthday = this.getDate('news');
+				this.birthday = this.model.birthday
+				this.graduateDate = this.model.graduateDate
+				this.workDate = this.model.workDate
+				this.adminPositionDate = this.model.adminPositionDate
+				this.professionLevelData = this.model.professionLevelData
+				this.certificateTime = this.model.certificateTime
 			},
 			currentFormData(){
 				this.model = {...this.formData}
 			},
+			currentRadio(){
+				this.radioNum = 0
+				this.radioList = []
+				let radioValueList = [this.model.sex, this.model.yjbys, this.model.tztf, this.model.secretText, this.model.positionType, this.model.proposerStatus, this.model.postdoctorType, this.model.labIdea]
+				let radioNameList = ["sex", "yjbys", "tztf", "secretText", "positionType", "proposerStatus", "postdoctorType", "labIdea"]
+				
+				radioValueList.forEach((radioValue, index) => {
+					if(radioValue){
+						if (!this.radioList.includes(radioNameList[index])) {
+							this.radioList.push(radioNameList[index]);
+							this.radioNum++
+						}
+					}
+				})
+			}
         }
     }
 </script>
