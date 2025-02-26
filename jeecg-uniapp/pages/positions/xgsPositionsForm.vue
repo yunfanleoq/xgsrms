@@ -118,7 +118,7 @@
 	import api from '@/api/api'
 
     export default {
-        name: "岗位详情",
+        name: "positions_form",
         components:{ myDate },
         props:{
 			formData:{
@@ -172,8 +172,6 @@
            initFormData(){
 			   //获取岗位信息
 			   this.model = this.$Route.query;
-			   console.log("this.model",this.model)
-
 			   this.params.positionId = this.model.id;
 			   this.params.positionName = this.model.positionName;
 			   this.params.positionDept = this.model.dept_dictText;

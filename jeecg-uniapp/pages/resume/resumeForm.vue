@@ -18,20 +18,20 @@
 			<view>
 				<resumeApplyForm ref="resumeApplyForm" style="display: none;" :formData="params"></resumeApplyForm>
 				<view v-show="formNumber === 1 && formTest">
-					<resumeBaseForm ref="resumeBaseForm" :formData="formData"></resumeBaseForm>
+					<!-- <resumeBaseForm ref="resumeBaseForm" :formData="formData"></resumeBaseForm> -->
+					<resumeBaseFormBSH ref="resumeBaseFormBSH" :formData="formData"></resumeBaseFormBSH>
 				</view>
 				<view v-show="formNumber === 1 && params.positionType === '普通岗位' && !formTest">
-					<!-- <resumeBaseForm ref="resumeBaseForm"></resumeBaseForm> -->
-					<resumeBaseFormPT ref="resumeBaseFormPT"></resumeBaseFormPT>
+					<resumeBaseFormPT ref="resumeBaseFormPT" :formData="formData"></resumeBaseFormPT>
 				</view>
 				<view v-show="formNumber === 1 && params.positionType === '副高级以上岗位' && !formTest">
-					<resumeBaseForm ref="resumeBaseForm"></resumeBaseForm>
+					<resumeBaseFormFG ref="resumeBaseFormFG" :formData="formData"></resumeBaseFormFG>
 				</view>
 				<view v-show="formNumber === 1 && params.positionType === '博士后岗位' && !formTest">
-					<resumeBaseForm ref="resumeBaseForm"></resumeBaseForm>
+					<resumeBaseFormBSH ref="resumeBaseFormBSH" :formData="formData"></resumeBaseFormBSH>
 				</view>
 				<view v-show="formNumber === 1 && params.positionType === '人才派遣岗位' && !formTest">
-					<resumeBaseForm ref="resumeBaseForm"></resumeBaseForm>
+					<resumeBaseFormTJ ref="resumeBaseFormTJ" :formData="formData"></resumeBaseFormTJ>
 				</view>
 				<resumeWorkForm ref="resumeWorkForm" v-show="formNumber === 2"></resumeWorkForm>
 				<resumeEduForm ref="resumeEduForm" v-show="formNumber === 3"></resumeEduForm>
@@ -59,6 +59,9 @@
 	import resumeApplyForm from '@/pages/resume/resumeApplyForm.vue'
 	import resumeBaseForm from '@/pages/resume/resumeBaseForm.vue'
 	import resumeBaseFormPT from '@/pages/resume/resumeBaseFormPT.vue'
+	import resumeBaseFormFG from '@/pages/resume/resumeBaseFormFG.vue'
+	import resumeBaseFormBSH from '@/pages/resume/resumeBaseFormBSH.vue'
+	import resumeBaseFormTJ from '@/pages/resume/resumeBaseFormTJ.vue'
 	import resumeWorkForm from '@/pages/resume/resumeWorkForm.vue'
 	import resumeEduForm from '@/pages/resume/resumeEduForm.vue'
 	import resumeHomeForm from '@/pages/resume/resumeHomeForm.vue'
@@ -100,7 +103,7 @@
 				xgsPositionApplyVO: {},
 				formNumber: 0,
 				labelStatus: 0,
-				formTest: true,
+				formTest: false,
 				myResumeIndex: 0,
 				myResumeList: [{"resumeName": "不选择"}],
 				myResumeNameList: [],
@@ -122,9 +125,6 @@
 						this.xgsPositionApplyVO = {}
 					}
 					this.formData = this.xgsPositionApplyVO
-					console.log("d)))))))))))))", this.formData)
-					labelStatus--
-					labelStatus++
 				}
 			},
 		},
@@ -135,15 +135,40 @@
            initFormData(){
 			   //获取岗位信息
 			   // this.model = this.$Route.query;
-			   this.model = uni.$globalParams;;
-			   this.params.positionId = this.model.id;
-			   this.params.positionName = this.model.positionName;
-			   this.params.positionDept = this.model.dept_dictText;
-			   this.params.positionKtz = this.model.ktz_dictText;
-			   this.params.positionCount = this.model.personCount;
-			   
-			   this.params.status = "草稿";
-			   this.params.positionType = this.model.category;
+			   this.model = uni.$globalParams;
+			   if(!this.model){
+				   this.model = {}
+				   this.model.id = sessionStorage.getItem("positionId")
+				   this.$http.get(this.url.queryById,{params:{id: this.model.id}}).then(res=>{
+						if (res.data.success) {
+							this.model = {...res.data.result}
+						   this.model.dept_dictText = sessionStorage.getItem("dept_dictText")
+						   this.model.ktz_dictText = sessionStorage.getItem("ktz_dictText")
+						   this.model.htmlType = sessionStorage.getItem("htmlType")
+						   this.model.category = sessionStorage.getItem("category")
+						   
+						   this.params.positionId = this.model.id;
+						   this.params.positionName = this.model.positionName;
+						   this.params.positionDept = this.model.dept_dictText;
+						   this.params.positionKtz = this.model.ktz_dictText;
+						   this.params.positionCount = this.model.personCount;
+						   
+						   this.params.status = "草稿";
+						   this.params.positionType = this.model.category;	
+						}
+				   }).catch(err => {
+				   	console.log(err);
+				   });
+			   }else{
+				   this.params.positionId = this.model.id;
+				   this.params.positionName = this.model.positionName;
+				   this.params.positionDept = this.model.dept_dictText;
+				   this.params.positionKtz = this.model.ktz_dictText;
+				   this.params.positionCount = this.model.personCount;
+				   
+				   this.params.status = "草稿";
+				   this.params.positionType = this.model.category;				   
+			   }
 			   
 			   //获取用户信息
 			   let userId = this.$store.getters.userid;
@@ -223,10 +248,10 @@
 							radioNum = this.$refs.resumeBaseFormPT.radioNum;
 							break;
 						case '副高级以上岗位':
-							radioNum = this.$refs.resumeBaseFormPT.radioNum;
+							radioNum = this.$refs.resumeBaseFormFG.radioNum;
 							break;
 						case '博士后岗位	':
-							radioNum = this.$refs.resumeBaseFormPT.radioNum;
+							radioNum = this.$refs.resumeBaseFormBSH.radioNum;
 							break;
 						case '人才派遣岗位':
 							radioNum = this.$refs.resumeBaseFormPT.radioNum;
