@@ -65,5 +65,6 @@ export const batchDelete = (params, handleSuccess) => {
  */
 export const saveOrUpdate = (params, isUpdate) => {
   const url = isUpdate ? Api.edit : Api.save;
+  console.log('XgsFlowOpinions.api.ts.saveorupdate ', isUpdate, params);
   return defHttp.post({ url: url, params });
 };

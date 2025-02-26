@@ -64,11 +64,11 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'memo',
   },
-  // {
-  //   title: '岗位状态',
-  //   align: 'center',
-  //   dataIndex: 'status_dictText',
-  // },
+  {
+    title: '岗位状态',
+    align: 'center',
+    dataIndex: 'status',
+  },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
@@ -185,7 +185,8 @@ export const formSchema: FormSchema[] = [
       dictCode: '岗位状态',
     },
     show: () => {
-      return hasPermission('xgs_position:status');
+      // return hasPermission('xgs_position:status');
+      return true;
     },
   },
   // TODO 主键隐藏字段，目前写死为ID

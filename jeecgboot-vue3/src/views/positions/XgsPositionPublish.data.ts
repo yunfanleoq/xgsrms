@@ -70,6 +70,11 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'memo',
   },
+  {
+    title: '岗位状态',
+    align: 'center',
+    dataIndex: 'status',
+  },
 
 ];
 //查询数据

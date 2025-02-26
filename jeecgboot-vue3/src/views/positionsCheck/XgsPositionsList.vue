@@ -61,6 +61,7 @@
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
+  import { list as getOpinionsData } from './opinions/XgsFlowOpinions.api';
 
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
@@ -129,20 +130,41 @@
   /**
    * 审核事件
    */
-  function handleCheck(record: Recordable) {
+  async function handleCheck(record: Recordable) {
     // 判断记录的 status 是否为 '待审核'，如果是则执行后续操作
-    console.log('handleCheckhandleCheckhandleCheckhandleCheck', record.status);
+    let isupdate = false;
+    console.log('>>>>>>>>handleCheckhandleCheckhandleCheckhandleCheck', record.status);
     if (record.status === '待审核') {
+
+      // console.log('if (record.status === 待审核) recordrecordrecordrecord', record);
       const record1 = {
         ...record, // 合并 record 的值
-        status: '审核通过', // 设置 status 为 '待审核'
+        status: '审核通过', // 设置状态为审核通过,会在弹窗中显示并在提交时保存
+
       };
+
+      // 获取审核意见
+      const opinions = await getOpinionsData({
+        positionApplyId: record.id,
+      });
+      console.log('opinionsopinionsopinionsopinions', opinions);
+      // 根据查询结果设置 isUpdate
+      if (opinions.length > 0) {
+        record1.opinions = opinions;
+        isupdate = true;
+      } else {
+        record1.opinions = [];
+      }
+
+
       openModal(true, {
         record: record1,
-        isUpdate: true,
+        // opinions: opinions,
+        isUpdate: isupdate,
         showFooter: true,
       });
     }
+    console.log('record1record1record1record1', record);
     return;
   }
   /**

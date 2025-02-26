@@ -21,7 +21,7 @@ import {ref, computed, unref, nextTick} from 'vue';
   import XgsPositionsForm from '@/views/positionsCheck/components/XgsPositionsForm.vue';
   // Emits声明
   const emit = defineEmits(['register', 'success']);
-  const isUpdate = ref(true);
+  const isUpdate = ref(false);
   const isDetail = ref(false);
   const activeKey = ref('1');
   const positionApply = ref({});
@@ -58,6 +58,7 @@ import {ref, computed, unref, nextTick} from 'vue';
         approvalUser: userStore.userInfo.realname,
         approvalNode: data.record.approvalNode,
         approvalStatus: '同意',
+        opinions: data.record.opinions,
         parentId: data.record.id,
       });
       formBool.value = true
@@ -74,6 +75,7 @@ import {ref, computed, unref, nextTick} from 'vue';
     try {
       let values = await validate();
       setModalProps({ confirmLoading: true });
+      console.log('>>>>>XgsFlowOpinionsModal.handleSubmit:', values, isUpdate.value);
       //提交表单
       await saveOrUpdate(values, isUpdate.value);
       //关闭弹窗

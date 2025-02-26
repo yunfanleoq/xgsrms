@@ -172,12 +172,14 @@
            initFormData(){
 			   //获取岗位信息
 			   this.model = this.$Route.query;
+			   console.log("this.model",this.model)
+
 			   this.params.positionId = this.model.id;
 			   this.params.positionName = this.model.positionName;
 			   this.params.positionDept = this.model.dept_dictText;
 			   this.params.positionKtz = this.model.ktz_dictText;
 			   this.params.positionCount = this.model.personCount;
-			   
+
 			   //获取用户信息
 			   let userId = this.$store.getters.userid;
 			   this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
@@ -191,7 +193,7 @@
 			   }).catch(err => {
 			   	console.log(err);
 			   });
-			   
+
             },
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {

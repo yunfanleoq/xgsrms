@@ -40,9 +40,11 @@
   const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));
   //表单提交事件
   async function handleSubmit(v) {
+    console.log('XgsPositionsModal.handleSubmit:', v);
     try {
       let values = await validate();
       setModalProps({ confirmLoading: true });
+      console.log('>>>>>XgsPositionsModal.handleSubmit:', values, isUpdate.value);
       //提交表单
       await saveOrUpdate(values, isUpdate.value);
       //关闭弹窗

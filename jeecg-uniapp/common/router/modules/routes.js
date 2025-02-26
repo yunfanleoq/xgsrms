@@ -52,7 +52,13 @@ const routes = [
 	        title: '收藏详情',
 	    },
 	},
-	
+	{
+	    path: '/pages/positions/xgsPositionsForm',
+	    name: 'positionsDetail',
+	    meta: {
+	        title: '收藏详情',
+	    },
+	},
     {
 	    path: '/pages/user/people',
         name: 'people',
