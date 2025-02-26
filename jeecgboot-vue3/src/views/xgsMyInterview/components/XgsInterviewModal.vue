@@ -43,7 +43,7 @@
     async function handleSubmit(v) {
         try {
             let values = await validate();
-            if (!['已接受邀请', '已拒绝邀请'].includes(values.inviteStatus)) {
+            if (!['接受邀请', '拒绝邀请'].includes(values.inviteStatus)) {
             // 提示用户需要修改邀请状态
             window.alert('请修改邀请状态');
             return;

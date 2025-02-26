@@ -89,7 +89,7 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        const inviteStatusValues = ['已发送邀请', '已接受邀请', '已拒绝邀请'];
+        const inviteStatusValues = ['已发送邀请', '接受邀请', '拒绝邀请'];
         if (isRealnameLoaded.value) {
           params.inviteStatus = inviteStatusValues;
           params.userName = realname.value;
@@ -175,7 +175,7 @@
    * 操作栏
    */
   function getTableAction(record) {
-    if (record.inviteStatus === '已接受邀请' || record.inviteStatus === '已拒绝邀请') {
+    if (record.inviteStatus === '接受邀请' || record.inviteStatus === '拒绝邀请') {
       // 如果已经接受或拒绝，只显示状态信息
       return [
         {
@@ -194,7 +194,7 @@
           onClick: handleDetail.bind(null, record),
         },
         {
-          label: '填写意愿',
+          label: '回复',
           onClick: handleEdit.bind(null, record),
           auth: 'positions:xgs_position_apply:edit',
         },

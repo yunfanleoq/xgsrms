@@ -138,8 +138,8 @@ export const formSchema: FormSchema[] = [
     component: 'JDictSelectTag',
     componentProps: {
       options: [
-        { label: '已接受邀请', value: '已接受邀请' },
-        { label: '已拒绝邀请', value: '已拒绝邀请' },
+        { label: '接受邀请', value: '接受邀请' },
+        { label: '拒绝邀请', value: '拒绝邀请' },
         // { label: '已发送邀请', value: '已发送邀请' },
         // { label: '待邀请', value: '待邀请' },
       ]
