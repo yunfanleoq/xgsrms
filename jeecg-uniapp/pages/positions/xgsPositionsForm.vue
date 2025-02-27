@@ -171,13 +171,36 @@
         methods:{
            initFormData(){
 			   //获取岗位信息
-			   this.model = this.$Route.query;
-			   this.params.positionId = this.model.id;
-			   this.params.positionName = this.model.positionName;
-			   this.params.positionDept = this.model.dept_dictText;
-			   this.params.positionKtz = this.model.ktz_dictText;
-			   this.params.positionCount = this.model.personCount;
+			   this.model = uni.$globalParams;
 
+				if(!this.model){
+				   this.model = {}
+				   this.model.id = sessionStorage.getItem("positionId")
+				   this.$http.get(this.url.queryById,{params:{id: this.model.id}}).then(res=>{
+						if (res.data.success) {
+							this.model = {...res.data.result}
+						   this.model.dept_dictText = sessionStorage.getItem("dept_dictText")
+						   this.model.ktz_dictText = sessionStorage.getItem("ktz_dictText")
+						   this.model.htmlType = sessionStorage.getItem("htmlType")
+						   this.model.category = sessionStorage.getItem("category")
+						   
+						   this.params.positionId = this.model.id;
+						   this.params.positionName = this.model.positionName;
+						   this.params.positionDept = this.model.dept_dictText;
+						   this.params.positionKtz = this.model.ktz_dictText;
+						   this.params.positionCount = this.model.personCount;
+						}
+				   }).catch(err => {
+				   	console.log(err);
+				   });
+			   }else{
+				   this.params.positionId = this.model.id;
+				   this.params.positionName = this.model.positionName;
+				   this.params.positionDept = this.model.dept_dictText;
+				   this.params.positionKtz = this.model.ktz_dictText;
+				   this.params.positionCount = this.model.personCount;			   
+			   }
+			   
 			   //获取用户信息
 			   let userId = this.$store.getters.userid;
 			   this.$http.get(this.url.userUrl,{params:{id: userId}}).then(res=>{
