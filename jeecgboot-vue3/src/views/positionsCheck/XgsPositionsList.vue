@@ -4,7 +4,7 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-<!--        <a-button type="primary" v-auth="'positions:xgs_positions:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>-->
+        <!--        <a-button type="primary" v-auth="'positions:xgs_positions:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>-->
         <a-button type="primary" v-auth="'positions:xgs_positions:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
           导出</a-button
         >
@@ -15,25 +15,25 @@
           <template #overlay>
             <a-menu>
               <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined"></Icon>
+                <Icon icon="ant-design:delete-outlined" />
                 删除
               </a-menu-item>
             </a-menu>
           </template>
           <a-button v-auth="'positions:xgs_positions:deleteBatch'"
             >批量操作
-            <Icon icon="mdi:chevron-down"></Icon>
+            <Icon icon="mdi:chevron-down" />
           </a-button>
         </a-dropdown>
         <!-- 高级查询 -->
-<!--        <super-query :config="superQueryConfig" @search="handleSuperQuery" />-->
+        <!--        <super-query :config="superQueryConfig" @search="handleSuperQuery" />-->
       </template>
       <!--操作栏-->
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)" />
       </template>
       <!--字段回显插槽-->
-      <template v-slot:bodyCell="{ column, record, index, text }">
+      <template #bodyCell="{ column, record, index, text }">
         <template v-if="column.dataIndex === 'duty'">
           <!--富文本件字段回显插槽-->
           <div v-html="text"></div>
@@ -46,7 +46,7 @@
     </BasicTable>
     <!-- 表单区域 -->
 <!--    <XgsPositionsModal @register="registerModal" @success="handleSuccess"></XgsPositionsModal>-->
-    <XgsFlowOpinionsModal @register="registerModal" @success="handleSuccess"></XgsFlowOpinionsModal>
+    <XgsFlowOpinionsModal @register="registerModal" @success="handleSuccess" />
   </div>
 </template>
 
@@ -61,6 +61,8 @@
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
+  import { defHttp } from '@/utils/http/axios';
+  import {saveOrUpdate} from "@/views/xgsIntroduce/XgsIntroduce.api";
 
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
@@ -88,7 +90,7 @@
       },
       beforeFetch: (params) => {
         return Object.assign(params, queryParam, {
-          status: '待审核',
+          status: ['待审核', '审核通过', '审核未通过'],
         });
       },
     },
@@ -131,7 +133,8 @@
    */
   function handleCheck(record: Recordable) {
     // 判断记录的 status 是否为 '待审核'，如果是则执行后续操作
-    console.log('handleCheckhandleCheckhandleCheckhandleCheck', record.status);
+    console.log(1);
+    console.log('handleCheckhandleCheckhandleCheckhandleCheck', record);
     if (record.status === '待审核') {
       const record1 = {
         ...record, // 合并 record 的值

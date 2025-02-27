@@ -117,4 +117,17 @@ public class XgsPositions implements Serializable {
     @Dict(dicCode = "岗位分类")
     @ApiModelProperty(value = "岗位分类")
     private java.lang.String category;
+    /**意见*/
+    @Excel(name = "意见", width = 15)
+    @ApiModelProperty(value = "意见")
+    private java.lang.String opinions;
+    /**岗位状态*/
+    @Excel(name = "审批状态", width = 15, dicCode = "审批状态")
+    @Dict(dicCode = "审批状态")
+    @ApiModelProperty(value = "审批状态")
+    private java.lang.String approvalStatus;
+    /**审批人*/
+    @Excel(name = "审批人", width = 15)
+    @ApiModelProperty(value = "审批人")
+    private java.lang.String approvalUser;
 }

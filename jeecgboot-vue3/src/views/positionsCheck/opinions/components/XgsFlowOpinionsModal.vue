@@ -5,18 +5,25 @@
         <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
       </a-tab-pane>
       <a-tab-pane key="2" tab="岗位信息" force-render>
-        <XgsPositionsForm v-if="formBool" ref="registerFormPosition" @ok="submitCallback" :formDisabled="true" :formData="positionApply" :formBpm="false" />
+        <XgsPositionsForm
+          v-if="formBool"
+          ref="registerFormPosition"
+          @ok="submitCallback"
+          :formDisabled="true"
+          :formData="positionApply"
+          :formBpm="false"
+        />
       </a-tab-pane>
     </a-tabs>
   </BasicModal>
 </template>
 
 <script lang="ts" setup>
-import {ref, computed, unref, nextTick} from 'vue';
+  import { ref, computed, unref, nextTick } from 'vue';
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsFlowOpinions.data';
-  import { saveOrUpdate, getResumeData } from '../XgsFlowOpinions.api';
+  import { saveOrUpdate } from '../../XgsPositions.api';
   import { useUserStore } from '@/store/modules/user';
   import XgsPositionsForm from '@/views/positionsCheck/components/XgsPositionsForm.vue';
   // Emits声明
@@ -57,10 +64,11 @@ import {ref, computed, unref, nextTick} from 'vue';
       await setFieldsValue({
         approvalUser: userStore.userInfo.realname,
         approvalNode: data.record.approvalNode,
-        approvalStatus: '同意',
-        parentId: data.record.id,
+        approvalStatus: data.record.approvalStatus,
+        id: data.record.id,
+        opinions: data.record.opinions,
       });
-      formBool.value = true
+      formBool.value = true;
     }
     // registerFormPosition.value = data.record;
     // 隐藏底部时禁用整个表单
@@ -73,6 +81,11 @@ import {ref, computed, unref, nextTick} from 'vue';
   async function handleSubmit(v) {
     try {
       let values = await validate();
+      if (['同意'].includes(values.approvalStatus)) {
+        values.status = '审核通过';
+      } else if (['驳回'].includes(values.approvalStatus)) {
+        values.status = '审核未通过';
+      }
       setModalProps({ confirmLoading: true });
       //提交表单
       await saveOrUpdate(values, isUpdate.value);

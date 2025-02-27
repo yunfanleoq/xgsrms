@@ -3,7 +3,7 @@ import { FormSchema } from '/@/components/Table';
 import { rules } from '/@/utils/helper/validator';
 import { render } from '/@/utils/common/renderUtils';
 import { getWeekMonthQuarterYear } from '/@/utils';
-//列表数据
+// 列表数据
 export const columns: BasicColumn[] = [
   {
     title: '审批人',
@@ -26,7 +26,7 @@ export const columns: BasicColumn[] = [
     dataIndex: 'opinions',
   },
 ];
-//查询数据
+// 查询数据
 export const searchFormSchema: FormSchema[] = [
   {
     label: '审批状态',
@@ -74,12 +74,12 @@ export const formSchema: FormSchema[] = [
     field: 'opinions',
     component: 'InputTextArea',
   },
-  {
-    label: '业务ID',
-    field: 'parentId',
-    component: 'Input',
-    show: false,
-  },
+  // {
+  //   label: '业务ID',
+  //   field: 'parentId',
+  //   component: 'Input',
+  //   show: false,
+  // },
   // TODO 主键隐藏字段，目前写死为ID
   {
     label: '',

@@ -5,9 +5,12 @@ const { createConfirm } = useMessage();
 
 enum Api {
   getResumeData = '/resume/xgsFlowOpinions/getResumeData',
-  list = '/resume/xgsFlowOpinions/list',
-  save = '/resume/xgsFlowOpinions/add',
-  edit = '/resume/xgsFlowOpinions/edit',
+  // list = '/resume/xgsFlowOpinions/list',
+  list = '/positions/xgsPositions/list',
+  // save = '/resume/xgsFlowOpinions/add',
+  save = '/positions/xgsPositions/add',
+  // edit = '/resume/xgsFlowOpinions/edit',
+  edit = '/positions/xgsPositions/edit',
   deleteOne = '/resume/xgsFlowOpinions/delete',
   deleteBatch = '/resume/xgsFlowOpinions/deleteBatch',
   importExcel = '/resume/xgsFlowOpinions/importExcel',

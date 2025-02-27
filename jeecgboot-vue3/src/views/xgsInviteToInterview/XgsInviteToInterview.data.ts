@@ -74,10 +74,10 @@ export const searchFormSchema: FormSchema[] = [
   },
 	{
       label: "面试状态",
-      field: 'status',
+      field: 'interviewStatus',
       component: 'JSelectMultiple',
       componentProps:{
-          dictCode:"面试状态"
+        dictCode: '面试状态',
       },
       //colProps: {span: 6},
  	},
@@ -96,7 +96,12 @@ export const searchFormSchema: FormSchema[] = [
       field: 'inviteStatus',
       component: 'JSelectMultiple',
       componentProps:{
-          dictCode:"邀请面试状态"
+        options: [
+          { label: '接受邀请', value: '接受邀请' },
+          { label: '拒绝邀请', value: '拒绝邀请' },
+          { label: '已发送邀请', value: '已发送邀请' },
+          { label: '待邀请', value: '待邀请' },
+        ],
       },
       //colProps: {span: 6},
  	},
@@ -167,11 +172,11 @@ export const formSchema: FormSchema[] = [
     componentProps: {
       // dictCode: '邀请面试状态',
       options: [
-        // { label: '已接受邀请', value: '已接受邀请' },
-        // { label: '已拒绝邀请', value: '已拒绝邀请' },
+        // { label: '接受邀请', value: '接受邀请' },
+        // { label: '拒绝邀请', value: '拒绝邀请' },
         { label: '已发送邀请', value: '已发送邀请' },
         { label: '待邀请', value: '待邀请' },
-      ]
+      ],
      },
     dynamicRules: ({model,schema}) => {
           return [
@@ -193,7 +198,7 @@ export const superQuerySchema = {
   positionName: { title: '岗位名称', order: 5, view: 'text', type: 'string' },
   positionDept: { title: '岗位部门', order: 6, view: 'text', type: 'string' },
   positionType: { title: '岗位类型', order: 7, view: 'text', type: 'string' },
-  status: { title: '面试状态', order: 6, view: 'list', type: 'string', dictCode: '面试状态' },
+  interviewStatus: { title: '面试状态', order: 6, view: 'list', type: 'string', dictCode: '面试状态' },
   interviewDate: { title: '面试时间', order: 7, view: 'datetime', type: 'string' },
   inviteStatus: { title: '邀请状态', order: 9, view: 'list', type: 'string', dictCode: '邀请面试状态' },
   interviewInformation: { title: '面试信息', order: 8, view: 'text', type: 'string' },

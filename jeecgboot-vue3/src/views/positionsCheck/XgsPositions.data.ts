@@ -64,11 +64,11 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'memo',
   },
-  // {
-  //   title: '岗位状态',
-  //   align: 'center',
-  //   dataIndex: 'status_dictText',
-  // },
+  {
+    title: '岗位状态',
+    align: 'center',
+    dataIndex: 'status_dictText',
+  },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
