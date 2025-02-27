@@ -163,9 +163,12 @@ spring:
           slow-sql-millis: 5000
       datasource:
         master:
-          url: jdbc:mysql://111.198.53.163:18333/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-          username: xgsrms
-          password: xgsrms@zktw
+          url: jdbc:mysql://localhost:3306/db_007_fzq?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+          username: root
+          password: 20030102
+#          url: jdbc:mysql://111.198.53.163:18333/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
+#          username: xgsrms
+#          password: xgsrms@zktw
           driver-class-name: com.mysql.cj.jdbc.Driver
 #        master:
 #          url: jdbc:mysql://127.0.0.1:3307/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
@@ -183,7 +186,7 @@ spring:
     database: 0
     host: 127.0.0.1
     port: 6379
-    password: 'wzspwzsp'
+    password: ''
 #mybatis plus 设置
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml

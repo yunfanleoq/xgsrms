@@ -38,9 +38,6 @@ Vue.component('xgsPositionsList',xgsPositionsList)
 import XgsJournalismForm from './pages/home/XgsJournalismForm.vue'
 Vue.component('XgsJournalismForm',XgsJournalismForm)
 
-import xgsPositionsForm from './pages/positions/xgsPositionsForm.vue'
-Vue.component('xgsPositionsForm',xgsPositionsForm)
-
 import XgsMyresumeList from './pages/xgs/myresume/XgsMyresumeList.vue'
 Vue.component('XgsMyresumeList',XgsMyresumeList)
 
@@ -52,6 +49,15 @@ Vue.component('resumeBaseForm',resumeBaseForm)
 
 import resumeBaseFormPT from './pages/resume/resumeBaseFormPT.vue'
 Vue.component('resumeBaseFormPT',resumeBaseFormPT)
+
+import resumeBaseFormFG from './pages/resume/resumeBaseFormFG.vue'
+Vue.component('resumeBaseFormFG',resumeBaseFormFG)
+
+import resumeBaseFormBSH from './pages/resume/resumeBaseFormBSH.vue'
+Vue.component('resumeBaseFormBSH',resumeBaseFormBSH)
+
+import resumeBaseFormTJ from './pages/resume/resumeBaseFormTJ.vue'
+Vue.component('resumeBaseFormTJ',resumeBaseFormTJ)
 
 import resumeWorkForm from './pages/resume/resumeWorkForm.vue'
 Vue.component('resumeWorkForm',resumeWorkForm)
@@ -67,12 +73,12 @@ Vue.component('resumeHomeForm',resumeHomeForm)
 import people from './pages/user/people.vue'
 Vue.component('people',people)
 
-import favorite from './pages/user/favorite.vue'
-Vue.component('favorite',favorite)
+// import favorite from './pages/user/favorite.vue'
+// Vue.component('favorite',favorite)
 
 // favoriteDetail
-import favoriteDetail from './pages/user/favoriteDetail.vue'
-Vue.component('favoriteDetail',favoriteDetail)
+// import favoriteDetail from './pages/user/favoriteDetail.vue'
+// Vue.component('favoriteDetail',favoriteDetail)
 // 自定义组件
 import mySelect from './components/my-componets/my-select.vue'
 Vue.component('mySelect',mySelect)

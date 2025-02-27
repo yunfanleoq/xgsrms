@@ -28,7 +28,7 @@
 	import Mixin from "@/common/mixin/Mixin.js";
 
 	export default {
-		name: '岗位列表',
+		name: 'positions_list',
 		mixins: [MescrollMixin,Mixin],
 		data() {
 			return {
@@ -43,13 +43,26 @@
                 this.$Router.push({name: "index"})
 			},
 			goToDetail(item){
-				let parmas = {...item}
-				parmas.page = 'positionsList'
-				parmas.htmlType = '招聘'
-				this.$Router.push({
-					name: "positionsDetail", // 新页面的路由名称
-					params:parmas, // 通过 parmas 传递 id
-				});
+				let params = {...item}
+				params.page = 'positionsList'
+				params.htmlType = '招聘'
+				// this.$Router.push({
+				// 	name: "positionsDetail", // 新页面的路由名称
+				// 	params:parmas, // 通过 parmas 传递 id
+				// });
+				console.log("---------", params)
+				sessionStorage.setItem("positionId", params.id)
+				// sessionStorage.setItem("positionName", params.positionName)
+				// sessionStorage.setItem("positionDept", params.positionDept)
+				// sessionStorage.setItem("positionKtz", params.positionKtz)
+				// sessionStorage.setItem("positionCount", params.positionCount)
+				sessionStorage.setItem("dept_dictText", params.dept_dictText)
+				sessionStorage.setItem("ktz_dictText", params.ktz_dictText)
+				sessionStorage.setItem("htmlType", params.htmlType)
+				uni.$globalParams = params;
+				uni.redirectTo({
+					url:"/pages/positions/xgsPositionsForm"
+				})
 			}
 		}
 	}

@@ -59,6 +59,7 @@ export const batchDelete = (params, handleSuccess) => {
  * @param params
  */
 export const saveOrUpdate = (params, isUpdate) => {
+  console.log('XgsPositions.api saveOrUpdate', params);
   let url = isUpdate ? Api.check : Api.save;
   return defHttp.post({ url: url, params });
 };

@@ -53,7 +53,7 @@
       async function submitForm() {
         let data = getFieldsValue();
         let params = Object.assign({}, formData, data);
-        console.log('表单数据', params);
+        console.log('》》》》》表单数据', params);
         await saveOrUpdate(params, true);
       }
 

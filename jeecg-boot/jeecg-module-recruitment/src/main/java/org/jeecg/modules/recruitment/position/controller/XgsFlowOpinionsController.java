@@ -73,6 +73,7 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		log.info("审批办理过程表-分页列表查询 查询参数:{}",req.getParameter("positionApplyId"));
 		String positionApplyId = req.getParameter("positionApplyId");
         // 自定义查询规则
         Map<String, QueryRuleEnum> customeRuleMap = new HashMap<>();
