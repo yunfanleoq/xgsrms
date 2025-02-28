@@ -29,13 +29,6 @@ export const columns: BasicColumn[] = [
 //查询数据
 export const searchFormSchema: FormSchema[] = [
   {
-    label: '审批状态',
-    field: 'approvalStatus',
-    component: 'JSelectMultiple',
-    componentProps: {},
-    //colProps: {span: 6},
-  },
-  {
     label: '办理意见',
     field: 'opinions',
     component: 'Input',
