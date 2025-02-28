@@ -2,7 +2,7 @@
     <view>
         <!--标题和返回-->
 		<cu-custom :bgColor="NavBarColor" isBack>
-			<block slot="backText" @click="backHome">返回</block>
+			<block slot="backText">返回</block>
 			<block slot="content">简历填写</block>
 		</cu-custom>
 		 <!--表单区域-->
@@ -85,7 +85,7 @@
 					xgsFavoriteJobDelUrl: '/positions/xgsFavoriteJob/delete',
 					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
 					submissionUrl: '/positions/xgsPositionApply/doPositionApply',
-					myResumeUrl: '/xgsResume/xgsResumeBase/listMine'
+					myResumeUrl: '/xgsResume/xgsResumeBase/listMine',
                 },
 				htmlTypeStatce: true,
 				isCollected: false,
@@ -107,6 +107,7 @@
 				myResumeList: [{"resumeName": "不选择"}],
 				myResumeNameList: [],
 				formData: {},
+				page: ""
             }
         },
 		watch: {
@@ -131,12 +132,6 @@
              this.initFormData();
         },
         methods : {
-			backHome() {
-				console.log('backhome');
-				uni.navigateTo({
-					url: 'pages/index/index?id=1'
-				});
-			},
            initFormData(){
 			   //获取岗位信息
 			   // this.model = this.$Route.query;
@@ -151,6 +146,7 @@
 						   this.model.ktz_dictText = sessionStorage.getItem("ktz_dictText")
 						   this.model.htmlType = sessionStorage.getItem("htmlType")
 						   this.model.category = sessionStorage.getItem("category")
+						   this.model.page = sessionStorage.getItem("page")
 						   
 						   this.params.positionId = this.model.id;
 						   this.params.positionName = this.model.positionName;
@@ -160,9 +156,10 @@
 						   
 						   this.params.status = "草稿";
 						   this.params.positionType = this.model.category;	
+						   this.page = this.model.page;
 						}
 				   }).catch(err => {
-				   	console.log(err);
+						console.log(err);
 				   });
 			   }else{
 				   this.params.positionId = this.model.id;
@@ -172,7 +169,8 @@
 				   this.params.positionCount = this.model.personCount;
 				   
 				   this.params.status = "草稿";
-				   this.params.positionType = this.model.category;				   
+				   this.params.positionType = this.model.category;		
+				   this.page = this.model.page;		   
 			   }
 			   
 			   //获取用户信息
@@ -209,6 +207,9 @@
 					console.log(err);
 			   }).finally(() =>{
 				   this.labelStatus++
+				   uni.redirectTo({
+					   
+				   })
 			   })
 			   
 			   this.formNumber = 1;
@@ -219,23 +220,52 @@
 			},
 			//下一步
 			onNextPage(){
-				// if(this.validateAndNext()){		
+				if(this.validateAndNext()){		
 					this.formNumber ++
-				// }else{
-				// 	this.$tip.toast('有信息未填写');
-				// }	
+				}else{
+					this.$tip.toast('有信息未填写');
+				}	
 			},
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
 				if(this.validateAndNext()){
 					this.xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
-					this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
-				}else{
-					this.$tip.toast('有信息未填写');
+					this.xgsPositionApplyVO.xgsResumeBasePage = {}
+					switch(this.params.positionType){
+						case '普通岗位':
+							this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseFormPT.model
+							break;
+						case '副高级以上岗位':
+							this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseFormFG.model
+							break;
+						case '博士后岗位	':
+							this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseFormBSH.model
+							break;
+						case '人才派遣岗位':
+							this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseFormTJ.model
+							break;
+					}
+					this.xgsPositionApplyVO.xgsResumeBasePage.xgsResumeWorksList = this.$refs.resumeWorkList.list
+					this.xgsPositionApplyVO.xgsResumeBasePage.xgsResumeEdusList = this.$refs.resumeEduList.list
+					this.xgsPositionApplyVO.xgsResumeBasePage.xgsResumeHomeList = this.$refs.resumeHomeList.list
 				}
+				this.$http.post(this.url.submissionUrl,this.xgsPositionApplyVO).then(res=>{
+					console.log("res",res)
+					if (res.data.success) {
+						uni.navigateBack({
+							delta: 1
+						})
+						this.$tip.toast('岗位申请成功');
+					}
+				}).catch(err => {
+					console.log(err);
+				});
             },
 			//判断信息是否全部填写
 			validateAndNext(){
+				if(this.formNumber > 0){
+					return true
+				}
 				//测试使用（^_^;
 				// this.xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
 				// this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
@@ -263,8 +293,6 @@
 							break;
 					}
 				}
-				
-				console.log(radios.length,"111",radioNum)
 				if(radios.length === radioNum){
 				}else{
 					return false
@@ -273,6 +301,7 @@
 				let inputs = document.querySelectorAll('input[type="text"], input[type="password"], input[type="email"], input[type="number"], textarea');
 				let allFilled = true;
 				// 遍历每个input元素并检查其值
+				
 				inputs.forEach(function(input) {
 					// 检查输入框是否可见
 					if (input.offsetParent !== null) { // offsetParent为null表示元素不可见

@@ -16,6 +16,9 @@
 		/>
 		<!--滚动加载列表-->
 		<view class="cu-list menu" v-if="!showForm">
+			<view v-if="list.length === 0">
+				请添加工作经历信息
+			</view>
 			<view class="cu-item" v-for="(item,index) in list" :key="index" @click="showForm = true, workForm = item, listIndex = index">
 				<view class="flex" style="width:100%">
 					<text class="text-lg" style="color: #000;">

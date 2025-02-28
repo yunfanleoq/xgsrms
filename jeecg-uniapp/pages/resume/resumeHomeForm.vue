@@ -96,7 +96,7 @@
               <!-- <my-date label="工作日期：" v-model="model.workDate" placeholder="请输入工作日期"></my-date> -->
 			  <view class="cu-form-group">
 			    <view class="flex align-center">
-			  	<view class="title"><text space="ensp">开始时间：</text></view>
+			  	<view class="title"><text space="ensp">毕业时间：</text></view>
 			  	<picker mode="date" :value="model.graduteDate" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'graduteDate')">
 			  		<view class="uni-input" v-if="graduteDate">{{graduteDate}}</view>
 			  		<view class="uni-input" v-else>
@@ -107,7 +107,7 @@
 			  </view>
 			  <view class="cu-form-group">
 			    <view class="flex align-center">
-			  	<view class="title"><text space="ensp">开始时间：</text></view>
+			  	<view class="title"><text space="ensp">参加工作时间：</text></view>
 			  	<picker mode="date" :value="model.workDate" :start="endStartDate" :end="endDate" @change="(e) => bindDateChange(e,'workDate')">
 			  		<view class="uni-input" v-if="workDate">{{workDate}}</view>
 			  		<view class="uni-input" v-else>
