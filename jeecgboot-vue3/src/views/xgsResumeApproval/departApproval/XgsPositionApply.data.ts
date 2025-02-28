@@ -51,20 +51,6 @@ export const searchFormSchema: FormSchema[] = [
     component: 'Input',
     //colProps: {span: 6},
   },
-  {
-    label: '审批环节',
-    field: 'approvalNode',
-    component: 'JSelectMultiple',
-    componentProps: {},
-    //colProps: {span: 6},
-  },
-  {
-    label: '审批状态',
-    field: 'approvalStatus',
-    component: 'JSelectMultiple',
-    componentProps: {},
-    //colProps: {span: 6},
-  },
 ];
 //表单数据
 export const formSchema: FormSchema[] = [
