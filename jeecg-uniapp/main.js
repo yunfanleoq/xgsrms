@@ -43,30 +43,29 @@ Vue.component('XgsMyresumeList',XgsMyresumeList)
 
 import resumeApplyForm from './pages/resume/resumeApplyForm.vue'
 Vue.component('resumeApplyForm',resumeApplyForm)
-
 import resumeBaseForm from './pages/resume/resumeBaseForm.vue'
 Vue.component('resumeBaseForm',resumeBaseForm)
-
 import resumeBaseFormPT from './pages/resume/resumeBaseFormPT.vue'
 Vue.component('resumeBaseFormPT',resumeBaseFormPT)
-
 import resumeBaseFormFG from './pages/resume/resumeBaseFormFG.vue'
 Vue.component('resumeBaseFormFG',resumeBaseFormFG)
-
 import resumeBaseFormBSH from './pages/resume/resumeBaseFormBSH.vue'
 Vue.component('resumeBaseFormBSH',resumeBaseFormBSH)
-
 import resumeBaseFormTJ from './pages/resume/resumeBaseFormTJ.vue'
 Vue.component('resumeBaseFormTJ',resumeBaseFormTJ)
 
 import resumeWorkForm from './pages/resume/resumeWorkForm.vue'
 Vue.component('resumeWorkForm',resumeWorkForm)
-
+import resumeWorkList from './pages/resume/resumeWorkList.vue'
+Vue.component('resumeWorkList',resumeWorkList)
 import resumeEduForm from './pages/resume/resumeEduForm.vue'
 Vue.component('resumeEduForm',resumeEduForm)
-
+import resumeEduList from './pages/resume/resumeEduList.vue'
+Vue.component('resumeEduList',resumeEduList)
 import resumeHomeForm from './pages/resume/resumeHomeForm.vue'
 Vue.component('resumeHomeForm',resumeHomeForm)
+import resumeHomeList from './pages/resume/resumeHomeList.vue'
+Vue.component('resumeHomeList',resumeHomeList)
 
 // xgs pages end
 

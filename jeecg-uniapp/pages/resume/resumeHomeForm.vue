@@ -92,14 +92,52 @@
                   <input  placeholder="请输入专业" v-model="model.profession"/>
                 </view>
               </view>
-              <my-date label="毕业日期：" v-model="model.graduteDate" placeholder="请输入毕业日期"></my-date>
-              <my-date label="工作日期：" v-model="model.workDate" placeholder="请输入工作日期"></my-date>
+              <!-- <my-date label="毕业日期：" v-model="model.graduteDate" placeholder="请输入毕业日期"></my-date> -->
+              <!-- <my-date label="工作日期：" v-model="model.workDate" placeholder="请输入工作日期"></my-date> -->
+			  <view class="cu-form-group">
+			    <view class="flex align-center">
+			  	<view class="title"><text space="ensp">开始时间：</text></view>
+			  	<picker mode="date" :value="model.graduteDate" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'graduteDate')">
+			  		<view class="uni-input" v-if="graduteDate">{{graduteDate}}</view>
+			  		<view class="uni-input" v-else>
+			  			<input  placeholder="请输入开始时间" style="pointer-events: none;"/>
+			  		</view>
+			  	</picker>
+			    </view>
+			  </view>
+			  <view class="cu-form-group">
+			    <view class="flex align-center">
+			  	<view class="title"><text space="ensp">开始时间：</text></view>
+			  	<picker mode="date" :value="model.workDate" :start="endStartDate" :end="endDate" @change="(e) => bindDateChange(e,'workDate')">
+			  		<view class="uni-input" v-if="workDate">{{workDate}}</view>
+			  		<view class="uni-input" v-else>
+			  			<input  placeholder="请输入开始时间" style="pointer-events: none;"/>
+			  		</view>
+			  	</picker>
+			    </view>
+			  </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">工作单位：</text></view>
                   <input  placeholder="请输入工作单位" v-model="model.workUnit"/>
                 </view>
               </view>
+			  
+			  
+			  <view class="form-buttons" v-if="formType == '查看'">
+				  <button @click="handleCancel">确认</button>
+				  <button @click="handleCancel">取消</button>
+			  </view>
+			  <view class="form-buttons" v-else-if="formType == '修改'">
+				  <button @click="updateConfirm">修改</button>
+				  <button @click="delConfirm">删除</button>
+				  <button @click="handleCancel">取消</button>
+			  </view>
+			  <view class="form-buttons" v-else>
+				  <button @click="handleConfirm">确认</button>
+				  <button @click="handleCancel">取消</button>
+			  </view>
+			  
 			</form>
 		</view>
     </view>
@@ -126,27 +164,84 @@
                 model: {},
                 backRouteName:'index',
                 url: {
-                  queryById: "/xgsUserResumes/homeTest/queryById",
-                  add: "/xgsUserResumes/homeTest/add",
-                  edit: "/xgsUserResumes/homeTest/edit",
+                  queryById: "/xgsUserResumes/eduTest/queryById",
+                  add: "/xgsUserResumes/eduTest/add",
+                  edit: "/xgsUserResumes/eduTest/edit",
                 },
+				graduteDate: "",
+				workDate: "",
+				startDate: "",
+				endDate: "",
+				endStartDate: "",
+				formType: "新增"
             }
         },
         created(){
-             this.initFormData();
+			this.getStartDate();
+			this.getEndDate();
+			this.initForm();
         },
         methods:{
-           initFormData(){
-               if(this.formData){
-                    let dataId = this.formData.dataId;
-                    this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-                        if(res.data.success){
-                            console.log("表单数据",res);
-                            this.model = res.data.result;
-                        }
-                    })
-                }
-            },
+			initForm(){
+				console.log(this.formData)
+				if(this.formData){
+					this.model = this.formData
+					this.graduteDate = this.model.graduteDate
+					this.endStartDate = this.model.graduteDate
+					this.workEndDate = this.model.workDate
+					this.formType = "修改"
+				}
+			},
+           // 确认按钮点击事件
+		   handleConfirm() {
+			   this.$emit('confirm', this.model); // 触发 confirm 事件，传递表单数据
+		   },
+		   // 修改按钮点击事件
+		   updateConfirm() {
+			   this.$emit('updateConfirm', this.model); // 触发 confirm 事件，传递表单数据
+		   },
+		   // 删除按钮点击事件
+		   delConfirm() {
+			   this.$emit('delConfirm'); // 触发 confirm 事件，传递表单数据
+		   },
+		   // 取消按钮点击事件
+		   handleCancel() {
+			   this.$emit('cancel'); // 触发 cancel 事件
+		   },
+		   
+			bindDateChange: function(e,value) {
+				switch(value){
+					case "graduteDate":
+						this.model.graduteDate = e.detail.value
+						this.graduteDate = this.model.graduteDate
+						this.endStartDate = this.model.graduteDate
+						break;
+					case "workDate":
+						this.model.workDate = e.detail.value
+						this.workDate = this.model.workDate
+						break;
+				}
+			},
+			getDate(type) {
+				const date = new Date();
+				let year = date.getFullYear();
+				let month = date.getMonth() + 1;
+				let day = date.getDate();
+				
+				if(type === 'start'){
+					year = year  - 100;
+				}
+				
+				month = month > 9 ? month : '0' + month;
+				day = day > 9 ? day : '0' + day;
+				return `${year}-${month}-${day}`;
+			},
+			getStartDate() {
+				this.startDate = this.getDate('start');
+			},
+			getEndDate() {
+				this.endDate = this.getDate('end');
+			},
         }
     }
 </script>

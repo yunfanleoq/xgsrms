@@ -1,8 +1,8 @@
 <template>
     <view>
         <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
-			<block slot="backText">返回</block>
+		<cu-custom :bgColor="NavBarColor" isBack>
+			<block slot="backText" @click="backHome">返回</block>
 			<block slot="content">简历填写</block>
 		</cu-custom>
 		 <!--表单区域-->
@@ -18,8 +18,7 @@
 			<view>
 				<resumeApplyForm ref="resumeApplyForm" style="display: none;" :formData="params"></resumeApplyForm>
 				<view v-show="formNumber === 1 && formTest">
-					<!-- <resumeBaseForm ref="resumeBaseForm" :formData="formData"></resumeBaseForm> -->
-					<resumeBaseFormBSH ref="resumeBaseFormBSH" :formData="formData"></resumeBaseFormBSH>
+					<resumeBaseForm ref="resumeBaseForm" :formData="formData"></resumeBaseForm>
 				</view>
 				<view v-show="formNumber === 1 && params.positionType === '普通岗位' && !formTest">
 					<resumeBaseFormPT ref="resumeBaseFormPT" :formData="formData"></resumeBaseFormPT>
@@ -33,9 +32,9 @@
 				<view v-show="formNumber === 1 && params.positionType === '人才派遣岗位' && !formTest">
 					<resumeBaseFormTJ ref="resumeBaseFormTJ" :formData="formData"></resumeBaseFormTJ>
 				</view>
-				<resumeWorkForm ref="resumeWorkForm" v-show="formNumber === 2"></resumeWorkForm>
-				<resumeEduForm ref="resumeEduForm" v-show="formNumber === 3"></resumeEduForm>
-				<resumeHomeForm ref="resumeHomeForm" v-show="formNumber === 4"></resumeHomeForm>
+				<resumeWorkList ref="resumeWorkList" v-show="formNumber === 2"></resumeWorkList>
+				<resumeEduList ref="resumeEduList" v-show="formNumber === 3"></resumeEduList>
+				<resumeHomeList ref="resumeHomeList" v-show="formNumber === 4"></resumeHomeList>
 			</view>
 			<button v-if="formNumber > 1" class="cu-btn block bg-blue margin-tb-sm lg" @tap="onUpPage">
 				<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>上一步
@@ -62,9 +61,9 @@
 	import resumeBaseFormFG from '@/pages/resume/resumeBaseFormFG.vue'
 	import resumeBaseFormBSH from '@/pages/resume/resumeBaseFormBSH.vue'
 	import resumeBaseFormTJ from '@/pages/resume/resumeBaseFormTJ.vue'
-	import resumeWorkForm from '@/pages/resume/resumeWorkForm.vue'
-	import resumeEduForm from '@/pages/resume/resumeEduForm.vue'
-	import resumeHomeForm from '@/pages/resume/resumeHomeForm.vue'
+	import resumeWorkList from '@/pages/resume/resumeWorkList.vue'
+	import resumeEduList from '@/pages/resume/resumeEduList.vue'
+	import resumeHomeList from '@/pages/resume/resumeHomeList.vue'
 
     export default {
         name: "resume_form",
@@ -132,6 +131,12 @@
              this.initFormData();
         },
         methods : {
+			backHome() {
+				console.log('backhome');
+				uni.navigateTo({
+					url: 'pages/index/index?id=1'
+				});
+			},
            initFormData(){
 			   //获取岗位信息
 			   // this.model = this.$Route.query;
@@ -214,11 +219,11 @@
 			},
 			//下一步
 			onNextPage(){
-				if(this.validateAndNext()){		
+				// if(this.validateAndNext()){		
 					this.formNumber ++
-				}else{
-					this.$tip.toast('有信息未填写');
-				}	
+				// }else{
+				// 	this.$tip.toast('有信息未填写');
+				// }	
 			},
 			//提交岗位（对于‘新增’和‘编辑’）
             onSubmit() {
