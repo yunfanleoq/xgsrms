@@ -856,9 +856,6 @@
                     })
                 }
             },
-			formSubmission(){
-				return this.model
-            },
 			radioChange(evt, radioName){
 				switch(radioName){
 					case "sex":

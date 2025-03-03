@@ -1,20 +1,20 @@
 <template>
 	<view>
 	   <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor">
-			<!-- <block slot="backText">返回</block> -->
+		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
+			<block slot="backText">返回</block>
 			<block slot="content">岗位列表</block>
 		</cu-custom>
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="positionsList" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in list" :key="index" @tap="goToDetail(item)">
+				<view class="cu-item" v-for="(item,index) in favoriteList" :key="index" @tap="goToDetail(item)">
 					<view class="flex" style="width:100%">
                         <text class="text-lg" style="color: #000;">
                              {{ item.positionName}}
                         </text>
 						<text class="text-lg" style="color: #999; font-size: 12px;">
-						     {{ item.dept_dictText}}
+						     {{ item.positionDept}}
 						</text>
 					</view>
 				</view>
@@ -34,10 +34,32 @@
 			return {
 				CustomBar:this.CustomBar,
 				NavBarColor:this.NavBarColor,
-				url: "/positions/xgsPositions/list",
-				list:[],
+				url: {
+					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
+				},
+				favoriteList:[],
+				params: {
+					userId: "",
+					userName: "",
+					positionId: "",
+					positionName: "",
+					positionDept: "",
+					positionKtz: "",
+					positionCount: "",
+				}
 			};
 		},
+		watch: {
+			cur: {
+				immediate: true,
+				handler() {
+				    this.params.userId=this.$store.getters.userid;
+				},
+			},
+		},
+        created(){
+             this.onCollectList();
+        },
 		methods: {
 			goHome(){
                 this.$Router.push({name: "index"})
@@ -50,22 +72,23 @@
 				// 	name: "positionsDetail", // 新页面的路由名称
 				// 	params:parmas, // 通过 parmas 传递 id
 				// });
-				console.log("---------", params)
-				sessionStorage.setItem("positionId", params.id)
-				// sessionStorage.setItem("positionName", params.positionName)
-				// sessionStorage.setItem("positionDept", params.positionDept)
-				// sessionStorage.setItem("positionKtz", params.positionKtz)
-				// sessionStorage.setItem("positionCount", params.positionCount)
-				sessionStorage.setItem("dept_dictText", params.dept_dictText)
-				sessionStorage.setItem("ktz_dictText", params.ktz_dictText)
-				sessionStorage.setItem("category", params.category)
+				sessionStorage.setItem("positionId", params.positionId)
+				sessionStorage.setItem("dept_dictText", params.positionDept)
+				sessionStorage.setItem("ktz_dictText", params.positionKtz)
 				sessionStorage.setItem("htmlType", params.htmlType)
 				sessionStorage.setItem("page", params.page)
-				uni.$globalParams = params;
+				uni.$globalParams = null;
 				uni.navigateTo({
 					url:"/pages/positions/xgsPositionsForm"
 				})
-			}
+			},
+			onCollectList(){
+				this.$http.get(this.url.xgsFavoriteJobListUrl,{params:{userId: this.params.userId}}).then(res=>{
+					this.favoriteList = res.data.result.records
+				}).catch(err => {
+					console.log(err);
+				});
+			},
 		}
 	}
 </script>

@@ -172,6 +172,7 @@
            initFormData(){
 			   //获取岗位信息
 			   this.model = uni.$globalParams;
+			   console.log("###",this.model)
 
 				if(!this.model){
 				   this.model = {}
@@ -179,16 +180,31 @@
 				   this.$http.get(this.url.queryById,{params:{id: this.model.id}}).then(res=>{
 						if (res.data.success) {
 							this.model = {...res.data.result}
-						   this.model.dept_dictText = sessionStorage.getItem("dept_dictText")
-						   this.model.ktz_dictText = sessionStorage.getItem("ktz_dictText")
-						   this.model.htmlType = sessionStorage.getItem("htmlType")
-						   this.model.category = sessionStorage.getItem("category")
+							if(!this.model.dept_dictText){
+								this.model.dept_dictText = sessionStorage.getItem("dept_dictText")
+							}
+						   if(!this.model.ktz_dictText){
+								this.model.ktz_dictText = sessionStorage.getItem("ktz_dictText")
+						   }
+						   if(!this.model.category){
+								this.model.category = sessionStorage.getItem("category")
+						   }
+						   if(!this.model.category){
+								this.model.category = res.data.result.category
+						   }
+						   if(!this.model.htmlType){
+								this.model.htmlType = sessionStorage.getItem("htmlType")
+						   }
+						   if(!this.model.page){
+								this.model.page = sessionStorage.getItem("page")
+						   }
 						   
 						   this.params.positionId = this.model.id;
 						   this.params.positionName = this.model.positionName;
 						   this.params.positionDept = this.model.dept_dictText;
 						   this.params.positionKtz = this.model.ktz_dictText;
 						   this.params.positionCount = this.model.personCount;
+						   this.params.page = this.model.page;
 						}
 				   }).catch(err => {
 				   	console.log(err);
@@ -237,7 +253,7 @@
 				// 	params:parmas, // 通过 parmas 传递 id
 				// });
 				uni.$globalParams = params;
-				uni.redirectTo({
+				uni.navigateTo({
 					url:"/pages/resume/resumeForm"
 				})
 			},

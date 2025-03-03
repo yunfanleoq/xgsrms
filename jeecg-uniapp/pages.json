@@ -169,6 +169,9 @@
 		// 	}
 		// },
 		{
+			"path": "pages/user/favorite",
+			"style": {}
+		},{
 			"path": "pages/user/userexit",
 			"style": {}
 		}, {
