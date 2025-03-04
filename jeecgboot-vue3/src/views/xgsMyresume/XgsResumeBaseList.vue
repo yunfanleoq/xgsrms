@@ -5,6 +5,13 @@
       <!--插槽:table标题-->
       <template #tableTitle>
         <a-button type="primary" v-auth="'xgsResume:xgs_resume_base:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
+        <a-button type="primary" v-auth="'xgsResume:xgs_resume_base:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
+          导出</a-button
+        >
+        <j-upload-button type="primary" v-auth="'xgsResume:xgs_resume_base:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls"
+          >导入</j-upload-button
+        >
+        <a-button type="primary" @click="batchAddToTalentPool" preIcon="ant-design:user-add-outlined">加入人才库</a-button>
         <a-dropdown v-if="selectedRowKeys.length > 0">
           <template #overlay>
             <a-menu>
