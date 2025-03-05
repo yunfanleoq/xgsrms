@@ -1,59 +1,58 @@
-import {BasicColumn} from '/@/components/Table';
-import {FormSchema} from '/@/components/Table';
-import { rules} from '/@/utils/helper/validator';
+import { BasicColumn } from '/@/components/Table';
+import { FormSchema } from '/@/components/Table';
+import { rules } from '/@/utils/helper/validator';
 import { render } from '/@/utils/common/renderUtils';
 import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
-   {
+  {
     title: '姓名',
-    align:"center",
-    dataIndex: 'name'
-   },
-   {
+    align: 'center',
+    dataIndex: 'name',
+  },
+  {
     title: '性别',
-    align:"center",
-    dataIndex: 'sex_dictText'
-   },
-   {
+    align: 'center',
+    dataIndex: 'sex_dictText',
+  },
+  {
     title: '政治面貌',
-    align:"center",
-    dataIndex: 'politicBackground'
-   },
-   {
+    align: 'center',
+    dataIndex: 'politicBackground',
+  },
+  {
     title: '国籍',
-    align:"center",
-    dataIndex: 'nationality'
-   },
-   {
+    align: 'center',
+    dataIndex: 'nationality',
+  },
+  {
     title: '户口所在地',
-    align:"center",
-    dataIndex: 'hukou'
-   },
-   {
+    align: 'center',
+    dataIndex: 'hukou',
+  },
+  {
     title: '毕业院校',
-    align:"center",
-    dataIndex: 'graduateCollege'
-   },
-   {
+    align: 'center',
+    dataIndex: 'graduateCollege',
+  },
+  {
     title: '学历',
-    align:"center",
-    dataIndex: 'education'
-   },
-   {
+    align: 'center',
+    dataIndex: 'education',
+  },
+  {
     title: '专业',
-    align:"center",
-    dataIndex: 'profession'
-   },
-   {
+    align: 'center',
+    dataIndex: 'profession',
+  },
+  {
     title: '目前工作单位',
-    align:"center",
-    dataIndex: 'workUnit'
-   },
+    align: 'center',
+    dataIndex: 'workUnit',
+  },
 ];
 //查询数据
-export const searchFormSchema: FormSchema[] = [
-];
+export const searchFormSchema: FormSchema[] = [];
 //表单数据
 export const formSchema: FormSchema[] = [
   {
@@ -64,18 +63,18 @@ export const formSchema: FormSchema[] = [
   {
     label: '本人照片',
     field: 'photograph',
-     component: 'JImageUpload',
-     componentProps:{
-        fileMax: 0
-      },
+    component: 'JImageUpload',
+    componentProps: {
+      fileMax: 0,
+    },
   },
   {
     label: '性别',
     field: 'sex',
     component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"sex"
-     },
+    componentProps: {
+      dictCode: 'sex',
+    },
   },
   {
     label: '籍贯',
@@ -87,7 +86,7 @@ export const formSchema: FormSchema[] = [
     field: 'birthday',
     component: 'DatePicker',
     componentProps: {
-      valueFormat: 'YYYY-MM-DD'
+      valueFormat: 'YYYY-MM-DD',
     },
   },
   {
@@ -124,17 +123,17 @@ export const formSchema: FormSchema[] = [
     label: '是否应届毕业生',
     field: 'yjbys',
     component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"yes_or_no"
-     },
+    componentProps: {
+      dictCode: 'yes_or_no',
+    },
   },
   {
     label: '是否统招统分',
     field: 'tztf',
     component: 'JDictSelectTag',
-    componentProps:{
-        dictCode:"yes_or_no"
-     },
+    componentProps: {
+      dictCode: 'yes_or_no',
+    },
   },
   {
     label: '毕业院校',
@@ -161,7 +160,7 @@ export const formSchema: FormSchema[] = [
     field: 'graduateDate',
     component: 'DatePicker',
     componentProps: {
-      valueFormat: 'YYYY-MM-DD'
+      valueFormat: 'YYYY-MM-DD',
     },
   },
   {
@@ -169,7 +168,7 @@ export const formSchema: FormSchema[] = [
     field: 'workDate',
     component: 'DatePicker',
     componentProps: {
-      valueFormat: 'YYYY-MM-DD'
+      valueFormat: 'YYYY-MM-DD',
     },
   },
   {
@@ -192,7 +191,7 @@ export const formSchema: FormSchema[] = [
     field: 'adminPositionDate',
     component: 'DatePicker',
     componentProps: {
-      valueFormat: 'YYYY-MM-DD'
+      valueFormat: 'YYYY-MM-DD',
     },
   },
   {
@@ -205,7 +204,7 @@ export const formSchema: FormSchema[] = [
     field: 'professionLevelDate',
     component: 'DatePicker',
     componentProps: {
-      valueFormat: 'YYYY-MM-DD'
+      valueFormat: 'YYYY-MM-DD',
     },
   },
   {
@@ -217,23 +216,17 @@ export const formSchema: FormSchema[] = [
     label: '联系电话',
     field: 'mobile',
     component: 'Input',
-    dynamicRules: ({model,schema}) => {
-          return [
-                 { required: false},
-                 { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号码!'},
-          ];
-     },
+    dynamicRules: ({ model, schema }) => {
+      return [{ required: false }, { pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号码!' }];
+    },
   },
   {
     label: 'E-mail',
     field: 'email',
     component: 'Input',
-    dynamicRules: ({model,schema}) => {
-          return [
-                 { required: false},
-                 { pattern: /^([\w]+\.*)([\w]+)@[\w]+\.\w{3}(\.\w{2}|)$/, message: '请输入正确的电子邮件!'},
-          ];
-     },
+    dynamicRules: ({ model, schema }) => {
+      return [{ required: false }, { pattern: /^([\w]+\.*)([\w]+)@[\w]+\.\w{3}(\.\w{2}|)$/, message: '请输入正确的电子邮件!' }];
+    },
   },
   {
     label: '学习经历',
@@ -310,33 +303,33 @@ export const formSchema: FormSchema[] = [
     field: 'areaId',
     component: 'InputNumber',
   },
-	// TODO 主键隐藏字段，目前写死为ID
-	{
-	  label: '',
-	  field: 'id',
-	  component: 'Input',
-	  show: false
-	},
+  // TODO 主键隐藏字段，目前写死为ID
+  {
+    label: '',
+    field: 'id',
+    component: 'Input',
+    show: false,
+  },
 ];
 
 // 高级查询数据
 export const superQuerySchema = {
-  name: {title: '姓名',order: 0,view: 'text', type: 'string',},
-  sex: {title: '性别',order: 2,view: 'list', type: 'string',dictCode: 'sex',},
-  politicBackground: {title: '政治面貌',order: 8,view: 'text', type: 'string',},
-  nationality: {title: '国籍',order: 9,view: 'text', type: 'string',},
-  hukou: {title: '户口所在地',order: 10,view: 'text', type: 'string',},
-  graduateCollege: {title: '毕业院校',order: 13,view: 'text', type: 'string',},
-  education: {title: '学历',order: 14,view: 'text', type: 'string',},
-  profession: {title: '专业',order: 16,view: 'text', type: 'string',},
-  workUnit: {title: '目前工作单位',order: 19,view: 'text', type: 'string',},
+  name: { title: '姓名', order: 0, view: 'text', type: 'string' },
+  sex: { title: '性别', order: 2, view: 'list', type: 'string', dictCode: 'sex' },
+  politicBackground: { title: '政治面貌', order: 8, view: 'text', type: 'string' },
+  nationality: { title: '国籍', order: 9, view: 'text', type: 'string' },
+  hukou: { title: '户口所在地', order: 10, view: 'text', type: 'string' },
+  graduateCollege: { title: '毕业院校', order: 13, view: 'text', type: 'string' },
+  education: { title: '学历', order: 14, view: 'text', type: 'string' },
+  profession: { title: '专业', order: 16, view: 'text', type: 'string' },
+  workUnit: { title: '目前工作单位', order: 19, view: 'text', type: 'string' },
 };
 
 /**
-* 流程表单调用这个方法获取formSchema
-* @param param
-*/
-export function getBpmFormSchema(_formData): FormSchema[]{
+ * 流程表单调用这个方法获取formSchema
+ * @param param
+ */
+export function getBpmFormSchema(_formData): FormSchema[] {
   // 默认和原始表单保持一致 如果流程中配置了权限数据，这里需要单独处理formSchema
   return formSchema;
 }
