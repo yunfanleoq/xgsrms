@@ -24,7 +24,13 @@
     <!--表单区域 -->
     <div class="contentArea">
       <!--主表区域 -->
-      <BasicForm @register="registerForm" ref="formRef" v-show="activeKey == refKeys[0]" name="XgsResumeBaseForm" />
+      <BasicForm @register="registerForm" ref="formRef" v-show="activeKey == refKeys[0]" name="XgsResumeBaseForm">
+        <template #userId="{ model, field }">
+          <div style="margin: 0 0 5px 0; text-align: center">
+            <j-upload v-model:value="model.resumeFile" :max-count="1" bizPath="resume" :multiple="false" accept=".pdf" text="上传PDF简历，自动填充简历信息" @change="changeResumeFile"></j-upload>
+          </div>
+        </template>
+      </BasicForm>
       <!--子表区域 -->
       <JVxeTable
         v-show="activeKey == 'xgsResumeWorks'"
@@ -82,6 +88,8 @@
   import { saveOrUpdate, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList } from '../XgsResumeBase.api';
   import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils';
   import {useUserStore} from "@/store/modules/user";
+  import JUpload from "../../../components/Form/src/jeecg/components/JUpload/JUpload.vue";
+  import {defHttp} from "@/utils/http/axios";
   // Emits声明
   const emit = defineEmits(['register', 'success']);
   const isUpdate = ref(true);
@@ -191,6 +199,38 @@
       xgsResumeEdusList: allValues.tablesValue[1].tableData,
       xgsResumeHomeList: allValues.tablesValue[2].tableData,
     };
+  }
+  // 分析简历
+  const resumeText = ref('');
+  function changeResumeFile(val) {
+    setModalProps({ loading: true, confirmLoading: true });
+    resumeText.value = '请稍等，正在分析简历...';
+    defHttp
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: { filePath: val } })
+      .then((data) => {
+        if (data && data.fileJson) {
+          let resumeData = JSON.parse(data.fileJson);
+          fillResumeInfo(resumeData);
+          resumeText.value = '';
+        } else {
+          createMessage.warning('解析失败，请上传PDF格式的简历');
+        }
+      })
+      .finally(() => {
+        setModalProps({ loading: false, confirmLoading: false });
+      });
+  }
+  function fillResumeInfo(resumeData) {
+    // 在这里根据解析结果填充表单数据
+    const pdfData = ref({
+      ...resumeData,
+    });
+    setFieldsValue({
+      ...pdfData.value,
+    });
+    xgsResumeWorksTable.dataSource = pdfData.value.xgsResumeWorks;
+    xgsResumeEdusTable.dataSource = pdfData.value.xgsResumeEdus;
+    xgsResumeHomeTable.dataSource = pdfData.value.xgsResumeHome;
   }
   //表单提交事件
   async function requestAddOrEdit(values) {

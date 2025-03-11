@@ -147,10 +147,10 @@ export const searchFormSchema: FormSchema[] = [];
 //表单数据
 export const formSchema: FormSchema[] = [
   {
-    label: 'userId',
+    label: 'PDF简历',
     field: 'userId',
     component: 'Input',
-    ifShow: false,
+    slot: 'userId',
   },
   {
     label: '姓名',

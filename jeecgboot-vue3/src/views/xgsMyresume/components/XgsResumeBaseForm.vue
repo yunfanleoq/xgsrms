@@ -3,11 +3,11 @@
     <!-- 子表单区域 -->
     <a-tabs v-model:activeKey="activeKey" animated @change="handleChangeTabs">
       <!--主表区域 -->
-      <a-tab-pane tab="基本信息" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
+      <a-tab-pane tab="基本信息12" :key="refKeys[0]" :forceRender="true" :style="tabsStyle">
         <BasicForm @register="registerForm" ref="formRef" />
       </a-tab-pane>
       <!--子表单区域 -->
-      <a-tab-pane tab="工作经历" key="xgsResumeWorks" :forceRender="true" :style="tabsStyle">
+      <a-tab-pane tab="工作经历1" key="xgsResumeWorks" :forceRender="true" :style="tabsStyle">
         <JVxeTable
           keep-source
           resizable
@@ -23,7 +23,7 @@
           :toolbar="true"
         />
       </a-tab-pane>
-      <a-tab-pane tab="教育经历" key="xgsResumeEdus" :forceRender="true" :style="tabsStyle">
+      <a-tab-pane tab="教育经历2" key="xgsResumeEdus" :forceRender="true" :style="tabsStyle">
         <JVxeTable
           keep-source
           resizable
@@ -39,7 +39,7 @@
           :toolbar="true"
         />
       </a-tab-pane>
-      <a-tab-pane tab="家庭状况" key="xgsResumeHome" :forceRender="true" :style="tabsStyle">
+      <a-tab-pane tab="家庭状况3" key="xgsResumeHome" :forceRender="true" :style="tabsStyle">
         <JVxeTable
           keep-source
           resizable
@@ -72,6 +72,7 @@
   import { formSchema, xgsResumeWorksColumns, xgsResumeEdusColumns, xgsResumeHomeColumns } from '../XgsResumeBase.data';
   import { saveOrUpdate, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList } from '../XgsResumeBase.api';
   import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils';
+  import JUpload from "../../../components/Form/src/jeecg/components/JUpload/JUpload.vue";
   const refKeys = ref(['xgsResumeBase', 'xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome']);
   const activeKey = ref('xgsResumeBase');
   const xgsResumeWorks = ref();
