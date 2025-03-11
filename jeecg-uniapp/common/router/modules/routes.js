@@ -212,5 +212,12 @@ const routes = [
 	        title: '简历家庭状况',
 	    },
 	},
+	{
+	    path: '/pages/resume/resumeApplyList',
+	    name: 'resumeApplyList',
+	    meta: {
+	        title: '已申请简历信息',
+	    },
+	},
 ]
 export default routes

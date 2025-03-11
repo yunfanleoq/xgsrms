@@ -20,6 +20,12 @@
 		        <text class="text-grey">收藏</text>
 		      </view>
 		    </navigator>
+			<navigator class="cu-item arrow animation-slide-bottom" url="/pages/resume/resumeApplyList" open-type="navigate" :style="[{animationDelay: '0.1s'}]">
+			  <view class="content">
+			    <text class="cuIcon-favorfill text-yellow"></text>
+			    <text class="text-grey">个人申请</text>
+			  </view>
+			</navigator>
 			<!-- <view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.3s'}]" @tap="scan">
 			  <view class="content">
 			    <text class="cuIcon-scan text-red"></text>

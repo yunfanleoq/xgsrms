@@ -53,6 +53,10 @@
 			"style": {}
 		},
 		{
+			"path": "pages/resume/resumeApplyList",
+			"style": {}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {}
 		},

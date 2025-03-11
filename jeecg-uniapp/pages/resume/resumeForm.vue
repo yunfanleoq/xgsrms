@@ -7,7 +7,7 @@
 		</cu-custom>
 		 <!--表单区域-->
 		<view v-if="labelStatus == 2">
-			 <view class="cu-form-group">
+			 <view class="cu-form-group" v-if="model.htmlType === '招聘'">
 			   <view class="flex align-center">
 				<view class="title"><text space="ensp">简历名称：</text></view>
 					<picker @change="bindPickerChange" :value="myResumeIndex" :range="myResumeNameList">
@@ -86,6 +86,7 @@
 					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
 					submissionUrl: '/positions/xgsPositionApply/doPositionApply',
 					myResumeUrl: '/xgsResume/xgsResumeBase/listMine',
+					positionsByIdUrl: '/positions/xgsPositionApply/getPositionApply'
                 },
 				htmlTypeStatce: true,
 				isCollected: false,
@@ -157,6 +158,7 @@
 						   this.params.status = "草稿";
 						   this.params.positionType = this.model.category;	
 						   this.page = this.model.page;
+							console.log(this.page)
 						}
 				   }).catch(err => {
 						console.log(err);
@@ -186,31 +188,41 @@
 			   }).catch(err => {
 					console.log(err);
 			   });
-			   
-			   //获取简历集合
-			   this.$http.get(this.url.myResumeUrl,{params:{pageSize: 1000}}).then(res=>{
-					if (res.data.success) {
-						let resumeList = res.data.result.records
-						this.myResumeNameList = this.myResumeList.map(item => item.resumeName);
-						resumeList.forEach((input, index) => {
-							if(input.resumeName){
-								this.myResumeNameList.push(input.resumeName)
-							}else{
-								this.myResumeNameList.push("简历"+index)
+
+			   console.log(this.model.htmlType)
+			   if(this.model.htmlType === "招聘"){
+				   //获取简历集合
+				   this.$http.get(this.url.myResumeUrl,{params:{pageSize: 1000}}).then(res=>{
+						if (res.data.success) {
+							let resumeList = res.data.result.records
+							this.myResumeNameList = this.myResumeList.map(item => item.resumeName);
+							resumeList.forEach((input, index) => {
+								if(input.resumeName){
+									this.myResumeNameList.push(input.resumeName)
+								}else{
+									this.myResumeNameList.push("简历"+index)
+								}
+							})
+							if(resumeList.length > 0){
+								this.myResumeList = [...this.myResumeList, ...resumeList];
 							}
-						})
-						if(resumeList.length > 0){
-							this.myResumeList = [...this.myResumeList, ...resumeList];
 						}
-					}
-			   }).catch(err => {
-					console.log(err);
-			   }).finally(() =>{
-				   this.labelStatus++
-				   uni.redirectTo({
-					   
+				   }).catch(err => {
+						console.log(err);
+				   }).finally(() =>{
+					   this.labelStatus++
 				   })
-			   })
+			   }else if(this.model.htmlType === "查看"){
+				   let resumeId = this.model.resumeAppleId
+				  //  this.$http.get(this.url.positionsByIdUrl,{params: params}).then(res=>{
+					 //   console.log("resss",res)
+					 //   // this.formData
+				  //  }).catch(err => {
+						// console.log(err);
+				  //  })
+				   this.labelStatus++
+			   }
+			   
 			   
 			   this.formNumber = 1;
             },
