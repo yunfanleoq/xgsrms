@@ -95,6 +95,32 @@ public class XgsResumeBaseController {
 		 return Result.OK(pageList);
 	 }
 
+	 /**
+	  * 分页列表查询 我的申请列表
+	  *
+	  * @param xgsResumeBase
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 //@AutoLog(value = "岗位申请-分页列表查询")
+	 @ApiOperation(value="个人简历-我的简历", notes="个人简历-我的简历")
+	 @GetMapping(value = "/listMyResume")
+	 public Result<IPage<XgsResumeBase>> listMyResume(XgsResumeBase xgsResumeBase,
+												  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+												  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+												  HttpServletRequest req) {
+		 //获取当前用户
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 Page<XgsResumeBase> page = new Page<XgsResumeBase>(pageNo, pageSize);
+		 IPage<XgsResumeBase> pageList = null;
+		 QueryWrapper<XgsResumeBase> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeBase, req.getParameterMap());
+		 queryWrapper.eq("user_id", sysUser.getId());
+		 pageList = xgsResumeBaseService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
+
 	/**
 	 * 分页列表查询
 	 *

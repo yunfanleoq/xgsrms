@@ -4,23 +4,42 @@ import { useMessage } from '/@/hooks/web/useMessage';
 const { createConfirm } = useMessage();
 
 enum Api {
-  list = '/xgsMyresume/xgsMyresume/list',
-  save = '/xgsMyresume/xgsMyresume/add',
-  edit = '/xgsMyresume/xgsMyresume/edit',
-  deleteOne = '/xgsMyresume/xgsMyresume/delete',
-  deleteBatch = '/xgsMyresume/xgsMyresume/deleteBatch',
-  importExcel = '/xgsMyresume/xgsMyresume/importExcel',
-  exportXls = '/xgsMyresume/xgsMyresume/exportXls',
+  list = '/xgsResume/xgsResumeBase/listMyResume',
+  save = '/xgsResume/xgsResumeBase/add',
+  edit = '/xgsResume/xgsResumeBase/edit',
+  deleteOne = '/xgsResume/xgsResumeBase/delete',
+  deleteBatch = '/xgsResume/xgsResumeBase/deleteBatch',
+  importExcel = '/xgsResume/xgsResumeBase/importExcel',
+  exportXls = '/xgsResume/xgsResumeBase/exportXls',
+  xgsResumeWorksList = '/xgsResume/xgsResumeBase/queryXgsResumeWorksByMainId',
+  xgsResumeEdusList = '/xgsResume/xgsResumeBase/queryXgsResumeEdusByMainId',
+  xgsResumeHomeList = '/xgsResume/xgsResumeBase/queryXgsResumeHomeByMainId',
 }
 /**
  * 导出api
  * @param params
  */
 export const getExportUrl = Api.exportXls;
+
 /**
  * 导入api
  */
 export const getImportUrl = Api.importExcel;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeWorksList = Api.xgsResumeWorksList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeEdusList = Api.xgsResumeEdusList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeHomeList = Api.xgsResumeHomeList;
 /**
  * 列表接口
  * @param params

@@ -4,23 +4,53 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'xgsResume:xgs_resume_base:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-        <a-dropdown v-if="selectedRowKeys.length > 0">
+        <a-button type="primary" v-auth="'xgsMyresume:xgs_myresume:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增简历</a-button>
+
+        <a-button type="primary" v-auth="'xgsMyresume:xgs_myresume:deleteBatch'" @click="batchHandleDelete" preIcon="ant-design:delete-outlined"
+          >删除简历</a-button
+        >
+
+        <a-dropdown>
+          <template #overlay>
+            <a-menu>
+              <a-menu-item key="1" @click="handleIntelligentModify">
+                <Icon icon="ant-design:edit-outlined" />
+                智能修改
+              </a-menu-item>
+              <a-menu-item key="2" @click="handleIntelligentAnalysis">
+                <Icon icon="ant-design:bulb-outlined" />
+                智能分析
+              </a-menu-item>
+              <a-menu-item key="3" @click="handleUploadResume">
+                <Icon icon="ant-design:cloud-upload-outlined" />
+                简历上传
+              </a-menu-item>
+            </a-menu>
+          </template>
+          <a-button type="primary" preIcon="ant-design:edit-outlined"
+            >修改简历
+            <Icon icon="mdi:chevron-down" />
+          </a-button>
+        </a-dropdown>
+
+        <!-- <a-button  type="primary" v-auth="'xgsMyresume:xgs_myresume:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls"> 导出</a-button> -->
+        <!-- <j-upload-button type="primary" v-auth="'xgsMyresume:xgs_myresume:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls">导入</j-upload-button> -->
+        <!-- <a-dropdown v-if="selectedRowKeys.length > 0">
           <template #overlay>
             <a-menu>
               <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined" />
+                <Icon icon="ant-design:delete-outlined"></Icon>
                 删除
               </a-menu-item>
             </a-menu>
           </template>
-          <a-button v-auth="'xgsResume:xgs_resume_base:deleteBatch'"
+          <a-button v-auth="'xgsMyresume:xgs_myresume:deleteBatch'"
             >批量操作
-            <Icon icon="mdi:chevron-down" />
+            <Icon icon="mdi:chevron-down"></Icon>
           </a-button>
-        </a-dropdown>
+        </a-dropdown> -->
         <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
+        <!-- <super-query :config="superQueryConfig" @search="handleSuperQuery" /> -->
       </template>
       <!--操作栏-->
       <template #action="{ record }">
@@ -30,31 +60,31 @@
       <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsResumeBaseModal @register="registerModal" @success="handleSuccess" />
+    <XgsMyresumeModal @register="registerModal" @success="handleSuccess" />
   </div>
 </template>
 
-<script lang="ts" name="xgsResume-xgsResumeBase" setup>
+<script lang="ts" name="xgsMyresume-xgsMyresume" setup>
   import { ref, reactive, computed, unref } from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { useListPage } from '/@/hooks/system/useListPage';
   import { useModal } from '/@/components/Modal';
-  import XgsResumeBaseModal from './components/XgsResumeBaseModal.vue';
-  import { columns, searchFormSchema, superQuerySchema } from './XgsResumeBase.data';
-  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl, addToTalentPool } from './XgsResumeBase.api';
-  import { message } from 'ant-design-vue'; // 使用 Ant Design Vue 的 message
+  import { useListPage } from '/@/hooks/system/useListPage';
+  import XgsMyresumeModal from './components/XgsMyresumeModal.vue';
+  import { columns, searchFormSchema, superQuerySchema } from './XgsMyresume.data';
+  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsMyresume.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
-  import { defHttp } from '@/utils/http/axios';
+  import { Modal, message } from 'ant-design-vue'; // 确保导入 Modal 和 message
+
   const queryParam = reactive<any>({});
-  const userStore = useUserStore();
   const checkedKeys = ref<Array<string | number>>([]);
+  const userStore = useUserStore();
   //注册model
   const [registerModal, { openModal }] = useModal();
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
-      title: '基本信息',
+      title: '简历列表',
       api: list,
       columns,
       canResize: false,
@@ -71,11 +101,15 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
+        // return Object.assign(params, queryParam);
+        // 获取当前登录用户的ID
+        const currentUserId = userStore.getUserInfo.id;
+        // 添加用户ID作为过滤条件
+        return Object.assign(params, queryParam, { userId: currentUserId });
       },
     },
     exportConfig: {
-      name: '基本信息',
+      name: '简历列表',
       url: getExportUrl,
       params: queryParam,
     },
@@ -108,6 +142,7 @@
       showFooter: true,
     });
   }
+
   /**
    * 编辑事件
    */
@@ -140,6 +175,7 @@
   async function batchHandleDelete() {
     await batchDelete({ ids: selectedRowKeys.value }, handleSuccess);
   }
+
   /**
    * 成功回调
    */
@@ -154,37 +190,10 @@
       {
         label: '编辑',
         onClick: handleEdit.bind(null, record),
-        auth: 'xgsResume:xgs_resume_base:edit',
+        auth: 'xgsMyresume:xgs_myresume:edit',
       },
     ];
   }
-
-  // 加入人才库
-  async function batchAddToTalentPool() {
-    if (selectedRowKeys.value.length === 0) {
-      message.warning('请先选择至少一条简历后再进行操作');
-      return;
-    }
-
-    try {
-      const response = await defHttp.post({
-        url: '/xgsTalentpool/xgsTalentpool/addBatchFromResume',
-        params: { ids: selectedRowKeys.value }, // 将选中的简历 ID 传给后端
-      });
-
-      if (response === '添加到人才库成功！') {
-        reload(); // 刷新表格
-        selectedRowKeys.value = []; // 清空选中的状态
-      } else {
-        // 失败时显示失败提示
-        message.error('操作失败');
-      }
-    } catch (error) {
-      // 发生错误时显示提示
-      message.error('操作失败，请重试');
-    }
-  }
-
   /**
    * 下拉操作栏
    */
@@ -201,7 +210,7 @@
           confirm: handleDelete.bind(null, record),
           placement: 'topLeft',
         },
-        auth: 'xgsResume:xgs_resume_base:delete',
+        auth: 'xgsMyresume:xgs_myresume:delete',
       },
     ];
   }
