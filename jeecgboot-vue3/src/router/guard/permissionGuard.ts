@@ -9,9 +9,9 @@ import { PAGE_NOT_FOUND_ROUTE } from '/@/router/routes/basic';
 
 import { RootRoute } from '/@/router/routes';
 
-import {isOAuth2AppEnv, isOAuth2DingAppEnv} from '/@/views/sys/login/useLogin';
-import { OAUTH2_THIRD_LOGIN_TENANT_ID } from "/@/enums/cacheEnum";
-import { setAuthCache } from "/@/utils/auth";
+import { isOAuth2AppEnv, isOAuth2DingAppEnv } from '/@/views/sys/login/useLogin';
+import { OAUTH2_THIRD_LOGIN_TENANT_ID } from '/@/enums/cacheEnum';
+import { setAuthCache } from '/@/utils/auth';
 import { PAGE_NOT_FOUND_NAME_404 } from '/@/router/constant';
 
 const LOGIN_PATH = PageEnum.BASE_LOGIN;
@@ -31,7 +31,7 @@ const ROOT_PATH = RootRoute.path;
 // open home path
 const OPEN_HOME = PageEnum.HOME_INDEX;
 
-const whitePathList: PageEnum[] = [LOGIN_PATH, OAUTH2_LOGIN_PAGE_PATH,SYS_FILES_PATH, TOKEN_LOGIN, OPEN_HOME ];
+const whitePathList: PageEnum[] = [LOGIN_PATH, OAUTH2_LOGIN_PAGE_PATH, SYS_FILES_PATH, TOKEN_LOGIN, OPEN_HOME];
 //update-end---author:wangshuai ---date:20221111  for: [VUEN-2472]分享免登录------------
 //update-end---author:wangshuai ---date:20220629  for：[issues/I5BG1I]vue3不支持auth2登录------------
 
@@ -43,6 +43,12 @@ export function createPermissionGuard(router: Router) {
   let homePathJumpCount = 0;
 
   router.beforeEach(async (to, from, next) => {
+    console.log(222, to.path);
+    if (to.path === PageEnum.HOME_INDEX || to.path === PageEnum.HOME_ROOT) { //
+      next();
+      return;
+    }
+
     if (
       // 【#6861】跳转到自定义首页的逻辑，只跳转一次即可
       homePathJumpCount < 1 &&

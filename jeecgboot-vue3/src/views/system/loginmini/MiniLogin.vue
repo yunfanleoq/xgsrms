@@ -1,7 +1,6 @@
 <template>
   <div :class="prefixCls" class="login-background-img">
     <AppLocalePicker class="absolute top-4 right-4 enter-x xl:text-gray-600" :showText="false" />
-    <AppDarkModeToggle class="absolute top-3 right-7 enter-x" />
     <span @click="goHome">← 返回首页</span>
     <div class="aui-logo" v-if="!getIsMobile">
       <div>
@@ -12,7 +11,7 @@
       </div>
     </div>
     <div v-else class="aui-phone-logo">
-      <img :src="logoImg" alt="jeecg" />
+      <img :src="logoImg" alt="iie logo img" />
     </div>
     <div v-show="type === 'login'">
       <div class="aui-content">
@@ -167,7 +166,7 @@
   import MiniCodelogin from './MiniCodelogin.vue';
   import logoImg from '/@/assets/loginmini/icon/jeecg_logo.png';
   import adTextImg from '/@/assets/loginmini/icon/jeecg_ad_text.png';
-  import { AppLocalePicker, AppDarkModeToggle } from '/@/components/Application';
+  import { AppLocalePicker } from '/@/components/Application';
   import { useLocaleStore } from '/@/store/modules/locale';
   import { useDesign } from '/@/hooks/web/useDesign';
   import { useAppInject } from '/@/hooks/web/useAppInject';

@@ -7,4 +7,4 @@ export type MainAppProps = {
   hideHeader?: boolean;
   // 隐藏 多Tab 切换
   hideMultiTabs?: boolean;
-}
+};

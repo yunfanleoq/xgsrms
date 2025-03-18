@@ -1,13 +1,13 @@
 <template>
   <a-spin :spinning="loading">
-    <div style="text-align: center; margin-top: 20px">
+    <div v-if="showIndexStyle" style="text-align: center; margin-top: 20px">
       <a-radio-group v-model:value="indexStyle">
         <a-radio :value="0">管理员首页</a-radio>
         <a-radio :value="1">应聘人员首页</a-radio>
       </a-radio-group>
       <span><b>（部署正式环境不显示此选项）</b></span>
     </div>
-    <IndexChart v-if="indexStyle === 0" :formData="formData"/>
+    <IndexChart v-if="indexStyle === 0" :formData="formData" />
     <IndexBdc v-if="indexStyle == 1" />
   </a-spin>
 </template>
@@ -16,9 +16,8 @@
   import IndexChart from './homePage/IndexChart.vue';
   import IndexBdc from './homePage/IndexBdc.vue';
   import { defHttp } from '/@/utils/http/axios';
-  import { chartCardList} from './data';
 
-  const indexStyle = ref(0);
+  const indexStyle = ref(1);
   const loading = ref(true);
   const showIndexStyle = ref(false);
   defHttp
@@ -36,10 +35,9 @@
     });
 
   const formData = ref({
-    gwsl:5,
-    zpsl:100,
-    shsl:20,
-    jlsl:60
-
-  })
+    gwsl: 5,
+    zpsl: 100,
+    shsl: 20,
+    jlsl: 60,
+  });
 </script>

@@ -18,7 +18,7 @@ import { useErrorLogStoreWithOut } from '/@/store/modules/errorLog';
 import { useI18n } from '/@/hooks/web/useI18n';
 import { joinTimestamp, formatRequestDate } from './helper';
 import { useUserStoreWithOut } from '/@/store/modules/user';
-import { cloneDeep } from "lodash-es";
+import { cloneDeep } from 'lodash-es';
 const globSetting = useGlobSetting();
 const urlPrefix = globSetting.urlPrefix;
 const { createMessage, createErrorModal } = useMessage();
@@ -107,7 +107,7 @@ const transform: AxiosTransform = {
       config.url = `${apiUrl}${config.url}`;
     }
     //update-end---author:scott ---date::2024-02-20  for：以http开头的请求url，不拼加前缀--
-    
+
     const params = config.params || {};
     const data = config.data || false;
     formatDate && data && !isString(data) && formatRequestDate(data);
@@ -144,7 +144,7 @@ const transform: AxiosTransform = {
     // update-begin--author:sunjianlei---date:220241019---for：【JEECG作为乾坤子应用】作为乾坤子应用启动时，拼接请求路径
     if (globSetting.isQiankunMicro) {
       if (config.url && config.url.startsWith('/')) {
-        config.url = globSetting.qiankunMicroAppEntry + config.url
+        config.url = globSetting.qiankunMicroAppEntry + config.url;
       }
     }
     // update-end--author:sunjianlei---date:220241019---for：【JEECG作为乾坤子应用】作为乾坤子应用启动时，拼接请求路径

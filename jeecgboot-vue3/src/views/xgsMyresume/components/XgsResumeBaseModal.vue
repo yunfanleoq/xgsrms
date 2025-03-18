@@ -5,7 +5,7 @@
     wrapClassName="j-cgform-tab-modal"
     v-bind="$attrs"
     @register="registerModal"
-    :width="896"
+    :width="'80%'"
     @ok="handleSubmit"
   >
     <!-- 标题区域 -->
@@ -126,6 +126,7 @@
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate }] = useForm({
     schemas: formSchema,
+    labelWidth: '180px',
     showActionButtonGroup: false,
     baseColProps: { span: 12 },
   });

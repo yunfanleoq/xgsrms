@@ -4,7 +4,7 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'xgsResume:xgs_resume_base:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
+        <a-button type="primary" v-auth="'xgsMyresume:xgs_myresume:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
         <a-dropdown v-if="selectedRowKeys.length > 0">
           <template #overlay>
             <a-menu>
@@ -154,7 +154,7 @@
       {
         label: '编辑',
         onClick: handleEdit.bind(null, record),
-        auth: 'xgsResume:xgs_resume_base:edit',
+        auth: 'xgsMyresume:xgs_myresume:edit',
       },
     ];
   }

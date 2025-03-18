@@ -1,4 +1,4 @@
-import type { MainAppProps } from "#/main";
+import type { MainAppProps } from '#/main';
 import 'uno.css';
 import '/@/design/index.less';
 import 'ant-design-vue/dist/reset.css';
