@@ -1,0 +1,84 @@
+{
+  "terminal": {
+    "shell": {
+      "windows": {
+        "path": "C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandSeparator": ";",
+        "disallowedOperators": ["&&", "||", "|"],
+        "escapeCharacter": "`"
+      }
+    },
+    "commands": {
+      "windows": {
+        "cd": {
+          "useForwardSlash": true,
+          "escapeSpaces": true
+        },
+        "rm": {
+          "requireFlags": true,
+          "defaultFlags": ["-r", "-force"]
+        },
+        "cp": {
+          "requireFlags": true,
+          "defaultFlags": ["-r", "-force"]
+        }
+      }
+    }
+  },
+  "editor": {
+    "lineEnding": "crlf",
+    "encoding": "utf8",
+    "indentation": {
+      "style": "space",
+      "size": 2
+    }
+  },
+  "git": {
+    "core": {
+      "autocrlf": true,
+      "safecrlf": false
+    },
+    "hooks": {
+      "pre-commit": {
+        "enabled": true,
+        "commands": [
+          "lint-staged"
+        ]
+      }
+    }
+  },
+  "paths": {
+    "useWindowsSeparator": false,
+    "caseSensitive": false
+  },
+  "environment": {
+    "variables": {
+      "NODE_ENV": "development",
+      "LANG": "en_US.UTF-8"
+    }
+  },
+  "linting": {
+    "useEslint": true,
+    "usePrettier": true,
+    "formatOnSave": true
+  },
+  "security": {
+    "allowedCommands": [
+      "npm",
+      "yarn",
+      "pnpm",
+      "node",
+      "git",
+      "mvn",
+      "java"
+    ],
+    "disallowedCommands": [
+      "rm -rf /",
+      "del /f /s /q"
+    ]
+  },
+  "errorHandling": {
+    "showFullStack": true,
+    "logLevel": "debug"
+  }
+} 
