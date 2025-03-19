@@ -69,6 +69,7 @@ export const TokenLoginRoute: AppRouteRecordRaw = {
 export const homeIndexRoute: AppRouteRecordRaw = {
   path: '/home',
   name: 'homeIndex',
+  redirect: '/home/index',
   component: () => import('/@/views/home/index.vue'),
   meta: {
     title: '人才招聘',
@@ -77,7 +78,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
   },
   children: [
     {
-      path: '',
+      path: 'index',
       name: 'homeHome',
       component: () => import('/@/views/home/home.vue'),
       meta: {

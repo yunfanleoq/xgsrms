@@ -29,7 +29,7 @@ ul, li, a
 	margin: 0px;
 }
 button {outline: none;}
-select { width:100%;}
+/*select { width:100%;}*/
 input::-webkit-input-placeholder{ color: #3C5AA9;}
 input:-moz-placeholder{ color: #3C5AA9;}
 input::-moz-placeholder{ color: #3C5AA9;}

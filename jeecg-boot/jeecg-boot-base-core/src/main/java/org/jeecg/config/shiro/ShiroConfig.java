@@ -83,7 +83,8 @@ public class ShiroConfig {
         }
 
         // 配置首页数据
-        filterChainDefinitionMap.put("/xgsJournalism/xgsJournalism/list", "anon");
+        filterChainDefinitionMap.put("/xgsHome/**", "anon");
+        filterChainDefinitionMap.put("/xgsJournalism/**", "anon");
         filterChainDefinitionMap.put("/positions/xgsPositions/list", "anon");
         filterChainDefinitionMap.put("/sys/dict/getDictItems/*", "anon");
 
@@ -151,29 +152,29 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/**/*.css.map", "anon");
         
         //拖拽仪表盘设计器排除
-        filterChainDefinitionMap.put("/drag/view", "anon");
-        filterChainDefinitionMap.put("/drag/page/queryById", "anon");
-        filterChainDefinitionMap.put("/drag/page/addVisitsNumber", "anon");
-        filterChainDefinitionMap.put("/drag/page/queryTemplateList", "anon");
-        filterChainDefinitionMap.put("/drag/share/view/**", "anon");
-        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getAllChartData", "anon");
-        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getTotalData", "anon");
-        filterChainDefinitionMap.put("/drag/mock/json/**", "anon");
+//        filterChainDefinitionMap.put("/drag/view", "anon");
+//        filterChainDefinitionMap.put("/drag/page/queryById", "anon");
+//        filterChainDefinitionMap.put("/drag/page/addVisitsNumber", "anon");
+//        filterChainDefinitionMap.put("/drag/page/queryTemplateList", "anon");
+//        filterChainDefinitionMap.put("/drag/share/view/**", "anon");
+//        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getAllChartData", "anon");
+//        filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getTotalData", "anon");
+//        filterChainDefinitionMap.put("/drag/mock/json/**", "anon");
         filterChainDefinitionMap.put("/jimubi/view", "anon");
         filterChainDefinitionMap.put("/jimubi/share/view/**", "anon");
 
         //大屏模板例子
-        filterChainDefinitionMap.put("/test/bigScreen/**", "anon");
-        filterChainDefinitionMap.put("/bigscreen/template1/**", "anon");
-        filterChainDefinitionMap.put("/bigscreen/template2/**", "anon");
+//        filterChainDefinitionMap.put("/test/bigScreen/**", "anon");
+//        filterChainDefinitionMap.put("/bigscreen/template1/**", "anon");
+//        filterChainDefinitionMap.put("/bigscreen/template2/**", "anon");
         //filterChainDefinitionMap.put("/test/jeecgDemo/rabbitMqClientTest/**", "anon"); //MQ测试
         //filterChainDefinitionMap.put("/test/jeecgDemo/html", "anon"); //模板页面
         //filterChainDefinitionMap.put("/test/jeecgDemo/redis/**", "anon"); //redis测试
 
         //websocket排除
         filterChainDefinitionMap.put("/websocket/**", "anon");//系统通知和公告
-        filterChainDefinitionMap.put("/newsWebsocket/**", "anon");//CMS模块
-        filterChainDefinitionMap.put("/vxeSocket/**", "anon");//JVxeTable无痕刷新示例
+//        filterChainDefinitionMap.put("/newsWebsocket/**", "anon");//CMS模块
+//        filterChainDefinitionMap.put("/vxeSocket/**", "anon");//JVxeTable无痕刷新示例
 
         //性能监控——安全隐患泄露TOEKN（durid连接池也有）
         //filterChainDefinitionMap.put("/actuator/**", "anon");

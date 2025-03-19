@@ -151,7 +151,7 @@ public class XgsResumeBaseController {
 	 */
 	@AutoLog(value = "基本信息-添加")
 	@ApiOperation(value="基本信息-添加", notes="基本信息-添加")
-    @RequiresPermissions("xgsResume:xgs_resume_base:add")
+//    @RequiresPermissions("xgsResume:xgs_resume_base:add")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody XgsResumeBasePage xgsResumeBasePage) {
 		XgsResumeBase xgsResumeBase = new XgsResumeBase();
@@ -168,7 +168,7 @@ public class XgsResumeBaseController {
 	 */
 	@AutoLog(value = "基本信息-编辑")
 	@ApiOperation(value="基本信息-编辑", notes="基本信息-编辑")
-    @RequiresPermissions("xgsResume:xgs_resume_base:edit")
+//    @RequiresPermissions("xgsResume:xgs_resume_base:edit")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody XgsResumeBasePage xgsResumeBasePage) {
 		XgsResumeBase xgsResumeBase = new XgsResumeBase();
@@ -189,7 +189,7 @@ public class XgsResumeBaseController {
 	 */
 	@AutoLog(value = "基本信息-通过id删除")
 	@ApiOperation(value="基本信息-通过id删除", notes="基本信息-通过id删除")
-    @RequiresPermissions("xgsResume:xgs_resume_base:delete")
+//    @RequiresPermissions("xgsResume:xgs_resume_base:delete")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
 		xgsResumeBaseService.delMain(id);
@@ -204,7 +204,7 @@ public class XgsResumeBaseController {
 	 */
 	@AutoLog(value = "基本信息-批量删除")
 	@ApiOperation(value="基本信息-批量删除", notes="基本信息-批量删除")
-    @RequiresPermissions("xgsResume:xgs_resume_base:deleteBatch")
+//    @RequiresPermissions("xgsResume:xgs_resume_base:deleteBatch")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
 		this.xgsResumeBaseService.delBatchMain(Arrays.asList(ids.split(",")));

@@ -16,6 +16,7 @@ export enum PageEnum {
   TOKEN_LOGIN = '/tokenLogin',
 
   // open home path
+  HOME_ROOT = '/home',
   HOME_INDEX = '/home/index',
   // HOME_YJSK = '/home/yjsk',
 }
