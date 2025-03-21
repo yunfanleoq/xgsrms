@@ -75,4 +75,12 @@ public class XgsJournalism implements Serializable {
 	@Dict(dicCode = "jour_state")
     @ApiModelProperty(value = "新闻状态")
     private java.lang.String state;
+    @ApiModelProperty(value = "新闻日期")
+    private String newsDate;
+    @ApiModelProperty(value = "新闻链接")
+    private java.lang.String href;
+    @ApiModelProperty(value = "新闻排序")
+    private java.lang.Integer newsSort;
+
+
 }

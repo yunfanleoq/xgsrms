@@ -12,6 +12,8 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -38,6 +40,9 @@ import java.util.List;
  */
 @Service
 public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> implements IXgsHomeService {
+
+    private static final Logger logger = LoggerFactory.getLogger(XgsHomeServiceImpl.class);
+
     @Autowired
     private RestTemplate restTemplate;
 
@@ -46,6 +51,8 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
 
     @Autowired
     private XgsJournalismMapper xgsJournalismMapper;  // 注入 Mapper
+
+    private String apiUrl = "https://www.iie.ac.cn"; // 目标网站的 URL
 
     // 将相对路径转换为绝对路径
     private static String resolveRelativeUrl(String baseUrl, String relativeUrl) {
@@ -63,9 +70,60 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
         }
     }
 
+
     @Override
-    public boolean syncHomeContentFromAPI() {
-        String apiUrl = "https://www.iie.ac.cn"; // 目标网站的 URL
+    public boolean syncHomeContentFromAPI() throws Exception {
+        // 首页
+        syncHomeContent();
+        // 首页
+//        syncHomeCategory("头条新闻", "https://www.iie.ac.cn/xwdt2020/ttxw2020/");
+        syncHomeCategory("综合新闻", "https://www.iie.ac.cn/xwdt2020/zhxw2020/");
+        syncHomeCategory("科研动态", "https://www.iie.ac.cn/xwdt2020/kydt2020/");
+        syncHomeCategory("通知公告", "https://www.iie.ac.cn/xwdt2020/tzgg2020/");
+        return true;
+    }
+
+    private void syncHomeCategory(String newsType, String url) throws Exception {
+        String htmlContent = JsoupHtmlContent.getContent(url);
+        if (htmlContent == null) {
+            throw new Exception("获取网页内容失败");
+        }
+
+        // 创建集合来分别存储图片地址、新闻标题和招聘公告
+        List<XgsJournalism> list = new ArrayList<>(); // news list
+
+        // 设置网页字符编码为 UTF-8，避免乱码问题
+        Document document = Jsoup.parse(htmlContent);
+        Date date = new Date();
+        document.select("#content .tj a").forEach(element -> {
+            String href = element.attr("href");
+            String newTitle = element.text();
+            String subUrl = resolveRelativeUrl(url, href);
+            XgsJournalism xgsJournalism = new XgsJournalism();
+            xgsJournalism.setCreateTime(date);
+            xgsJournalism.setUpdateTime(date);
+            xgsJournalism.setNewsDate("");
+            xgsJournalism.setJournalismHead(newTitle);
+            xgsJournalism.setHref(subUrl);
+            xgsJournalism.setState("已发布");
+            xgsJournalism.setType(newsType);
+            list.add(xgsJournalism);
+        });
+        for (XgsJournalism xgsJournalism : list) {
+            // 抓取子页面
+            String result = JsoupHtmlContent.getContent(xgsJournalism.getHref());
+            Document subDoc = Jsoup.parse(result);
+            String newsText = subDoc.select("#xlmain").html(); // 假设新闻正文在 .news-content p 标签中
+            xgsJournalism.setJournalismText(newsText);
+        }
+        if (list.size() > 0) {
+            for (XgsJournalism xgsJournalism : list) {
+                xgsJournalismMapper.insert(xgsJournalism);
+            }
+        }
+    }
+
+    public boolean syncHomeContent() {
         try {
             String htmlContent = JsoupHtmlContent.getContent(apiUrl);
             if (htmlContent == null) {
@@ -104,7 +162,8 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 if (StringUtils.isEmpty(newsText)) {
                     newsText = subDoc.select(".xl_content").html(); // 假设新闻正文在 .news-content p 标签中
                     String subUrl1 = subUrl.replaceAll("/[^/]+shtml", "");
-                    newsText  = newsText.replaceAll("<img src=\".", "<img src=\"" + subUrl1);
+                    String subUrl2 = subUrl1.replaceAll("https://", "http://");
+                    newsText  = newsText.replaceAll("<img src=\".", "<img src=\"" + subUrl2);
                     System.out.println(subUrl + "------------>"+newsText);
                 }
                 newsTexts.add(newsText); // 将新闻正文内容添加到集合中
@@ -169,7 +228,7 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
 
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.info("同步数据时发生错误", e);
             return false;
         }
     }
