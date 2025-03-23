@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { computed, reactive, ref } from 'vue';
+  import {computed, onMounted, reactive, ref, watchEffect} from 'vue';
   import { useUserStore } from '@/store/modules/user';
   import { doLogout } from '@/api/sys/user';
 
@@ -60,6 +60,10 @@
 
   const isLoggedIn = computed(() => !!userStore.userInfo?.username);
   const loggedInUser = computed(() => userStore.userInfo);
+
+  onMounted(() => {
+    userStore.getUserInfoAction();
+  });
 
   const currentYear = computed(() => new Date().getFullYear());
 
@@ -171,6 +175,11 @@
     font-size: 20px;
     cursor: pointer;
     font-weight: bold;
+  }
+
+  header nav a:hover {
+    color: white;
+    text-decoration: underline;
   }
 
   header .login,

@@ -74,6 +74,28 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 		IPage<XgsHome> pageList = xgsHomeService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
+
+	 /**
+	  * 分页列表查询
+	  * @param xgsHome
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 @ApiOperation(value="首页-分页列表查询", notes="首页-分页列表查询")
+	 @GetMapping(value = "/listForHome")
+	 public Result<IPage<XgsHome>> listForHome(XgsHome xgsHome,
+												 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+												 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+												 HttpServletRequest req) {
+		 QueryWrapper<XgsHome> queryWrapper = QueryGenerator.initQueryWrapper(xgsHome, req.getParameterMap());
+		 Page<XgsHome> page = new Page<XgsHome>(pageNo, pageSize);
+		 queryWrapper.orderByDesc("create_time");
+		 queryWrapper.orderByAsc("img_num");
+		 IPage<XgsHome> pageList = xgsHomeService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
 	
 	/**
 	 *   添加

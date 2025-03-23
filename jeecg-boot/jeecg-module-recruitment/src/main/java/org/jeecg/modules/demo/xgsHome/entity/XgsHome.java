@@ -23,7 +23,7 @@ import lombok.experimental.Accessors;
 /**
  * @Description: 首页
  * @Author: jeecg-boot
- * @Date:   2025-01-21
+ * @Date:   2025-03-22
  * @Version: V1.0
  */
 @Data
@@ -37,44 +37,60 @@ public class XgsHome implements Serializable {
 	/**主键*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "主键")
-    private java.lang.String id;
+    private String id;
 	/**创建人*/
     @ApiModelProperty(value = "创建人")
-    private java.lang.String createBy;
+    private String createBy;
 	/**创建日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建日期")
-    private java.util.Date createTime;
+    private Date createTime;
 	/**更新人*/
     @ApiModelProperty(value = "更新人")
-    private java.lang.String updateBy;
+    private String updateBy;
+	/**所属部门*/
+    @ApiModelProperty(value = "所属部门")
+    private String sysOrgCode;
 	/**更新日期*/
 	@JsonFormat(timezone = "GMT+8",pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern="yyyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "更新日期")
-    private java.util.Date updateTime;
-	/**所属部门*/
-    @ApiModelProperty(value = "所属部门")
-    private java.lang.String sysOrgCode;
-	/**招聘公告*/
-	@Excel(name = "招聘公告", width = 15)
-    @ApiModelProperty(value = "招聘公告")
-    private java.lang.String recruitAnnouncement;
-	/**新闻标题*/
-	@Excel(name = "新闻标题", width = 15)
-    @ApiModelProperty(value = "新闻标题")
-    private java.lang.String newTitle;
-	/**新闻*/
-	@Excel(name = "新闻", width = 15)
-    @ApiModelProperty(value = "新闻")
-    private java.lang.String news;
-	/**图片*/
-	@Excel(name = "图片", width = 15)
-    @ApiModelProperty(value = "图片")
-    private java.lang.String photograph;
+    private Date updateTime;
 	/**招聘公告标题*/
 	@Excel(name = "招聘公告标题", width = 15)
     @ApiModelProperty(value = "招聘公告标题")
-    private java.lang.String recruitAnnouncementTitle;
+    private String recruitAnnouncementTitle;
+	/**招聘公告*/
+	@Excel(name = "招聘公告", width = 15)
+    @ApiModelProperty(value = "招聘公告")
+    private String recruitAnnouncement;
+	/**新闻标题*/
+	@Excel(name = "新闻标题", width = 15)
+    @ApiModelProperty(value = "新闻标题")
+    private String newTitle;
+	/**新闻*/
+	@Excel(name = "新闻", width = 15)
+    @ApiModelProperty(value = "新闻")
+    private String news;
+	/**图片*/
+	@Excel(name = "图片", width = 15)
+    @ApiModelProperty(value = "图片")
+    private String photograph;
+	/**图片文件*/
+	@Excel(name = "图片文件", width = 15)
+    @ApiModelProperty(value = "图片文件")
+    private String images;
+	/**图片地址*/
+	@Excel(name = "图片地址", width = 15)
+    @ApiModelProperty(value = "图片地址")
+    private String imgHref;
+	/**图片序号*/
+	@Excel(name = "图片序号", width = 15)
+    @ApiModelProperty(value = "图片序号")
+    private String imgNum;
+	/**类型*/
+	@Excel(name = "类型", width = 15)
+    @ApiModelProperty(value = "类型")
+    private String newsType;
 }

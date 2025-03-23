@@ -111,7 +111,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
             ignoreAuth: true,
             ignoreMenu: true,
           },
-        }
+        },
       ],
       meta: {
         title: '招聘岗位',
@@ -154,7 +154,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'newsDetail',
       component: () => import('/@/views/home/newsDetail.vue'),
       meta: {
-        title: '科研发展',
+        title: '详细内容',
         ignoreAuth: true,
         ignoreMenu: true,
       },

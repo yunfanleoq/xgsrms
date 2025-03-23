@@ -76,6 +76,21 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 		IPage<XgsJournalism> pageList = xgsJournalismService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
+
+	 @ApiOperation(value="新闻内容-分页列表查询", notes="新闻内容-分页列表查询")
+	 @GetMapping(value = "/listForHome")
+	 @IgnoreAuth
+	 public Result<IPage<XgsJournalism>> listForHome(XgsJournalism xgsJournalism,
+													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+													   HttpServletRequest req) {
+		 QueryWrapper<XgsJournalism> queryWrapper = QueryGenerator.initQueryWrapper(xgsJournalism, req.getParameterMap());
+		 Page<XgsJournalism> page = new Page<XgsJournalism>(pageNo, pageSize);
+		 queryWrapper.orderByDesc("create_time");
+		 queryWrapper.orderByAsc("news_sort");
+		 IPage<XgsJournalism> pageList = xgsJournalismService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
 	
 	/**
 	 *   添加

@@ -1,34 +1,27 @@
 package org.jeecg.modules.demo.xgsHome.service.impl;
 
-import cn.hutool.http.HttpRequest;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.jeecg.modules.demo.xgsHome.entity.XgsHome;
 import org.jeecg.modules.demo.xgsHome.mapper.XgsHomeMapper;
 import org.jeecg.modules.demo.xgsHome.service.IXgsHomeService;
 import org.jeecg.modules.demo.xgsJournalism.entity.XgsJournalism;
 import org.jeecg.modules.demo.xgsJournalism.mapper.XgsJournalismMapper;
-
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
@@ -54,6 +47,25 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
 
     private String apiUrl = "https://www.iie.ac.cn"; // 目标网站的 URL
 
+    private static String downloadImageAsBase64(String imgUrl) {
+        try {
+            URL url = new URL(imgUrl);
+            InputStream inputStream = url.openStream();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            byte[] imageBytes = outputStream.toByteArray();
+            return Base64.getEncoder().encodeToString(imageBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
     // 将相对路径转换为绝对路径
     private static String resolveRelativeUrl(String baseUrl, String relativeUrl) {
         if (relativeUrl.startsWith("http")) {
@@ -70,20 +82,138 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
         }
     }
 
-
     @Override
     public boolean syncHomeContentFromAPI() throws Exception {
         // 首页
-        syncHomeContent();
+//        syncHomeContent();
+        syncHomeImages(); // 首页图片
         // 首页
-//        syncHomeCategory("头条新闻", "https://www.iie.ac.cn/xwdt2020/ttxw2020/");
-        syncHomeCategory("综合新闻", "https://www.iie.ac.cn/xwdt2020/zhxw2020/");
-        syncHomeCategory("科研动态", "https://www.iie.ac.cn/xwdt2020/kydt2020/");
-        syncHomeCategory("通知公告", "https://www.iie.ac.cn/xwdt2020/tzgg2020/");
+        syncHomeNews("头条新闻", "ttxw", "https://www.iie.ac.cn/xwdt2020/ttxw2020");
+        syncHomeCategory("综合新闻", "zhxw", "https://www.iie.ac.cn/xwdt2020/zhxw2020");
+        syncHomeCategory("科研动态", "kydt", "https://www.iie.ac.cn/xwdt2020/kydt2020");
+        syncHomeCategory("通知公告", "tzgg", "https://www.iie.ac.cn/xwdt2020/tzgg2020");
+        syncHomeCategory("人才招聘", "rczp", "https://www.iie.ac.cn/yjdw2020/rczp2020");
         return true;
     }
 
-    private void syncHomeCategory(String newsType, String url) throws Exception {
+    public boolean syncHomeImages() {
+        try {
+            String htmlContent = JsoupHtmlContent.getContent(apiUrl);
+            if (htmlContent == null) {
+                throw new Exception("获取网页内容失败");
+            }
+            // 设置网页字符编码为 UTF-8，避免乱码问题
+            Document document = Jsoup.parse(htmlContent);
+            List<XgsHome> homeDataList = new ArrayList<>();
+            document.select(".hotnews .slides li").forEach(element -> {
+                Element imgEle = element.select(" img").first();
+                String photographUrl = imgEle.attr("src");
+                // 去掉 "." 符号
+                photographUrl = photographUrl.replaceAll("^\\.", "");
+                photographUrl = apiUrl + photographUrl; // 拼接完整图片 URL
+
+                Element descEle = element.select(".flex-caption a").first();
+                String href = descEle.attr("href");
+                String title = descEle.text();
+                String imgUrl = resolveRelativeUrl(apiUrl, href);
+
+                String imgData = downloadImageAsBase64(photographUrl);
+
+                // 创建 XgsHome 对象
+                XgsHome homeData = new XgsHome();
+                homeData.setPhotograph(photographUrl); // 图片地址
+                homeData.setNewTitle(title);
+                homeData.setImgHref(imgUrl);
+                homeData.setNews("首页图片");
+                homeData.setNewsType("homeImages");
+                homeData.setRecruitAnnouncementTitle("");
+                homeData.setRecruitAnnouncement(" ");
+                homeData.setImages(imgData);
+                // 设置其他字段
+                homeData.setCreateTime(new Date());
+                homeData.setUpdateTime(new Date());
+                homeData.setCreateBy("admin");
+                homeData.setUpdateBy("admin");
+                homeData.setSysOrgCode("A06");
+                homeDataList.add(homeData);
+            });
+
+            // 插入轮播图 图片 新闻 新闻正文
+            int num = 100;
+            for (XgsHome xgsHome : homeDataList) {
+                xgsHome.setImgNum(num++ + "");
+                xgsHomeMapper.insert(xgsHome);  // 插入到数据库
+            }
+
+            return true;
+        } catch (Exception e) {
+            logger.info("同步数据时发生错误", e);
+            return false;
+        }
+    }
+
+    // 热点新闻
+    private void syncHomeNews(String newsType, String typeCode, String url) throws Exception {
+        String htmlContent = JsoupHtmlContent.getContent(url);
+        if (htmlContent == null) {
+            throw new Exception("获取网页内容失败");
+        }
+
+        // 创建集合来分别存储图片地址、新闻标题和招聘公告
+        List<XgsJournalism> list = new ArrayList<>(); // news list
+
+        // 设置网页字符编码为 UTF-8，避免乱码问题
+        Document document = Jsoup.parse(htmlContent);
+        Date date = new Date();
+        document.select("#content li").forEach(element -> {
+            Element imgEle = element.select(".news-img img").first();
+            Element hrefEle = element.select(".news-txt a").first();
+            Element txtEle = element.select(".news-txt a h2").first();
+            Element shortEle = element.select(".news-txt a p").first();
+
+            String href = hrefEle.attr("href");
+            String imgSrc = imgEle.attr("src");
+            String newTitle = txtEle.text();
+            String subUrl = resolveRelativeUrl(url, href);
+            String imgUrl = resolveRelativeUrl(url, imgSrc);
+
+            XgsJournalism xgsJournalism = new XgsJournalism();
+            xgsJournalism.setCreateTime(date);
+            xgsJournalism.setUpdateTime(date);
+            xgsJournalism.setNewsDate("");
+            xgsJournalism.setJournalismHead(newTitle);
+            xgsJournalism.setHref(subUrl);
+            xgsJournalism.setShortText(shortEle.text());
+            xgsJournalism.setState("已发布");
+            xgsJournalism.setType(newsType);
+            xgsJournalism.setTypeCode(typeCode);
+            xgsJournalism.setImg1(imgUrl);
+            xgsJournalism.setCategoryPath("/home/news");
+            xgsJournalism.setCreateBy("admin");
+            xgsJournalism.setUpdateBy("admin");
+            xgsJournalism.setSysOrgCode("A01");
+            list.add(xgsJournalism);
+        });
+
+        // 更新子内容
+        for (XgsJournalism xgsJournalism : list) {
+            // 抓取子页面
+            String result = JsoupHtmlContent.getContent(xgsJournalism.getHref());
+            Document subDoc = Jsoup.parse(result);
+            String newsText = subDoc.select("#xlmain").html(); // 假设新闻正文在 .news-content p 标签中
+            xgsJournalism.setJournalismText(newsText);
+        }
+        if (list.size() > 0) {
+            int num = 100;
+            for (XgsJournalism xgsJournalism : list) {
+                xgsJournalism.setNewsSort(num++);
+                xgsJournalismMapper.insert(xgsJournalism);
+            }
+        }
+    }
+
+    // 其他栏目
+    private void syncHomeCategory(String newsType, String typeCode, String url) throws Exception {
         String htmlContent = JsoupHtmlContent.getContent(url);
         if (htmlContent == null) {
             throw new Exception("获取网页内容失败");
@@ -107,6 +237,10 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
             xgsJournalism.setHref(subUrl);
             xgsJournalism.setState("已发布");
             xgsJournalism.setType(newsType);
+            xgsJournalism.setTypeCode(typeCode);
+            xgsJournalism.setCreateBy("admin");
+            xgsJournalism.setUpdateBy("admin");
+            xgsJournalism.setSysOrgCode("A01");
             list.add(xgsJournalism);
         });
         for (XgsJournalism xgsJournalism : list) {
@@ -117,7 +251,9 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
             xgsJournalism.setJournalismText(newsText);
         }
         if (list.size() > 0) {
+            int num = 100;
             for (XgsJournalism xgsJournalism : list) {
+                xgsJournalism.setNewsSort(num++);
                 xgsJournalismMapper.insert(xgsJournalism);
             }
         }

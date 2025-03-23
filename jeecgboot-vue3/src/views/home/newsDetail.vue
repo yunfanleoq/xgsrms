@@ -2,17 +2,16 @@
   <div class="job-detail">
     <h2>{{ activeMenu }}</h2>
     <div class="button-container">
-      <button @click="goBack" class="back-button">返回</button>
+      <a-button size="small" type="primary" @click="goBack">返回</a-button>
     </div>
-
     <div v-if="news" class="job-info">
-      <div class="job-field">
+      <div class="job-field" v-if="!news.journalismText">
         <span>{{ news.journalismHead }}</span>
       </div>
-      <div class="job-field">
+      <div class="job-field" v-if="!news.journalismText">
         <div> <div>发布时间:</div> {{ news.updateTime }} </div>
       </div>
-      <div class="job-field" v-html="news.journalismText"> </div>
+      <div id="newsDetailContent" class="job-field" v-html="getNewsText(news)"> </div>
     </div>
     <div v-else>
       <p>新闻信息加载中...</p>
@@ -48,11 +47,35 @@
     }
   };
 
+  function getNewsText(news) {
+    if (news) {
+      const htmlText = news.journalismText;
+      if (htmlText) {
+        return htmlText;
+      }
+      return news.shortText;
+    }
+    return news;
+  }
+
   onMounted(() => {
     fetchNews();
   });
 </script>
-
+<style>
+  #newsDetailContent .wztitle {
+    font-size: 1.75em; /* 放大字体 */
+    font-weight: bold; /* 加粗字体 */
+    text-align: center; /* 居中文本 */
+    display: block;
+    color: #666;
+  }
+  #newsDetailContent .lyandtime {
+    text-align: center; /* 居中文本 */
+    color: #999;
+    margin-bottom: 15px;
+  }
+</style>
 <style scoped>
   .job-detail {
     max-width: 800px;
