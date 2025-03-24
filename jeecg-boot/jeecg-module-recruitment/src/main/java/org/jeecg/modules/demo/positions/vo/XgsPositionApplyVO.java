@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
+import org.jeecg.modules.recruitment.xgsResume.vo.XgsResumeBasePage;
 
 import java.io.Serializable;
 
