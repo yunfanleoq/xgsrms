@@ -3,6 +3,7 @@ package org.jeecg;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.usermodel.Range;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,10 +18,12 @@ public class JavaCodeToDoc {
     public static void main(String[] args) {
         String sourceDirectory = "D:\\zktw\\xgszp\\RMS\\jeecg-boot\\jeecg-module-recruitment\\src\\main\\java\\org\\jeecg\\modules\\recruitment";
         String desktopPath = "D:\\zktw\\xgszp\\Desktop";
-        String outputFilePath = desktopPath + "/java_code.doc";
+        String outputFilePath = desktopPath + "\\java_code.doc";
 
         try {
-            HWPFDocument document = new HWPFDocument();
+            // 修改部分：创建一个新的 POIFSFileSystem 对象来初始化 HWPFDocument
+            POIFSFileSystem fs = new POIFSFileSystem();
+            HWPFDocument document = new HWPFDocument(fs);
             Range range = document.getRange();
 
             // 遍历指定目录下的所有 Java 文件
