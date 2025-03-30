@@ -5,7 +5,7 @@ enum Api {
   visitInfo = '/sys/visitInfo',
 
   positionsList = '/positions/xgsPositions/list',
-  headerText = '/positions/xgsPositions/first_text'
+  headerText = '/positions/xgsPositions/first_text',
 }
 /**
  * 日志统计信息

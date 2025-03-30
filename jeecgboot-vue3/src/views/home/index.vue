@@ -87,6 +87,11 @@
 </script>
 
 <style>
+  #app nav a:hover,
+  #app nav a:focus {
+    color: #ffffff;
+    text-decoration: underline;
+  }
   .main-content {
     flex: 1; /* 允许容器根据内容自动扩展 */
     min-height: 75%; /* 设置最小高度为1000像素 */

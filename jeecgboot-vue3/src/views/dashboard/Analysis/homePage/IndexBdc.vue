@@ -65,13 +65,13 @@
   </div>
 </template>
 <script lang="ts" setup>
-import {reactive, ref, unref} from 'vue';
+  import { reactive, ref, unref } from 'vue';
   import { Progress } from 'ant-design-vue';
   import ChartGroupCard from '../components/ChartGroupCard.vue';
   import { table, table1, myResume, myInterView, myApply } from '../data';
-  import {list } from '@'
-  import {defHttp} from "@/utils/http/axios";
-import {useUserStore} from "@/store/modules/user";
+  import { list } from '@';
+  import { defHttp } from '@/utils/http/axios';
+  import { useUserStore } from '@/store/modules/user';
   const loading = ref(true);
 
   setTimeout(() => {
@@ -152,96 +152,90 @@ import {useUserStore} from "@/store/modules/user";
 
   function loadMyResumeData() {
     console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>.');
-    let MyresumeUrl = '/xgsMyresume/xgsMyresume/list'
+    let MyresumeUrl = '/xgsMyresume/xgsMyresume/list';
     let params = {
       pageNo: 1,
       pageSize: 10,
-    }
+    };
 
-    defHttp.get({url: MyresumeUrl, params}).then((res) => {
-
+    defHttp
+      .get({ url: MyresumeUrl, params })
+      .then((res) => {
         console.log('>>>>>>>>>>>>>>>>res>>>>>>>>>>>>.', res);
         // myResume.dataSource = new Array(res.records.length);
         for (let i = 0; i < res.records.length; i++) {
           myResume.dataSource[i] = {};
-          myResume.dataSource[i]["reBizCode"] = res.records[i].id;
-          myResume.dataSource[i]["type"] = '普通简历' ;//res.records[i].birthday;
-          myResume.dataSource[i]["acceptBy"] = res.records[i].name;
+          myResume.dataSource[i]['reBizCode'] = res.records[i].id;
+          myResume.dataSource[i]['type'] = '普通简历'; //res.records[i].birthday;
+          myResume.dataSource[i]['acceptBy'] = res.records[i].name;
           // myResume.dataSource[i]["status"] = '正式'; //res.records[i].sex;
-          myResume.dataSource[i]["acceptDate"] = res.records[i].birthday
+          myResume.dataSource[i]['acceptDate'] = res.records[i].birthday;
         }
 
         myResumeData.value = res.records;
 
         console.log('>>>>>>>>>>>>>>>>>>>>myResumeData>>>>>>>>.', myResumeData.value);
-
-    }).catch((err) => {
-      console.log(err);
-    });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   function loadMyInterViewData() {
-    console.log('>>>>>>>>loadMyInterViewData>>>>>>>>>>>>>>>>>>>>.');
     // let MyresumeUrl = '/xgsMyresume/xgsMyresume/list'
-    let MyresumeUrl = '/xgsInviteToInterview/xgsInviteToInterview/list'
+    let MyresumeUrl = '/xgsInviteToInterview/xgsInviteToInterview/list';
     let params = {
       pageNo: 1,
       pageSize: 10,
-      candidateId: useUserStore().getUserInfo?.id || ''
-    }
+    };
 
-    defHttp.get({url: MyresumeUrl, params}).then((res) => {
-
-      console.log('>>>>>>>>>>>>>>loadMyInterViewData>>res>>>>>>>>>>>>.', res);
-      myResume.dataSource = new Array(res.records.length);
-      for (let i = 0; i < res.records.length; i++) {
-        myInterView.dataSource[i] = {};
-        myInterView.dataSource[i].positionName = res.records[i].id;
-        myInterView.dataSource[i].deptName = '普通简历' ;//res.records[i].birthday;
-        myInterView.dataSource[i].imterviewTime = res.records[i].name;
-        myInterView.dataSource[i].imterviewAddress = res.records[i].sex;
-
-      }
-
-      myResumeData.value = res.records;
-
-      console.log('>>>>>>>>>>>>>>>>>>>>myResumeData>>>>>>>>.', myResumeData.value);
-
-    }).catch((err) => {
-      console.log(err);
-    });
+    defHttp
+      .get({ url: MyresumeUrl, params })
+      .then((res) => {
+        myResume.dataSource = new Array(res.records.length);
+        for (let i = 0; i < res.records.length; i++) {
+          myInterView.dataSource[i] = {};
+          myInterView.dataSource[i].positionName = res.records[i].id;
+          myInterView.dataSource[i].deptName = '普通简历'; //res.records[i].birthday;
+          myInterView.dataSource[i].imterviewTime = res.records[i].name;
+          myInterView.dataSource[i].imterviewAddress = res.records[i].sex;
+        }
+        myResumeData.value = res.records;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
-
 
   function loadMyApplyData() {
     console.log('>>>>>>>>loadMyApplyData>>>>>>>>>>>>>>>>>>>>.');
-    let MyApplyUrl = '/positions/xgsPositionApply2/listMine'
+    let MyApplyUrl = '/positions/xgsPositionApply2/listMine';
     let params = {
       pageNo: 1,
       pageSize: 10,
       // candidateId: useUserStore().getUserInfo?.id || ''
-    }
+    };
 
-    defHttp.get({url: MyApplyUrl, params}).then((res) => {
+    defHttp
+      .get({ url: MyApplyUrl, params })
+      .then((res) => {
+        console.log('>>>>>>>>>>>>>>loadMyApplyData>>res>>>>>>>>>>>>.', res);
+        myApply.dataSource = new Array(res.records.length);
+        for (let i = 0; i < res.records.length; i++) {
+          myApply.dataSource[i] = {};
+          myApply.dataSource[i].positionName = res.records[i].positionName;
+          myApply.dataSource[i].deptName = res.records[i].positionDept;
+          myApply.dataSource[i].applyTime = res.records[i].createTime;
+          myApply.dataSource[i].applyStatus = res.records[i].status;
+        }
 
-      console.log('>>>>>>>>>>>>>>loadMyApplyData>>res>>>>>>>>>>>>.', res);
-      myApply.dataSource = new Array(res.records.length);
-      for (let i = 0; i < res.records.length; i++) {
-        myApply.dataSource[i] = {};
-        myApply.dataSource[i].positionName = res.records[i].positionName;
-        myApply.dataSource[i].deptName = res.records[i].positionDept;
-        myApply.dataSource[i].applyTime = res.records[i].createTime;
-        myApply.dataSource[i].applyStatus = res.records[i].status;
+        // myResumeData.value = res.records;
 
-      }
-
-      // myResumeData.value = res.records;
-
-      console.log('>>>>>>>>>>>>>>>>>>>>loadMyApplyData>>>>>>>end>.', myApply.dataSource);
-
-    }).catch((err) => {
-      console.log(err);
-    });
+        console.log('>>>>>>>>>>>>>>>>>>>>loadMyApplyData>>>>>>>end>.', myApply.dataSource);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
 
   loadDataSource();

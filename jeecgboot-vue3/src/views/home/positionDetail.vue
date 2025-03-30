@@ -2,11 +2,12 @@
   <div class="job-detail">
     <h2>职位详情</h2>
     <div class="button-container">
-      <button @click="goBack" class="back-button">返回</button>
-      <button @click="positionApply" class="apply-button">在线申请</button>
+      <a-button type="primary" @click="goBack">返回</a-button>
+      <a-button type="primary" @click="positionApply" v-if="applyStatus">在线申请</a-button>
+      <a-button type="default" disabled v-else>岗位已申请</a-button>
       <div>
-        <button v-if="!isCollected" class="favorite-button" @click="markFavoriteJob">收藏职位</button>
-        <button v-else class="marked-favorite-button" @click="delFavoriteJob"> 已收藏</button>
+        <a-button v-if="!isCollected" danger @click="markFavoriteJob">收藏职位</a-button>
+        <a-button v-else danger @click="delFavoriteJob"> 已收藏</a-button>
       </div>
     </div>
 
@@ -49,14 +50,15 @@
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   import { useMessage } from '@/hooks/web/useMessage'; // 假设你有一个 API 来获取职位信息
   import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
-  // import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
   import { message } from 'ant-design-vue';
   import { useModal } from '@/components/Modal';
+  import { defHttp } from '@/utils/http/axios';
   // 接收父组件传递的参数，获取职位 ID,当id变化时，重新获取职位信息
   const props = defineProps({
-      id: { type: String, default: '' },
-    });
+    id: { type: String, default: '' },
+  });
 
+  const { createMessage } = useMessage();
   const registerModalRef = ref();
   const positionApplyStore = usePositionApplyStoreWithOut();
 
@@ -65,25 +67,25 @@
   const router = useRouter();
   const jobId = route.params.id as string;
   const job = ref(null);
-  // const favoriteButtonHover = ref(true);
-  //
-  // const buttonText = computed(() =>{
-  //   return favoriteButtonHover ? '取消收藏' : '收藏';
-  // });
-  // const buttonTitle = computed(() =>{
-  //   return favoriteButtonHover ? '取消收藏' : '收藏';
-  // });
+  const applyStatus = ref(false); // 是否可以申请
+  // 检查 是否已经申请
+  function checkHasApplied() {
+    defHttp
+      .post({ url: '/positions/xgsPositionApply/checkApplyByPosId', timeout: 600000, data: { positionId: jobId } }, { isTransformResponse: false })
+      .then((data) => {
+        if (data && data.success) {
+          applyStatus.value = true;
+        } else {
+          createMessage.warning('岗位已申请，请勿重复申请！');
+        }
+      });
+  }
 
   const userStore = useUserStore();
   const goBack = () => {
     // router.go(-1); // 返回上一页
-    router.push({ name: 'homePositions',  query: { showPositionList: 'true' }});
-
-
+    router.push({ name: 'homePositions', query: { showPositionList: 'true' } });
   };
-
-  console.log(jobId);
-  const createMessage = useMessage();
 
   const isCollected = ref(false);
   const favoriteJob = ref({});
@@ -107,14 +109,16 @@
     });
   };
 
-  onMounted(fetchFavoriteJob);
+  onMounted(() => {
+    checkHasApplied();
+    fetchFavoriteJob();
+  });
 
   const markFavoriteJob = () => {
     // 判断 userStore.userInfo 是否为 null，为null则提示用户登录，不为 null 则赋值 true
     if (userStore.userInfo === null) {
       // 使用 message.warning
       message.warning('请先登录');
-      console.log('请先登录');
       return;
     }
     // TODO: 实现收藏职位的功能
@@ -148,7 +152,6 @@
     let params = {
       id: favoriteJob.value.id,
     };
-    console.log('delFavoriteJob', params);
 
     xgsFavoriteJobDel(params).then((res) => {
       if (res.code === 200) {
@@ -166,42 +169,11 @@
   const XgsPositionApplyFormShow = ref(false);
 
   const [registerModal, { openModal }] = useModal();
-  // position apply
-  const positionApply1 = () => {
-    if (userStore.userInfo === null) {
-      // 使用 message.warning
-      message.warning('请先登录');
-      return;
-    } else {
-      // registerModal.value.addJob(positionApplyStore.currPositionApply);
-      // record.value = positionApplyStore.currPositionApply;
-      let jobDefault = {
-        applyId: '',
-        disabled: false,
-        mark: '',
-        positionDept: job.value.dept_dictText,
-        positionId: job.value.id,
-        positionName: job.value.positionName,
-        positionType: job.value.category,
-        resumeId: '',
-        resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
-        status: '申请中',
-        userName: userStore.getUserInfo.realname,
-      };
-      let jobDetail = Object.assign({}, positionApplyStore.currPositionApply, jobDefault);
-      openModal(true, {
-        isUpdate: false,
-        showFooter: true,
-        jobDetail: jobDetail,
-      });
-    }
-  };
 
   const positionApply = () => {
     if (userStore.userInfo === null) {
       // 使用 message.warning
       message.warning('请先登录');
-      console.log('请先登录');
       return;
     } else {
       XgsPositionApplyFormShow.value = true;
@@ -218,41 +190,6 @@
       record.value.resumeName = userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName;
       record.value.status = '申请中';
       record.value.userName = userStore.getUserInfo.realname;
-      // positionApplyFormData.value = positionApplyStore.currPositionApply;
-      // positionApplyFormData.value.userId = userStore.getUserInfo.username;
-      // positionApplyFormData.value.userName =  userStore.getUserInfo.realname
-      // positionApplyFormData.value.positionId =  job.value.id
-      // positionApplyFormData.value.positionName =  job.value.positionName
-      // positionApplyFormData.value.positionDept =  job.value.dept_dictText
-      // positionApplyFormData.value.positionType =  job.value.category
-      // positionApplyFormData.value.resumeName =  userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.positionName
-      // const record = ref({
-      //   userId: userStore.getUserInfo.username,
-      //   userName: userStore.getUserInfo.realname,
-      //   positionId: job.value.id,
-      //   positionName: job.value.positionName,
-      //   positionDept: job.value.dept_dictText,
-      //   positionType: job.value.category,
-      //   resumeName:userStore.getUserInfo.realname+userStore.getUserInfo.username+'_'+job.value.+job.value.positionName,
-      //
-      // });
-
-      // 页面加载完成后，等待3秒钟 点击 新增按钮 并将 job数据传给 新增窗口。
-      // setTimeout(() => {
-      //   //
-      //   registerModal.value.add(record.value  );
-      // }, 1000);
-
-      // let queryObj = job.value|| {applyStatus: '申请中'};
-      // queryObj.applyStatus = '申请中';
-      //
-      // message.success('正在跳转至申请页面');
-      // console.log('>>>>>>job.value', queryObj);
-
-      // router.push({
-      //   name: 'positions-XgsPositionApplyList',
-      //   query: queryObj
-      // });
     }
   };
 

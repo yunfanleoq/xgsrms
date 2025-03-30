@@ -24,7 +24,7 @@
         </div>
         <!-- 查看更多链接 -->
         <div class="news-more">
-          <router-link to="/home/news"> <a-link class="more-link">查看更多 +</a-link></router-link>
+          <router-link to="/home/news"> <a-button type="link" class="more-link">查看更多 +</a-button></router-link>
         </div>
       </div>
     </div>
@@ -36,7 +36,7 @@
           <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">招聘公告</li>
         </ul>
         <!-- <a class="more-link" :href="tabSelected === 'notice' ? './home/news' : './home/positions'">查看更多 +</a> -->
-        <router-link to="/home/positions"> <a-link class="more-link">查看更多 +</a-link></router-link>
+        <router-link to="/home/positions"> <span class="more-link">查看更多 +</span></router-link>
       </div>
       <div class="announcements-content">
         <ul class="recruitment-list">
