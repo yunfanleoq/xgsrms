@@ -103,40 +103,41 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		String approvalNode = req.getParameter("approvalNode");
-		String approvalStatus = req.getParameter("approvalStatusValue");
+		String approvalNode = req.getParameter("approvalNode"); //
+		String approvalStatus = req.getParameter("approvalStatusValue"); // 已审核，未审核
 		xgsPositionApply.setApprovalNode(null);
-		Page<XgsPositionApply> page = new Page<XgsPositionApply>(pageNo, pageSize);
+		Page<XgsPositionApply> page = new Page<>(pageNo, pageSize);
 		IPage<XgsPositionApply> pageList = null;
-        if (IXgsFlowOpinionsService.NODE_DEPT.equals(approvalNode)) {
+        if (IXgsFlowOpinionsService.NODE_DEPT.equals(approvalNode)) { // 部门审核
 			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
-			if ("1".equals(approvalStatus)) {
+			if ("1".equals(approvalStatus)) { // 未审核
 				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_DEPT);
 				queryWrapper.eq("approval_status", IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
-			} else if ("2".equals(approvalStatus)) {
-				queryWrapper.in("approval_node",
-						IXgsFlowOpinionsService.NODE_USER,
-						IXgsFlowOpinionsService.NODE_DEPT,
-						IXgsFlowOpinionsService.NODE_HR,
-						IXgsFlowOpinionsService.NODE_END
-				);
-				queryWrapper.in("approval_status",
-						IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_PASS,
-						IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_NOT_PASS,
-						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_TODO,
-						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PASS,
-						IXgsFlowOpinionsService.APPROVAL_STATUS_HR_NOT_PASS
-				);
+			} else if ("2".equals(approvalStatus)) { // 已审核
+				queryWrapper.and(wrapper -> wrapper
+								.eq("approval_node", IXgsFlowOpinionsService.NODE_USER) // 申请人
+								.in("apply_status", IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT, IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_NOT_PASS))
+						.or(wrapper -> wrapper
+								.eq("approval_node", IXgsFlowOpinionsService.NODE_DEPT) // 部门审核
+								.in("apply_status",IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_PASS, IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_NOT_PASS))
+						.or(wrapper -> wrapper
+								.eq("approval_node", IXgsFlowOpinionsService.NODE_HR) // HR 审核
+								.in("apply_status",IXgsFlowOpinionsService.APPROVAL_STATUS_HR_TODO,IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_PASS, IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_NOT_PASS))
+						.or(wrapper -> wrapper
+								.eq("approval_node", IXgsFlowOpinionsService.NODE_END) // 初审通过
+								.in("apply_status",IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PASS));
+
 			} else {
 				queryWrapper.eq("approval_status", "-1");
 			}
 			pageList = xgsPositionApplyService.page(page, queryWrapper);
-        } else {
+        }
+		if (IXgsFlowOpinionsService.NODE_HR.equals(approvalNode)) { // HR 审核
 			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
-			if ("1".equals(approvalStatus)) {
+			if ("1".equals(approvalStatus)) { // 未审核
 				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_HR);
 				queryWrapper.eq("approval_status", IXgsFlowOpinionsService.APPROVAL_STATUS_HR_TODO);
-			} else if ("2".equals(approvalStatus)) {
+			} else if ("2".equals(approvalStatus)) { // 已审核
 				queryWrapper.in("approval_node",
 						IXgsFlowOpinionsService.NODE_USER,
 						IXgsFlowOpinionsService.NODE_DEPT,
@@ -183,8 +184,8 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 	 @ApiOperation(value="岗位申请-在线申请添加岗位信息", notes="岗位申请-在线申请添加岗位信息")
 	 @PostMapping(value = "/doPositionApply")
 	 public Result<String> doPositionApply(@RequestBody XgsPositionApplyVO xgsPositionApplyVO) {
-		 xgsPositionApplyService.doPositionApply(xgsPositionApplyVO);
-		 return Result.OK("在线申请添加岗位信息成功！");
+		 return xgsPositionApplyService.doPositionApply(xgsPositionApplyVO);
+//		 return Result.OK("在线申请添加岗位信息成功！");
 	 }
 
 	 /**
@@ -213,6 +214,13 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 	 public Result<Boolean> checkHasApplied(@RequestBody XgsPositionApplyVO xgsPositionApplyVO) {
 		 Boolean result = xgsPositionApplyService.checkHasApplied(xgsPositionApplyVO);
 		 return Result.OK(result);
+	 }
+
+	 @AutoLog(value = "岗位申请-根据岗位ID检查岗位是否已申请过了")
+	 @ApiOperation(value="岗位申请-根据岗位ID检查岗位是否已申请过了", notes="岗位申请-根据岗位ID检查岗位是否已申请过了")
+	 @PostMapping(value = "/checkApplyByPosId")
+	 public Result<XgsPositionApplyVO> checkApplyByPosId(@RequestBody XgsPositionApplyVO xgsPositionApplyVO) {
+		 return xgsPositionApplyService.checkApplyByPosId(xgsPositionApplyVO);
 	 }
 
 	/**

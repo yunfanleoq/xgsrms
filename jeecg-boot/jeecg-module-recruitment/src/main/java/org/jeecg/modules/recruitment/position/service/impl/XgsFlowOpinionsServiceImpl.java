@@ -27,21 +27,26 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
     @Transactional
     public void add(XgsFlowOpinions xgsFlowOpinions) {
         XgsPositionApply positionApply = positionApplyMapper.selectById(xgsFlowOpinions.getParentId());
-        if (NODE_DEPT.equals(xgsFlowOpinions.getApprovalNode())) {
+        if (NODE_USER.equals(xgsFlowOpinions.getApprovalNode())) { // 申请人
+            positionApply.setApprovalNode(NODE_DEPT);
+            positionApply.setApprovalStatus(APPROVAL_STATUS_DEPT_TODO);
+        } else if (NODE_DEPT.equals(xgsFlowOpinions.getApprovalNode())) { // 部门审核
             if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getApprovalStatus())) {
                 positionApply.setApprovalNode(NODE_HR);
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_TODO);
                 positionApply.setApplyStatus(APPROVAL_STATUS_DEPT_PASS);
             } else {
                 positionApply.setApprovalNode(NODE_USER);
+                positionApply.setApprovalStatus(APPROVAL_STATUS_USER_TODO);
                 positionApply.setApplyStatus(APPROVAL_STATUS_DEPT_NOT_PASS);
+                positionApply.setStatus(APPROVAL_STATUS_DEPT_NOT_PASS); // 部门审核未通过
             }
-        } else if (NODE_HR.equals(xgsFlowOpinions.getApprovalNode())) {
+        } else if (NODE_HR.equals(xgsFlowOpinions.getApprovalNode())) { // 人力处审核
             if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getApprovalStatus())) {
                 positionApply.setApprovalNode(NODE_END);
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_PASS);
                 positionApply.setApplyStatus(APPROVAL_STATUS_HR_PASS);
-                positionApply.setStatus(APPROVAL_STATUS_PASS);
+                positionApply.setStatus(APPROVAL_STATUS_PASS); // 初审通过
             } else {
                 positionApply.setApprovalNode(NODE_DEPT);
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_NOT_PASS);

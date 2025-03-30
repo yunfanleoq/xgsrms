@@ -1,6 +1,10 @@
 package org.jeecg.modules.demo.positions.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
@@ -54,8 +58,20 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void doPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {
-
+    public Result<String> doPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {
+        Result<String> result = new Result<>();
+        XgsPositionApply xgsPositionApply = xgsPositionApplyVO.getXgsPositionApply();
+        if (xgsPositionApply != null && StringUtils.isNotEmpty(xgsPositionApply.getPositionId())) {
+            xgsPositionApplyVO.setPositionId(xgsPositionApply.getPositionId());
+        }
+        Result<XgsPositionApplyVO> xgsPositionApplyVOResult = checkApplyByPosId(xgsPositionApplyVO);
+        if (!xgsPositionApplyVOResult.isSuccess()) {
+            result.setSuccess(false);
+            result.setMessage(xgsPositionApplyVOResult.getMessage());
+            result.setResult(xgsPositionApplyVOResult.getMessage());
+            return result;
+        }
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         XgsResumeBase xgsResumeBase = new XgsResumeBase();
         XgsResumeBasePage xgsResumeBasePage = xgsPositionApplyVO.getXgsResumeBasePage();
         BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
@@ -85,7 +101,8 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
             }
         }
 
-        XgsPositionApply xgsPositionApply = xgsPositionApplyVO.getXgsPositionApply();
+        xgsPositionApply.setUserId(loginUser.getId());
+        xgsPositionApply.setPositionId(xgsPositionApplyVO.getPositionId());
         xgsPositionApply.setResumeId(xgsResumeBase.getId());
         xgsPositionApply.setResumeName(xgsResumeBase.getResumeName());
 //        xgsPositionApply.setPositionName(xgsResumeBase.getApplyPositionName());
@@ -101,6 +118,9 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
         flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
         flowOpinionsMapper.insert(flowOpinions);
+        result.setMessage("在线申请添加岗位信息成功！");
+        result.setResult("在线申请添加岗位信息成功！");
+        return result;
     }
 
     @Override
@@ -114,6 +134,26 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         return count > 0;
     }
 
+    @Override
+    public Result<XgsPositionApplyVO> checkApplyByPosId(XgsPositionApplyVO xgsPositionApplyVO) {
+        Result<XgsPositionApplyVO> result = new Result<>();
+        if (StringUtils.isEmpty(xgsPositionApplyVO.getPositionId())) {
+            result.setSuccess(false);
+            result.setMessage("岗位ID不能为空");
+            return result;
+        }
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        QueryWrapper<XgsPositionApply> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by", sysUser.getUsername());
+        queryWrapper.eq("position_id", xgsPositionApplyVO.getPositionId());
+        long count = count(queryWrapper);
+        if (count > 0) {
+            result.setSuccess(false);
+            result.setMessage("您已申请过该岗位");
+            return result;
+        }
+        return result;
+    }
 
     @Override
     public XgsPositionApplyVO getPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {

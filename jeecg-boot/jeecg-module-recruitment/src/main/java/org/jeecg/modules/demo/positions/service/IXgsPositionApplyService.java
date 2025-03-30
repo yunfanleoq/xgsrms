@@ -1,5 +1,6 @@
 package org.jeecg.modules.demo.positions.service;
 
+import org.jeecg.common.api.vo.Result;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.jeecg.modules.demo.positions.vo.XgsPositionApplyVO;
@@ -16,7 +17,7 @@ public interface IXgsPositionApplyService extends IService<XgsPositionApply> {
      * 在线添加岗位信息
      * @param xgsPositionApplyVO
      */
-    void doPositionApply(XgsPositionApplyVO xgsPositionApplyVO);
+    Result<String> doPositionApply(XgsPositionApplyVO xgsPositionApplyVO);
 
     /**
      * 检查岗位是否已申请
@@ -30,4 +31,12 @@ public interface IXgsPositionApplyService extends IService<XgsPositionApply> {
      * @param xgsPositionApplyVO
      */
     XgsPositionApplyVO getPositionApply(XgsPositionApplyVO xgsPositionApplyVO);
+
+    /**
+     * 检查岗位是否已申请
+     * @param xgsPositionApplyVO
+     * @return
+     * @throws Exception
+     */
+    Result<XgsPositionApplyVO> checkApplyByPosId(XgsPositionApplyVO xgsPositionApplyVO);
 }

@@ -5,9 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.service.IXgsInviteToInterviewService;
 
@@ -55,11 +58,13 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         // 自定义查询规则
         Map<String, QueryRuleEnum> customeRuleMap = new HashMap<>();
         // 自定义多选的查询规则为：LIKE_WITH_OR
-        customeRuleMap.put("status", QueryRuleEnum.LIKE_WITH_OR);
-        customeRuleMap.put("inviteStatus", QueryRuleEnum.LIKE_WITH_OR);
+//        customeRuleMap.put("status", QueryRuleEnum.LIKE_WITH_OR);
+//        customeRuleMap.put("inviteStatus", QueryRuleEnum.LIKE_WITH_OR);
+		xgsInviteToInterview.setCandidateId(sysUser.getId());
         QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap(),customeRuleMap);
 		Page<XgsInviteToInterview> page = new Page<XgsInviteToInterview>(pageNo, pageSize);
 		IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(page, queryWrapper);

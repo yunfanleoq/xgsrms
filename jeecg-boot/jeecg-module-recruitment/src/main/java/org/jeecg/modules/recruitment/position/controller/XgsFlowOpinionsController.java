@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
+import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
+import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
 import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
@@ -40,6 +42,8 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, IXgsFlowOpinionsService> {
 	 @Autowired
 	 private IXgsResumeBaseService resumeBaseService;
+	 @Autowired
+	 private IXgsPositionApplyService xgsPositionApplyService;
 	 @Autowired
 	 private IXgsFlowOpinionsService xgsFlowOpinionsService;
 	
@@ -191,4 +195,44 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 		 }
 		 return Result.OK(xgsResumeBase);
 	 }
+
+	 @ApiOperation(value="审批办理过程表-通过申请id查询", notes="审批办理过程表-通过申请id查询")
+	 @GetMapping(value = "/getDepartRejectByApplyId")
+	 public Result<XgsFlowOpinions> getDepartRejectByApplyId(@RequestParam(name="applyId", required=true) String applyId) {
+		 QueryWrapper<XgsFlowOpinions> queryWrapper = new QueryWrapper<>();
+		 XgsFlowOpinions xgsFlowOpinions = null;
+		 Page<XgsFlowOpinions> page = new Page<XgsFlowOpinions>(1, 1);
+		 queryWrapper.eq("parent_id", applyId);
+		 queryWrapper.eq("approval_node", "部门审核");
+//		 queryWrapper.eq("approval_status", "驳回");
+		 queryWrapper.orderByDesc("create_time");
+		 Page<XgsFlowOpinions> list = xgsFlowOpinionsService.page(page, queryWrapper);
+		 if (list.getRecords().size() > 0) {
+			 xgsFlowOpinions = list.getRecords().get(0);
+		 }
+		 if(xgsFlowOpinions==null) {
+			 return Result.error("未找到对应数据");
+		 }
+		 return Result.OK(xgsFlowOpinions);
+	 }
+
+	 @AutoLog(value = "审批办理过程表-申请人提交")
+	 @ApiOperation(value="审批办理过程表-申请人提交", notes="审批办理过程表-申请人提交")
+	 @RequestMapping(value = "/submitByApplyId")
+	 public Result<String> submitByApplyId(@RequestParam(name="applyId", required=true) String applyId) {
+//		 XgsFlowOpinions xgsFlowOpinions = new XgsFlowOpinions();
+//		 xgsFlowOpinions.setParentId(applyId);
+//		 xgsFlowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT);
+//		 xgsFlowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+//		 xgsFlowOpinionsService.save(xgsFlowOpinions);
+		 XgsPositionApply xgsPositionApply = xgsPositionApplyService.getById(applyId);
+		 xgsPositionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT);
+		 xgsPositionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING);
+		 xgsPositionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+		 xgsPositionApply.setApplyStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+		 xgsPositionApplyService.updateById(xgsPositionApply);
+		 return Result.OK("提交成功!");
+	 }
+
+
 }

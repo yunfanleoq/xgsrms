@@ -19,6 +19,9 @@ import java.io.Serializable;
 public class XgsPositionApplyVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @ApiModelProperty(value = "岗位ID")
+    String positionId;
+
     @ApiModelProperty(value = "岗位申请信息")
     XgsPositionApply xgsPositionApply;
 

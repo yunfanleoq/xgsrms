@@ -25,9 +25,17 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
     /**
      * 初审通过
      */
-    String NODE_END = "初审通过";
+    String NODE_END = "初审完成";
+    /**
+     * 初审通过
+     */
+    String NODE_INVITE = "邀请";
+    /**
+     * 初审通过
+     */
+    String NODE_INTERVIEW = "面试";
 
-    String APPROVAL_STATUS_DRAFT = "未提交";
+    String APPROVAL_STATUS_USER_TODO = "待提交"; // 退回
     String APPROVAL_STATUS_SUBMIT = "已提交";
     String APPROVAL_STATUS_DEPT_TODO = "待部门审核";
     String APPROVAL_STATUS_DEPT_PASS = "部门通过";

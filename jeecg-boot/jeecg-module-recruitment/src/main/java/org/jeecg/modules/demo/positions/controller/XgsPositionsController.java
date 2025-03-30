@@ -242,10 +242,7 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 									 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 									 HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 System.out.println(sysUser);
-
 		 if(sysUser.getRoleCode().equals("admin")){
-
 			 //岗位数量（所有招聘中的岗位数量）
 			 XgsPositions xgsPositions = new XgsPositions();
 			 xgsPositions.setStatus("招聘中");
@@ -283,35 +280,42 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 
 			 //申请数量（提交过的申请数量）
 			 XgsPositionApply xgsPositionApply = new XgsPositionApply();
-			 xgsPositionApply.setUserId(userId);
+			 xgsPositionApply.setCreateBy(sysUser.getUsername());
 			 QueryWrapper<XgsPositionApply> queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
 			 Page<XgsPositionApply> pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
 			 IPage<XgsPositionApply> pageListXgsPositionApply = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
 
 			 //岗位数量（等待面试的数量）
 			 xgsPositionApply = new XgsPositionApply();
-			 xgsPositionApply.setUserId(userId);
+			 xgsPositionApply.setCreateBy(sysUser.getUsername());
 			 xgsPositionApply.setApprovalNode("初审完成");
 			 queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
-			 pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
+			 pagePositionApply = new Page<>(pageNo, pageSize);
 			 IPage<XgsPositionApply> pageListXgsPositionApplyOK = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
+
+			 // 面试的数量
+			 XgsInviteToInterview xgsInviteToInterview = new XgsInviteToInterview();
+			 xgsInviteToInterview.setCandidate(sysUser.getId());
+			 QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap());
+			 Page<XgsInviteToInterview> page = new Page<>(pageNo, pageSize);
+			 IPage<XgsInviteToInterview> inviteToInterviewIPage = xgsInviteToInterviewService.page(page, queryWrapper);
 
 			 //提交审核数量（审核中的申请数量）
 			 xgsPositionApply = new XgsPositionApply();
-			 xgsPositionApply.setUserId(userId);
+			 xgsPositionApply.setCreateBy(sysUser.getUsername());
 			 xgsPositionApply.setApplyStatus("审核中");
 			 queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
-			 pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
+			 pagePositionApply = new Page<>(pageNo, pageSize);
 			 IPage<XgsPositionApply> pageListXgsPositionApplyWaiting = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
 
 			 //我的简历数量（简历数量）
 			 XgsMyresume xgsMyresume = new XgsMyresume();
-			 xgsMyresume.setUserId(userId);
+			 xgsMyresume.setCreateBy(sysUser.getUsername());
 			 QueryWrapper<XgsMyresume> queryWrapperMyresume = QueryGenerator.initQueryWrapper(xgsMyresume, req.getParameterMap());
 			 Page<XgsMyresume> pageMyresume = new Page<XgsMyresume>(pageNo, pageSize);
 			 IPage<XgsMyresume> pageListXgsMyresume = xgsMyresumeService.page(pageMyresume, queryWrapperMyresume);
 
-			 XgsFirstHtml xgsFirstHtml = new XgsFirstHtml((int) pageListXgsPositionApply.getTotal(), (int) pageListXgsPositionApplyOK.getTotal(), (int) pageListXgsPositionApplyWaiting.getTotal(), (int) pageListXgsMyresume.getTotal());
+			 XgsFirstHtml xgsFirstHtml = new XgsFirstHtml((int) pageListXgsPositionApply.getTotal(), (int) inviteToInterviewIPage.getTotal(), (int) pageListXgsPositionApplyWaiting.getTotal(), (int) pageListXgsMyresume.getTotal());
 
 			 return Result.OK(xgsFirstHtml);
 		 }
