@@ -9,9 +9,9 @@
           :class="{ active: selectedCategory === category && !showAnnouncementList }">
           {{ category }}
         </li>
-        <li @click="showAnnouncements" :class="{ active: showAnnouncementList }">
-          招聘公告
-        </li>
+<!--        <li @click="showAnnouncements" :class="{ active: showAnnouncementList }">-->
+<!--          招聘公告-->
+<!--        </li>-->
       </ul>
     </aside>
     <main class="content">
@@ -224,11 +224,15 @@
   };
 
   const filterJobCategory = (category) => {
+    //页面跳转到 positions 然后显示查询结果
+    router.push({ name: 'homePositions', query: { category: category } });
+    showPositionList.value = true;
     showAnnouncementList.value = false; // 退出招聘公告模式
     // 根据选择的岗位分类进行过滤的逻辑
     console.log('Selected job category:', category);
     selectedCategory.value = category;
-    // 这里可以添加具体的过滤逻辑
+    // 招聘详情页隐藏
+    // showPositionDetail.value = false;
   };
 
   const searchQuery = ref(null);
