@@ -11,6 +11,8 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.modules.recruitment.xgsInterview.entity.XgsInterview;
+import org.jeecg.modules.recruitment.xgsInterview.service.IXgsInterviewService;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.service.IXgsInviteToInterviewService;
 
@@ -41,6 +43,8 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsInviteToInterviewController extends JeecgController<XgsInviteToInterview, IXgsInviteToInterviewService> {
 	@Autowired
 	private IXgsInviteToInterviewService xgsInviteToInterviewService;
+	@Autowired
+	private IXgsInterviewService interviewService;
 	
 	/**
 	 * 分页列表查询
@@ -94,10 +98,22 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	 */
 	@AutoLog(value = "面试邀请-编辑")
 	@ApiOperation(value="面试邀请-编辑", notes="面试邀请-编辑")
-	@RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:edit")
+//	@RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:edit")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
 	public Result<String> edit(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
-		xgsInviteToInterviewService.updateById(xgsInviteToInterview);
+		// 创建面试信息
+//		XgsInterview interview = new XgsInterview();
+//		interview.setId(xgsInviteToInterview.getId());
+//		interview.setPositionId(xgsInviteToInterview.getPositionId());
+//		interview.setPositionName(xgsInviteToInterview.getPositionName());
+//		interview.setCandidateId(xgsInviteToInterview.getCandidateId());
+//		interview.setCandidate(xgsInviteToInterview.getCandidate());
+//		interview.setInterviewDate(xgsInviteToInterview.getInterviewDate());
+//		interview.setInterviewFeedback(xgsInviteToInterview.getInterviewFeedback());
+//		interview.setStatus(xgsInviteToInterview.getStatus());
+//		interviewService.save(interview);
+		xgsInviteToInterview.setInviteStatus("已发送邀请");
+		xgsInviteToInterviewService.saveOrUpdate(xgsInviteToInterview);
 		return Result.OK("编辑成功!");
 	}
 	

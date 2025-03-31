@@ -5,6 +5,8 @@ import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.mapper.XgsFlowOpinionsMapper;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
+import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
+import org.jeecg.modules.recruitment.xgsInviteToInterview.mapper.XgsInviteToInterviewMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
 
     @Autowired
     XgsPositionApplyMapper positionApplyMapper;
+    @Autowired
+    XgsInviteToInterviewMapper inviteToInterviewMapper;
 
     @Override
     @Transactional
@@ -47,6 +51,7 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_PASS);
                 positionApply.setApplyStatus(APPROVAL_STATUS_HR_PASS);
                 positionApply.setStatus(APPROVAL_STATUS_PASS); // 初审通过
+                xgsInviteToInterview(positionApply);
             } else {
                 positionApply.setApprovalNode(NODE_DEPT);
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_NOT_PASS);
@@ -55,5 +60,20 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
         }
         positionApplyMapper.updateById(positionApply);
         save(xgsFlowOpinions);
+    }
+
+    /**
+     * 审核通过 发送 邀请面试 消息
+     * @param positionApply
+     */
+    @Transactional
+    public void xgsInviteToInterview(XgsPositionApply positionApply) {
+        XgsInviteToInterview xgsInviteToInterview = new XgsInviteToInterview();
+        xgsInviteToInterview.setPositionId(positionApply.getPositionId());
+        xgsInviteToInterview.setPositionName(positionApply.getPositionName());
+        xgsInviteToInterview.setCandidateId(positionApply.getUserId());
+        xgsInviteToInterview.setCandidate(positionApply.getUserName());
+        xgsInviteToInterview.setInviteStatus("待邀请");
+        inviteToInterviewMapper.insert(xgsInviteToInterview);
     }
 }

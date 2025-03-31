@@ -4,27 +4,6 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'resume:xgs_position_apply:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-        <a-button type="primary" v-auth="'resume:xgs_position_apply:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
-          导出</a-button
-        >
-        <j-upload-button type="primary" v-auth="'resume:xgs_position_apply:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls"
-          >导入</j-upload-button
-        >
-        <a-dropdown v-if="selectedRowKeys.length > 0">
-          <template #overlay>
-            <a-menu>
-              <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined" />
-                删除
-              </a-menu-item>
-            </a-menu>
-          </template>
-          <a-button v-auth="'positions:xgs_position_apply:deleteBatch'"
-            >批量操作
-            <Icon icon="mdi:chevron-down" />
-          </a-button>
-        </a-dropdown>
         <!-- 高级查询 -->
         <a-radio-group v-model:value="queryParam.approvalStatusValue" button-style="solid" @change="reload" style="margin: 0 auto">
           <a-radio-button value="1">待审核</a-radio-button>

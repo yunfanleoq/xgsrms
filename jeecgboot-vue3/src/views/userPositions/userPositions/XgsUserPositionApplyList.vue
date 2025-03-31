@@ -3,10 +3,6 @@
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
-      <template #tableTitle>
-        <!-- 高级查询 -->
-        <super-query :config="superQueryConfig" @search="handleSuperQuery" />
-      </template>
       <!--操作栏-->
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" />
@@ -27,8 +23,9 @@
   import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsUserPositionApply.data';
   import { listMine, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
-  import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
+  import {defHttp} from "@/utils/http/axios";
+  import {useMessage} from "@/hooks/web/useMessage";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -51,7 +48,7 @@
         fieldMapToTime: [],
       },
       actionColumn: {
-        width: 100,
+        width: 200,
         fixed: 'right',
       },
       beforeFetch: (params) => {
@@ -130,6 +127,16 @@
   function handleSuccess() {
     (selectedRowKeys.value = []) && reload();
   }
+
+  const creqateMessage = useMessage();
+  function handleSubmit(record) {
+    defHttp.get({ url: '/resume/xgsFlowOpinions/submitByApplyId', params: { applyId: record.id } }).then((data) => {
+      if (data) {
+        creqateMessage.success('提交成功');
+        reload();
+      }
+    });
+  }
   /**
    * 操作栏
    */
@@ -139,6 +146,11 @@
         label: '查看',
         onClick: handleEdit.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
+      },
+      {
+        label: '提交',
+        onClick: handleSubmit.bind(null, record),
+        ifShow: record.status === '部门未通过',
       },
     ];
   }
