@@ -1,110 +1,110 @@
-import {BasicColumn} from '/@/components/Table';
-import {FormSchema} from '/@/components/Table';
-import { rules} from '/@/utils/helper/validator';
+import { BasicColumn } from '/@/components/Table';
+import { FormSchema } from '/@/components/Table';
+import { rules } from '/@/utils/helper/validator';
 import { render } from '/@/utils/common/renderUtils';
 import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
-   {
+  {
     title: '申请人姓名',
     align: 'center',
-    dataIndex: 'userName'
-   },
-   {
+    dataIndex: 'userName',
+  },
+  {
     title: '岗位名称',
     align: 'center',
-    dataIndex: 'positionName'
+    dataIndex: 'positionName',
   },
-   {
+  {
     title: '岗位部门',
     align: 'center',
-    dataIndex: 'positionDept'
-   },
-   {
+    dataIndex: 'positionDept',
+  },
+  {
     title: '岗位类型',
     align: 'center',
-    dataIndex: 'positionType'
+    dataIndex: 'positionType',
   },
-   {
+  {
     title: '面试状态',
     align: 'center',
-    dataIndex: 'interviewStatus'
-   },
-   {
+    dataIndex: 'interviewStatus',
+  },
+  {
     title: '面试时间',
     align: 'center',
-    dataIndex: 'interviewDate'
-   },
-   {
+    dataIndex: 'interviewDate',
+  },
+  {
     title: '面试信息',
     align: 'center',
-    dataIndex: 'interviewInformation'
-   },
-   {
+    dataIndex: 'interviewInformation',
+  },
+  {
     title: '邀请状态',
     align: 'center',
-    dataIndex: 'inviteStatus'
-   },
+    dataIndex: 'inviteStatus',
+  },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [
-	{
-      label: "申请人姓名",
-      field: 'userName',
-      component: 'Input',
-      //colProps: {span: 6},
- 	},
-	{
-      label: "岗位名称",
-      field: 'positionName',
-      component: 'Input',
-      //colProps: {span: 6},
- 	},
-	{
-      label: "岗位部门",
-      field: 'positionDept',
-      component: 'Input',
-      //colProps: {span: 6},
- 	},
   {
-      label: "岗位类型",
-      field: 'positionType',
-      component: 'Input',
-      //colProps: {span: 6},
+    label: '申请人姓名',
+    field: 'userName',
+    component: 'Input',
+    //colProps: {span: 6},
   },
-	{
-      label: "面试状态",
-      field: 'interviewStatus',
-      component: 'JSelectMultiple',
-      componentProps:{
-        dictCode: '面试状态',
-      },
-      //colProps: {span: 6},
- 	},
-     {
-      label: "面试时间",
-      field: "interviewDate",
-      component: 'RangePicker',
-      componentProps: {
-          valueType: 'Date',
-          showTime:true
-      },
-      //colProps: {span: 6},
-	},
-	{
-      label: "邀请状态",
-      field: 'inviteStatus',
-      component: 'JSelectMultiple',
-      componentProps:{
-        options: [
-          { label: '接受邀请', value: '接受邀请' },
-          { label: '拒绝邀请', value: '拒绝邀请' },
-          { label: '已发送邀请', value: '已发送邀请' },
-          { label: '待邀请', value: '待邀请' },
-        ],
-      },
-      //colProps: {span: 6},
- 	},
+  {
+    label: '岗位名称',
+    field: 'positionName',
+    component: 'Input',
+    //colProps: {span: 6},
+  },
+  {
+    label: '岗位部门',
+    field: 'positionDept',
+    component: 'Input',
+    //colProps: {span: 6},
+  },
+  {
+    label: '岗位类型',
+    field: 'positionType',
+    component: 'Input',
+    //colProps: {span: 6},
+  },
+  {
+    label: '面试状态',
+    field: 'interviewStatus',
+    component: 'JSelectMultiple',
+    componentProps: {
+      dictCode: '面试状态',
+    },
+    //colProps: {span: 6},
+  },
+  {
+    label: '面试时间',
+    field: 'interviewDate',
+    component: 'RangePicker',
+    componentProps: {
+      valueType: 'Date',
+      showTime: true,
+    },
+    //colProps: {span: 6},
+  },
+  {
+    label: '邀请状态',
+    field: 'inviteStatus',
+    component: 'JSelectMultiple',
+    componentProps: {
+      options: [
+        { label: '接受邀请', value: '接受邀请' },
+        { label: '拒绝邀请', value: '拒绝邀请' },
+        { label: '已发送邀请', value: '已发送邀请' },
+        { label: '待邀请', value: '待邀请' },
+      ],
+    },
+    //colProps: {span: 6},
+  },
 ];
 //表单数据
 export const formSchema: FormSchema[] = [
@@ -112,25 +112,25 @@ export const formSchema: FormSchema[] = [
     label: '申请人姓名',
     field: 'userName',
     component: 'Input',
-    dynamicDisabled:true
+    dynamicDisabled: true,
   },
   {
     label: '岗位名称',
     field: 'positionName',
     component: 'Input',
-    dynamicDisabled:true
+    dynamicDisabled: true,
   },
   {
     label: '岗位部门',
     field: 'positionDept',
     component: 'Input',
-    dynamicDisabled:true
+    dynamicDisabled: true,
   },
   {
     label: '岗位类型',
     field: 'positionType',
     component: 'Input',
-    dynamicDisabled:true
+    dynamicDisabled: true,
   },
   {
     label: '面试状态',
@@ -145,29 +145,25 @@ export const formSchema: FormSchema[] = [
     field: 'interviewDate',
     component: 'DatePicker',
     componentProps: {
-       showTime: true,
-       valueFormat: 'YYYY-MM-DD HH:mm:ss'
-     },
-    dynamicRules: ({model,schema}) => {
-          return [
-                 { required: true, message: '请输入面试时间!'},
-          ];
-     },
+      showTime: true,
+      valueFormat: 'YYYY-MM-DD HH:mm:ss',
+    },
+    dynamicRules: ({ model, schema }) => {
+      return [{ required: true, message: '请输入面试时间!' }];
+    },
   },
   {
     label: '面试信息',
     field: 'interviewInformation',
     component: 'Input',
-    dynamicRules: ({model,schema}) => {
-      return [
-        { required: true, message: '请输入面试信息!'},
-      ];
+    dynamicRules: ({ model, schema }) => {
+      return [{ required: true, message: '请输入面试信息!' }];
     },
   },
   {
     label: '邀请状态',
     field: 'inviteStatus',
-    defaultValue: "待邀请",
+    defaultValue: '待邀请',
     component: 'JDictSelectTag',
     componentProps: {
       // dictCode: '邀请面试状态',
@@ -177,20 +173,16 @@ export const formSchema: FormSchema[] = [
         { label: '已发送邀请', value: '已发送邀请' },
         { label: '待邀请', value: '待邀请' },
       ],
-     },
-    dynamicRules: ({model,schema}) => {
-          return [
-                 { required: true, message: '请输入邀请状态!'},
-          ];
-     },
+    },
+    ifShow: false,
   },
-	// TODO 主键隐藏字段，目前写死为ID
-	{
-	  label: '',
-	  field: 'id',
-	  component: 'Input',
-	  show: false
-	},
+  // TODO 主键隐藏字段，目前写死为ID
+  {
+    label: '',
+    field: 'id',
+    component: 'Input',
+    show: false,
+  },
 ];
 
 // 高级查询数据
@@ -204,12 +196,11 @@ export const superQuerySchema = {
   interviewInformation: { title: '面试信息', order: 8, view: 'text', type: 'string' },
 };
 
-
 /**
-* 流程表单调用这个方法获取formSchema
-* @param param
-*/
-export function getBpmFormSchema(_formData): FormSchema[]{
+ * 流程表单调用这个方法获取formSchema
+ * @param param
+ */
+export function getBpmFormSchema(_formData): FormSchema[] {
   // 默认和原始表单保持一致 如果流程中配置了权限数据，这里需要单独处理formSchema
   return formSchema;
 }
