@@ -54,7 +54,7 @@
   import {computed, onMounted, reactive, ref, watchEffect} from 'vue';
   import { useUserStore } from '@/store/modules/user';
   import { doLogout } from '@/api/sys/user';
-
+  import {useMultipleTabStore} from "@/store/modules/multipleTab";
   const router = useRouter();
   const userStore = useUserStore();
 
@@ -74,6 +74,11 @@
   };
 
   const goToUserCenter = () => {
+
+    // useMultipleTabStore.closeAllTabs(router);
+    // 正确调用方式：先获取 store 实例
+    const tabStore = useMultipleTabStore();
+    tabStore.closeAllTab(router);
     router.push({ path: '/dashboard/analysis' });
   };
 
