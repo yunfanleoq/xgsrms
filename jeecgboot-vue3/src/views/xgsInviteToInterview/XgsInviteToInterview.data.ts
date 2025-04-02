@@ -8,7 +8,7 @@ export const columns: BasicColumn[] = [
   {
     title: '申请人姓名',
     align: 'center',
-    dataIndex: 'userName',
+    dataIndex: 'candidate',
   },
   {
     title: '岗位名称',
@@ -36,9 +36,14 @@ export const columns: BasicColumn[] = [
     dataIndex: 'interviewDate',
   },
   {
-    title: '面试信息',
+    title: '面试地点',
     align: 'center',
-    dataIndex: 'interviewInformation',
+    dataIndex: 'interviewPlace',
+  },
+  {
+    title: '邀请信息',
+    align: 'center',
+    dataIndex: 'inviteLetter',
   },
   {
     title: '邀请状态',
@@ -110,7 +115,7 @@ export const searchFormSchema: FormSchema[] = [
 export const formSchema: FormSchema[] = [
   {
     label: '申请人姓名',
-    field: 'userName',
+    field: 'candidate',
     component: 'Input',
     dynamicDisabled: true,
   },
@@ -145,7 +150,7 @@ export const formSchema: FormSchema[] = [
     field: 'interviewDate',
     component: 'DatePicker',
     componentProps: {
-      showTime: true,
+      showTime: { format: 'HH' },
       valueFormat: 'YYYY-MM-DD HH:mm:ss',
     },
     dynamicRules: ({ model, schema }) => {
@@ -153,11 +158,19 @@ export const formSchema: FormSchema[] = [
     },
   },
   {
-    label: '面试信息',
-    field: 'interviewInformation',
+    label: '面试地点',
+    field: 'interviewPlace',
     component: 'Input',
     dynamicRules: ({ model, schema }) => {
-      return [{ required: true, message: '请输入面试信息!' }];
+      return [{ required: true, message: '请输入面试地点!' }];
+    },
+  },
+  {
+    label: '邀请信息',
+    field: 'inviteLetter',
+    component: 'Input',
+    dynamicRules: ({ model, schema }) => {
+      return [{ required: true, message: '请输邀请信息!' }];
     },
   },
   {

@@ -2,6 +2,7 @@ package org.jeecg.modules.recruitment.xgsInviteToInterview.service;
 
 import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.jeecg.modules.recruitment.xgsInviteToInterview.vo.XgsInviteToInterviewVO;
 
 /**
  * @Description: 面试邀请
@@ -11,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IXgsInviteToInterviewService extends IService<XgsInviteToInterview> {
 
+    void addInterview(XgsInviteToInterviewVO interviewVO);
 }

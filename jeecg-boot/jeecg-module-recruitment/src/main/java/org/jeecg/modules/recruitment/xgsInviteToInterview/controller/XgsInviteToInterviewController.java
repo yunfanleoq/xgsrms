@@ -22,6 +22,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
 import org.jeecg.common.system.base.controller.JeecgController;
+import org.jeecg.modules.recruitment.xgsInviteToInterview.vo.XgsInviteToInterviewVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -93,27 +94,15 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	/**
 	 *  编辑
 	 *
-	 * @param xgsInviteToInterview
+	 * @param inviteToInterviewVO
 	 * @return
 	 */
 	@AutoLog(value = "面试邀请-编辑")
 	@ApiOperation(value="面试邀请-编辑", notes="面试邀请-编辑")
 //	@RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:edit")
 	@RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
-	public Result<String> edit(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
-		// 创建面试信息
-//		XgsInterview interview = new XgsInterview();
-//		interview.setId(xgsInviteToInterview.getId());
-//		interview.setPositionId(xgsInviteToInterview.getPositionId());
-//		interview.setPositionName(xgsInviteToInterview.getPositionName());
-//		interview.setCandidateId(xgsInviteToInterview.getCandidateId());
-//		interview.setCandidate(xgsInviteToInterview.getCandidate());
-//		interview.setInterviewDate(xgsInviteToInterview.getInterviewDate());
-//		interview.setInterviewFeedback(xgsInviteToInterview.getInterviewFeedback());
-//		interview.setStatus(xgsInviteToInterview.getStatus());
-//		interviewService.save(interview);
-		xgsInviteToInterview.setInviteStatus("已发送邀请");
-		xgsInviteToInterviewService.saveOrUpdate(xgsInviteToInterview);
+	public Result<String> edit(@RequestBody XgsInviteToInterviewVO inviteToInterviewVO) {
+		xgsInviteToInterviewService.addInterview(inviteToInterviewVO);
 		return Result.OK("编辑成功!");
 	}
 	
