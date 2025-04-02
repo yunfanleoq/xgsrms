@@ -22,7 +22,7 @@
       </a-dropdown>
       &lt;!&ndash; 高级查询 &ndash;&gt;
       <super-query :config="superQueryConfig" @search="handleSuperQuery" />
-    <!--操作栏-->
+     操作栏-->
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" />
       </template>
@@ -56,14 +56,6 @@
   const isRealnameLoaded = ref(false);
   // 在组件挂载时获取 realname
   onMounted(async () => {
-    try {
-      const res = await getUserData();
-      realname.value = res.result.realname;
-      isRealnameLoaded.value = true;
-      reload();
-    } catch (error) {
-      console.error('获取用户信息失败:', error);
-    }
   });
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -89,15 +81,6 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        const inviteStatusValues = ['已发送邀请', '接受邀请', '拒绝邀请'];
-        if (isRealnameLoaded.value) {
-          params.inviteStatus = inviteStatusValues;
-          params.userName = realname.value;
-        } else {
-          // 如果 realname 还未加载完成，则不展示数据
-          params.approvalStatus = '1';
-        }
-        return Object.assign(params, queryParam);
       },
     },
     exportConfig: {

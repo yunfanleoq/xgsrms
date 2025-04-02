@@ -144,6 +144,7 @@ export const formSchema: FormSchema[] = [
     componentProps: {
       dictCode: '面试状态',
     },
+    ifShow: false,
   },
   {
     label: '面试时间',

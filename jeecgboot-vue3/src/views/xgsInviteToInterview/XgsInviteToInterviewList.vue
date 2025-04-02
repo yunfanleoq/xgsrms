@@ -50,6 +50,7 @@
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
   import XgsPositionApplyModal from '@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyModal.vue';
+  import {defHttp} from "@/utils/http/axios";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -73,7 +74,7 @@
         fieldMapToTime: [['interviewDate', ['interviewDate_begin', 'interviewDate_end'], 'YYYY-MM-DD HH:mm:ss']],
       },
       actionColumn: {
-        width: 120,
+        width: 350,
         fixed: 'right',
       },
       beforeFetch: (params) => {
@@ -154,18 +155,42 @@
   function handleSuccess() {
     (selectedRowKeys.value = []) && reload();
   }
+  function cancelInvite(record) {
+    createConfirm({
+      iconType: 'warning',
+      title: '确认',
+      content: '是否撤回邀请',
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        return defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/cancelInvite', data: record }).then(() => {
+          reload();
+        });
+      },
+    });
+  }
   /**
    * 操作栏
    */
   function getTableAction(record) {
     return [
       {
-        label: '邀请',
+        label: '发送邀请',
         onClick: handleEdit.bind(null, record),
         auth: 'positions:xgs_position_apply:edit',
       },
       {
-        label: '详情',
+        label: '撤回邀请',
+        onClick: cancelInvite.bind(null, record),
+        auth: 'positions:xgs_position_apply:edit',
+      },
+      {
+        label: '面试通过',
+        onClick: handleEdit.bind(null, record),
+        auth: 'positions:xgs_position_apply:edit',
+      },
+      {
+        label: '面试未通过',
         onClick: handleDetail.bind(null, record),
       },
     ];

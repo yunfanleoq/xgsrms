@@ -75,6 +75,36 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 		IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(page, queryWrapper);
 		return Result.OK(pageList);
 	}
+
+	 /**
+	  * 我的面试列表页面
+	  * @param xgsInviteToInterview
+	  * @param pageNo
+	  * @param pageSize
+	  * @param req
+	  * @return
+	  */
+	 //@AutoLog(value = "面试邀请-我的面试列表页面")
+	 @ApiOperation(value="面试邀请-我的面试列表页面", notes="面试邀请-我的面试列表页面")
+	 @GetMapping(value = "/myInterviewList")
+	 public Result<IPage<XgsInviteToInterview>> myInterviewList(XgsInviteToInterview xgsInviteToInterview,
+															  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
+															  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+															  HttpServletRequest req) {
+		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		 // 自定义查询规则
+		 Map<String, QueryRuleEnum> customeRuleMap = new HashMap<>();
+		 // 自定义多选的查询规则为：LIKE_WITH_OR
+//        customeRuleMap.put("status", QueryRuleEnum.LIKE_WITH_OR);
+//        customeRuleMap.put("inviteStatus", QueryRuleEnum.LIKE_WITH_OR);
+		 xgsInviteToInterview.setCandidateId(sysUser.getId());
+//		 xgsInviteToInterview.setStatus("待面试");
+		 xgsInviteToInterview.setInviteStatus("已发送邀请");
+		 QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap(),customeRuleMap);
+		 Page<XgsInviteToInterview> page = new Page<XgsInviteToInterview>(pageNo, pageSize);
+		 IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(page, queryWrapper);
+		 return Result.OK(pageList);
+	 }
 	
 	/**
 	 *   添加
