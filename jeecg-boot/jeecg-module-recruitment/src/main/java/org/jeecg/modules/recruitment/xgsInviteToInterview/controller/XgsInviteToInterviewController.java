@@ -147,7 +147,7 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	@RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:delete")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		xgsInviteToInterviewService.removeById(id);
+//		xgsInviteToInterviewService.removeById(id);
 		return Result.OK("删除成功!");
 	}
 	
@@ -162,7 +162,7 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	@RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:deleteBatch")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.xgsInviteToInterviewService.removeByIds(Arrays.asList(ids.split(",")));
+//		this.xgsInviteToInterviewService.removeByIds(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功!");
 	}
 	
@@ -183,29 +183,89 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 		return Result.OK(xgsInviteToInterview);
 	}
 
-    /**
-    * 导出excel
-    *
-    * @param request
-    * @param xgsInviteToInterview
-    */
-    @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:exportXls")
-    @RequestMapping(value = "/exportXls")
-    public ModelAndView exportXls(HttpServletRequest request, XgsInviteToInterview xgsInviteToInterview) {
-        return super.exportXls(request, xgsInviteToInterview, XgsInviteToInterview.class, "面试邀请");
-    }
+	 /**
+	  *   添加
+	  *
+	  * @param xgsInviteToInterview
+	  * @return
+	  */
+	 @AutoLog(value = "面试邀请-已撤回邀请")
+	 @ApiOperation(value="面试邀请-已撤回邀请", notes="面试邀请-已撤回邀请")
+	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @PostMapping(value = "/cancelInvite")
+	 public Result<String> cancelInvite(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
+		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 invite.setInviteStatus("已撤回邀请");
+		 xgsInviteToInterviewService.updateById(invite);
+		 return Result.OK("已撤回邀请成功！");
+	 }
 
-    /**
-      * 通过excel导入数据
-    *
-    * @param request
-    * @param response
-    * @return
-    */
-    @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:importExcel")
-    @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
-    public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
-        return super.importExcel(request, response, XgsInviteToInterview.class);
-    }
+	 /**
+	  *   添加
+	  *
+	  * @param xgsInviteToInterview
+	  * @return
+	  */
+	 @AutoLog(value = "面试邀请-面试通过")
+	 @ApiOperation(value="面试邀请-面试通过", notes="面试邀请-面试通过")
+	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @PostMapping(value = "/interviewPass")
+	 public Result<String> interviewPass(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
+		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 invite.setInterviewResult("面试通过");
+		 xgsInviteToInterviewService.updateById(invite);
+		 return Result.OK("面试通过操作成功！");
+	 }
+
+	 /**
+	  *   添加
+	  *
+	  * @param xgsInviteToInterview
+	  * @return
+	  */
+	 @AutoLog(value = "面试邀请-面试未通过")
+	 @ApiOperation(value="面试邀请-面试未通过", notes="面试邀请-面试未通过")
+	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @PostMapping(value = "/interviewFail")
+	 public Result<String> interviewFail(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
+		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 invite.setInterviewResult("面试未通过");
+		 xgsInviteToInterviewService.updateById(invite);
+		 return Result.OK("添加成功！");
+	 }
+
+	 /**
+	  *   被面试人 接受邀请
+	  *
+	  * @param xgsInviteToInterview
+	  * @return
+	  */
+	 @AutoLog(value = "面试邀请-接受邀请")
+	 @ApiOperation(value="面试邀请-接受邀请", notes="面试邀请-接受邀请")
+	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @PostMapping(value = "/invitePass")
+	 public Result<String> invitePass(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
+		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 invite.setInviteResult("接受邀请");
+		 xgsInviteToInterviewService.updateById(invite);
+		 return Result.OK("接受邀请操作成功！");
+	 }
+
+	 /**
+	  *   拒绝邀请
+	  *
+	  * @param xgsInviteToInterview
+	  * @return
+	  */
+	 @AutoLog(value = "面试邀请-拒绝邀请")
+	 @ApiOperation(value="面试邀请-拒绝邀请", notes="面试邀请-拒绝邀请")
+	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @PostMapping(value = "/inviteRefuse")
+	 public Result<String> inviteRefuse(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
+		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 invite.setInviteResult("拒绝邀请");
+		 xgsInviteToInterviewService.updateById(invite);
+		 return Result.OK("拒绝邀请操作成功！");
+	 }
 
 }

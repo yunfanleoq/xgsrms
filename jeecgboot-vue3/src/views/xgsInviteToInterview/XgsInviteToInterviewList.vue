@@ -51,9 +51,12 @@
   import { useUserStore } from '/@/store/modules/user';
   import XgsPositionApplyModal from '@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyModal.vue';
   import {defHttp} from "@/utils/http/axios";
+  import {useMessage} from "@/hooks/web/useMessage";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
+
+  const { createMessage, createConfirm } = useMessage();
   //注册model
   const [registerModal, { openModal }] = useModal();
   //用于详情展示
@@ -156,6 +159,21 @@
     (selectedRowKeys.value = []) && reload();
   }
   function cancelInvite(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/cancelInvite', data: record }).then(() => {
+      reload();
+    });
+  }
+  function interviewPass(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/interviewPass', data: record }).then(() => {
+      reload();
+    });
+  }
+  function interviewFail(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/interviewFail', data: record }).then(() => {
+      reload();
+    });
+  }
+  function cancelInviteV2(record) {
     createConfirm({
       iconType: 'warning',
       title: '确认',
@@ -181,17 +199,25 @@
       },
       {
         label: '撤回邀请',
-        onClick: cancelInvite.bind(null, record),
-        auth: 'positions:xgs_position_apply:edit',
+        popConfirm: {
+          title: '是否撤回邀请',
+          confirm: cancelInvite.bind(null, record),
+        },
       },
       {
         label: '面试通过',
-        onClick: handleEdit.bind(null, record),
+        popConfirm: {
+          title: '是否面试通过',
+          confirm: interviewPass.bind(null, record),
+        },
         auth: 'positions:xgs_position_apply:edit',
       },
       {
         label: '面试未通过',
-        onClick: handleDetail.bind(null, record),
+        popConfirm: {
+          title: '面试未通过',
+          confirm: interviewFail.bind(null, record),
+        },
       },
     ];
   }
