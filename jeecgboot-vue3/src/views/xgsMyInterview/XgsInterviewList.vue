@@ -42,11 +42,8 @@
   import XgsInterviewModal from './components/XgsInterviewModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsInterview.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsInterview.api';
-  import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
-  import { saveOrUpdate } from '@/views/xgsIntroduce/XgsIntroduce.api';
-  import { getUserData } from '/src/views/system/usersetting/UserSetting.api';
-  import {id} from "postcss-html";
+  import {defHttp} from "@/utils/http/axios";
 
   const queryParam = reactive<any>({
     candidateId: useUserStore().getUserInfo?.id || '',
@@ -77,7 +74,7 @@
       //   fieldMapToTime: [['interviewDate', ['interviewDate_begin', 'interviewDate_end'], 'YYYY-MM-DD HH:mm:ss']],
       // },
       actionColumn: {
-        width: 150,
+        width: 250,
         fixed: 'right',
       },
       beforeFetch: (params) => {
@@ -154,6 +151,16 @@
   function handleSuccess() {
     (selectedRowKeys.value = []) && reload();
   }
+  function invitePass(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/invitePass', data: record }).then(() => {
+      reload();
+    });
+  }
+  function inviteRefuse(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/inviteRefuse', data: record }).then(() => {
+      reload();
+    });
+  }
   /**
    * 操作栏
    */
@@ -177,10 +184,24 @@
           onClick: handleDetail.bind(null, record),
         },
         {
-          label: '回复',
-          onClick: handleEdit.bind(null, record),
-          auth: 'positions:xgs_position_apply:edit',
+          label: '接受邀请',
+          popConfirm: {
+            title: '是否接受邀请',
+            confirm: invitePass.bind(null, record),
+          },
         },
+        {
+          label: '拒绝邀请',
+          popConfirm: {
+            title: '是否拒绝邀请',
+            confirm: inviteRefuse.bind(null, record),
+          },
+        },
+        // {
+        //   label: '回复',
+        //   onClick: handleEdit.bind(null, record),
+        //   auth: 'positions:xgs_position_apply:edit',
+        // },
       ];
     }
   }

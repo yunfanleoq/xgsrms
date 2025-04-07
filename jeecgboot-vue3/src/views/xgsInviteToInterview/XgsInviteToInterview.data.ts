@@ -50,6 +50,16 @@ export const columns: BasicColumn[] = [
     align: 'center',
     dataIndex: 'inviteStatus',
   },
+  {
+    title: '是否接受邀请',
+    align: 'center',
+    dataIndex: 'inviteResult',
+  },
+  {
+    title: '面试结果',
+    align: 'center',
+    dataIndex: 'interviewResult',
+  },
 ];
 //查询数据
 export const searchFormSchema: FormSchema[] = [

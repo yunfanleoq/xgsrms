@@ -109,4 +109,14 @@ public class XgsInviteToInterview implements Serializable {
 	@Dict(dicCode = "邀请状态")
     @ApiModelProperty(value = "邀请状态")
     private String inviteStatus;
+    /** 面试结果 */
+    @Excel(name = "面试结果", width = 15, dicCode = "面试结果")
+    @Dict(dicCode = "面试结果")
+    @ApiModelProperty(value = "面试结果")
+    private String interviewResult;
+    /** 邀请结果 */
+    @Excel(name = "邀请结果", width = 15, dicCode = "邀请结果")
+    @Dict(dicCode = "邀请结果")
+    @ApiModelProperty(value = "邀请结果")
+    private String inviteResult;
 }
