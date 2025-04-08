@@ -24,8 +24,8 @@ public class XgsInviteToInterviewServiceImpl extends ServiceImpl<XgsInviteToInte
         XgsInviteToInterview entity = getById(interviewVO.getId());
         entity.setInterviewFeedback(interviewVO.getInterviewFeedback());
         entity.setInterviewDate(interviewVO.getInterviewDate());
-        entity.setInterviewPlace(interviewVO.getInterviewPlace());
-        entity.setInviteLetter(interviewVO.getInviteLetter());
+//        entity.setInterviewPlace(interviewVO.getInterviewPlace());
+//        entity.setInviteLetter(interviewVO.getInviteLetter());
         entity.setStatus(interviewVO.getStatus());
         entity.setInviteStatus("已发送邀请");
         saveOrUpdate(entity);
