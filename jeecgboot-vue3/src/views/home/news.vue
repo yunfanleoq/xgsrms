@@ -134,6 +134,7 @@
   //更改类型
   const setActiveMenu = (menu) => {
     activeMenu.value = menu;
+    selectY();
   };
 
   const listUrl = '/xgsJournalism/xgsJournalism/list';
@@ -149,6 +150,7 @@
           menuList.value = res.result;
           firstType.value = res.result[0].value;
           setActiveMenu(res.result[0].value);
+          selectY();
         }
       } catch (e) {}
     });

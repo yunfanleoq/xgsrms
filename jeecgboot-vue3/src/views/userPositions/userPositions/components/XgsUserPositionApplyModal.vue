@@ -190,16 +190,25 @@
 
     statusIndex.value = 0;
     let num = 0;
+    let fieldChange = false;
     for (const item of statusTypeList) {
-      if (item.value == statusType && statusResume == '未通过') {
+      if(fieldChange){
         thisStatusList.push({ statusName: item.value, statusType: '未通过' });
-        statusText.value = '';
-      } else if (item.value == statusType && statusResume == '审核中') {
-        thisStatusList.push({ statusName: item.value, statusType: statusResume });
-        statusText.value = '';
-      } else {
-        thisStatusList.push({ statusName: item.value, statusType: statusText.value });
+        fieldChange = false;
+        statusIndex.value++;
+      }else {
+        if (item.value == statusType && statusResume.includes('未通过')) {
+          thisStatusList.push({ statusName: item.value, statusType: '已通过' });
+          statusText.value = '';
+          fieldChange = true;
+        } else if (item.value == statusType && statusResume.includes('审核中')) {
+          thisStatusList.push({ statusName: item.value, statusType: statusResume });
+          statusText.value = '';
+        } else {
+          thisStatusList.push({ statusName: item.value, statusType: statusText.value });
+        }
       }
+
 
       if (item.value === statusType) {
         statusIndex.value = num;

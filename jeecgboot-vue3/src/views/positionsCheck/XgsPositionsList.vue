@@ -89,8 +89,9 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
+        // ['待审核', '审核通过', '审核未通过'],
         return Object.assign(params, queryParam, {
-          status: ['待审核', '审核通过', '审核未通过'],
+          status: ['待审核'],
         });
       },
     },
