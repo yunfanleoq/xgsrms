@@ -42,9 +42,9 @@ const ListMixin = {
 				param.pageNo= page.num,
 				param.pageSize= page.size
 			
-			if(page.status == null || page.status == undefined || page.status == ""){
-				param.status = "招聘中"
-			}
+			// if(page.status == null || page.status == undefined || page.status == ""){
+			// 	param.status = "招聘中"
+			// }
 			
 			if(page.num == 1){
 				this.list = [];

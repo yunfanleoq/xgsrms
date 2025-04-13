@@ -1,0 +1,69 @@
+{
+  "editor": {
+    "tabSize": 2,
+    "insertSpaces": true,
+    "formatOnSave": true,
+    "defaultFormatter": "prettier"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 100,
+    "trailingComma": "none",
+    "arrowParens": "avoid"
+  },
+  "eslint": {
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "parser": "vue-eslint-parser",
+    "parserOptions": {
+      "parser": "babel-eslint",
+      "sourceType": "module"
+    },
+    "rules": {
+      "vue/multi-word-component-names": "off",
+      "vue/no-v-model-argument": "off",
+      "no-console": "warn",
+      "no-debugger": "warn",
+      "vue/no-unused-components": "warn",
+      "vue/no-unused-vars": "warn",
+      "vue/require-v-for-key": "error",
+      "vue/valid-v-for": "error",
+      "vue/valid-v-if": "error",
+      "vue/valid-v-else-if": "error",
+      "vue/valid-v-else": "error",
+      "vue/valid-v-on": "error",
+      "vue/valid-v-bind": "error"
+    }
+  },
+  "vetur": {
+    "format": {
+      "defaultFormatter": {
+        "html": "prettier",
+        "css": "prettier",
+        "scss": "prettier",
+        "less": "prettier",
+        "js": "prettier",
+        "ts": "prettier",
+        "stylus": "stylus-supremacy"
+      }
+    },
+    "validation": {
+      "template": true,
+      "style": true,
+      "script": true
+    }
+  },
+  "files.associations": {
+    "*.vue": "vue",
+    "pages.json": "jsonc",
+    "manifest.json": "jsonc"
+  },
+  "search.exclude": {
+    "node_modules": true,
+    "dist": true,
+    "unpackage": true
+  }
+} 

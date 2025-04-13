@@ -23,7 +23,13 @@
 			<navigator class="cu-item arrow animation-slide-bottom" url="/pages/resume/resumeApplyList" open-type="navigate" :style="[{animationDelay: '0.1s'}]">
 			  <view class="content">
 			    <text class="cuIcon-favorfill text-yellow"></text>
-			    <text class="text-grey">个人申请</text>
+			    <text class="text-grey">我的申请</text>
+			  </view>
+			</navigator>
+			<navigator class="cu-item arrow animation-slide-bottom" url="/pages/xgs/interview/XgsInterviewList" open-type="navigate" :style="[{animationDelay: '0.1s'}]">
+			  <view class="content">
+			    <text class="cuIcon-favorfill text-yellow"></text>
+			    <text class="text-grey">我的面试</text>
 			  </view>
 			</navigator>
 			<!-- <view class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.3s'}]" @tap="scan">

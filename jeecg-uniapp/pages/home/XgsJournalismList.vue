@@ -40,13 +40,14 @@ export default {
     methods: {
         goNewsDetail(item) {
             // 使用 this.$router 进行路由跳转
-			let parmas = {...item}
-			parmas.page = 'XgsJournalismForm'
-			parmas.htmlType = 'news'
-			console.log('>>>>xxx>>>>>',parmas)
+			let params = {
+                id: item.id,
+			    page: 'XgsJournalismForm',
+			    htmlType: 'news'
+            }
 			this.$Router.push({
 								name: "XgsJournalismForm", // 新页面的路由名称
-								params:parmas, // 通过 parmas 传递 id
+								params: params, // 通过 parmas 传递 id
 							});
 			}
            
@@ -54,7 +55,6 @@ export default {
     mounted() {
         // 调用 GetList 方法
         // this.GetList();
-		console.log('>>>>xxx>>>>>',this.list)
     }
 }
 </script>

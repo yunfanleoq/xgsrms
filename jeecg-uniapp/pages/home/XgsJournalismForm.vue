@@ -8,19 +8,16 @@
 		 <!--表单区域-->
 		<view>
 			<form>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text >{{model.journalismHead}}</text></view>
-                 
-                </view>
-              </view>
-              <view class="cu-form-group">
-                <view class="flex align-center">
-                  <view class="title"><text space="ensp">{{model.journalismText}}</text></view>
-                 
-                </view>
-              </view>
-           
+          <view class="cu-form-group" v-if="false">
+            <view class="flex align-center">
+              <view class="title"><text>{{model.journalismHead}}</text></view>
+            </view>
+          </view>
+          <view class="cu-form-group">
+            <view class="flex align-center">
+              <view class="title"><rich-text space="ensp" :nodes="model.journalismText"></rich-text></view>
+            </view>
+          </view>
 			</form>
 		</view>
     </view>
@@ -47,52 +44,39 @@
                 model: {},
                 backRouteName:'index',
                 url: {
-                  queryById: "/positions/xgsJournalism/queryById",
+                  queryById: "/xgsJournalism/xgsJournalism/queryById",
                   add: "/positions/xgsJournalism/add",
                   edit: "/positions/xgsJournalism/edit",
                 },
             }
         },
-        mounted(){
-             this.initFormData();
+        onLoad(options){
+            this.initFormData();
         },
         methods:{
-           initFormData(){
-               if(this.$Route){
-				   this.model = this.$Route.query;
-				   console.log("this.model>>>>>>",this.model);
-               }
+            initFormData(){
+                if(this.$Route){
+                    let params = this.$Route.query;
+                    let dataId = params.id;
+                    this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
+                        if(res.data.success){
+                            console.log("表单数据",res);
+                            this.model = res.data.result;
+                        }
+                    })
+                }
             },
-            // initFormData(){
-            //     if(this.$Route){
-            //         let params = this.$Route.query;
-            //         console.log("params>>>>>>>>>",params);
-            //         let dataId = params.id;
-                    
-            //         this.$http.get(this.url.queryById,{params:{id:dataId
-     //                let params = this.$Route.query;
-					// console.log("params>>>>>>>>>",params);
-     //                let dataId = params.id;
-                    
-     //                this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-     //                    if(res.data.success){
-     //                        console.log("表单数据",res);
-     //                        this.model = res.data.result;
-     //                    }
-     //                })
-            //     }
-            // },
             onSubmit() {
                 let myForm = {...this.model};
                 this.loading = true;
                 let url = myForm.id?this.url.edit:this.url.add;
-				this.$http.post(url,myForm).then(res=>{
-				   console.log("res",res)
-				   this.loading = false
-				   this.$Router.push({name:this.backRouteName})
-				}).catch(()=>{
-					this.loading = false
-				});
+                this.$http.post(url,myForm).then(res=>{
+                  console.log("res",res)
+                  this.loading = false
+                  this.$Router.push({name:this.backRouteName})
+                }).catch(()=>{
+                  this.loading = false
+                });
             }
         }
     }
