@@ -21,19 +21,19 @@ export const columns: BasicColumn[] = [
     dataIndex: 'positionType',
   },
   {
-    title: '面试状态',
-    align: 'center',
-    dataIndex: 'interviewStatus',
-  },
-  {
     title: '面试时间',
     align: 'center',
     dataIndex: 'interviewDate',
   },
   {
-    title: '面试信息',
+    title: '面试地点',
     align: 'center',
-    dataIndex: 'interviewInformation',
+    dataIndex: 'interviewPlace',
+  },
+  {
+    title: '邀请信息',
+    align: 'center',
+    dataIndex: 'inviteLetter',
   },
   {
     title: '是否接受邀请',

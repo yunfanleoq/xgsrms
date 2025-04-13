@@ -29,6 +29,7 @@ export const columns: BasicColumn[] = [
     title: '面试状态',
     align: 'center',
     dataIndex: 'interviewStatus',
+    ifShow: false,
   },
   {
     title: '面试时间',

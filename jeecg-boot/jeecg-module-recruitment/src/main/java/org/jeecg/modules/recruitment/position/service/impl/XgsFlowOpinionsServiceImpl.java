@@ -69,6 +69,7 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
     @Transactional
     public void xgsInviteToInterview(XgsPositionApply positionApply) {
         XgsInviteToInterview xgsInviteToInterview = new XgsInviteToInterview();
+        xgsInviteToInterview.setApplyId(positionApply.getId());
         xgsInviteToInterview.setPositionId(positionApply.getPositionId());
         xgsInviteToInterview.setPositionName(positionApply.getPositionName());
         xgsInviteToInterview.setCandidateId(positionApply.getUserId());

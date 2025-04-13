@@ -57,6 +57,10 @@ public class XgsInviteToInterview implements Serializable {
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
+    /**申请id*/
+    @Excel(name = "申请id", width = 15)
+    @ApiModelProperty(value = "申请id")
+    private String applyId;
 	/**职位id*/
 	@Excel(name = "职位id", width = 15)
     @ApiModelProperty(value = "职位id")

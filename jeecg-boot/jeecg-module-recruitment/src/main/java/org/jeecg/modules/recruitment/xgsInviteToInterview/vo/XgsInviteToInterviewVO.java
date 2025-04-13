@@ -48,6 +48,10 @@ public class XgsInviteToInterviewVO implements Serializable {
 	/**所属部门*/
     @ApiModelProperty(value = "所属部门")
     private String sysOrgCode;
+    /**申请id*/
+    @Excel(name = "申请id", width = 15)
+    @ApiModelProperty(value = "申请id")
+    private String applyId;
 	/**职位id*/
 	@Excel(name = "职位id", width = 15)
     @ApiModelProperty(value = "职位id")
@@ -56,6 +60,8 @@ public class XgsInviteToInterviewVO implements Serializable {
 	@Excel(name = "职位名称", width = 15)
     @ApiModelProperty(value = "职位名称")
     private String positionName;
+    private String positionDept;
+    private String positionType;
 	/**候选人id*/
 	@Excel(name = "候选人id", width = 15)
     @ApiModelProperty(value = "候选人id")
@@ -100,4 +106,14 @@ public class XgsInviteToInterviewVO implements Serializable {
 	@Dict(dicCode = "邀请状态")
     @ApiModelProperty(value = "邀请状态")
     private String inviteStatus;
+    /** 面试结果 */
+    @Excel(name = "面试结果", width = 15, dicCode = "面试结果")
+    @Dict(dicCode = "面试结果")
+    @ApiModelProperty(value = "面试结果")
+    private String interviewResult;
+    /** 邀请结果 */
+    @Excel(name = "邀请结果", width = 15, dicCode = "邀请结果")
+    @Dict(dicCode = "邀请结果")
+    @ApiModelProperty(value = "邀请结果")
+    private String inviteResult;
 }
