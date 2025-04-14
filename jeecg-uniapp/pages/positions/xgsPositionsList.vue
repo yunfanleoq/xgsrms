@@ -8,7 +8,7 @@
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="positionsList" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item arrow" v-for="(item,index) in list" :key="index" @click="goHome">
+				<view class="cu-item arrow" v-for="(item,index) in list" :key="index" @click="goToDetail(item)">
 					<view class="content" style="width:100%">
                         <text class="text-lg" style="color: #000;">
                              {{ item.positionName}}
