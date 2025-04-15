@@ -9,6 +9,9 @@
 		<view>
 			<form>
               <view class="cu-form-group">
+                <view class="title">个人基本信息</view>
+              </view>
+              <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">姓名：</text></view>
                   <input  placeholder="请输入姓名" v-model="model.name"/>
@@ -241,6 +244,208 @@
                   <input type="number" placeholder="请输入所在地" v-model="model.areaId"/>
                 </view>
               </view>
+
+              <!-- 工作经历 -->
+              <view class="cu-form-group">
+                <view class="title">工作经历</view>
+                <button class="cu-btn bg-green sm" @click="addWorkExperience">添加工作经历</button>
+              </view>
+              <view v-for="(work, index) in model.xgsResumeWorks" :key="work.id" class="work-experience-item">
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">开始日期：</text></view>
+                    <my-date fields="day" v-model="work.beginDate" placeholder="请输入开始日期"></my-date>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">终止日期：</text></view>
+                    <my-date fields="day" v-model="work.endDate" placeholder="请输入终止日期"></my-date>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">工作单位：</text></view>
+                    <input placeholder="请输入工作单位" v-model="work.workUnit"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">工作部门：</text></view>
+                    <input placeholder="请输入工作部门" v-model="work.deptment"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">职务：</text></view>
+                    <input placeholder="请输入职务" v-model="work.position"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">专业技术岗位或职员职级：</text></view>
+                    <input placeholder="请输入专业技术岗位或职员职级" v-model="work.professionLevel"/>
+                  </view>
+                </view>
+                <button class="cu-btn bg-red sm" @click="removeWorkExperience(index)">删除</button>
+              </view>
+
+              <!-- 教育经历 -->
+              <view class="cu-form-group">
+                <view class="title">教育经历</view>
+                <button class="cu-btn bg-green sm" @click="addEducationExperience">添加教育经历</button>
+              </view>
+              <view v-for="(edu, index) in model.xgsResumeEdus" :key="edu.id" class="education-experience-item">
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">毕业院校：</text></view>
+                    <input placeholder="请输入毕业院校" v-model="edu.graduateCollege"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">专业：</text></view>
+                    <input placeholder="请输入专业" v-model="edu.profession"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">学历：</text></view>
+                    <input placeholder="请输入学历" v-model="edu.education"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">学位：</text></view>
+                    <input placeholder="请输入学位" v-model="edu.degree"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">起始日期：</text></view>
+                    <my-date fields="day" v-model="edu.beginDate" placeholder="请输入起始日期"></my-date>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">终止日期：</text></view>
+                    <my-date fields="day" v-model="edu.endDate" placeholder="请输入终止日期"></my-date>
+                  </view>
+                </view>
+                <button class="cu-btn bg-red sm" @click="removeEducationExperience(index)">删除</button>
+              </view>
+
+              <!-- 家庭状况 -->
+              <view class="cu-form-group">
+                <view class="title">家庭状况</view>
+                <button class="cu-btn bg-green sm" @click="addFamilyMember">添加家庭成员</button>
+              </view>
+              <view v-for="(member, index) in model.xgsResumeHome" :key="member.id" class="family-member-item">
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">关系：</text></view>
+                    <input placeholder="请输入关系" v-model="member.relation"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">姓名：</text></view>
+                    <input placeholder="请输入姓名" v-model="member.name"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">性别：</text></view>
+                    <input placeholder="请输入性别" v-model="member.sex"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">国籍：</text></view>
+                    <input placeholder="请输入国籍" v-model="member.nationality"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">籍贯：</text></view>
+                    <input placeholder="请输入籍贯" v-model="member.nativePlace"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">出生年月：</text></view>
+                    <my-date fields="day" v-model="member.birthday" placeholder="请输入出生年月"></my-date>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">民族：</text></view>
+                    <input placeholder="请输入民族" v-model="member.nation"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">身份证号：</text></view>
+                    <input placeholder="请输入身份证号" v-model="member.idNumber"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">政治面貌：</text></view>
+                    <input placeholder="请输入政治面貌" v-model="member.politicBackground"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">户口所在地：</text></view>
+                    <input placeholder="请输入户口所在地" v-model="member.hukou"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">毕业院校：</text></view>
+                    <input placeholder="请输入毕业院校" v-model="member.graduateCollege"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">学历：</text></view>
+                    <input placeholder="请输入学历" v-model="member.education"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">学位：</text></view>
+                    <input placeholder="请输入学位" v-model="member.degree"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">专业：</text></view>
+                    <input placeholder="请输入专业" v-model="member.profession"/>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">毕业时间：</text></view>
+                    <my-date fields="day" v-model="member.graduateDate" placeholder="请输入毕业时间"></my-date>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">参加工作时间：</text></view>
+                    <my-date fields="day" v-model="member.workDate" placeholder="请输入参加工作时间"></my-date>
+                  </view>
+                </view>
+                <view class="cu-form-group">
+                  <view class="flex align-center">
+                    <view class="title"><text space="ensp">目前工作单位：</text></view>
+                    <input placeholder="请输入目前工作单位" v-model="member.workUnit"/>
+                  </view>
+                </view>
+                <button class="cu-btn bg-red sm" @click="removeFamilyMember(index)">删除</button>
+              </view>
+
 				<view class="padding">
 					<button class="cu-btn block bg-blue margin-tb-sm lg" @click="onSubmit">
 						<text v-if="loading" class="cuIcon-loading2 cuIconfont-spin"></text>提交
@@ -266,54 +471,148 @@
         },
         data(){
             return {
-				CustomBar: this.CustomBar,
-				NavBarColor: this.NavBarColor,
-				loading:false,
-                model: {},
+                dataId: '',
+                CustomBar: this.CustomBar,
+                NavBarColor: this.NavBarColor,
+                loading:false,
+                model: {
+                    xgsResumeWorks: [],
+                    xgsResumeEdus: [],
+                    xgsResumeHome: []
+                },
                 backRouteName:'index',
                 url: {
-                  queryById: "/xgsMyresume/xgsMyresume/queryById",
+                  queryById: "/xgsResume/xgsResumeBase/queryById",
+                  queryXgsResumeWorksByMainId: '/xgsResume/xgsResumeBase/queryXgsResumeWorksByMainId',
+                  queryXgsResumeEdusByMainId: '/xgsResume/xgsResumeBase/queryXgsResumeEdusByMainId',
+                  queryXgsResumeHomeByMainId: '/xgsResume/xgsResumeBase/queryXgsResumeHomeByMainId',
                   add: "/xgsMyresume/xgsMyresume/add",
                   edit: "/xgsMyresume/xgsMyresume/edit",
                 },
             }
         },
-        created(){
-             this.initFormData();
+        onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
+          this.dataId = option.id;
+          this.initFormData()
         },
-		onLoad: function (option) { //option为object类型，会序列化上个页面传递的参数
-			let dataId = option.id;
-			this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-				if(res.data.success){
-					console.log("表单数据",res);
-					this.model = res.data.result;
-				}
-			})
-		},
         methods:{
+          uuid() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+              var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+              return v.toString(16)
+            }).replace(/-/g, '');
+          },
            initFormData(){
-               if(this.formData){
-                    let dataId = this.formData.dataId;
-                    this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>{
-                        if(res.data.success){
-                            console.log("表单数据",res);
-                            this.model = res.data.result;
-                        }
-                    })
-                }
+              let dataId = this.dataId;
+              let req1 = this.$http.get(this.url.queryById,{params:{id:dataId}}).then((res)=>res)
+              let req2 = this.$http.get(this.url.queryXgsResumeWorksByMainId,{params:{id:dataId}}).then((res)=>res)
+              let req3 = this.$http.get(this.url.queryXgsResumeEdusByMainId,{params:{id:dataId}}).then((res)=>res)
+              let req4 = this.$http.get(this.url.queryXgsResumeHomeByMainId,{params:{id:dataId}}).then((res)=>res)
+              Promise.all([req1,req2,req3,req4]).then(([res1,res2,res3,res4])=>{
+                if(res1.data.success){
+                      console.log("表单数据1",res1);
+                      this.model = res1.data.result;
+                  }
+                  if(res2.data.success){
+                      console.log("表单数据2",res2);
+                      this.model.xgsResumeWorks = res2.data.result;
+                  }
+                  if(res3.data.success){
+                      console.log("表单数据3",res3);
+                      this.model.xgsResumeEdus = res3.data.result;
+                  }
+                  if(res4.data.success){
+                      console.log("表单数据4",res4);
+                      this.model.xgsResumeHome = res4.data.result;
+                  }
+              })
+            },
+            // 添加工作经历
+            addWorkExperience() {
+                this.model.xgsResumeWorks.push({
+                    id: this.uuid(),
+                    beginDate: '',
+                    endDate: '',
+                    workUnit: '',
+                    deptment: '',
+                    position: '',
+                    professionLevel: ''
+                });
+                this.model = Object.assign({},this.model);
+            },
+            // 删除工作经历
+            removeWorkExperience(index) {
+                this.model.xgsResumeWorks.splice(index, 1);
+            },
+            // 添加教育经历
+            addEducationExperience() {
+                this.model.xgsResumeEdus.push({
+                    id: this.uuid(),
+                    graduateCollege: '',
+                    profession: '',
+                    education: '',
+                    degree: '',
+                    beginDate: '',
+                    endDate: ''
+                });
+                this.model = Object.assign({},this.model);
+            },
+            // 删除教育经历
+            removeEducationExperience(index) {
+                this.model.xgsResumeEdus.splice(index, 1);
+            },
+            // 添加家庭成员
+            addFamilyMember() {
+              console.log("添加家庭成员",this.uuid(),this.model.xgsResumeHome);
+                this.model.xgsResumeHome.push({
+                    id: this.uuid(),
+                    relation: '',
+                    name: '',
+                    sex: '',
+                    nationality: '',
+                    nativePlace: '',
+                    birthday: '',
+                    nation: '',
+                    idNumber: '',
+                    politicBackground: '',
+                    hukou: '',
+                    graduateCollege: '',
+                    education: '',
+                    degree: '',
+                    profession: '',
+                    graduateDate: '',
+                    workDate: '',
+                    workUnit: ''
+                });
+                this.model = Object.assign({},this.model);
+            },
+            // 删除家庭成员
+            removeFamilyMember(index) {
+                this.model.xgsResumeHome.splice(index, 1);
             },
             onSubmit() {
                 let myForm = {...this.model};
                 this.loading = true;
                 let url = myForm.id?this.url.edit:this.url.add;
-				this.$http.post(url,myForm).then(res=>{
-				   console.log("res",res)
-				   this.loading = false
-				   this.$Router.push({name:this.backRouteName})
-				}).catch(()=>{
-					this.loading = false
-				});
+                this.$http.post(url,myForm).then(res=>{
+                  console.log("res",res)
+                  this.loading = false
+                  this.$Router.push({name:this.backRouteName})
+                }).catch(()=>{
+                  this.loading = false
+                });
             }
         }
     }
 </script>
+
+<style lang="scss" scoped>
+.work-experience-item,
+.education-experience-item,
+.family-member-item {
+    margin-bottom: 20rpx;
+    padding: 20rpx;
+    border: 1px solid #eee;
+    border-radius: 8rpx;
+}
+</style>

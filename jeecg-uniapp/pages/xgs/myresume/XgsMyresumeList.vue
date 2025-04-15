@@ -39,7 +39,7 @@
 			return {
 				CustomBar:this.CustomBar,
 				NavBarColor:this.NavBarColor,
-				url: "/xgsMyresume/xgsMyresume/list",
+				url: "/xgsResume/xgsResumeBase/listMyResume",
 				uploadUrl: "/xgsMyresume/xgsMyresume/uploadPdf"
 			};
 		},
