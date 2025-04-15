@@ -2,15 +2,20 @@ package org.jeecg.modules.recruitment.xgsInviteToInterview.controller;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.modules.demo.positions.entity.XgsPositions;
+import org.jeecg.modules.demo.positions.service.IXgsPositionsService;
 import org.jeecg.modules.recruitment.xgsInterview.entity.XgsInterview;
 import org.jeecg.modules.recruitment.xgsInterview.service.IXgsInterviewService;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
@@ -23,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.vo.XgsInviteToInterviewVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -46,7 +52,11 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	private IXgsInviteToInterviewService xgsInviteToInterviewService;
 	@Autowired
 	private IXgsInterviewService interviewService;
-	
+	 @Autowired
+	 private IXgsPositionsService positionsService;
+	 @Autowired
+	 private ISysBaseAPI sysBaseAPI;
+
 	/**
 	 * 分页列表查询
 	 *
@@ -73,6 +83,24 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
         QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap(),customeRuleMap);
 		Page<XgsInviteToInterview> page = new Page<XgsInviteToInterview>(pageNo, pageSize);
 		IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(page, queryWrapper);
+		pageList.convert(interview -> {
+			XgsInviteToInterviewVO vo = new XgsInviteToInterviewVO();
+			BeanUtils.copyProperties(interview, vo);
+			String positionId = interview.getPositionId();
+			XgsPositions position = positionsService.getById(positionId);
+			if (position != null) {
+				vo.setPositionName(position.getPositionName());
+				vo.setPositionType(position.getCategory());
+				if (position.getDept() != null) {
+					List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByIds(position.getDept());
+					if (jsonObjects.size() > 0) {
+						JSONObject jsonObject = jsonObjects.get(0);
+						vo.setPositionDept(jsonObject.getString("departName"));
+					}
+				}
+			}
+			return vo;
+		});
 		return Result.OK(pageList);
 	}
 
@@ -103,6 +131,24 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 		 QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap(),customeRuleMap);
 		 Page<XgsInviteToInterview> page = new Page<XgsInviteToInterview>(pageNo, pageSize);
 		 IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(page, queryWrapper);
+		 pageList.convert(interview -> {
+			 XgsInviteToInterviewVO vo = new XgsInviteToInterviewVO();
+			 BeanUtils.copyProperties(interview, vo);
+			 String positionId = interview.getPositionId();
+			 XgsPositions position = positionsService.getById(positionId);
+			 if (position != null) {
+				 vo.setPositionName(position.getPositionName());
+				 vo.setPositionType(position.getCategory());
+				 if (position.getDept() != null) {
+					 List<JSONObject> jsonObjects = sysBaseAPI.queryDepartsByIds(position.getDept());
+					 if (jsonObjects.size() > 0) {
+						 JSONObject jsonObject = jsonObjects.get(0);
+						 vo.setPositionDept(jsonObject.getString("departName"));
+					 }
+				 }
+			 }
+			 return vo;
+		 });
 		 return Result.OK(pageList);
 	 }
 	
