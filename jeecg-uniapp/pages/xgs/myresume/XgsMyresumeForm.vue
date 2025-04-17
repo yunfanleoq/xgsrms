@@ -136,10 +136,14 @@
                 </view>
               </view>
               <my-date label="聘任时间：" fields="day" v-model="model.professionLevelDate" placeholder="请输入聘任时间"></my-date>
-              <view class="cu-form-group">
+              <view class="cu-form-group" style="height: 90px;">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">与本所职工（包括在读研究生）是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系（若有请写出姓名）？（请务必勾选）：</text></view>
-                  <input  placeholder="请输入与本所职工（包括在读研究生）是否有夫妻关系、直系血亲关系、三代以内旁系血亲或者近姻亲关系（若有请写出姓名）？（请务必勾选）" v-model="model.xgsRelation"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
+                  <input placeholder="请输入" v-model="model.xgsRelation"/>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -487,7 +491,7 @@
                   queryXgsResumeEdusByMainId: '/xgsResume/xgsResumeBase/queryXgsResumeEdusByMainId',
                   queryXgsResumeHomeByMainId: '/xgsResume/xgsResumeBase/queryXgsResumeHomeByMainId',
                   add: "/xgsMyresume/xgsMyresume/add",
-                  edit: "/xgsMyresume/xgsMyresume/edit",
+                  edit: "/xgsResume/xgsResumeBase/edit",
                 },
             }
         },
@@ -596,8 +600,15 @@
                 let url = myForm.id?this.url.edit:this.url.add;
                 this.$http.post(url,myForm).then(res=>{
                   console.log("res",res)
+                  // 这里弹出提示框
+                  uni.showToast({
+                    title: res.data.message,
+                    icon: 'success'
+                  });
                   this.loading = false
-                  this.$Router.push({name:this.backRouteName})
+                  setTimeout(()=>{
+                    this.$Router.push({name:this.backRouteName})
+                  },1500)
                 }).catch(()=>{
                   this.loading = false
                 });
