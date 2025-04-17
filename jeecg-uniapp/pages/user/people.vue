@@ -45,7 +45,7 @@
 			    </view>
 			</navigator>
 		   
-			<navigator class="cu-item arrow animation-slide-bottom" open-type="navigate" :style="[{animationDelay: '0.7s'}]" url="/pages/user/userexit" hover-class="none">
+			<navigator class="cu-item arrow animation-slide-bottom" :style="[{animationDelay: '0.7s'}]" @tap="handleLogout">
 				<view class="content" >
 				    <text class="cuIcon-exit text-cyan"></text>
 					<text class="text-grey">退出</text>
@@ -138,6 +138,25 @@
 					console.log(err);
 				});
 				
+			},
+			handleLogout() {
+				uni.showModal({
+					title: '提示',
+					content: '确定要退出登录吗？',
+					success: (res) => {
+						if (res.confirm) {
+							// 清除用户信息
+							this.$store.dispatch('Logout')
+							// 清除本地存储
+							uni.removeStorageSync('token')
+							uni.removeStorageSync('userInfo')
+							// 跳转到登录页
+							uni.reLaunch({
+								url: '/pages/login/login'
+							})
+						}
+					}
+				})
 			}
 		}
 	}

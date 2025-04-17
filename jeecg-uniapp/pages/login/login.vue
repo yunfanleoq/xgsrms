@@ -18,6 +18,13 @@
 						    <text :class="[showPassword ? 'cuIcon-attention' : 'cuIcon-attentionforbid']" @click="changePassword"></text>
 						</view>
 					</view>
+					<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+						<view class="title"><text class="cuIcon-safe margin-right-xs"></text>验证码:</view>
+						<input class="uni-input" placeholder="请输入验证码" v-model="inputCode" />
+						<view class="action">
+							<image :src="randCodeData.randCodeImage" mode="widthFix" class="code-image" @tap="handleChangeCheckCode"></image>
+						</view>
+					</view>
 					<view class="padding text-center margin-top">
 						<button class="cu-btn bg-blue lg margin-right shadow" :loading="loading" :class="[shape=='round'?'round':'']"
 							@tap="onLogin"><text space="emsp">{{loading ? "登录中...":" 登录 "}}</text>
@@ -61,7 +68,7 @@
 		<!-- 登录加载弹窗 -->
 		<view class="cu-load load-modal" v-if="loading">
 			<!-- <view class="cuIcon-emojifill text-orange"></view> -->
-			<image src="https://static.jeecg.com/upload/test/login4_1595818039175.png" mode="aspectFit" class="round"></image>
+			<image src="https://www.iie.ac.cn/images/xgs_logo_.png" mode="aspectFit" class="round"></image>
 			<view class="gray-text">登录中...</view>
 		</view>
     </view>
@@ -78,8 +85,9 @@
             return {
 				shape:'',//round 圆形
 				loading: false,
-				userName: 'admin',
-				password: '123456',
+				userName: '',
+				password: '',
+				inputCode: '',
 				phoneNo: '',
 				smsCode: '',
 				showPassword: false, //是否显示明文
@@ -94,7 +102,13 @@
 				thirdLoginState:false,
 				bindingPhoneModal:false,
 				thirdUserUuid:'',
+				randCodeData: {
+					randCodeImage: '',
+					requestCodeSuccess: false,
+					checkKey: null,
+				},
 				url: {
+					getInputCode: '/sys/randomImage',
 					bindingThirdPhone: '/sys/thirdLogin/bindingThirdPhone'
 				}
             };
@@ -106,6 +120,8 @@
 				that.version=wgtinfo.version
 			});
 			// #endif
+			// 初始化验证码
+			this.handleChangeCheckCode()
 		},
 		computed: {
 		      isSendSMSEnable() {
@@ -127,6 +143,22 @@
 		},
         methods: {
 			 ...mapActions([ "mLogin","PhoneLogin","ThirdLogin" ]),
+			/**
+			 * 获取验证码
+			 */
+			handleChangeCheckCode() {
+				this.inputCode = '';
+				this.randCodeData.checkKey = new Date().getTime();
+				this.getCodeInfo(this.randCodeData.checkKey).then((res) => {
+					console.log("res",res)
+					this.randCodeData.randCodeImage = res.data.result;
+					this.randCodeData.requestCodeSuccess = true;
+				});
+			},
+			getCodeInfo(currdatetime) {
+				const url = this.url.getInputCode + `/${currdatetime}`;
+				return this.$http.get(url);
+			},
 			onLogin: function (){
 			        if(!this.userName || this.userName.length==0){
 			          this.$tip.toast('请填写用户名');
@@ -136,9 +168,15 @@
 			           this.$tip.toast('请填写密码');
 			          return;
 			        }
+			        if(!this.inputCode || this.inputCode.length==0){
+			           this.$tip.toast('请填写验证码');
+			          return;
+			        }
 			        let loginParams = {
 			          username:this.userName,
-			          password:this.password
+			          password:this.password,
+			          captcha: this.inputCode,
+			          checkKey: this.randCodeData.checkKey
 			        }
 					this.loading=true;
 			        this.mLogin(loginParams).then((res) => {
@@ -302,6 +340,11 @@
     /*按钮点击效果*/
     .zai-btn.button-hover {
         transform: translate(1upx, 1upx);
+    }
+
+    .code-image {
+        width: 200rpx;
+        height: 80rpx;
     }
 
 </style>
