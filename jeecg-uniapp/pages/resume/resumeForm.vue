@@ -86,7 +86,7 @@
 					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
 					submissionUrl: '/positions/xgsPositionApply/doPositionApply',
 					myResumeUrl: '/xgsResume/xgsResumeBase/listMine',
-					positionsByIdUrl: '/positions/xgsPositionApply/getPositionApply'
+					positionsByIdUrl: '/positions/xgsPositionApply/getPositionApply',
                 },
 				htmlTypeStatce: true,
 				isCollected: false,
@@ -268,6 +268,8 @@
 							delta: 1
 						})
 						this.$tip.toast('岗位申请成功');
+					}else{
+						this.$tip.toast(res.data.result);
 					}
 				}).catch(err => {
 					console.log(err);
@@ -275,9 +277,11 @@
             },
 			//判断信息是否全部填写
 			validateAndNext(){
+				//if开启后，可以随意至下一页级随意提交
 				if(this.formNumber > 0){
 					return true
 				}
+				
 				//测试使用（^_^;
 				// this.xgsPositionApplyVO.xgsPositionApply = this.$refs.resumeApplyForm.formSubmission()
 				// this.xgsPositionApplyVO.xgsResumeBasePage = this.$refs.resumeBaseForm.formSubmission()
@@ -328,7 +332,7 @@
 			//简历选择
 			bindPickerChange: function(e) {
 				this.myResumeIndex = e.detail.value
-			},
+			}
         }
     }
 </script>
