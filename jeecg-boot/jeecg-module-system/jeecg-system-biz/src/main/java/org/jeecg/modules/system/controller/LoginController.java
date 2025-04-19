@@ -687,6 +687,27 @@ public class LoginController {
 			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
 		}
 		//update-end-author:taoyan date:2022-11-7 for: issues/4109 平台用户登录失败锁定用户
+
+		// step.1 验证码check
+		String captcha = sysLoginModel.getCaptcha();
+		if(captcha==null){
+			result.error500("验证码无效");
+			return result;
+		}
+		String lowerCaseCaptcha = captcha.toLowerCase();
+		// 加入密钥作为混淆，避免简单的拼接，被外部利用，用户自定义该密钥即可
+		String origin = lowerCaseCaptcha+sysLoginModel.getCheckKey()+jeecgBaseConfig.getSignatureSecret();
+		String realKey = Md5Util.md5Encode(origin, "utf-8");
+		Object checkCode = redisUtil.get(realKey);
+		//当进入登录页时，有一定几率出现验证码错误 #1714
+		if(checkCode==null || !checkCode.toString().equals(lowerCaseCaptcha)) {
+			log.warn("验证码错误，key= {} , Ui checkCode= {}, Redis checkCode = {}", sysLoginModel.getCheckKey(), lowerCaseCaptcha, checkCode);
+			result.error500("验证码错误");
+			// 改成特殊的code 便于前端判断
+			result.setCode(HttpStatus.PRECONDITION_FAILED.value());
+			return result;
+		}
+
 		//1. 校验用户是否有效
 		SysUser sysUser = sysUserService.getUserByName(username);
 		result = sysUserService.checkUserIsEffective(sysUser);
@@ -772,7 +793,7 @@ public class LoginController {
 	 * 登录二维码
 	 */
 	@ApiOperation(value = "登录二维码", notes = "登录二维码")
-	@GetMapping("/getLoginQrcode")
+//	@GetMapping("/getLoginQrcode")
 	public Result<?>  getLoginQrcode() {
 		String qrcodeId = CommonConstant.LOGIN_QRCODE_PRE+IdWorker.getIdStr();
 		//定义二维码参数
@@ -786,7 +807,7 @@ public class LoginController {
 	 * 扫码二维码
 	 */
 	@ApiOperation(value = "扫码登录二维码", notes = "扫码登录二维码")
-	@PostMapping("/scanLoginQrcode")
+//	@PostMapping("/scanLoginQrcode")
 	public Result<?> scanLoginQrcode(@RequestParam String qrcodeId, @RequestParam String token) {
 		Object check = redisUtil.get(CommonConstant.LOGIN_QRCODE + qrcodeId);
 		if (oConvertUtils.isNotEmpty(check)) {
