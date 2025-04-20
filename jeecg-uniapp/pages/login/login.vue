@@ -1,7 +1,7 @@
   <template>
 	<view class="zai-box">
         <scroll-view scroll-y class="page">
-            <view class="text-center" :style="[{animation: 'show ' + 0.4+ 's 1'}]">
+            <view v-if="loginWay==1" class="text-center" :style="[{animation: 'show ' + 0.4+ 's 1'}]">
 				<image src="https://www.iie.ac.cn/images/xgs_logo_.png" mode='aspectFit' class="zai-logo "></image>
 				<view class="zai-title text-shadow ">招聘管理系统 </view>
 			</view>
@@ -30,28 +30,54 @@
 							@tap="onLogin"><text space="emsp">{{loading ? "登录中...":" 登录 "}}</text>
 						</button>
 						<button class="cu-btn line-blue lg margin-left shadow" :loading="loading" :class="[shape=='round'?'round':'']"
-							@tap="loginWay=3-loginWay">短信登录
+							@tap="loginWay=3-loginWay">注册账号
 						</button>
 					</view>
 				</block>
                 <block v-else>
-                	<view class="cu-form-group margin-top  shadow-warp" :class="[shape=='round'?'round':'']">
-                		<view class="title"><text class="cuIcon-mobile margin-right-xs"></text>手机号:</view>
-                		<input placeholder="请输入手机号" type="number" maxlength="11" v-model="phoneNo"></input>
+					<view class="text-center" :style="[{animation: 'show ' + 0.4+ 's 1'}]">
+						<view class="zai-title text-shadow ">注册 </view>
+					</view>
+                	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+                		<view class="title"><text class="cuIcon-people margin-right-xs"></text>姓名:</view>
+                		<input placeholder="请输入真实姓名" type="text" v-model="realname"></input>
+                	</view>
+                	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+                		<view class="title"><text class="cuIcon-people margin-right-xs"></text>账号:</view>
+                		<input placeholder="请输入账号" type="text" v-model="username"></input>
+                	</view>
+                	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+                		<view class="title"><text class="cuIcon-mobile margin-right-xs"></text>手机:</view>
+                		<input placeholder="请输入手机号" type="number" maxlength="11" v-model="mobile"></input>
+                	</view>
+                	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+                		<view class="title"><text class="cuIcon-mail margin-right-xs"></text>邮箱:</view>
+                		<input placeholder="请输入邮箱" type="text" v-model="email"></input>
                 	</view>
                 	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
                 		<view class="title"><text class="cuIcon-lock margin-right-xs"></text>验证码:</view>
-                		<input class="uni-input" placeholder="请输入验证码" v-model="smsCode"/>
+                		<input class="uni-input" placeholder="请输入邮箱验证码" v-model="smscode"/>
                 		<view class="action">
                 			<button class="cu-btn line-blue sm" :disabled="!isSendSMSEnable" @click="onSMSSend"> {{ getSendBtnText }}</button>
                 		</view>
                 	</view>
+                	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+                		<view class="title"><text class="cuIcon-lock margin-right-xs"></text>密码:</view>
+                		<input class="uni-input" placeholder="请输入密码" :password="!showPassword" v-model="password" />
+                		<view class="action text-lg">
+                			<text :class="[showPassword ? 'cuIcon-attention' : 'cuIcon-attentionforbid']" @click="changePassword"></text>
+                		</view>
+                	</view>
+                	<view class="cu-form-group margin-top shadow-warp" :class="[shape=='round'?'round':'']">
+                		<view class="title"><text class="cuIcon-lock margin-right-xs"></text>确认密码:</view>
+                		<input class="uni-input" placeholder="请再次输入密码" :password="!showPassword" v-model="confirmPassword" />
+                	</view>
                 	<view class="padding text-center margin-top">
                 		<button class="cu-btn bg-blue lg margin-right shadow" :loading="loading" :class="[shape=='round'?'round':'']"
-                			@tap="onSMSLogin"><text space="emsp">{{loading ? "登录中...":" 登录 "}}</text>
+                			@tap="onRegister"><text space="emsp">{{loading ? "注册中...":" 注册 "}}</text>
                 		</button>
                 		<button class="cu-btn line-blue lg margin-left shadow" :loading="loading" :class="[shape=='round'?'round':'']"
-                			@tap="loginWay=1">账户登录
+                			@tap="loginWay=1">已有账号登录
                 		</button>
                 	</view>
                 </block>
@@ -88,10 +114,15 @@
 				userName: '',
 				password: '',
 				inputCode: '',
-				phoneNo: '',
-				smsCode: '',
+				// 注册相关字段
+				realname: '',
+				username: '',
+				mobile: '',
+				email: '',
+				smscode: '',
+				confirmPassword: '',
 				showPassword: false, //是否显示明文
-				loginWay: 1, //1: 账密，2：验证码
+				loginWay: 1, //1: 账密，2：注册
 				smsCountDown: 0,
 				smsCountInterval: null,
 				toggleDelay: false,
@@ -125,7 +156,7 @@
 		},
 		computed: {
 		      isSendSMSEnable() {
-		        return this.smsCountDown <= 0 && this.phoneNo.length > 4;
+		        return this.smsCountDown <= 0 && this.email && this.email.length > 0;
 		      },
 		      getSendBtnText() {
 		        if (this.smsCountDown > 0) {
@@ -214,66 +245,111 @@
 				this.showPassword = !this.showPassword;
 			},
 			onSMSSend() {
-				let smsParams = {};
-				smsParams.mobile=this.phoneNo;
-				smsParams.smsmode="0";
-				let checkPhone = new RegExp(/^[1]([3-9])[0-9]{9}$/);
-                if(!smsParams.mobile || smsParams.mobile.length==0){
-					this.$tip.toast('请输入手机号');
-					return false
+				let checkEmail = new RegExp(/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/);
+				
+				if(!this.email || this.email.length==0){
+					this.$tip.toast('请输入邮箱');
+					return false;
 				}
-				if(!checkPhone.test(smsParams.mobile)){
-					this.$tip.toast('请输入正确的手机号');
-					return false
+				if(!checkEmail.test(this.email)){
+					this.$tip.toast('请输入正确的邮箱格式');
+					return false;
 				}
-				this.$http.post("/sys/sms",smsParams).then(res=>{
-				  if(res.data.success){
-					this.smsCountDown = 60;
-					this.startSMSTimer();
-				  }else{
-					this.smsCountDown = 0;
-					this.$tip.toast(res.data.message);
-				  }
+				
+				let smsParams = {
+					mobile: this.mobile,
+					email: this.email,
+					smsmode: "1" // 1表示邮箱验证码
+				};
+				
+				this.$http.post("/sys/ems", smsParams).then(res=>{
+					if(res.data.success){
+						this.smsCountDown = 60;
+						this.startSMSTimer();
+					}else{
+						this.smsCountDown = 0;
+						this.$tip.toast(res.data.message);
+					}
 				});
-			  },
+			},
 			startSMSTimer() {
 				this.smsCountInterval = setInterval(() => {
-				  this.smsCountDown--;
-				  if (this.smsCountDown <= 0) {
-					clearInterval(this.smsCountInterval);
-				  }
+					this.smsCountDown--;
+					if (this.smsCountDown <= 0) {
+						clearInterval(this.smsCountInterval);
+					}
 				}, 1000);
 			},
-			onSMSLogin() {
-				let checkPhone = new RegExp(/^[1]([3-9])[0-9]{9}$/);
+			onRegister() {
+				let checkEmail = new RegExp(/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/);
+				let checkMobile = new RegExp(/^[1]([3-9])[0-9]{9}$/);
 				
-				if(!this.phoneNo || this.phoneNo.length==0){
-				  this.$tip.toast('请填写手机号');
-				  return;
+				if(!this.realname || this.realname.length==0){
+					this.$tip.toast('请填写姓名');
+					return;
 				}
-				if(!checkPhone.test(this.phoneNo)){
+				if(!this.username || this.username.length==0){
+					this.$tip.toast('请填写账号');
+					return;
+				}
+				if(!this.mobile || this.mobile.length==0){
+					this.$tip.toast('请填写手机号');
+					return;
+				}
+				if(!checkMobile.test(this.mobile)){
 					this.$tip.toast('请输入正确的手机号');
-					return false
+					return;
 				}
-				if(!this.smsCode || this.smsCode.length==0){
-				  this.$tip.toast('请填短信验证码');
-				  return;
+				if(!this.email || this.email.length==0){
+					this.$tip.toast('请填写邮箱');
+					return;
 				}
-				let loginParams = {
-				  mobile:this.phoneNo,
-				  captcha:this.smsCode
+				if(!checkEmail.test(this.email)){
+					this.$tip.toast('请输入正确的邮箱格式');
+					return;
+				}
+				if(!this.smscode || this.smscode.length==0){
+					this.$tip.toast('请填写验证码');
+					return;
+				}
+				if(!this.password || this.password.length==0){
+					this.$tip.toast('请填写密码');
+					return;
+				}
+				if(this.password.length < 6){
+					this.$tip.toast('密码长度不能小于6位');
+					return;
+				}
+				if(this.password !== this.confirmPassword){
+					this.$tip.toast('两次输入的密码不一致');
+					return;
+				}
+				
+				let registerParams = {
+					realname: this.realname,
+					username: this.username,
+					mobile: this.mobile,
+					email: this.email,
+					smscode: this.smscode,
+					password: this.password
 				};
-				this.PhoneLogin(loginParams).then((res) => {
-				  console.log("res====》",res)
-				  if(res.data.success){
-					this.$tip.success('登录成功!')
-					this.$Router.replaceAll({name:'index'})
-				  }else{
-					this.$tip.error(res.data.message);
-				  }
+				
+				this.loading = true;
+				this.$http.post("/sys/user/register", registerParams).then((res) => {
+					if(res.data.success){
+						this.$tip.success('注册成功!')
+						// 注册成功后自动登录
+						this.userName = this.username;
+						this.password = this.password;
+						this.loginWay = 1;
+					}else{
+						this.$tip.error(res.data.message);
+					}
 				}).catch((err) => {
-				  let msg = ((err.response || {}).data || {}).message || err.data.message || "请求出现错误，请稍后再试"
-				  this.$tip.error(msg);
+					let msg = ((err.response || {}).data || {}).message || err.data.message || "请求出现错误，请稍后再试"
+					this.$tip.error(msg);
+				}).finally(() => {
+					this.loading = false;
 				});
 			},
 			loginSuccess() {
