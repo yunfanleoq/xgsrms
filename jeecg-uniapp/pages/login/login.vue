@@ -32,9 +32,10 @@
 						<button class="cu-btn line-blue lg margin-left shadow" :loading="loading" :class="[shape=='round'?'round':'']"
 							@tap="loginWay=3-loginWay">注册账号
 						</button>
+						<view class="margin-top text-gray" @tap="loginWay=4">忘记密码？</view>
 					</view>
 				</block>
-                <block v-else>
+                <block v-else-if="loginWay==2">
 					<view class="text-center" :style="[{animation: 'show ' + 0.4+ 's 1'}]">
 						<view class="zai-title text-shadow ">注册 </view>
 					</view>
@@ -81,6 +82,54 @@
                 		</button>
                 	</view>
                 </block>
+                <block v-else-if="loginWay==4">
+                    <view class="text-center" :style="[{animation: 'show ' + 0.4+ 's 1'}]">
+                        <view class="zai-title text-shadow ">找回密码</view>
+                    </view>
+                    <view class="box padding-lr-xl login-paddingtop" :style="[{animation: 'show ' + 0.6+ 's 1'}]">
+                        <block v-if="forgetStep === 1">
+                            <view class="cu-form-group margin-top">
+                                <view class="title"><text class="cuIcon-mail margin-right-xs"></text>邮箱:</view>
+                                <input placeholder="请输入注册邮箱" type="text" v-model="forgetEmail"></input>
+                            </view>
+                            <view class="cu-form-group margin-top">
+                                <view class="title"><text class="cuIcon-lock margin-right-xs"></text>验证码:</view>
+                                <input class="uni-input" placeholder="请输入验证码" v-model="forgetCode"/>
+                                <view class="action">
+                                    <button class="cu-btn line-blue sm" :disabled="!isForgetSMSEnable" @click="onForgetSMSSend"> {{ getForgetSendBtnText }}</button>
+                                </view>
+                            </view>
+                            <view class="padding flex flex-direction">
+                                <button class="cu-btn bg-blue lg" @tap="verifyForgetCode">下一步</button>
+                                <button class="cu-btn line-blue lg margin-top" @tap="loginWay=1">返回登录</button>
+                            </view>
+                        </block>
+                        <block v-if="forgetStep === 2">
+                            <view class="cu-form-group margin-top">
+                                <view class="title"><text class="cuIcon-lock margin-right-xs"></text>新密码:</view>
+                                <input class="uni-input" placeholder="请输入新密码" :password="!showPassword" v-model="newPassword" />
+                                <view class="action text-lg">
+                                    <text :class="[showPassword ? 'cuIcon-attention' : 'cuIcon-attentionforbid']" @click="changePassword"></text>
+                                </view>
+                            </view>
+                            <view class="cu-form-group margin-top">
+                                <view class="title"><text class="cuIcon-lock margin-right-xs"></text>确认密码:</view>
+                                <input class="uni-input" placeholder="请再次输入新密码" :password="!showPassword" v-model="confirmNewPassword" />
+                            </view>
+                            <view class="padding flex flex-direction">
+                                <button class="cu-btn bg-blue lg" @tap="resetPassword">确认重置</button>
+                                <button class="cu-btn line-blue lg margin-top" @tap="loginWay=1">返回登录</button>
+                            </view>
+                        </block>
+                        <block v-if="forgetStep === 3">
+                            <view class="text-center padding">
+                                <text class="cuIcon-check text-green" style="font-size: 80rpx;"></text>
+                                <view class="margin-top">{{forgetMessage}}</view>
+                                <button class="cu-btn bg-blue lg margin-top" @tap="loginWay=1">返回登录</button>
+                            </view>
+                        </block>
+                    </view>
+                </block>
 				
 	
 				<!-- #ifdef APP-PLUS -->
@@ -122,10 +171,18 @@
 				smscode: '',
 				confirmPassword: '',
 				showPassword: false, //是否显示明文
-				loginWay: 1, //1: 账密，2：注册
+				loginWay: 1, //1: 账密，2：注册，4：忘记密码
 				smsCountDown: 0,
 				smsCountInterval: null,
-				toggleDelay: false,
+				// 找回密码相关字段
+				forgetStep: 1,
+				forgetEmail: '',
+				forgetCode: '',
+				forgetSmsCountDown: 0,
+				forgetSmsInterval: null,
+				newPassword: '',
+				confirmNewPassword: '',
+				forgetMessage: '',
 				version:'',
 				//第三方登录相关信息
 				thirdType:"",
@@ -161,6 +218,16 @@
 		      getSendBtnText() {
 		        if (this.smsCountDown > 0) {
 		          return this.smsCountDown + '秒后发送';
+		        } else {
+		          return '发送验证码';
+		        }
+		      },
+		      isForgetSMSEnable() {
+		        return this.forgetSmsCountDown <= 0 && this.forgetEmail && this.forgetEmail.length > 0;
+		      },
+		      getForgetSendBtnText() {
+		        if (this.forgetSmsCountDown > 0) {
+		          return this.forgetSmsCountDown + '秒后发送';
 		        } else {
 		          return '发送验证码';
 		        }
@@ -358,6 +425,94 @@
 			},
 			requestFailed(err) {
 			  this.$message.warning("登录失败")
+			},
+			onForgetSMSSend() {
+				let checkEmail = new RegExp(/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/);
+				
+				if(!this.forgetEmail || this.forgetEmail.length==0){
+					this.$tip.toast('请输入邮箱');
+					return false;
+				}
+				if(!checkEmail.test(this.forgetEmail)){
+					this.$tip.toast('请输入正确的邮箱格式');
+					return false;
+				}
+				
+				let smsParams = {
+					email: this.forgetEmail,
+					smsmode: "2" // 2表示找回密码验证码
+				};
+				
+				this.$http.post("/sys/ems", smsParams).then(res=>{
+					if(res.data.success){
+						this.forgetSmsCountDown = 60;
+						this.startForgetSMSTimer();
+					}else{
+						this.forgetSmsCountDown = 0;
+						this.$tip.toast(res.data.message);
+					}
+				});
+			},
+			startForgetSMSTimer() {
+				this.forgetSmsInterval = setInterval(() => {
+					this.forgetSmsCountDown--;
+					if (this.forgetSmsCountDown <= 0) {
+						clearInterval(this.forgetSmsInterval);
+					}
+				}, 1000);
+			},
+			verifyForgetCode() {
+				if(!this.forgetEmail || this.forgetEmail.length==0){
+					this.$tip.toast('请输入邮箱');
+					return;
+				}
+				if(!this.forgetCode || this.forgetCode.length==0){
+					this.$tip.toast('请输入验证码');
+					return;
+				}
+				
+				this.$http.post("/sys/user/emailVerification", {
+					email: this.forgetEmail,
+					emailCode: this.forgetCode
+				}).then(res => {
+					if(res.data.success){
+						this.forgetStep = 2;
+						this.username = res.data.result.username;
+					}else{
+						this.$tip.toast(res.data.message);
+					}
+				});
+			},
+			resetPassword() {
+				if(!this.newPassword || this.newPassword.length==0){
+					this.$tip.toast('请输入新密码');
+					return;
+				}
+				if(this.newPassword.length < 6){
+					this.$tip.toast('密码长度不能小于6位');
+					return;
+				}
+				if(this.newPassword !== this.confirmNewPassword){
+					this.$tip.toast('两次输入的密码不一致');
+					return;
+				}
+				
+				this.$http.get("/sys/user/passwordChange", {
+					params: {
+						username: this.username,
+						email: this.forgetEmail,
+						emailCode: this.forgetCode,
+						password: this.newPassword
+					}
+				}).then(res => {
+					if(res.data.success){
+						this.forgetStep = 3;
+						this.forgetMessage = '密码重置成功，请使用新密码登录';
+					}else{
+						this.forgetMessage = res.data.message || '密码重置失败';
+						this.forgetStep = 3;
+					}
+				});
 			},
         },
 		beforeDestroy() {
