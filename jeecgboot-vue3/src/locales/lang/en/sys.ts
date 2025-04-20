@@ -102,10 +102,15 @@ export default {
     mobile: 'Mobile',
 
     //重置密码页面英文
-    authentication:'authentication',
-    resetLoginPassword:'reset login password',
-    resetSuccess:'reset succeeded',
-    nextStep:'next step',
-    goToLogin:'go to login'
+    authentication: 'Authentication',
+    resetLoginPassword: 'Reset Login Password',
+    resetSuccess: 'Reset Success',
+    nextStep: 'Next Step',
+    goToLogin: 'Go to Login',
+    emailSendSuccess: 'Verification code has been sent to your email',
+    emailSendError: 'Failed to send verification code, please try again later',
+    emailFormatError: 'Please enter a valid email format',
+    emailCodeError: 'Verification code error, please re-enter',
+    passwordResetSuccess: 'Password reset successful, please login with your new password',
   },
 };
