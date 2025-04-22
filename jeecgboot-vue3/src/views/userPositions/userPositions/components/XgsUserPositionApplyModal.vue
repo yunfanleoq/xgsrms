@@ -23,8 +23,8 @@
     <div class="contentArea">
       <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm">
         <template #uploadResume="{ model, field }">
-          <a-form-item label="文件路径" id="XgsUserResumeFileForm-filePath" name="filePath" v-if="false">
-            <j-upload v-model:value="fileData.filePath" :max-count="1" :multiple="false" />
+          <a-form-item label="文件路径" id="XgsUserResumeFileForm-filePath" name="filePath" v-if=" title == '编辑'">
+            <j-upload v-model:value="fileData.filePath" :max-count="1" :multiple=" title == '编辑'" />
             <a-button type="primary" :disabled="!fileData.filePath" @click="analysisResume">简历分析</a-button>
             <div v-text="resumeText" style="width: 800px"></div>
           </a-form-item>
@@ -106,7 +106,7 @@
     formData.value = {
       id: data.record.id,
       dataId: data.record.resumeId,
-      disabled: true,
+      disabled:  title.value !== '编辑',
     };
 
     // 当前状态
@@ -121,7 +121,7 @@
     isReady.value = true;
   });
   //设置标题
-  const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '查看'));
+  const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '查看' : '编辑'));
   //简历文件处理
   const fileData = reactive<Record<string, any>>({
     id: '',

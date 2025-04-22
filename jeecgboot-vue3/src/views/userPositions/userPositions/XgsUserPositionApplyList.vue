@@ -144,8 +144,13 @@
     return [
       {
         label: '查看',
-        onClick: handleEdit.bind(null, record),
+        onClick: handleDetail.bind(null, record),
         auth: 'xgsUserResume:xgs_position_apply:edit',
+      },
+      {
+        label: '编辑',
+        onClick: handleEdit.bind(null, record),
+        ifShow: record.status === '部门未通过',
       },
       {
         label: '提交',
