@@ -250,10 +250,10 @@
 				params.htmlType = '招聘'
 				this.checkApple(params.id);
 				
-				// this.$Router.push({
-				// 	name: "resumeForm", // 新页面的路由名称
-				// 	params:parmas, // 通过 parmas 传递 id
-				// });
+				this.$Router.push({
+					name: "resumeForm", // 新页面的路由名称
+					params: params, // 通过 parmas 传递 id
+				});
 				
 				// uni.$globalParams = params;
 				// uni.navigateTo({
