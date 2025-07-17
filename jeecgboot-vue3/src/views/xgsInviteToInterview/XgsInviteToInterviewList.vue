@@ -81,9 +81,6 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        return Object.assign(params, queryParam);
-      },
-      beforeFetch: (params) => {
         // 添加筛选条件，仅获取人力处通过的名单
         params.approvalStatus = '人力处通过';
         return Object.assign(params, queryParam);

@@ -45,7 +45,7 @@
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
   import { useListPage } from '/@/hooks/system/useListPage';
   import { useModal } from '/@/components/Modal';
-  import XgsResumeBaseModal from './components/XgsResumeBaseModal.vue';
+  import XgsResumeBaseModal from './XgsResumeBaseModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsResumeBase.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsResumeBase.api';
   import { downloadFile } from '/@/utils/common/renderUtils';

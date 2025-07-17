@@ -20,7 +20,7 @@
           <button @click="goToRegisterPage" class="register">注册</button>
         </div>
         <div v-else>
-          <span class="user-info">欢迎, {{ loggedInUser.realname }}</span>
+          <span class="user-info" v-if="loggedInUser">欢迎, {{ loggedInUser.realname }}</span>
           <button @click="logout" class="logout">退出</button>
           <button @click="goToUserCenter" class="user-center">个人中心</button>
         </div>
@@ -99,7 +99,7 @@
   }
   .main-content {
     flex: 1; /* 允许容器根据内容自动扩展 */
-    min-height: 75%; /* 设置最小高度为1000像素 */
+    min-height: 1000px; /* 设置最小高度为1000像素 */
     padding: 20px; /* 可选：添加内边距 */
     background-color: #f9f9f9; /* 可选：添加背景颜色 */
   }

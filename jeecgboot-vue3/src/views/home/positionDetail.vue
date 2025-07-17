@@ -42,18 +42,56 @@
 </template>
 
 <script setup lang="ts" name="PositionDetail">
-  import { ref, onMounted, computed } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
   import { getJobById } from '@/api/xgsrms/home';
   import { xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList } from '@/api/xgsrms/positions';
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
-  import { useMessage } from '@/hooks/web/useMessage'; // 假设你有一个 API 来获取职位信息
+  import { useMessage } from '@/hooks/web/useMessage';
   import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
   import { message } from 'ant-design-vue';
   import { useModal } from '@/components/Modal';
   import { defHttp } from '@/utils/http/axios';
-  // 接收父组件传递的参数，获取职位 ID,当id变化时，重新获取职位信息
+
+  // --- 类型定义 ---
+  interface Job {
+    id: string;
+    positionName: string;
+    dept_dictText: string;
+    researchDirection: string;
+    professional: string;
+    workYears: string;
+    xlxw: string;
+    status_dictText: string;
+    duty: string;
+    ktz_dictText: string;
+    telphone?: string;
+    email: string;
+    memo?: string;
+    category: string;
+    personCount?: number;
+  }
+
+  interface FavoriteJob {
+    id: string;
+  }
+
+  interface ApplyRecord {
+    applyId: string;
+    disabled: boolean;
+    mark: string;
+    positionDept: string;
+    positionId: string;
+    positionName: string;
+    positionType: string;
+    resumeId: string;
+    resumeName: string;
+    status: string;
+    userName: string;
+  }
+
+  // 接收父组件传递的参数，获取职位 ID
   const props = defineProps({
     id: { type: String, default: '' },
   });
@@ -62,12 +100,16 @@
   const registerModalRef = ref();
   const positionApplyStore = usePositionApplyStoreWithOut();
 
-  // const record = positionApplyStore.currPositionApply;
   const route = useRoute();
   const router = useRouter();
   const jobId = route.params.id as string;
-  const job = ref(null);
-  const applyStatus = ref(false); // 是否可以申请
+  const job = ref<Job | null>(null);
+  const applyStatus = ref(true); // 是否可以申请, 默认为 true
+  const userStore = useUserStore();
+  const isCollected = ref(false);
+  const favoriteJob = ref<FavoriteJob | null>(null);
+  const record = ref<Partial<ApplyRecord>>({});
+
   // 检查 是否已经申请
   function checkHasApplied() {
     defHttp
@@ -76,54 +118,36 @@
         if (data && data.success) {
           applyStatus.value = true;
         } else {
+          applyStatus.value = false;
           createMessage.warning('岗位已申请，请勿重复申请！');
         }
       });
   }
 
-  const userStore = useUserStore();
   const goBack = () => {
-    // router.go(-1); // 返回上一页
     router.push({ name: 'homePositions', query: { showPositionList: 'true' } });
   };
 
-  const isCollected = ref(false);
-  const favoriteJob = ref({});
-  const userId = ref('');
-
-  const record = ref({});
-
   const fetchFavoriteJob = () => {
-    // 判断 userStore.userInfo 是否为 null，为null则赋值为 false，不为 null 则赋值 true
-    let curUserId = '';
-    if (userStore.userInfo === null) {
-      curUserId = '';
-    } else {
-      curUserId = userStore.userInfo.username;
-    }
-    xgsFavoriteJobList({ userId: curUserId, positionId: jobId }).then((res) => {
-      if (res.result.records.length > 0) {
+    if (!userStore.userInfo) return;
+    xgsFavoriteJobList({ userId: userStore.userInfo.username, positionId: jobId }).then((res) => {
+      if (res.success && res.result.records.length > 0) {
         isCollected.value = true;
         favoriteJob.value = res.result.records[0];
       }
     });
   };
 
-  onMounted(() => {
-    checkHasApplied();
-    fetchFavoriteJob();
-  });
-
   const markFavoriteJob = () => {
-    // 判断 userStore.userInfo 是否为 null，为null则提示用户登录，不为 null 则赋值 true
-    if (userStore.userInfo === null) {
-      // 使用 message.warning
+    if (!userStore.userInfo) {
       message.warning('请先登录');
       return;
     }
-    // TODO: 实现收藏职位的功能
-    let params = {
-      // id: jobId,
+    if (!job.value) {
+      message.error('职位信息加载失败，请稍后再试');
+      return;
+    }
+    const params = {
       userId: userStore.userInfo.username,
       userName: userStore.userInfo.realname,
       positionId: jobId,
@@ -136,83 +160,77 @@
     xgsFavoriteJobAdd(params).then((res) => {
       if (res.code == 200) {
         isCollected.value = true;
-        // 使用 message.warning
         message.success(`收藏职位成功`);
-        console.log(`${res.message}`);
+        fetchFavoriteJob(); // 重新获取收藏信息以更新ID
       } else {
         message.error(`${res.message}`);
-        console.log(`${res.message}`);
       }
     });
   };
 
-  // 取消收藏职位的功能
   const delFavoriteJob = () => {
-    // TODO: 实现取消收藏职位的功能
-    let params = {
+    if (!favoriteJob.value) return;
+    const params = {
       id: favoriteJob.value.id,
     };
 
     xgsFavoriteJobDel(params).then((res) => {
       if (res.code === 200) {
         isCollected.value = false;
-
+        favoriteJob.value = null;
         message.success(`取消收藏职位成功`);
-        console.log(`${res.message}`, isCollected.value);
       } else {
         message.error(`取消收藏职位失败`);
-        console.log(`${res.message}`);
       }
     });
   };
-  const positionApplyFormData = ref({});
-  const XgsPositionApplyFormShow = ref(false);
 
   const [registerModal, { openModal }] = useModal();
 
   const positionApply = () => {
-    if (userStore.userInfo === null) {
-      // 使用 message.warning
+    if (!userStore.userInfo) {
       message.warning('请先登录');
       return;
-    } else {
-      XgsPositionApplyFormShow.value = true;
-      registerModalRef.value.addJob(positionApplyStore.currPositionApply);
-      // record.value = positionApplyStore.currPositionApply;
-      record.value.applyId = '';
-      record.value.disabled = false;
-      record.value.mark = '';
-      record.value.positionDept = job.value.dept_dictText;
-      record.value.positionId = job.value.id;
-      record.value.positionName = job.value.positionName;
-      record.value.positionType = job.value.category;
-      record.value.resumeId = '';
-      record.value.resumeName = userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName;
-      record.value.status = '申请中';
-      record.value.userName = userStore.getUserInfo.realname;
     }
+    if (!job.value) {
+      message.error('职位信息加载失败，请稍后再试');
+      return;
+    }
+    registerModalRef.value.addJob(positionApplyStore.currPositionApply);
+    record.value = {
+      applyId: '',
+      disabled: false,
+      mark: '',
+      positionDept: job.value.dept_dictText,
+      positionId: job.value.id,
+      positionName: job.value.positionName,
+      positionType: job.value.category,
+      resumeId: '',
+      resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
+      status: '申请中',
+      userName: userStore.getUserInfo.realname,
+    };
   };
 
   const fetchCurrApplyPosition = async () => {
     try {
-      let params = {
-        id: jobId,
-      };
-      const response = await getJobById(params);
-      job.value = response.result.records[0];
-      // 将job存pinia
-      // 获取 Pinia store 实例
-
-      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
-      positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
-      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
+      const response = await getJobById({ id: jobId });
+      if (response.success && response.result.records.length > 0) {
+        job.value = response.result.records[0];
+        positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(job.value));
+      }
     } catch (error) {
       console.error('获取职位信息失败:', error);
     }
   };
 
-  onMounted(() => {
-    fetchCurrApplyPosition();
+  onMounted(async () => {
+    await fetchCurrApplyPosition();
+    // 仅在用户登录后执行需要认证的API调用
+    if (userStore.userInfo) {
+      checkHasApplied();
+      fetchFavoriteJob();
+    }
   });
 </script>
 
