@@ -105,9 +105,14 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 								   HttpServletRequest req) {
 		String approvalNode = req.getParameter("approvalNode"); //
 		String approvalStatus = req.getParameter("approvalStatusValue"); // 已审核，未审核
+		
+		// 添加调试日志
+		log.info("查询岗位申请列表 - approvalNode: {}, approvalStatus: {}", approvalNode, approvalStatus);
+		
 		xgsPositionApply.setApprovalNode(null);
 		Page<XgsPositionApply> page = new Page<>(pageNo, pageSize);
 		IPage<XgsPositionApply> pageList = null;
+		
         if (IXgsFlowOpinionsService.NODE_DEPT.equals(approvalNode)) { // 部门审核
 			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
 			if ("1".equals(approvalStatus)) { // 未审核
@@ -131,8 +136,9 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 				queryWrapper.eq("approval_status", "-1");
 			}
 			pageList = xgsPositionApplyService.page(page, queryWrapper);
+			log.info("部门审核查询结果 - 总数: {}", pageList != null ? pageList.getTotal() : 0);
         }
-		if (IXgsFlowOpinionsService.NODE_HR.equals(approvalNode)) { // HR 审核
+		else if (IXgsFlowOpinionsService.NODE_HR.equals(approvalNode)) { // HR 审核
 			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
 			if ("1".equals(approvalStatus)) { // 未审核
 				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_HR);
@@ -155,7 +161,40 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 				queryWrapper.eq("approval_status", "-1");
 			}
 			pageList = xgsPositionApplyService.page(page, queryWrapper);
+			log.info("HR审核查询结果 - 总数: {}", pageList != null ? pageList.getTotal() : 0);
 		}
+		// 处理"待人力处查看"节点
+		else if (IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW.equals(approvalNode)) {
+			QueryWrapper<XgsPositionApply> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
+			if ("1".equals(approvalStatus)) { // 待人力处查看
+				// 查询审批环节为"待人力处查看"的记录
+				queryWrapper.eq("approval_node", IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW);
+				log.info("查询待人力处查看的记录");
+			} else if ("2".equals(approvalStatus)) { // 已查看（人力处已处理过的）
+				// 查询人力处已处理过的记录，包括进入部门审核和退回申请人的
+				queryWrapper.and(wrapper -> wrapper
+								.eq("approval_node", IXgsFlowOpinionsService.NODE_DEPT) // 进入部门审核
+								.or()
+								.eq("approval_node", IXgsFlowOpinionsService.NODE_USER)) // 退回申请人
+						.and(wrapper -> wrapper
+								.ne("approval_node", IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW)); // 排除待人力处查看状态
+				log.info("查询人力处已处理的记录");
+			} else {
+				queryWrapper.eq("approval_status", "-1");
+			}
+			pageList = xgsPositionApplyService.page(page, queryWrapper);
+			log.info("待人力处查看查询结果 - 总数: {}", pageList != null ? pageList.getTotal() : 0);
+		}
+		else {
+			// 如果没有匹配的审批环节，记录警告日志
+			log.warn("未识别的审批环节: {}", approvalNode);
+		}
+		
+		// 如果查询结果为空，记录日志
+		if (pageList == null || pageList.getTotal() == 0) {
+			log.info("查询结果为空 - approvalNode: {}, approvalStatus: {}", approvalNode, approvalStatus);
+		}
+		
 		return Result.OK(pageList);
 	}
 

@@ -145,15 +145,15 @@ public class XgsResumeFGServiceImpl extends ServiceImpl<XgsResumeFGMapper, XgsRe
 		positionApply.setPositionName(xgsResumeBasePage.getApplyPositionName());
 		positionApply.setPositionDept(xgsResumeBasePage.getApplyPositionDept());
 		positionApply.setPositionType(xgsResumeBasePage.getApplyPositionType());
-		positionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT); // 提交到 部门审核
-		positionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO); // 内部审核状态
-		positionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING); // 用户看到的审核状态
+		positionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW); // 提交到 待查看
+		positionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW); // 待人力处查看
+		positionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_PENDING_REVIEW); // 用户看到的审核状态为待查看
 		positionApplyMapper.insert(positionApply);
 		// 增加流程记录
 		XgsFlowOpinions flowOpinions = new XgsFlowOpinions();
-		flowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_USER);
-		flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
-		flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
+		flowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW);
+		flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW);
+		flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW);
 		flowOpinionsMapper.insert(flowOpinions);
 	}
 }

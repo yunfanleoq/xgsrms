@@ -34,8 +34,29 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
         if (NODE_USER.equals(xgsFlowOpinions.getApprovalNode())) { // 申请人
             positionApply.setApprovalNode(NODE_DEPT);
             positionApply.setApprovalStatus(APPROVAL_STATUS_DEPT_TODO);
+        } else if (NODE_HR_PENDING_REVIEW.equals(xgsFlowOpinions.getApprovalNode())) { // 待查看（人力处查看）
+            // 人力处查看后，可以进入部门审核或直接通过
+            if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getOpinions())) {
+                positionApply.setApprovalNode(NODE_DEPT);
+                positionApply.setApprovalStatus(APPROVAL_STATUS_DEPT_TODO);
+                positionApply.setStatus(APPROVAL_STATUS_GOING); // 审核中
+            } else {
+                positionApply.setApprovalNode(NODE_USER);
+                positionApply.setApprovalStatus(APPROVAL_STATUS_HR_NOT_PASS);
+                positionApply.setStatus(APPROVAL_STATUS_HR_NOT_PASS); // 人力处未通过
+            }
+        } else if (NODE_HR_PENDING_REVIEW.equals(xgsFlowOpinions.getApprovalNode()) && APPROVAL_STATUS_HR_PENDING_REVIEW.equals(xgsFlowOpinions.getApprovalStatus())) { // 待查看
+            // 人力处查看后，可以进入部门审核或直接通过
+            if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getOpinions())) {
+                positionApply.setApprovalNode(NODE_DEPT);
+                positionApply.setApprovalStatus(APPROVAL_STATUS_DEPT_TODO);
+            } else {
+                positionApply.setApprovalNode(NODE_USER);
+                positionApply.setApprovalStatus(APPROVAL_STATUS_HR_NOT_PASS);
+                positionApply.setStatus(APPROVAL_STATUS_HR_NOT_PASS); // 人力处未通过
+            }
         } else if (NODE_DEPT.equals(xgsFlowOpinions.getApprovalNode())) { // 部门审核
-            if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getApprovalStatus())) {
+            if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getOpinions())) {
                 positionApply.setApprovalNode(NODE_HR);
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_TODO);
                 positionApply.setApplyStatus(APPROVAL_STATUS_DEPT_PASS);
@@ -46,7 +67,7 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
                 positionApply.setStatus(APPROVAL_STATUS_DEPT_NOT_PASS); // 部门审核未通过
             }
         } else if (NODE_HR.equals(xgsFlowOpinions.getApprovalNode())) { // 人力处审核
-            if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getApprovalStatus())) {
+            if (APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getOpinions())) {
                 positionApply.setApprovalNode(NODE_END);
                 positionApply.setApprovalStatus(APPROVAL_STATUS_HR_PASS);
                 positionApply.setApplyStatus(APPROVAL_STATUS_HR_PASS);

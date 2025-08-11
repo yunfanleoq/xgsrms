@@ -23,6 +23,10 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
      */
     String NODE_HR = "人力处审核";
     /**
+     * 待人力处查看
+     */
+    String NODE_HR_PENDING_REVIEW = "待查看";
+    /**
      * 初审通过
      */
     String NODE_END = "初审完成";
@@ -45,6 +49,10 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
     String APPROVAL_STATUS_HR_NOT_PASS = "人力处未通过";
     String APPROVAL_STATUS_PASS = "初审通过";
     String APPROVAL_STATUS_GOING = "审核中";
+    
+    // 新增状态常量
+    String APPROVAL_STATUS_PENDING_REVIEW = "待查看";
+    String APPROVAL_STATUS_HR_PENDING_REVIEW = "待人力处查看";
 
     String APPROVAL_RESULT_AGREE = "同意";
     String APPROVAL_RESULT_REJECT = "驳回";
