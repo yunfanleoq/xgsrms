@@ -7,7 +7,7 @@
 
     <!-- 顶部导航栏 -->
     <header>
-      <div class="logo">中科院信工所人才招聘管理系统</div>
+      <div class="logo">中国科学院信息工程研究所人才招聘管理系统</div>
       <nav>
         <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink> | <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>|
         <RouterLink :to="{ name: 'homeNews' }">科研发展</RouterLink> | <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>|
@@ -44,7 +44,7 @@
     </div>
     <footer>
       <br />
-      <p>© {{ currentYear }} 中科院信工所人才招聘管理系统. All rights reserved.</p>
+      <p>© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统. All rights reserved.</p>
     </footer>
   </div>
 </template>
@@ -99,7 +99,7 @@
   }
   .main-content {
     flex: 1; /* 允许容器根据内容自动扩展 */
-    min-height: 1000px; /* 设置最小高度为1000像素 */
+    //min-height: 1000px; /* 设置最小高度为1000像素 */
     padding: 20px; /* 可选：添加内边距 */
     background-color: #f9f9f9; /* 可选：添加背景颜色 */
   }
