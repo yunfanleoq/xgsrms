@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
  * @Description: 审批办理过程表
- * @Author: jeecg-boot
+ * @Author: Liuyl
  * @Date:   2025-01-09
  * @Version: V1.0
  */
@@ -23,11 +23,23 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
      */
     String NODE_HR = "人力处审核";
     /**
+     * 待人力处查看
+     */
+    String NODE_HR_PENDING_REVIEW = "待查看";
+    /**
      * 初审通过
      */
-    String NODE_END = "初审通过";
+    String NODE_END = "初审完成";
+    /**
+     * 初审通过
+     */
+    String NODE_INVITE = "邀请";
+    /**
+     * 初审通过
+     */
+    String NODE_INTERVIEW = "面试";
 
-    String APPROVAL_STATUS_DRAFT = "未提交";
+    String APPROVAL_STATUS_USER_TODO = "待提交"; // 退回
     String APPROVAL_STATUS_SUBMIT = "已提交";
     String APPROVAL_STATUS_DEPT_TODO = "待部门审核";
     String APPROVAL_STATUS_DEPT_PASS = "部门通过";
@@ -37,6 +49,10 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
     String APPROVAL_STATUS_HR_NOT_PASS = "人力处未通过";
     String APPROVAL_STATUS_PASS = "初审通过";
     String APPROVAL_STATUS_GOING = "审核中";
+    
+    // 新增状态常量
+    String APPROVAL_STATUS_PENDING_REVIEW = "待查看";
+    String APPROVAL_STATUS_HR_PENDING_REVIEW = "待人力处查看";
 
     String APPROVAL_RESULT_AGREE = "同意";
     String APPROVAL_RESULT_REJECT = "驳回";

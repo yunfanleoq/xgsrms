@@ -37,7 +37,7 @@ public class XgsPositionApply implements Serializable {
 	/**编号*/
 	@TableId(type = IdType.ASSIGN_ID)
     @ApiModelProperty(value = "编号")
-    private java.lang.Integer id;
+    private java.lang.String id;
 	/**申请人ID*/
 	@Excel(name = "申请人ID", width = 15)
     @ApiModelProperty(value = "申请人ID")

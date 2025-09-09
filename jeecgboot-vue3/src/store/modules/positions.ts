@@ -1,7 +1,6 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 import { store } from '/@/store';
-import { xgsPositionsList} from "@/api/xgsrms/positions";
-
+import { xgsPositionsList } from '@/api/xgsrms/positions';
 
 interface Position {
   id: string;
@@ -27,33 +26,28 @@ interface Position {
 }
 
 export const usePositionStore = defineStore('usePositionStore', {
-
   state: () => {
     return {
-      currPosition : {} as Position,
+      currPosition: {} as Position,
       positions: [] as Position[],
-    }
+    };
   },
 
   // 定义getter
   getters: {
-
     getCurrPosition: (state) => {
       return state.currPosition;
-    }
-    ,
+    },
     getPositions: (state) => {
       return state.positions;
-    }
+    },
   },
   // 定义方法
   actions: {
-
     async fetchPositions(params: any) {
-
       const res = await xgsPositionsList(params);
       if (res.success) {
-        console.log('++++++++++result++++++++++++++',res.result);
+        console.log('++++++++++result++++++++++++++', res.result);
         // const list = res.result.records.map((item: any) => ({
         //   id: item.id,
         //   category: item.category,
@@ -73,13 +67,11 @@ export const usePositionStore = defineStore('usePositionStore', {
 
     setCurrPosition(position) {
       this.currPosition = position;
-    }
-  }
-})
+    },
+  },
+});
 
 // Need to be used outside the setup
 export function usePositionStoreWithOut() {
   return usePositionStore(store);
 }
-
-

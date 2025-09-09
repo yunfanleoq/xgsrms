@@ -8,14 +8,14 @@
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="positionsList" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in list" :key="index" @tap="goToDetail(item)">
-					<view class="flex" style="width:100%">
+				<view class="cu-item arrow" v-for="(item,index) in list" :key="index" @click="goToDetail(item)">
+					<view class="content" style="width:100%">
                         <text class="text-lg" style="color: #000;">
                              {{ item.positionName}}
                         </text>
-						<text class="text-lg" style="color: #999; font-size: 12px;">
-						     {{ item.dept_dictText}}
-						</text>
+					</view>
+					<view class="action">
+						<text class="text-grey text-sm">{{ item.dept_dictText }}</text>
 					</view>
 				</view>
 			</view>

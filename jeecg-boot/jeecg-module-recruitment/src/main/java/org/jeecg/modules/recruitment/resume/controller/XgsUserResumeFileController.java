@@ -41,7 +41,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 
  /**
  * @Description: 用户简历文件分析
- * @Author: jeecg-boot
+ * @Author: Liuyl
  * @Date:   2025-01-01
  * @Version: V1.0
  */

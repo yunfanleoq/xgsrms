@@ -175,7 +175,7 @@ export const formSchema: FormSchema[] = [
     label: '姓名',
     field: 'name',
     component: 'Input',
-    // // dynamicDisabled: false,
+    required: true,
   },
   {
     label: '本人照片',
@@ -194,12 +194,13 @@ export const formSchema: FormSchema[] = [
     componentProps: {
       dictCode: 'sex',
     },
+    required: true,
   },
   {
     label: '籍贯',
     field: 'nativePlace',
     component: 'Input',
-    // dynamicDisabled: false,
+    required: true,
   },
   {
     label: '出生年月',
@@ -209,6 +210,7 @@ export const formSchema: FormSchema[] = [
     componentProps: {
       valueFormat: 'YYYY-MM-DD',
     },
+    required: true,
   },
   {
     label: '民族',
@@ -220,7 +222,7 @@ export const formSchema: FormSchema[] = [
     label: '身份证号',
     field: 'idNumber',
     component: 'Input',
-    // dynamicDisabled: false,
+    required: true,
   },
   {
     label: '婚姻状况',

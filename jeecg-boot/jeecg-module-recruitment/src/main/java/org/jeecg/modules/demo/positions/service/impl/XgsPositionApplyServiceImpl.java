@@ -1,19 +1,23 @@
 package org.jeecg.modules.demo.positions.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.demo.positions.vo.XgsPositionApplyVO;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeEdus;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeHome;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeWorks;
-import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeBaseMapper;
-import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeEdusMapper;
-import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeHomeMapper;
-import org.jeecg.modules.demo.xgsResume.mapper.XgsResumeWorksMapper;
-import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
+import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
+import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeEdus;
+import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeHome;
+import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeWorks;
+import org.jeecg.modules.recruitment.xgsResume.mapper.XgsResumeBaseMapper;
+import org.jeecg.modules.recruitment.xgsResume.mapper.XgsResumeEdusMapper;
+import org.jeecg.modules.recruitment.xgsResume.mapper.XgsResumeHomeMapper;
+import org.jeecg.modules.recruitment.xgsResume.mapper.XgsResumeWorksMapper;
+import org.jeecg.modules.recruitment.xgsResume.vo.XgsResumeBasePage;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.mapper.XgsFlowOpinionsMapper;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
@@ -54,8 +58,20 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void doPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {
-
+    public Result<String> doPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {
+        Result<String> result = new Result<>();
+        XgsPositionApply xgsPositionApply = xgsPositionApplyVO.getXgsPositionApply();
+        if (xgsPositionApply != null && StringUtils.isNotEmpty(xgsPositionApply.getPositionId())) {
+            xgsPositionApplyVO.setPositionId(xgsPositionApply.getPositionId());
+        }
+        Result<XgsPositionApplyVO> xgsPositionApplyVOResult = checkApplyByPosId(xgsPositionApplyVO);
+        if (!xgsPositionApplyVOResult.isSuccess()) {
+            result.setSuccess(false);
+            result.setMessage(xgsPositionApplyVOResult.getMessage());
+            result.setResult(xgsPositionApplyVOResult.getMessage());
+            return result;
+        }
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         XgsResumeBase xgsResumeBase = new XgsResumeBase();
         XgsResumeBasePage xgsResumeBasePage = xgsPositionApplyVO.getXgsResumeBasePage();
         BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
@@ -85,22 +101,26 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
             }
         }
 
-        XgsPositionApply xgsPositionApply = xgsPositionApplyVO.getXgsPositionApply();
+        xgsPositionApply.setUserId(loginUser.getId());
+        xgsPositionApply.setPositionId(xgsPositionApplyVO.getPositionId());
         xgsPositionApply.setResumeId(xgsResumeBase.getId());
         xgsPositionApply.setResumeName(xgsResumeBase.getResumeName());
 //        xgsPositionApply.setPositionName(xgsResumeBase.getApplyPositionName());
 //        xgsPositionApply.setPositionDept(xgsResumeBase.getApplyPositionDept());
 //        xgsPositionApply.setPositionType(xgsResumeBase.getApplyPositionType());
-        xgsPositionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT); // 提交到 部门审核
-        xgsPositionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO); // 内部审核状态
-        xgsPositionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING); // 用户看到的审核状态
+        xgsPositionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW); // 提交到 待查看
+        xgsPositionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW); // 待人力处查看
+        xgsPositionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_PENDING_REVIEW); // 用户看到的审核状态为待查看
         save(xgsPositionApply);
         // 增加流程记录
         XgsFlowOpinions flowOpinions = new XgsFlowOpinions();
-        flowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_USER);
-        flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
-        flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_SUBMIT);
+        flowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW);
+        flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW);
+        flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW);
         flowOpinionsMapper.insert(flowOpinions);
+        result.setMessage("在线申请添加岗位信息成功！");
+        result.setResult("在线申请添加岗位信息成功！");
+        return result;
     }
 
     @Override
@@ -114,6 +134,26 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         return count > 0;
     }
 
+    @Override
+    public Result<XgsPositionApplyVO> checkApplyByPosId(XgsPositionApplyVO xgsPositionApplyVO) {
+        Result<XgsPositionApplyVO> result = new Result<>();
+        if (StringUtils.isEmpty(xgsPositionApplyVO.getPositionId())) {
+            result.setSuccess(false);
+            result.setMessage("岗位ID不能为空");
+            return result;
+        }
+        LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        QueryWrapper<XgsPositionApply> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("create_by", sysUser.getUsername());
+        queryWrapper.eq("position_id", xgsPositionApplyVO.getPositionId());
+        long count = count(queryWrapper);
+        if (count > 0) {
+            result.setSuccess(false);
+            result.setMessage("您已申请过该岗位");
+            return result;
+        }
+        return result;
+    }
 
     @Override
     public XgsPositionApplyVO getPositionApply(XgsPositionApplyVO xgsPositionApplyVO) {

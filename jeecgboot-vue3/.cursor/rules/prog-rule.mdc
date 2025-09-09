@@ -1,0 +1,54 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 项目开发规则（prog-rule）
+
+## 1. Git 提交规范
+- 所有提交信息需遵循 Conventional Commits 规范，格式为：`类型: 描述`。
+- 类型包括：feat、fix、perf、style、docs、test、refactor、build、ci、chore、revert、wip、workflow、types、release。
+- 描述需简明扼要，英文不超过108字符。
+- 示例：
+  - `feat: 新增用户登录功能`
+  - `fix: 修复表单校验bug`
+
+## 2. 代码风格与格式化
+- 统一使用 Prettier 自动格式化，主要规则：
+  - 单引号（singleQuote: true）
+  - 语句末尾加分号（semi: true）
+  - 最大行宽150（printWidth: 150）
+- ESLint 采用 vue3+ts 推荐规则，关闭部分严格校验，允许 _ 前缀变量忽略未使用警告。
+- Stylelint 采用标准+prettier，支持 less/scss/tailwind，忽略部分自定义伪类/伪元素。
+
+## 3. TypeScript 规范
+- 强制类型检查（strict: true）。
+- 禁止未使用变量和参数（noUnusedLocals、noUnusedParameters: true）。
+- 支持 js/ts 混用，支持装饰器和最新语法。
+
+## 4. 表单与数据校验
+- 所有表单校验建议统一使用 `src/utils/helper/validator.ts` 中的 rules 工具。
+- 支持邮箱、手机号、时间、唯一性等常用校验。
+- 业务唯一性校验需调用后端接口，异常需友好提示。
+
+## 5. 通用开发原则
+- 遵循 DRY、KISS、SOLID、YAGNI 原则。
+- 单文件/类/函数超过500行需拆分。
+- 组件、工具、枚举、配置等应模块化、目录清晰。
+- 业务逻辑与视图解耦，复用性优先。
+
+## 6. 目录结构约定
+- `src/api`：接口定义与请求
+- `src/components`：通用组件
+- `src/views`：业务页面
+- `src/utils`：工具函数
+- `src/enums`：枚举常量
+- `src/settings`：全局/业务配置
+- `src/store`：状态管理
+- `src/router`：路由配置
+
+## 7. 其他建议
+- 所有新功能、修复、重构、文档、测试等均需配套提交说明。
+- 重要变更建议在 PR/Issue 记录讨论。
+- 代码合并前建议本地 lint/format 检查通过。
+

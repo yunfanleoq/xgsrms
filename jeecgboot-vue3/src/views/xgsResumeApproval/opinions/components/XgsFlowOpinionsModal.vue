@@ -56,10 +56,21 @@ import {ref, computed, unref, nextTick} from 'vue';
         ...data.record,
       });
     } else {
+      // 新增审批意见时，根据当前记录的审批环节设置表单
+      let approvalNode = data.record.approvalNode;
+      let opinions = '同意';
+      
+      // 如果当前是"待查看"状态，确保审批环节设置为"待查看"
+      if (data.record.approvalNode === '待查看') {
+        approvalNode = '待查看';
+        opinions = '同意';
+      }
+      
       await setFieldsValue({
         approvalUser: userStore.userInfo.realname,
-        approvalNode: data.record.approvalNode,
+        approvalNode: approvalNode,
         approvalStatus: '同意',
+        opinions: opinions,
         parentId: data.record.id,
       });
     }

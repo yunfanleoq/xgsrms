@@ -13,19 +13,19 @@
               <div class="aui-step-item" :class="activeKey === 1 ? 'activeStep' : ''">
                 <div class="aui-step-tags">
                   <em>1</em>
-                  <p>{{t('sys.login.authentication')}}</p>
+                  <p>{{ t('sys.login.authentication') }}</p>
                 </div>
               </div>
               <div class="aui-step-item" :class="activeKey === 2 ? 'activeStep' : ''">
                 <div class="aui-step-tags">
                   <em>2</em>
-                  <p>{{t('sys.login.resetLoginPassword')}}</p>
+                  <p>{{ t('sys.login.resetLoginPassword') }}</p>
                 </div>
               </div>
               <div class="aui-step-item" :class="activeKey === 3 ? 'activeStep' : ''">
                 <div class="aui-step-tags">
                   <em>3</em>
-                  <p>{{t('sys.login.resetSuccess')}}</p>
+                  <p>{{ t('sys.login.resetSuccess') }}</p>
                 </div>
               </div>
             </div>
@@ -35,15 +35,15 @@
                 <div class="aui-account aui-account-line aui-forgot">
                   <a-form-item>
                     <div class="aui-input-line">
-                      <a-input type="text" :placeholder="t('sys.login.mobile')" v-model:value="formData.mobile" />
+                      <a-input type="text" :placeholder="t('sys.login.emailPlaceholder')" v-model:value="formData.email" />
                     </div>
                   </a-form-item>
                   <div class="aui-input-line">
                     <a-form-item>
-                      <a-input type="text" :placeholder="t('sys.login.smsCode')" v-model:value="formData.smscode" />
+                      <a-input type="text" :placeholder="t('sys.login.emailCode')" v-model:value="formData.emailCode" />
                     </a-form-item>
-                    <div v-if="showInterval" class="aui-code-line" @click="getLoginCode">{{t('component.countdown.normalText')}}</div>
-                    <div v-else class="aui-code-line">{{t('component.countdown.sendText',[unref(timeRuning)])}}</div>
+                    <div v-if="showInterval" class="aui-code-line" @click="getEmailCode">{{ t('component.countdown.normalText') }}</div>
+                    <div v-else class="aui-code-line">{{ t('component.countdown.sendText', [unref(timeRuning)]) }}</div>
                   </div>
                 </div>
                 <!-- 身份验证 end -->
@@ -64,21 +64,21 @@
                 </div>
                 <!-- 重置密码 end -->
               </a-form>
-                <!-- 重置成功 begin -->
-                <div class="aui-success" v-else>
-                  <div class="aui-success-icon">
-                    <img :src="successImg"/>
-                  </div>
-                  <h3>恭喜您，重置密码成功！</h3>
+              <!-- 重置成功 begin -->
+              <div class="aui-success" v-else>
+                <div class="aui-success-icon">
+                  <img :src="successImg" />
                 </div>
-                <!-- 重置成功 end -->
+                <h3>{{ t('sys.login.passwordResetSuccess') }}</h3>
+              </div>
+              <!-- 重置成功 end -->
             </div>
             <div class="aui-formButton" style="padding-bottom: 40px">
               <div class="aui-flex" v-if="activeKey === 1 || activeKey === 2">
-                <a class="aui-link-login aui-flex-box" @click="nextStepClick">{{t('sys.login.nextStep')}}</a>
+                <a class="aui-link-login aui-flex-box" @click="nextStepClick">{{ t('sys.login.nextStep') }}</a>
               </div>
               <div class="aui-flex" v-else>
-                <a class="aui-linek-code aui-flex-box" @click="toLogin">{{t('sys.login.goToLogin')}}</a>
+                <a class="aui-linek-code aui-flex-box" @click="toLogin">{{ t('sys.login.goToLogin') }}</a>
               </div>
               <div class="aui-flex">
                 <a class="aui-linek-code aui-flex-box" @click="goBack"> {{ t('sys.login.backSignIn') }}</a>
@@ -90,20 +90,19 @@
     </div>
   </div>
   <!-- 图片验证码弹窗 -->
-  <CaptchaModal @register="captchaRegisterModal" @ok="getLoginCode" />
+  <CaptchaModal @register="captchaRegisterModal" @ok="getEmailCode" />
 </template>
 <script lang="ts" name="mini-forgotpad" setup>
   import { reactive, ref, toRaw, unref } from 'vue';
   import { useI18n } from '/@/hooks/web/useI18n';
   import { SmsEnum, useFormRules, useFormValid, useLoginState } from '/@/views/sys/login/useLogin';
   import { useMessage } from '/@/hooks/web/useMessage';
-  import { getCaptcha, passwordChange, phoneVerify } from '/@/api/sys/user';
-  import logoImg from '/@/assets/loginmini/icon/jeecg_logo.png'
-  import adTextImg from '/@/assets/loginmini/icon/jeecg_ad_text.png'
-  import successImg from '/@/assets/loginmini/icon/icon-success.png'
+  import { getCaptcha, passwordChange, emailVerify } from '/@/api/sys/user';
+  import adTextImg from '/@/assets/loginmini/icon/jeecg_ad_text.png';
+  import successImg from '/@/assets/loginmini/icon/icon-success.png';
   import CaptchaModal from '@/components/jeecg/captcha/CaptchaModal.vue';
-  import { useModal } from "@/components/Modal";
-  import { ExceptionEnum } from "@/enums/exceptionEnum";
+  import { useModal } from '@/components/Modal';
+  import { ExceptionEnum } from '@/enums/exceptionEnum';
   const [captchaRegisterModal, { openModal: openCaptchaModal }] = useModal();
 
   //下一步控制
@@ -121,10 +120,10 @@
   const pwdFormRef = ref();
   //账号数据
   const accountInfo = reactive<any>({});
-  //手机号表单
+  //邮箱表单
   const formData = reactive({
-    mobile: '',
-    smscode: '',
+    email: '',
+    emailCode: '',
   });
   //密码表单
   const pwdFormData = reactive<any>({
@@ -137,33 +136,33 @@
    * 下一步
    */
   async function handleNext() {
-    if (!formData.mobile) {
-      createMessage.warn(t('sys.login.mobilePlaceholder'));
+    if (!formData.email) {
+      createMessage.warn(t('sys.login.emailPlaceholder'));
       return;
     }
-    if (!formData.smscode) {
-      createMessage.warn(t('sys.login.smsPlaceholder'));
+    if (!formData.emailCode) {
+      createMessage.warn(t('sys.login.emailCode'));
       return;
     }
-    const resultInfo = await phoneVerify(
+    const resultInfo = await emailVerify(
       toRaw({
-        phone: formData.mobile,
-        smscode: formData.smscode,
+        email: formData.email,
+        emailCode: formData.emailCode,
       })
     );
     if (resultInfo.success) {
       Object.assign(accountInfo, {
         username: resultInfo.result.username,
-        phone: formData.mobile,
-        smscode: formData.smscode,
+        email: formData.email,
+        emailCode: formData.emailCode,
       });
       activeKey.value = 2;
-      setTimeout(()=>{
+      setTimeout(() => {
         pwdFormRef.value.resetFields();
-      },300)
+      }, 300);
     } else {
       notification.error({
-        message: '错误提示',
+        message: t('sys.api.errorTip'),
         description: resultInfo.message || t('sys.api.networkExceptionMsg'),
         duration: 3,
       });
@@ -190,8 +189,8 @@
       toRaw({
         username: accountInfo.username,
         password: pwdFormData.password,
-        smscode: accountInfo.smscode,
-        phone: accountInfo.phone,
+        emailCode: accountInfo.emailCode,
+        email: accountInfo.email,
       })
     );
     if (resultInfo.success) {
@@ -206,6 +205,7 @@
       });
     }
   }
+
   /**
    * 下一步
    */
@@ -234,21 +234,26 @@
   }
 
   /**
-   * 获取手机验证码
+   * 获取邮箱验证码
    */
-  async function getLoginCode() {
-    if (!formData.mobile) {
-      createMessage.warn(t('sys.login.mobilePlaceholder'));
+  async function getEmailCode() {
+    if (!formData.email) {
+      createMessage.warn(t('sys.login.emailPlaceholder'));
       return;
     }
-    //update-begin---author:wangshuai---date:2024-04-18---for:【QQYUN-9005】同一个IP，1分钟超过5次短信，则提示需要验证码---
-    const result = await getCaptcha({ mobile: formData.mobile, smsmode: SmsEnum.FORGET_PASSWORD }).catch((res) =>{
-      if(res.code === ExceptionEnum.PHONE_SMS_FAIL_CODE){
+    // 验证邮箱格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      createMessage.warn(t('sys.login.emailFormatError'));
+      return;
+    }
+    const result = await getCaptcha({ email: formData.email, smsmode: SmsEnum.FORGET_PASSWORD }).catch((res) => {
+      if (res.code === ExceptionEnum.PHONE_SMS_FAIL_CODE) {
         openCaptchaModal(true, {});
       }
     });
-    //update-end---author:wangshuai---date:2024-04-18---for:【QQYUN-9005】同一个IP，1分钟超过5次短信，则提示需要验证码---
     if (result) {
+      createMessage.success(t('sys.login.emailSendSuccess'));
       const TIME_COUNT = 60;
       if (!unref(timer)) {
         timeRuning.value = TIME_COUNT;
@@ -263,6 +268,8 @@
           }
         }, 1000);
       }
+    } else {
+      createMessage.error(t('sys.login.emailSendError'));
     }
   }
 
@@ -271,17 +278,17 @@
    */
   function initForm() {
     activeKey.value = 1;
-    Object.assign(formData, { phone: '', smscode: '' });
+    Object.assign(formData, { email: '', emailCode: '' });
     Object.assign(pwdFormData, { password: '', confirmPassword: '' });
     Object.assign(accountInfo, {});
-    if(unref(timer)){
+    if (unref(timer)) {
       clearInterval(unref(timer));
       timer.value = null;
       showInterval.value = true;
     }
-    setTimeout(()=>{
+    setTimeout(() => {
       formRef.value.resetFields();
-    },300)
+    }, 300);
   }
 
   defineExpose({
@@ -289,6 +296,6 @@
   });
 </script>
 <style lang="less" scoped>
-@import '/@/assets/loginmini/style/home.less';
-@import '/@/assets/loginmini/style/base.less';
+  @import '/@/assets/loginmini/style/home.less';
+  @import '/@/assets/loginmini/style/base.less';
 </style>

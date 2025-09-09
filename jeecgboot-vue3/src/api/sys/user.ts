@@ -33,6 +33,8 @@ enum Api {
   validateCasLogin = '/sys/cas/client/validateLogin',
   //校验手机号
   phoneVerify = '/sys/user/phoneVerification',
+  //校验邮箱
+  emailVerify = '/sys/user/emailVerification',
   //修改密码
   passwordChange = '/sys/user/passwordChange',
   //第三方登录
@@ -158,6 +160,11 @@ export const checkOnlyUser = (params) => defHttp.get({ url: Api.checkOnlyUser, p
  * @param params
  */
 export const phoneVerify = (params) => defHttp.post({ url: Api.phoneVerify, params }, { isTransformResponse: false });
+/**
+ *校验邮箱验证码
+ * @param params { email: string, emailCode: string }
+ */
+export const emailVerify = (params) => defHttp.post({ url: Api.emailVerify, params }, { isTransformResponse: false });
 /**
  *密码修改
  * @param params

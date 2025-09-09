@@ -1,21 +1,21 @@
 <template>
 	<view>
 	   <!--标题和返回-->
-		<cu-custom :bgColor="NavBarColor" isBack :backRouterName="backRouteName">
+		<cu-custom :bgColor="NavBarColor" isBack>
 			<block slot="backText">返回</block>
-			<block slot="content">岗位列表</block>
+			<block slot="content">我收藏的岗位</block>
 		</cu-custom>
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="positionsList" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in favoriteList" :key="index" @tap="goToDetail(item)">
-					<view class="flex" style="width:100%">
+				<view class="cu-item arrow" v-for="(item,index) in favoriteList" :key="index" @click="goToDetail(item)">
+					<view class="content" style="width:100%">
                         <text class="text-lg" style="color: #000;">
                              {{ item.positionName}}
                         </text>
-						<text class="text-lg" style="color: #999; font-size: 12px;">
-						     {{ item.positionDept}}
-						</text>
+					</view>
+					<view class="action">
+						<text class="text-grey text-sm">{{ item.positionDept }}</text>
 					</view>
 				</view>
 			</view>
@@ -35,7 +35,7 @@
 				CustomBar:this.CustomBar,
 				NavBarColor:this.NavBarColor,
 				url: {
-					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
+					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/listMine',
 				},
 				favoriteList:[],
 				params: {
@@ -49,15 +49,7 @@
 				}
 			};
 		},
-		watch: {
-			cur: {
-				immediate: true,
-				handler() {
-				    this.params.userId=this.$store.getters.userid;
-				},
-			},
-		},
-        created(){
+        onLoad(){
              this.onCollectList();
         },
 		methods: {

@@ -4,39 +4,26 @@
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
       <template #tableTitle>
-        <a-button type="primary" v-auth="'resume:xgs_position_apply:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
-        <a-button type="primary" v-auth="'resume:xgs_position_apply:exportXls'" preIcon="ant-design:export-outlined" @click="onExportXls">
-          导出</a-button
-        >
-        <j-upload-button type="primary" v-auth="'resume:xgs_position_apply:importExcel'" preIcon="ant-design:import-outlined" @click="onImportXls"
-          >导入</j-upload-button
-        >
-        <a-dropdown v-if="selectedRowKeys.length > 0">
-          <template #overlay>
-            <a-menu>
-              <a-menu-item key="1" @click="batchHandleDelete">
-                <Icon icon="ant-design:delete-outlined" />
-                删除
-              </a-menu-item>
-            </a-menu>
-          </template>
-          <a-button v-auth="'positions:xgs_position_apply:deleteBatch'"
-            >批量操作
-            <Icon icon="mdi:chevron-down" />
-          </a-button>
-        </a-dropdown>
         <!-- 高级查询 -->
         <a-radio-group v-model:value="queryParam.approvalStatusValue" button-style="solid" @change="reload" style="margin: 0 auto">
           <a-radio-button value="1">待审核</a-radio-button>
           <a-radio-button value="2">已审核</a-radio-button>
         </a-radio-group>
+        <!-- 导出按钮 -->
+        <a-button 
+          type="primary" 
+          v-auth="'xgsUserResume:xgs_position_apply:exportXls'" 
+          preIcon="ant-design:download-outlined" 
+          @click="onExportXls" 
+          style="margin-left: 8px"
+        > 
+          导出
+        </a-button>
       </template>
       <!--操作栏-->
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)" />
       </template>
-      <!--字段回显插槽-->
-      <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
     <XgsPositionApplyModal ref="registerModal" @success="handleSuccess" />
@@ -46,30 +33,29 @@
 </template>
 
 <script lang="ts" name="resume-xgsPositionApply" setup>
-  import { ref, reactive, computed, unref } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/@/components/Table';
+  import { ref, reactive } from 'vue';
+  import { BasicTable, TableAction } from '/@/components/Table';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsPositionApplyModal from './components/XgsPositionApplyModal.vue';
   import XgsFlowOpinionsModal from '../opinions/components/XgsFlowOpinionsModal.vue';
   import XgsFlowOpinionsListModal from '@/views/xgsResumeApproval/opinions/components/XgsFlowOpinionsListModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositionApply.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositionApply.api';
-  import { downloadFile } from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
-  import {useModal} from "@/components/Modal";
+  import { useModal } from '@/components/Modal';
+  import { APPROVAL_NODES } from '/@/enums/approval';
+
   const queryParam = reactive<any>({
-    approvalNode: '部门审核',
+    approvalNode: APPROVAL_NODES.DEPT,
     approvalStatusValue: '1',
   });
-  const checkedKeys = ref<Array<string | number>>([]);
-  const userStore = useUserStore();
+
   //注册model
   const registerModal = ref();
   //注册model
   const [opinionModal, { openModal }] = useModal();
   const [opinionListModal, { openModal: openListModal }] = useModal();
   //注册table数据
-  const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
+  const { tableContext, onExportXls } = useListPage({
     tableProps: {
       title: '岗位申请',
       api: list,

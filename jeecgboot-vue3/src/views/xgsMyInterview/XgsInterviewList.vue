@@ -22,7 +22,7 @@
       </a-dropdown>
       &lt;!&ndash; 高级查询 &ndash;&gt;
       <super-query :config="superQueryConfig" @search="handleSuperQuery" />
-    <!--操作栏-->
+     操作栏-->
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" />
       </template>
@@ -42,11 +42,8 @@
   import XgsInterviewModal from './components/XgsInterviewModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsInterview.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsInterview.api';
-  import { downloadFile } from '/src/utils/common/renderUtils';
   import { useUserStore } from '/src/store/modules/user';
-  import { saveOrUpdate } from '@/views/xgsIntroduce/XgsIntroduce.api';
-  import { getUserData } from '/src/views/system/usersetting/UserSetting.api';
-  import {id} from "postcss-html";
+  import {defHttp} from "@/utils/http/axios";
 
   const queryParam = reactive<any>({
     candidateId: useUserStore().getUserInfo?.id || '',
@@ -56,14 +53,6 @@
   const isRealnameLoaded = ref(false);
   // 在组件挂载时获取 realname
   onMounted(async () => {
-    try {
-      const res = await getUserData();
-      realname.value = res.result.realname;
-      isRealnameLoaded.value = true;
-      reload();
-    } catch (error) {
-      console.error('获取用户信息失败:', error);
-    }
   });
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -85,19 +74,10 @@
       //   fieldMapToTime: [['interviewDate', ['interviewDate_begin', 'interviewDate_end'], 'YYYY-MM-DD HH:mm:ss']],
       // },
       actionColumn: {
-        width: 150,
+        width: 250,
         fixed: 'right',
       },
       beforeFetch: (params) => {
-        const inviteStatusValues = ['已发送邀请', '接受邀请', '拒绝邀请'];
-        if (isRealnameLoaded.value) {
-          params.inviteStatus = inviteStatusValues;
-          params.userName = realname.value;
-        } else {
-          // 如果 realname 还未加载完成，则不展示数据
-          params.approvalStatus = '1';
-        }
-        return Object.assign(params, queryParam);
       },
     },
     exportConfig: {
@@ -171,6 +151,16 @@
   function handleSuccess() {
     (selectedRowKeys.value = []) && reload();
   }
+  function invitePass(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/invitePass', data: record }).then(() => {
+      reload();
+    });
+  }
+  function inviteRefuse(record) {
+    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/inviteRefuse', data: record }).then(() => {
+      reload();
+    });
+  }
   /**
    * 操作栏
    */
@@ -194,10 +184,24 @@
           onClick: handleDetail.bind(null, record),
         },
         {
-          label: '回复',
-          onClick: handleEdit.bind(null, record),
-          auth: 'positions:xgs_position_apply:edit',
+          label: '接受邀请',
+          popConfirm: {
+            title: '是否接受邀请',
+            confirm: invitePass.bind(null, record),
+          },
         },
+        {
+          label: '拒绝邀请',
+          popConfirm: {
+            title: '是否拒绝邀请',
+            confirm: inviteRefuse.bind(null, record),
+          },
+        },
+        // {
+        //   label: '回复',
+        //   onClick: handleEdit.bind(null, record),
+        //   auth: 'positions:xgs_position_apply:edit',
+        // },
       ];
     }
   }

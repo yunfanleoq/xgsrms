@@ -7,7 +7,7 @@
 
     <!-- 顶部导航栏 -->
     <header>
-      <div class="logo">中科院信工所人才招聘管理系统</div>
+      <div class="logo">中国科学院信息工程研究所人才招聘管理系统</div>
       <nav>
         <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink> | <RouterLink :to="{ name: 'homeYjsk' }">研究所况</RouterLink>|
         <RouterLink :to="{ name: 'homeNews' }">科研发展</RouterLink> | <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>|
@@ -20,7 +20,7 @@
           <button @click="goToRegisterPage" class="register">注册</button>
         </div>
         <div v-else>
-          <span class="user-info">欢迎, {{ loggedInUser.realname }}</span>
+          <span class="user-info" v-if="loggedInUser">欢迎, {{ loggedInUser.realname }}</span>
           <button @click="logout" class="logout">退出</button>
           <button @click="goToUserCenter" class="user-center">个人中心</button>
         </div>
@@ -44,22 +44,26 @@
     </div>
     <footer>
       <br />
-      <p>© {{ currentYear }} 中科院信工所人才招聘管理系统. All rights reserved.</p>
+      <p>© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统. All rights reserved.</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import { computed, reactive, ref } from 'vue';
+  import {computed, onMounted, reactive, ref, watchEffect} from 'vue';
   import { useUserStore } from '@/store/modules/user';
   import { doLogout } from '@/api/sys/user';
-
+  import {useMultipleTabStore} from "@/store/modules/multipleTab";
   const router = useRouter();
   const userStore = useUserStore();
 
   const isLoggedIn = computed(() => !!userStore.userInfo?.username);
   const loggedInUser = computed(() => userStore.userInfo);
+
+  onMounted(() => {
+    userStore.getUserInfoAction();
+  });
 
   const currentYear = computed(() => new Date().getFullYear());
 
@@ -70,6 +74,11 @@
   };
 
   const goToUserCenter = () => {
+
+    // useMultipleTabStore.closeAllTabs(router);
+    // 正确调用方式：先获取 store 实例
+    const tabStore = useMultipleTabStore();
+    tabStore.closeAllTab(router);
     router.push({ path: '/dashboard/analysis' });
   };
 
@@ -83,9 +92,14 @@
 </script>
 
 <style>
+  #app nav a:hover,
+  #app nav a:focus {
+    color: #ffffff;
+    text-decoration: underline;
+  }
   .main-content {
     flex: 1; /* 允许容器根据内容自动扩展 */
-    min-height: 75%; /* 设置最小高度为1000像素 */
+    //min-height: 1000px; /* 设置最小高度为1000像素 */
     padding: 20px; /* 可选：添加内边距 */
     background-color: #f9f9f9; /* 可选：添加背景颜色 */
   }
@@ -171,6 +185,11 @@
     font-size: 20px;
     cursor: pointer;
     font-weight: bold;
+  }
+
+  header nav a:hover {
+    color: white;
+    text-decoration: underline;
   }
 
   header .login,

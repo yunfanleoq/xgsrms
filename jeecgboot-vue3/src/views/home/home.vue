@@ -4,7 +4,7 @@
       <!-- 轮播图 -->
       <div class="carousel">
         <button class="carousel-button left" @click="showPrevImage" v-show="isHovered">◀</button>
-        <img :src="carouselImages[currentIndex].image" alt="轮播图" @mouseover="isHovered = true" @mouseleave="isHovered = false" />
+        <img :src="currentImgSrc" alt="轮播图" @mouseover="isHovered = true" @mouseleave="isHovered = false" />
         <button class="carousel-button right" @click="showNextImage" v-show="isHovered">▶</button>
         <!-- 圆点导航 -->
         <div class="carousel-dots">
@@ -16,19 +16,18 @@
           ></span>
         </div>
       </div>
-
       <!-- 新闻区域 -->
       <div class="news">
         <div v-for="(news, index) in newsList" :key="index" class="news-item" @click="news.id && goToNewsDetail(String(news.id))">
           <h3 v-html="news.title"></h3>
+          <span class="subText" v-if="index === 0" v-html="news.shortText"></span>
         </div>
         <!-- 查看更多链接 -->
         <div class="news-more">
-          <a class="more-link" :href="'./home/news'">查看更多 +</a>
+          <router-link to="/home/news"> <a-button type="link" class="more-link">查看更多 +</a-button></router-link>
         </div>
       </div>
     </div>
-
     <!-- 公告导航栏和内容 -->
     <div class="announcements-container">
       <div class="tabs-container">
@@ -37,15 +36,9 @@
           <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">招聘公告</li>
         </ul>
         <!-- <a class="more-link" :href="tabSelected === 'notice' ? './home/news' : './home/positions'">查看更多 +</a> -->
-        <a class="more-link" :href="'./home/positions'">查看更多 +</a>
+        <router-link to="/home/positions"> <span class="more-link">查看更多 +</span></router-link>
       </div>
       <div class="announcements-content">
-        <!--        <ul v-if="tabSelected === 'notice'" class="notice-list">-->
-        <!--          <li v-for="(item, index) in notices" :key="index">-->
-        <!--            <span>{{ item.date }}</span>-->
-        <!--            <a :href="item.link">{{ item.title }}</a>-->
-        <!--          </li>-->
-        <!--        </ul>-->
         <ul class="recruitment-list">
           <li v-for="(item, index) in recruitments" :key="index" @click="goToAnnouncementDetail(String(item.id))">
             <p v-html="item.announcement"></p>
@@ -53,78 +46,42 @@
         </ul>
       </div>
     </div>
-
-    <!--    <div style="height: 500px">-->
-
-    <!--    </div>-->
-    <!-- 分类和搜索框 -->
-    <!--    <section class="filters">-->
-    <!--    <div class="categories">-->
-    <!--      <button v-for="(category, index) in categories" :key="index" @click="filterCategory(category)">-->
-    <!--        {{ category }}-->
-    <!--      </button>-->
-    <!--    </div>-->
-    <!--    <div class="search">-->
-    <!--      <input v-model="searchQuery" placeholder="请输入职位名称" />-->
-    <!--      <button @click="searchJobs">搜索</button>-->
-    <!--    </div>-->
-    <!--    </section>-->
-
-    <!-- 职位列表 -->
-    <!--    <section class="job-list">-->
-    <!--    <div v-for="(job, index) in filteredJobs" :key="index" class="job-card">-->
-    <!--      <h3>{{ job.title }}</h3>-->
-    <!--      <p>职位数量：<strong>{{ job.count }}</strong></p>-->
-    <!--      <p>工作地点：<strong>{{ job.location }}</strong></p>-->
-    <!--      <p>薪资：<span class="salary">{{ job.salary }}</span></p>-->
-    <!--      <p>{{ job.description }}</p>-->
-    <!--    </div>-->
-    <!--    </section>-->
   </div>
 </template>
 
 <script setup lang="ts">
   // 无需额外脚本内容
-  import { ref, computed, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
-  import Positions from './positions.vue';
+  import { ref, computed, onMounted, watchEffect } from 'vue';
   import { defHttp } from '@/utils/http/axios';
+  import { PageWrapper } from '@/components/Page';
+  import { router } from '@/router';
 
-  const listUrl = '/xgsHome/xgsHome/list';
+  const listUrl = '/xgsJournalism/xgsJournalism/listForHome';
+  const imgListUrl = '/xgsHome/xgsHome/listForHome';
 
-  const carouselImages = ref(['http://www.iie.cas.cn/jggk2020/ysfm2020/202302/W020230206556755877695.jpg']);
+  const carouselImages = ref([]);
   const currentIndex = ref(0);
+  const currentImgSrc = ref(''); // carouselImages[currentIndex].image
+  watchEffect(() => {
+    currentImgSrc.value = carouselImages.value[currentIndex.value]?.image || '';
+  });
 
   // 获取轮播图数据的函数
-  const fetchCarouselImages = async (page = 1, size = 5) => {
+  const fetchCarouselImages = async () => {
     try {
       const response = await defHttp.get({
-        url: listUrl, // 替换为你的轮播图数据接口
-        params: { pageNo: 1, pageSize: 1000 },
+        url: imgListUrl, // 替换为你的轮播图数据接口
+        params: { newsType: 'homeImages', pageNo: 1, pageSize: 5 },
       });
-      console.log(response.records);
 
       if (response && response.records) {
-        carouselImages.value = response.records
-          .map((item) => {
-            const imgTag = item.photograph; // 获取 HTML 字符串
-            let imgUrl = ''; // 用于存储图片链接
-            // 如果是 HTML 格式的 <img> 标签，提取 src 属性
-            if (imgTag && imgTag.includes('<img')) {
-              const match = imgTag.match(/src="(.*?)"/); // 提取 <img> 标签中的 src 链接
-              imgUrl = match ? match[1] : '';
-            }
-            // 如果是纯图片链接，直接使用该链接
-            else if (imgTag && !imgTag.includes('<img')) {
-              imgUrl = imgTag;
-            }
-            return {
-              image: imgUrl, // 将图片链接放入 image 字段
-              createTime: item.createTime || '',
-            };
-          })
-          .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-          .slice(0, 5); // 截取前5张轮播图
+        carouselImages.value = response.records.map((item) => {
+          const imgTag = item.photograph; // 获取 HTML 字符串
+          return {
+            image: imgTag, // 将图片链接放入 image 字段
+            createTime: item.createTime,
+          };
+        }); // 截取前5张轮播图
         console.log('处理后的 carouselImages', carouselImages.value);
       }
     } catch (error) {
@@ -151,71 +108,28 @@
 
   // 新闻列表数据
   const newsList = ref([{ title: '新闻标题', content: '新闻内容' }]);
-
-  // 获取新闻数据接口
-  // const fetchNews = async (page = 1, size = 5) => {
-  //   try {
-  //     const response = await defHttp.get({
-  //       url: listUrl,
-  //       params: { pageNo: page, pageSize: 1000 },
-  //     });
-  //
-  //     if (response && response.records) {
-  //       newsList.value = response.records.map((item: any) => ({
-  //         title: item.newTitle || "无标题",
-  //         // content: item.news || "无内容",
-  //         createTime: item.createTime || "", // 假设服务器返回的时间格式为字符串
-  //       }))
-  //       .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-  //       .slice(0, size); // 截取前5条
-  //     }
-  //   } catch (error) {
-  //     console.error("请求新闻数据失败:", error);
-  //   }
-  // };
-
-  const fetchNews = async (page = 1, size = 5) => {
+  const fetchNews = async () => {
     try {
       // 获取首页数据
       const homeResponse = await defHttp.get({
         url: listUrl,
-        params: { pageNo: page, pageSize: 1000 },
+        params: { typeCode: 'ttxw', pageNo: 1, pageSize: 5 },
       });
 
-      // 获取详情表数据
-      const journalismResponse = await defHttp.get({
-        url: '/xgsJournalism/xgsJournalism/list',
-        params: { pageNo: page, pageSize: 100, column: 'createTime', order: 'desc' },
-      });
-
-      console.log('xgs_home 数据:', homeResponse.records);
-      console.log('xgs_journalism 数据:', journalismResponse.records);
-
-      if (homeResponse?.records && journalismResponse?.records) {
-        const journalismData = journalismResponse.records;
-
+      if (homeResponse?.records) {
         // 标题标准化函数
         const normalize = (str) => str?.toLowerCase().trim();
-
         // 将首页数据与详情表关联
-        newsList.value = homeResponse.records
-          .map((item: any) => {
-            // 在详情表中根据标题匹配
-            const matchedJournalism = journalismData.find((journalism) => normalize(journalism.journalismHead) === normalize(item.newTitle));
-
-            if (!matchedJournalism) {
-              console.warn(`未匹配到详情表的新闻: ${item.newTitle}`);
-            }
-
-            return {
-              title: item.newTitle,
-              id: matchedJournalism?.id || null, // 关联详情表的 id
-              createTime: item.createTime || '',
-              // content: matchedJournalism?.journalismText, // 可选：用于显示新闻内容摘要
-            };
-          })
-          .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-          .slice(0, size); // 截取前 `size` 条
+        newsList.value = homeResponse.records.map((item: any) => {
+          // 在详情表中根据标题匹配
+          return {
+            title: item.journalismHead,
+            shortText: item.shortText,
+            id: item.id, // 关联详情表的 id
+            createTime: item.createTime || '',
+            // content: matchedJournalism?.journalismText, // 可选：用于显示新闻内容摘要
+          };
+        });
       }
     } catch (error) {
       console.error('请求新闻数据失败:', error);
@@ -238,18 +152,17 @@
     try {
       const response = await defHttp.get({
         url: listUrl,
-        params: { pageNo: page, pageSize: 1000 },
+        params: { typeCode: 'rczp', pageNo: page, pageSize: 10 },
       });
 
       if (response && response.records) {
-        recruitments.value = response.records
-          .map((item: any) => ({
-            id: item.id,
-            announcement: item.recruitAnnouncementTitle,
-            createTime: item.createTime, // 假设服务器返回的时间格式为字符串
-          }))
-          .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-          .slice(0, size); // 截取前5条
+        recruitments.value = response.records.map((item: any) => ({
+          id: item.id,
+          announcement: item.journalismHead,
+          title: item.journalismHead,
+          shortText: item.shortText,
+          createTime: item.createTime, // 假设服务器返回的时间格式为字符串
+        }));
       }
     } catch (error) {
       console.error('请求招聘公告数据失败:', error);
@@ -258,66 +171,15 @@
 
   // 跳转至招聘公告详情
   const goToAnnouncementDetail = (itemId: string) => {
-    router.push({ name: 'announcementDetail', params: { id: itemId } });
+    router.push({ name: 'newsDetail', params: { id: itemId } });
   };
 
   // 组件挂载时加载招聘公告
   onMounted(() => {
-    fetchCarouselImages();
-    fetchRecruitments();
-    fetchNews();
+    fetchCarouselImages(); // 首页图片
+    fetchNews(); // 首页新闻
+    fetchRecruitments(); //  首页招聘信息
   });
-
-  // 响应式数据
-  const categories = ref(['Java开发', 'C++开发', '前端开发', '后端开发', '大数据开发', '测试开发', 'PHP开发']);
-  const jobs = ref([
-    {
-      title: 'Java工程师',
-      count: 336,
-      location: '北京市',
-      salary: '7000-12000',
-      description: '熟悉RPC框架，具备分布式开发经验',
-      category: 'Java开发',
-    },
-    { title: 'C++工程师', count: 13, location: '南京市', salary: '5000-8000', description: '可独立编写驱动程序', category: 'C++开发' },
-    { title: 'PHP工程师', count: 307, location: '北京市', salary: '7000-12000', description: '熟悉PHP框架，如Laravel等', category: 'PHP开发' },
-    { title: 'Python开发', count: 178, location: '天津市', salary: '14000-16000', description: '熟悉AI框架，算法优先', category: '大数据开发' },
-    { title: '前端开发', count: 215, location: '杭州市', salary: '15000-20000', description: '熟悉Vue.js框架', category: '前端开发' },
-  ]);
-
-  const searchQuery = ref('');
-  const selectedCategory = ref(null);
-
-  // 计算属性：过滤后的职位列表
-  const filteredJobs = computed(() => {
-    let filtered = jobs.value;
-
-    if (selectedCategory.value) {
-      filtered = filtered.filter((job) => job.category === selectedCategory.value);
-    }
-
-    if (searchQuery.value) {
-      filtered = filtered.filter((job) => job.title.includes(searchQuery.value));
-    }
-
-    return filtered;
-  });
-
-  // 路由操作
-  const router = useRouter();
-  const goToLoginPage = () => {
-    router.push('/login');
-  };
-
-  // 分类过滤
-  const filterCategory = (category) => {
-    selectedCategory.value = category === selectedCategory.value ? null : category;
-  };
-
-  // 搜索职位
-  const searchJobs = () => {
-    console.log('搜索职位：' + searchQuery.value);
-  };
 </script>
 
 <style scoped>
@@ -491,8 +353,8 @@
 
   /* 单个新闻项样式 */
   .news-item {
-    margin-bottom: 10px; /* 新闻间距 */
-    padding: 5px;
+    margin-bottom: 8px; /* 新闻间距 */
+    padding: 1px;
     cursor: pointer;
     transition: background-color 0.3s; /* 添加平滑背景变化效果 */
   }
@@ -506,6 +368,16 @@
     overflow: hidden;
     text-overflow: ellipsis; /* 超出部分显示省略号 */
     white-space: nowrap; /* 强制单行显示 */
+    transition: color 0.3s;
+  }
+
+  .news-item .subText {
+    display: block;
+    height: 100px;
+    color: white;
+    margin: 10px 0 30px 30px;
+    font-size: 14px;
+    text-overflow: ellipsis; /* 超出部分显示省略号 */
     transition: color 0.3s;
   }
 

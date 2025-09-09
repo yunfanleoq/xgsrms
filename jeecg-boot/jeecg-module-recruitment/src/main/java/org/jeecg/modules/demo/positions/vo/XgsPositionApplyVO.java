@@ -4,7 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.xgsResume.vo.XgsResumeBasePage;
+import org.jeecg.modules.recruitment.xgsResume.vo.XgsResumeBasePage;
 
 import java.io.Serializable;
 
@@ -18,6 +18,9 @@ import java.io.Serializable;
 @ApiModel(value="xgs_position_apply VO对象", description="岗位申请VO")
 public class XgsPositionApplyVO implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    @ApiModelProperty(value = "岗位ID")
+    String positionId;
 
     @ApiModelProperty(value = "岗位申请信息")
     XgsPositionApply xgsPositionApply;

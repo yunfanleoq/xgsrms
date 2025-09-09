@@ -1,22 +1,13 @@
 package org.jeecg.modules.demo.positions.controller;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.demo.positions.entity.XgsFirstHtml;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.entity.XgsPositions;
@@ -28,24 +19,16 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecg.modules.demo.xgsInviteToInterview.entity.XgsInviteToInterview;
-import org.jeecg.modules.demo.xgsInviteToInterview.service.IXgsInviteToInterviewService;
-import org.jeecg.modules.demo.xgsMyresume.entity.XgsMyresume;
-import org.jeecg.modules.demo.xgsMyresume.service.IXgsMyresumeService;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
-import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
+import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
+import org.jeecg.modules.recruitment.xgsInviteToInterview.service.IXgsInviteToInterviewService;
+import org.jeecg.modules.recruitment.xgsMyresume.entity.XgsMyresume;
+import org.jeecg.modules.recruitment.xgsMyresume.service.IXgsMyresumeService;
+import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
+import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;
@@ -259,10 +242,7 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 									 @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 									 HttpServletRequest req) {
 		 LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		 System.out.println(sysUser);
-
 		 if(sysUser.getRoleCode().equals("admin")){
-
 			 //岗位数量（所有招聘中的岗位数量）
 			 XgsPositions xgsPositions = new XgsPositions();
 			 xgsPositions.setStatus("招聘中");
@@ -300,35 +280,42 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 
 			 //申请数量（提交过的申请数量）
 			 XgsPositionApply xgsPositionApply = new XgsPositionApply();
-			 xgsPositionApply.setUserId(userId);
+			 xgsPositionApply.setCreateBy(sysUser.getUsername());
 			 QueryWrapper<XgsPositionApply> queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
 			 Page<XgsPositionApply> pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
 			 IPage<XgsPositionApply> pageListXgsPositionApply = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
 
 			 //岗位数量（等待面试的数量）
 			 xgsPositionApply = new XgsPositionApply();
-			 xgsPositionApply.setUserId(userId);
+			 xgsPositionApply.setCreateBy(sysUser.getUsername());
 			 xgsPositionApply.setApprovalNode("初审完成");
 			 queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
-			 pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
+			 pagePositionApply = new Page<>(pageNo, pageSize);
 			 IPage<XgsPositionApply> pageListXgsPositionApplyOK = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
+
+			 // 面试的数量
+			 XgsInviteToInterview xgsInviteToInterview = new XgsInviteToInterview();
+			 xgsInviteToInterview.setCandidate(sysUser.getId());
+			 QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap());
+			 Page<XgsInviteToInterview> page = new Page<>(pageNo, pageSize);
+			 IPage<XgsInviteToInterview> inviteToInterviewIPage = xgsInviteToInterviewService.page(page, queryWrapper);
 
 			 //提交审核数量（审核中的申请数量）
 			 xgsPositionApply = new XgsPositionApply();
-			 xgsPositionApply.setUserId(userId);
+			 xgsPositionApply.setCreateBy(sysUser.getUsername());
 			 xgsPositionApply.setApplyStatus("审核中");
 			 queryWrapperPositionApply = QueryGenerator.initQueryWrapper(xgsPositionApply, req.getParameterMap());
-			 pagePositionApply = new Page<XgsPositionApply>(pageNo, pageSize);
+			 pagePositionApply = new Page<>(pageNo, pageSize);
 			 IPage<XgsPositionApply> pageListXgsPositionApplyWaiting = xgsPositionApplyService.page(pagePositionApply, queryWrapperPositionApply);
 
 			 //我的简历数量（简历数量）
 			 XgsMyresume xgsMyresume = new XgsMyresume();
-			 xgsMyresume.setUserId(userId);
+			 xgsMyresume.setCreateBy(sysUser.getUsername());
 			 QueryWrapper<XgsMyresume> queryWrapperMyresume = QueryGenerator.initQueryWrapper(xgsMyresume, req.getParameterMap());
 			 Page<XgsMyresume> pageMyresume = new Page<XgsMyresume>(pageNo, pageSize);
 			 IPage<XgsMyresume> pageListXgsMyresume = xgsMyresumeService.page(pageMyresume, queryWrapperMyresume);
 
-			 XgsFirstHtml xgsFirstHtml = new XgsFirstHtml((int) pageListXgsPositionApply.getTotal(), (int) pageListXgsPositionApplyOK.getTotal(), (int) pageListXgsPositionApplyWaiting.getTotal(), (int) pageListXgsMyresume.getTotal());
+			 XgsFirstHtml xgsFirstHtml = new XgsFirstHtml((int) pageListXgsPositionApply.getTotal(), (int) inviteToInterviewIPage.getTotal(), (int) pageListXgsPositionApplyWaiting.getTotal(), (int) pageListXgsMyresume.getTotal());
 
 			 return Result.OK(xgsFirstHtml);
 		 }

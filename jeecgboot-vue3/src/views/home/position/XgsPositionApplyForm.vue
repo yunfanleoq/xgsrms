@@ -240,10 +240,8 @@
    */
   function add(record) {
     // 先根据 岗位id，userid 查询是否已存在，如果存在，则直接编辑，否则新增
-    // console.log('add111111111', record);
     // positionApplyStore.currPositionApply = record;
     // record = positionStore.currApplyPosition;
-    // console.log('add222222222', positionApplyStore.currPositionApply);
     formData.value.positionType = '';
     edit(record);
   }
@@ -260,6 +258,7 @@
 
       tmpData['filePath'] = '';
       tmpData['positionDept'] = record.dept_dictText;
+      tmpData['positionId'] = record.id;
       tmpData['positionName'] = record.positionName;
       tmpData['positionType'] = record.category;
       tmpData['resumeName'] = record.realname + record.username + '_' + record.positionName;
@@ -268,6 +267,7 @@
 
       //赋值
       Object.assign(formData.value, tmpData);
+      console.log(3333, formData.value);
     });
     console.log('edit>>>>end>>>>>', formData);
   }

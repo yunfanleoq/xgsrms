@@ -41,7 +41,13 @@
               <view class="cu-form-group">
                 <view class="flex align-center">
                   <view class="title"><text space="ensp">出生日期：</text></view>
-                  <input  placeholder="请输入出生日期" v-model="model.birthday"/>
+                  <!-- <input  placeholder="请输入出生日期" v-model="model.birthday"/> -->
+				  <picker mode="date" :value="model.birthday" :start="startDate" :end="endDate" @change="(e) => bindDateChange(e,'birthDate')">
+				  	<view class="uni-input" v-if="birthDate ">{{birthDate }}</view>
+				  	<view class="uni-input" v-else>
+				  		<input  placeholder="请输入出生日期" style="pointer-events: none;"/>
+				  	</view>
+				  </picker>
                 </view>
               </view>
               <view class="cu-form-group">
@@ -168,6 +174,7 @@
                   add: "/xgsUserResumes/eduTest/add",
                   edit: "/xgsUserResumes/eduTest/edit",
                 },
+				birthDate : "",
 				graduteDate: "",
 				workDate: "",
 				startDate: "",
@@ -183,9 +190,9 @@
         },
         methods:{
 			initForm(){
-				console.log(this.formData)
 				if(this.formData){
 					this.model = this.formData
+					this.birthDate = this.model.birthDate
 					this.graduteDate = this.model.graduteDate
 					this.endStartDate = this.model.graduteDate
 					this.workEndDate = this.model.workDate
@@ -210,7 +217,11 @@
 		   },
 		   
 			bindDateChange: function(e,value) {
-				switch(value){
+				switch(value){ 
+					case "birthDate":
+						this.model.birthDate = e.detail.value
+						this.birthDate = this.model.birthDate
+						break;
 					case "graduteDate":
 						this.model.graduteDate = e.detail.value
 						this.graduteDate = this.model.graduteDate

@@ -2,20 +2,16 @@ package org.jeecg.modules.recruitment.position.controller;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
-import org.jeecg.common.util.oConvertUtils;
-import org.jeecg.modules.demo.xgsResume.entity.XgsResumeBase;
-import org.jeecg.modules.demo.xgsResume.service.IXgsResumeBaseService;
+import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
+import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
+import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
+import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
 
@@ -24,18 +20,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 
-import org.jeecgframework.poi.excel.ExcelImportUtil;
-import org.jeecgframework.poi.excel.def.NormalExcelConstants;
-import org.jeecgframework.poi.excel.entity.ExportParams;
-import org.jeecgframework.poi.excel.entity.ImportParams;
-import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
-import com.alibaba.fastjson.JSON;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;
@@ -43,7 +31,7 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 
  /**
  * @Description: 审批办理过程表
- * @Author: jeecg-boot
+ * @Author: Liuyl
  * @Date:   2025-01-09
  * @Version: V1.0
  */
@@ -54,6 +42,8 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, IXgsFlowOpinionsService> {
 	 @Autowired
 	 private IXgsResumeBaseService resumeBaseService;
+	 @Autowired
+	 private IXgsPositionApplyService xgsPositionApplyService;
 	 @Autowired
 	 private IXgsFlowOpinionsService xgsFlowOpinionsService;
 	
@@ -205,4 +195,44 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 		 }
 		 return Result.OK(xgsResumeBase);
 	 }
+
+	 @ApiOperation(value="审批办理过程表-通过申请id查询", notes="审批办理过程表-通过申请id查询")
+	 @GetMapping(value = "/getDepartRejectByApplyId")
+	 public Result<XgsFlowOpinions> getDepartRejectByApplyId(@RequestParam(name="applyId", required=true) String applyId) {
+		 QueryWrapper<XgsFlowOpinions> queryWrapper = new QueryWrapper<>();
+		 XgsFlowOpinions xgsFlowOpinions = null;
+		 Page<XgsFlowOpinions> page = new Page<XgsFlowOpinions>(1, 1);
+		 queryWrapper.eq("parent_id", applyId);
+		 queryWrapper.eq("approval_node", "部门审核");
+//		 queryWrapper.eq("approval_status", "驳回");
+		 queryWrapper.orderByDesc("create_time");
+		 Page<XgsFlowOpinions> list = xgsFlowOpinionsService.page(page, queryWrapper);
+		 if (list.getRecords().size() > 0) {
+			 xgsFlowOpinions = list.getRecords().get(0);
+		 }
+		 if(xgsFlowOpinions==null) {
+			 return Result.error("未找到对应数据");
+		 }
+		 return Result.OK(xgsFlowOpinions);
+	 }
+
+	 @AutoLog(value = "审批办理过程表-申请人提交")
+	 @ApiOperation(value="审批办理过程表-申请人提交", notes="审批办理过程表-申请人提交")
+	 @RequestMapping(value = "/submitByApplyId")
+	 public Result<String> submitByApplyId(@RequestParam(name="applyId", required=true) String applyId) {
+//		 XgsFlowOpinions xgsFlowOpinions = new XgsFlowOpinions();
+//		 xgsFlowOpinions.setParentId(applyId);
+//		 xgsFlowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT);
+//		 xgsFlowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+//		 xgsFlowOpinionsService.save(xgsFlowOpinions);
+		 XgsPositionApply xgsPositionApply = xgsPositionApplyService.getById(applyId);
+		 xgsPositionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_DEPT);
+		 xgsPositionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_GOING);
+		 xgsPositionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+		 xgsPositionApply.setApplyStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_DEPT_TODO);
+		 xgsPositionApplyService.updateById(xgsPositionApply);
+		 return Result.OK("提交成功!");
+	 }
+
+
 }

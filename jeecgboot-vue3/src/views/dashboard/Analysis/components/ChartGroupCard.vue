@@ -9,7 +9,7 @@
         :class="[index + 1 < 4 && '!md:mr-4']"
       >
         <template #action>
-          <a-tooltip title="指标说明">
+          <a-tooltip title="">
             <Icon :icon="item.icon" :size="20" />
           </a-tooltip>
         </template>
@@ -23,7 +23,7 @@
   import ChartCard from '/@/components/chart/ChartCard.vue';
   import { chartCardList, bdcCardList } from '../data';
 
-  import {headerText} from '../api.ts';
+  import { headerText } from '../api.ts';
 
   const props = defineProps({
     loading: {
@@ -39,19 +39,19 @@
   function initLogInfo() {
     headerText(null).then((res) => {
       if (res.success) {
-        chartCardList[0].total = res.result.positionsNumber
-        chartCardList[1].total = res.result.personCountNumber
-        chartCardList[2].total = res.result.contactNumber
-        chartCardList[3].total = res.result.resumeNumber
+        chartCardList[0].total = res.result.positionsNumber;
+        chartCardList[1].total = res.result.personCountNumber;
+        chartCardList[2].total = res.result.contactNumber;
+        chartCardList[3].total = res.result.resumeNumber;
 
-        bdcCardList[0].total = res.result.positionsNumber
-        bdcCardList[1].total = res.result.personCountNumber
-        bdcCardList[2].total = res.result.contactNumber
-        bdcCardList[3].total = res.result.resumeNumber
+        bdcCardList[0].total = res.result.positionsNumber;
+        bdcCardList[1].total = res.result.personCountNumber;
+        bdcCardList[2].total = res.result.contactNumber;
+        bdcCardList[3].total = res.result.resumeNumber;
       }
     });
   }
-  initLogInfo()
+  initLogInfo();
 
   function getTotal(total, index) {
     return index === 0 ? `${total}` : index === 3 ? `${total}` : total;

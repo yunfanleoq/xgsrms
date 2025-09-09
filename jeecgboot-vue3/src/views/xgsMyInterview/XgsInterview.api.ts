@@ -4,8 +4,8 @@ import { useMessage } from "/@/hooks/web/useMessage";
 const { createConfirm } = useMessage();
 
 enum Api {
-  // list = '/xgsInviteToInterview/xgsInviteToInterview/list',
-  list = '/positions/xgsPositionApply2/list',
+  list = '/xgsInviteToInterview/xgsInviteToInterview/myInterviewList',
+  // list = '/positions/xgsPositionApply2/list',
   // save = '/xgsInviteToInterview/xgsInviteToInterview/add',
   save = '/positions/xgsPositionApply2/add',
   // edit='/xgsInviteToInterview/xgsInviteToInterview/edit',

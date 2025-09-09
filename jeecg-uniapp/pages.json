@@ -57,6 +57,14 @@
 			"style": {}
 		},
 		{
+			"path": "pages/xgs/interview/XgsInterviewList",
+			"style": {}
+		},
+		{
+			"path": "pages/xgs/interview/XgsInterviewForm",
+			"style": {}
+		},
+		{
 			"path": "pages/index/index",
 			"style": {}
 		},

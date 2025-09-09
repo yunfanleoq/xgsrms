@@ -1116,38 +1116,102 @@ public class SysUserController {
 		result.setSuccess(true);
 		return result;
 	}
-	
-	/**
+
+    /**
+     * 用户手机号验证
+     */
+    @PostMapping("/emailVerification")
+    public Result<Map<String,String>> emailVerification(@RequestBody JSONObject jsonObject) {
+        Result<Map<String,String>> result = new Result<Map<String,String>>();
+        String email = jsonObject.getString("email");
+        String emailCode = jsonObject.getString("emailCode");
+        //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
+        String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+email;
+        Object code = redisUtil.get(redisKey);
+        if (!emailCode.equals(code)) {
+            result.setMessage("邮箱验证码错误");
+            result.setSuccess(false);
+            return result;
+        }
+        //设置有效时间
+        redisUtil.set(redisKey, emailCode,600);
+        //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
+
+        //新增查询用户名
+        LambdaQueryWrapper<SysUser> query = new LambdaQueryWrapper<>();
+        query.eq(SysUser::getEmail, email);
+        SysUser user = sysUserService.getOne(query);
+        Map<String,String> map = new HashMap(5);
+        map.put("emailCode",emailCode);
+        if(null == user){
+            //前端根据文字做判断用户是否存在判断，不能修改
+            result.setMessage("用户信息不存在");
+            result.setSuccess(false);
+            return result;
+        }
+        map.put("username",user.getUsername());
+        result.setResult(map);
+        result.setSuccess(true);
+        return result;
+    }
+
+
+    /**
 	 * 用户更改密码
 	 */
 	@GetMapping("/passwordChange")
 	public Result<SysUser> passwordChange(@RequestParam(name="username")String username,
 										  @RequestParam(name="password")String password,
-			                              @RequestParam(name="smscode")String smscode,
-			                              @RequestParam(name="phone") String phone) {
+			                              @RequestParam(name="smscode", required = false)String smscode,
+			                              @RequestParam(name="emailCode", required = false)String emailCode,
+                                          @RequestParam(name="phone", required = false) String phone,
+			                              @RequestParam(name="email", required = false) String email) {
         Result<SysUser> result = new Result<SysUser>();
-        if(oConvertUtils.isEmpty(username) || oConvertUtils.isEmpty(password) || oConvertUtils.isEmpty(smscode)  || oConvertUtils.isEmpty(phone) ) {
+        if(oConvertUtils.isEmpty(username) || oConvertUtils.isEmpty(password)) {
             result.setMessage("重置密码失败！");
             result.setSuccess(false);
             return result;
         }
 
-        SysUser sysUser=new SysUser();
-        //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-        String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+phone;
-        Object object= redisUtil.get(redisKey);
-        //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-        if(null==object) {
-        	result.setMessage("短信验证码失效！");
-            result.setSuccess(false);
-            return result;
+        SysUser sysUser = null;
+        String redisKey = null;
+        // 手机短信 重置密码
+        if (oConvertUtils.isNotEmpty(smscode) && oConvertUtils.isNotEmpty(phone) ) {
+            //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
+            redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+phone;
+            Object object= redisUtil.get(redisKey);
+            //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
+            if(null==object) {
+                result.setMessage("短信验证码失效！");
+                result.setSuccess(false);
+                return result;
+            }
+            if(!smscode.equals(object.toString())) {
+                result.setMessage("短信验证码不匹配！");
+                result.setSuccess(false);
+                return result;
+            }
+            sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,username).eq(SysUser::getPhone,phone));
         }
-        if(!smscode.equals(object.toString())) {
-        	result.setMessage("短信验证码不匹配！");
-            result.setSuccess(false);
-            return result;
+        // 邮箱 重置密码
+        if (oConvertUtils.isNotEmpty(emailCode) && oConvertUtils.isNotEmpty(email) ) {
+            //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
+            redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+email;
+            Object object= redisUtil.get(redisKey);
+            //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
+            if(null==object) {
+                result.setMessage("邮箱验证码失效！");
+                result.setSuccess(false);
+                return result;
+            }
+            if(!emailCode.equals(object.toString())) {
+                result.setMessage("邮箱验证码不匹配！");
+                result.setSuccess(false);
+                return result;
+            }
+            sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,username).eq(SysUser::getEmail,email));
         }
-        sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,username).eq(SysUser::getPhone,phone));
+
         if (sysUser == null) {
             result.setMessage("当前登录用户和绑定的手机号不匹配，无法修改密码！");
             result.setSuccess(false);
@@ -1163,7 +1227,6 @@ public class SysUserController {
             //update-end---author:wangshuai ---date:20220316  for：[VUEN-234]密码重置添加敏感日志------------
             result.setSuccess(true);
             result.setMessage("密码重置完成！");
-            //修改完密码后清空redis
             redisUtil.removeAll(redisKey);
             return result;
         }

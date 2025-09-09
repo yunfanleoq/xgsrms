@@ -7,11 +7,14 @@
 		<!--滚动加载列表-->
 		<mescroll-body ref="mescrollRef" bottom="88"  @init="mescrollInit" :up="upOption" :down="downOption" @down="downCallback" @up="upCallback">
 		    <view class="cu-list menu">
-				<view class="cu-item" v-for="(item,index) in list" :key="index" @click="goForm(item.id)">
-					<view class="flex" style="width:100%">
+				<view class="cu-item arrow" v-for="(item,index) in list" :key="index" @click="goForm(item.id)">
+					<view class="content" style="width:100%">
                         <text class="text-lg" style="color: #000;">
-                             {{ item.name}} - 创建时间：{{ formatDate(item.createTime) }}
+                             {{ item.name}}
                         </text>
+					</view>
+					<view class="action">
+						<text class="text-grey text-sm">{{ item.createTime }}</text>
 					</view>
 				</view>
 				<view class="cu-item" @click="uploadFile">
@@ -36,7 +39,7 @@
 			return {
 				CustomBar:this.CustomBar,
 				NavBarColor:this.NavBarColor,
-				url: "/xgsMyresume/xgsMyresume/list",
+				url: "/xgsResume/xgsResumeBase/listMyResume",
 				uploadUrl: "/xgsMyresume/xgsMyresume/uploadPdf"
 			};
 		},

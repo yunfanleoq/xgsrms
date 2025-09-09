@@ -142,6 +142,7 @@
 					xgsFavoriteJobAddUrl:'/positions/xgsFavoriteJob/add',
 					xgsFavoriteJobDelUrl: '/positions/xgsFavoriteJob/delete',
 					xgsFavoriteJobListUrl: '/positions/xgsFavoriteJob/list',
+					checkUrl: '/positions/xgsPositionApply/checkApplyByPosId'
                 },
 				htmlTypeStatce: true,
 				isCollected: false,
@@ -172,7 +173,6 @@
            initFormData(){
 			   //获取岗位信息
 			   this.model = uni.$globalParams;
-			   console.log("###",this.model)
 
 				if(!this.model){
 				   this.model = {}
@@ -248,14 +248,30 @@
 			onApply(item){
 				let params = {...item}
 				params.htmlType = '招聘'
-				// this.$Router.push({
-				// 	name: "resumeForm", // 新页面的路由名称
-				// 	params:parmas, // 通过 parmas 传递 id
-				// });
-				uni.$globalParams = params;
-				uni.navigateTo({
-					url:"/pages/resume/resumeForm"
+				this.checkApple(params.id);
+				
+				this.$Router.push({
+					name: "resumeForm", // 新页面的路由名称
+					params: params, // 通过 parmas 传递 id
+				});
+				
+				// uni.$globalParams = params;
+				// uni.navigateTo({
+				// 	url:"/pages/resume/resumeForm"
+				// })
+			},
+			//查询当前简历用户是否申请过
+			checkApple(positionsId){
+				this.$http.post(this.url.checkUrl,{positionId: positionsId}).then(res=>{
+					if (res.data.success) {
+						return true
+					}else{
+						this.$tip.toast(res.data.message)
+					}
+				}).catch(err => {
+					this.$tip.toast("服务器异常，请稍后重试")
 				})
+				return false
 			},
 			//收藏岗位
 			onCollectAdd(){

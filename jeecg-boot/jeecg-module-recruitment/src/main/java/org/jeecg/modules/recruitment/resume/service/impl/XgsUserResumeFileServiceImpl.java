@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
 
 /**
  * @Description: 用户简历文件分析
- * @Author: jeecg-boot
+ * @Author: Liuyl
  * @Date:   2024-12-31
  * @Version: V1.0
  */

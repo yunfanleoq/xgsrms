@@ -1,0 +1,19 @@
+package org.jeecg.modules.recruitment.xgsIntroduce.service.impl;
+
+import org.jeecg.modules.recruitment.xgsIntroduce.entity.XgsIntroduce;
+import org.jeecg.modules.recruitment.xgsIntroduce.mapper.XgsIntroduceMapper;
+import org.jeecg.modules.recruitment.xgsIntroduce.service.IXgsIntroduceService;
+import org.springframework.stereotype.Service;
+
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+/**
+ * @Description: 机构概况
+ * @Author: Liuyl
+ * @Date:   2024-12-22
+ * @Version: V1.0
+ */
+@Service
+public class XgsIntroduceServiceImpl extends ServiceImpl<XgsIntroduceMapper, XgsIntroduce> implements IXgsIntroduceService {
+
+}

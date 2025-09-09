@@ -456,6 +456,7 @@ public interface CommonConstant {
      * 短信验证码redis-key的前缀
      */
     String PHONE_REDIS_KEY_PRE = "phone_msg";
+    String EMAIL_REDIS_KEY_PRE = "email_msg";
 
     /**
      * 是文件夹

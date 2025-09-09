@@ -4,25 +4,38 @@
       <aside class="sidebar">
         <ul>
           <li
-            v-for="jobType in jobTypeList"
-            @click="byType(jobType.value.toString())"
-            :key="jobType.value"
-            :class="{ active: jobType.value === typeY }"
+            v-for="item in jobTypeList"
+            :key="item.value"
+            :class="{ active: item.value === currentType }"
+            @click="handleTypeChange(item.value.toString())"
           >
-            {{ jobType.text }}
+            {{ item.text }}
           </li>
         </ul>
       </aside>
       <section class="content">
-        <h2>{{ typeY }}</h2>
-        <ul class="job-list">
-          <li v-for="job in paginatedNews" :key="job.type">
-            <div v-if="job.type === typeY" v-html="job.text" v-show="shouldRender(job.type)" class="top-border"></div>
-          </li>
-        </ul>
+        <h2>{{ currentType }}</h2>
+
+        <!-- 内容区域 -->
+        <div class="content-wrapper top-border">
+          <!-- 院所风貌：特殊渲染 -->
+          <template v-if="currentType === '院所风貌'">
+            <div class="fengmao-gallery">
+              <div v-for="(item, index) in fengmaoData" :key="index" class="fengmao-item">
+                <img :src="item.src" :alt="item.text" />
+                <p>{{ item.text }}</p>
+              </div>
+            </div>
+          </template>
+
+          <!-- 其他类型：使用 v-html -->
+          <template v-else>
+            <div v-for="job in jobList" :key="job.id" v-html="job.text"></div>
+          </template>
+        </div>
 
         <!-- 分页控件 -->
-        <div class="pagination" v-if="typeFirst">
+        <div class="pagination" v-if="totalPages > 1">
           <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
           <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
           <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
@@ -33,36 +46,102 @@
 </template>
 
 <script setup lang="ts" name="homeYjsk">
-  import { ref, computed, onMounted } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { ref, computed, onMounted, watch } from 'vue';
   import { defHttp } from '@/utils/http/axios';
-  import { request } from 'axios';
 
-  const jobTypeList = ref([{ text: '研究队伍', value: '研究队伍' }]);
-
-  const jobList = ref([{ type: '院所风貌', picture: '图片地址', pictureText: '图片名称', text: '文本信息' }]);
-
-  const typeY = ref('');
-  const typeFirst = ref(true);
-
-  //分页
+  // --- 状态定义 ---
+  const jobTypeList = ref<{ text: string; value: string }[]>([]);
+  const jobList = ref<any[]>([]);
+  const currentType = ref('');
   const currentPage = ref(1);
-  const itemsPerPage = ref(100);
-  const jobsPerPage = ref(1); // 每页显示的条数
-  const paginatedNews = computed(() => {
-    const start = (currentPage.value - 1) * jobsPerPage.value;
-    const end = start + jobsPerPage.value;
-    const result = filteredJobs.value.slice(start, end);
-    return result;
+  const itemsPerPage = ref(10); // 每页10条记录
+  const totalPages = ref(1);
+
+  // --- API 定义 ---
+  const listUrl = '/xgsIntroduce/xgsIntroduce/list';
+  const listTypeUrl = (dictCode: string) => `/sys/dict/getDictItems/${dictCode}`;
+
+  // --- 数据获取 ---
+  const fetchJobTypes = async () => {
+    try {
+      const res = await defHttp.get({ url: listTypeUrl('introduce_type') }, { isTransformResponse: false });
+      if (res.success && res.result.length > 0) {
+        jobTypeList.value = res.result;
+        // 默认选中第一个
+        currentType.value = res.result[0].value;
+      }
+    } catch (e) {
+      console.error('获取类型列表失败', e);
+    }
+  };
+
+  const fetchJobList = async () => {
+    // '院所风貌' 类型下，一次性获取所有数据以展示画廊；其他类型则进行分页。
+    const isFengMao = currentType.value === '院所风貌';
+    const pageSize = isFengMao ? 999 : itemsPerPage.value;
+    const pageNo = isFengMao ? 1 : currentPage.value;
+
+    if (!currentType.value) return;
+
+    try {
+      const params = {
+        pageNo: pageNo,
+        pageSize: pageSize,
+        type: currentType.value,
+        column: 'createTime', // 按创建时间排序
+        order: 'desc',
+      };
+      const res = await defHttp.get({ url: listUrl, params }, { isTransformResponse: false });
+      if (res.success) {
+        jobList.value = res.result.records || [];
+        totalPages.value = isFengMao ? 1 : res.result.pages || 1;
+      }
+    } catch (e) {
+      console.error('获取列表内容失败', e);
+      jobList.value = [];
+      totalPages.value = 1;
+    }
+  };
+
+  // --- 计算属性 ---
+  const fengmaoData = computed(() => {
+    if (currentType.value !== '院所风貌' || jobList.value.length === 0) {
+      return [];
+    }
+    // 假定所有"院所风貌"的HTML内容都在返回记录的 `text` 字段中
+    const combinedHtml = jobList.value.map((job) => job.text || '').join('');
+    if (!combinedHtml) {
+      return [];
+    }
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(combinedHtml, 'text/html');
+    const items: { href: string; src: string; text: string }[] = [];
+
+    // 根据用户提供的数据结构，精确查找每个列表项
+    doc.querySelectorAll('li.col-md-3.col-sm-6').forEach((li) => {
+      const link = li.querySelector('a.img_hovbig') as HTMLAnchorElement;
+      const img = link ? (link.querySelector('img') as HTMLImageElement) : null;
+      const textElement = li.querySelector('.txtinfo h4 a') as HTMLAnchorElement;
+
+      if (link && img && img.src && textElement) {
+        items.push({
+          href: link.href,
+          src: img.src,
+          text: textElement.innerText.trim(),
+        });
+      }
+    });
+
+    return items;
   });
 
-  // 计算总页数
-  const totalPages = computed(() => {
-    const total = Math.ceil(filteredJobs.value.length / jobsPerPage.value);
-    return total;
-  });
+  // --- 事件处理 ---
+  const handleTypeChange = (newType: string) => {
+    currentType.value = newType;
+    currentPage.value = 1; // 切换类型时重置到第一页
+  };
 
-  // 分页控制函数
   const prevPage = () => {
     if (currentPage.value > 1) {
       currentPage.value--;
@@ -75,90 +154,13 @@
     }
   };
 
-  const changeJobsPerPage = (event: Event) => {
-    const value = (event.target as HTMLSelectElement).value;
-    jobsPerPage.value = parseInt(value, 10);
-    currentPage.value = 1; // 重置到第一页
-  };
-
-  // 计算属性：过滤后的列表
-  const filteredJobs = computed(() => {
-    let filtered = jobList.value;
-    filtered = filtered.filter((job) => job.type === typeY.value);
-    return filtered.reverse();
+  // --- 生命周期和侦听器 ---
+  onMounted(async () => {
+    await fetchJobTypes();
   });
 
-  const listUrl = '/xgsIntroduce/xgsIntroduce/list';
-
-  const listTypeUrl = (dictCode: string) => `/sys/dict/getDictItems/${dictCode}`;
-
-  const changePage = (page: number) => {
-    if (page > 0 && page <= totalPages.value) {
-      currentPage.value = page;
-    }
-  };
-
-  function byType(thisTypeY) {
-    typeY.value = thisTypeY;
-    currentPage.value = 1; // 重置到第一页
-  }
-
-  const selectTypeList = () => {
-    const dictCode = 'introduce_type';
-
-    const url = listTypeUrl(dictCode);
-    defHttp.get({ url: url, params: { dictCode } }, { isTransformResponse: false }).then((res) => {
-      try {
-        if (res.success) {
-          jobTypeList.value = res.result;
-          byType(res.result[0].value);
-        }
-      } catch (e) {}
-    });
-  };
-
-  onMounted(selectTypeList);
-
-  const getList = (param) => defHttp.get({ url: listUrl, params: param }, { isTransformResponse: false });
-
-  const selectY = () => {
-    const params = { pageNo: currentPage.value, pageSize: itemsPerPage.value, type: typeY.value };
-
-    getList(params).then((res) => {
-      try {
-        if (res.success) {
-          jobList.value = res.result.records;
-        }
-      } catch (e) {}
-    });
-  };
-
-  onMounted(selectY);
-
-  /*
-反转typeFirst的值
- */
-  const toggleTypeFirst = () => {
-    typeFirst.value = !typeFirst.value;
-  };
-
-  // 新增的标志变量
-  const renderedFirst = ref(false);
-
-  // 新增的方法
-  const shouldRender = (inType) => {
-    if (inType === jobTypeList.value[0].value && !renderedFirst.value) {
-      renderedFirst.value = true;
-      typeFirst.value = false;
-      return true;
-    } else if (inType !== jobTypeList.value[0].value) {
-      renderedFirst.value = false;
-      typeFirst.value = true;
-      return true;
-    }
-    renderedFirst.value = false;
-    return false;
-  };
+  // 侦听类型和页码的变化，自动获取新数据
+  watch([currentType, currentPage], fetchJobList, { immediate: true });
 </script>
 
 <style>
@@ -221,50 +223,41 @@
     color: #3d54a7;
   }
 
-  .job-list {
-    list-style: none;
-    padding-left: 50px;
-    padding-right: 50px;
-  }
-
-  .job-list li {
-    margin-bottom: 20px;
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-  }
-
-  .pagination-button {
-    background-color: #00467f;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .pagination-button:hover {
-    background-color: #003a63;
-  }
-
-  .pagination-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-
-  .pagination-button i {
-    margin: 0 5px;
-  }
-
   .top-border {
     border-top: 1px solid #3d54a7;
-    padding-bottom: 20px;
-    padding-top: 20px;
+    padding: 20px 0;
+  }
+
+  .content-wrapper {
+    padding: 20px;
+  }
+
+  .fengmao-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .fengmao-item {
+    text-align: center;
+    border: 1px solid #eee;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 10px;
+  }
+
+  .fengmao-item img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+
+  .fengmao-item p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
   }
 
   .pagination {

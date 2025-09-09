@@ -23,6 +23,16 @@
           <a-radio-button value="1">待审核</a-radio-button>
           <a-radio-button value="2">已审核</a-radio-button>
         </a-radio-group>
+        <!-- 导出按钮 -->
+        <a-button 
+          type="primary" 
+          v-auth="'xgsUserResume:xgs_position_apply:exportXls'" 
+          preIcon="ant-design:download-outlined" 
+          @click="handleCustomExport" 
+          style="margin-left: 8px"
+        > 
+          导出
+        </a-button>
       </template>
       <!--操作栏-->
       <template #action="{ record }">
@@ -208,6 +218,45 @@
         auth: 'resume:xgs_position_apply:delete',
       },
     ];
+  }
+
+  /**
+   * 自定义导出
+   */
+  async function handleCustomExport() {
+    try {
+      // 获取当前选中的列配置
+      const tableInstance = registerTable.value;
+      if (!tableInstance) {
+        console.error('表格实例未初始化');
+        return;
+      }
+      
+      // 获取列配置
+      const columns = tableInstance.getColumns();
+      
+      // 过滤出可见的列（排除操作列和选择列）
+      const visibleColumns = columns.filter(col => 
+        col.dataIndex && 
+        col.dataIndex !== 'action' && 
+        col.dataIndex !== 'selection' &&
+        col.title !== '操作'
+      );
+      
+      // 构建导出参数
+      const exportParams = {
+        ...queryParam,
+        columns: visibleColumns.map(col => ({
+          key: col.dataIndex,
+          title: col.title
+        }))
+      };
+      
+      // 调用导出
+      await onExportXls(exportParams);
+    } catch (error) {
+      console.error('导出失败:', error);
+    }
   }
 </script>
 

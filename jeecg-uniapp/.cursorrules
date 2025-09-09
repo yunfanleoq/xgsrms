@@ -1,0 +1,170 @@
+# UniApp Vue2 项目开发规范
+
+## 项目结构规范
+```
+├── api                   # API 接口文件
+├── components           # 公共组件
+├── pages               # 页面文件
+├── static              # 静态资源
+├── store               # Vuex 状态管理
+├── utils               # 工具函数
+├── App.vue             # 应用入口组件
+├── main.js             # 应用入口文件
+├── manifest.json       # 应用配置文件
+├── pages.json          # 页面配置文件
+└── uni.scss            # 全局样式文件
+```
+
+## 命名规范
+- 页面文件夹：小写字母，多个单词用连字符（-）连接
+  - 例如：`user-center`, `order-list`
+- 组件文件：大驼峰命名法（PascalCase）
+  - 例如：`UserCard.vue`, `OrderListItem.vue`
+- API 文件：小驼峰命名法（camelCase）
+  - 例如：`userApi.js`, `orderApi.js`
+- 工具类文件：小驼峰命名法（camelCase）
+  - 例如：`dateUtils.js`, `request.js`
+
+## Vue 组件规范
+```vue
+<template>
+  <view class="component-name">
+    <!-- 内容区域 -->
+  </view>
+</template>
+
+<script>
+export default {
+  name: 'ComponentName',
+  props: {
+    // props 定义
+  },
+  data() {
+    return {
+      // 数据定义
+    }
+  },
+  computed: {
+    // 计算属性
+  },
+  methods: {
+    // 方法定义
+  },
+  // 生命周期钩子
+  onLoad() {
+    // 页面加载时执行
+  },
+  onShow() {
+    // 页面显示时执行
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.component-name {
+  // 样式定义
+}
+</style>
+```
+
+## API 请求规范
+```js
+import request from '@/utils/request'
+
+export const apiName = (params) => {
+  return request({
+    url: '/api/path',
+    method: 'POST',
+    data: params
+  })
+}
+```
+
+## 样式规范
+```scss
+/* 主题颜色 */
+$primary-color: #2979ff;
+$success-color: #19be6b;
+$warning-color: #ff9900;
+$error-color: #fa3534;
+
+/* 文字颜色 */
+$text-main: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+
+/* 边框颜色 */
+$border-color: #dcdfe6;
+
+/* 背景颜色 */
+$bg-color: #f5f5f5;
+
+/* 间距 */
+$spacing-sm: 10rpx;
+$spacing-base: 20rpx;
+$spacing-lg: 30rpx;
+$spacing-xl: 40rpx;
+```
+
+## 常用代码片段
+### 页面跳转
+```js
+// 普通跳转
+uni.navigateTo({
+  url: '/pages/path/index'
+})
+
+// 带参数跳转
+uni.navigateTo({
+  url: '/pages/path/index?id=' + id
+})
+
+// 替换页面
+uni.redirectTo({
+  url: '/pages/path/index'
+})
+
+// 返回上一页
+uni.navigateBack({
+  delta: 1
+})
+```
+
+### 数据请求与加载
+```js
+async loadData() {
+  try {
+    uni.showLoading({
+      title: '加载中'
+    })
+    const res = await this.$api.getData()
+    this.list = res.data
+  } catch (error) {
+    uni.showToast({
+      title: error.message || '加载失败',
+      icon: 'none'
+    })
+  } finally {
+    uni.hideLoading()
+  }
+}
+```
+
+## 性能优化建议
+1. 合理使用生命周期钩子
+2. 避免深层数据监听
+3. 使用 v-show 代替频繁切换的 v-if
+4. 长列表使用虚拟列表优化
+5. 图片使用懒加载
+6. 合理使用 computed 和 watch
+7. 及时销毁定时器和事件监听
+
+## 调试技巧
+1. 使用 console.log 打印关键数据
+2. 善用条件编译
+```js
+// #ifdef H5
+console.log('只在 H5 平台输出')
+// #endif
+```
+3. 使用 vconsole 进行真机调试 

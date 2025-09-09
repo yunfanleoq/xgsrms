@@ -1,2 +1,5 @@
 /unpackage/
 /.idea/
+/.history/
+/.hbuilderx/
+.package-lock.json

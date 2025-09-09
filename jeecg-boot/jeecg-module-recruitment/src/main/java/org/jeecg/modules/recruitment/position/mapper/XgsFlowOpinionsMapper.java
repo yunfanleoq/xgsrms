@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * @Description: 审批办理过程表
- * @Author: jeecg-boot
+ * @Author: Liuyl
  * @Date:   2025-01-09
  * @Version: V1.0
  */

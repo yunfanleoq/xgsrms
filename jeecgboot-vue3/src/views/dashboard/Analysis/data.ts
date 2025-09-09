@@ -42,7 +42,6 @@ export const growCardList: GrowCardItem[] = [
     action: '年',
   },
 ];
-
 export const chartCardList: GrowCardItem[] = [
   {
     title: '岗位数量',
@@ -82,7 +81,7 @@ export const bdcCardList: GrowCardItem[] = [
     footer: '今日受理量',
   },
   {
-    title: '岗位数量',
+    title: '面试数量',
     icon: 'ant-design:info-circle-outlined',
     value: 54,
     total: 87,
@@ -107,19 +106,7 @@ export const bdcCardList: GrowCardItem[] = [
 ];
 
 export const table = {
-  dataSource: [
-    { reBizCode: '1', type: '转移登记', acceptBy: '张1三', acceptDate: '2019-01-22', curNode: '任务分派', flowRate: 1 },
-    { reBizCode: '2', type: '抵押登记', acceptBy: '李四', acceptDate: '2019-01-23', curNode: '领导审核', flowRate: 30 },
-    { reBizCode: '3', type: '转移登记', acceptBy: '王武', acceptDate: '2019-01-25', curNode: '任务处理', flowRate: 1 },
-    { reBizCode: '4', type: '转移登记', acceptBy: '赵楼', acceptDate: '2019-11-22', curNode: '部门审核', flowRate: 80 },
-    { reBizCode: '5', type: '转移登记', acceptBy: '钱就', acceptDate: '2019-12-12', curNode: '任务分派', flowRate: 90 },
-    { reBizCode: '6', type: '转移登记', acceptBy: '孙吧', acceptDate: '2019-03-06', curNode: '任务处理', flowRate: 10 },
-    { reBizCode: '7', type: '抵押登记', acceptBy: '周大', acceptDate: '2019-04-13', curNode: '任务分派', flowRate: 1 },
-    { reBizCode: '8', type: '抵押登记', acceptBy: '吴二', acceptDate: '2019-05-09', curNode: '任务上报', flowRate: 50 },
-    { reBizCode: '9', type: '抵押登记', acceptBy: '郑爽', acceptDate: '2019-07-12', curNode: '任务处理', flowRate: 63 },
-    { reBizCode: '20', type: '抵押登记', acceptBy: '林有', acceptDate: '2019-12-12', curNode: '任务打回', flowRate: 59 },
-    { reBizCode: '11', type: '转移登记', acceptBy: '码云', acceptDate: '2019-09-10', curNode: '任务签收', flowRate: 87 },
-  ],
+  dataSource: [],
   columns: [
     {
       title: '业务号',
@@ -165,19 +152,7 @@ export const table = {
   },
 };
 export const table1 = {
-  dataSource: [
-    { reBizCode: 'A001', type: '转移登记', acceptBy: '张四', acceptDate: '2019-01-22', curNode: '任务分派', flowRate: 12 },
-    { reBizCode: 'A002', type: '抵押登记', acceptBy: '李吧', acceptDate: '2019-01-23', curNode: '任务签收', flowRate: 3 },
-    { reBizCode: 'A003', type: '转移登记', acceptBy: '王三', acceptDate: '2019-01-25', curNode: '任务处理', flowRate: 24 },
-    { reBizCode: 'A004', type: '转移登记', acceptBy: '赵二', acceptDate: '2019-11-22', curNode: '部门审核', flowRate: 10 },
-    { reBizCode: 'A005', type: '转移登记', acceptBy: '钱大', acceptDate: '2019-12-12', curNode: '任务签收', flowRate: 8 },
-    { reBizCode: 'A006', type: '转移登记', acceptBy: '孙就', acceptDate: '2019-03-06', curNode: '任务处理', flowRate: 10 },
-    { reBizCode: 'A007', type: '抵押登记', acceptBy: '周晕', acceptDate: '2019-04-13', curNode: '部门审核', flowRate: 24 },
-    { reBizCode: 'A008', type: '抵押登记', acceptBy: '吴有', acceptDate: '2019-05-09', curNode: '部门审核', flowRate: 30 },
-    { reBizCode: 'A009', type: '抵押登记', acceptBy: '郑武', acceptDate: '2019-07-12', curNode: '任务分派', flowRate: 1 },
-    { reBizCode: 'A0010', type: '抵押登记', acceptBy: '林爽', acceptDate: '2019-12-12', curNode: '部门审核', flowRate: 16 },
-    { reBizCode: 'A0011', type: '转移登记', acceptBy: '码楼', acceptDate: '2019-09-10', curNode: '部门审核', flowRate: 7 },
-  ],
+  dataSource: [],
   columns: [
     {
       title: '业务号',
@@ -219,19 +194,7 @@ export const table1 = {
 };
 
 export const totalApple = {
-  dataSource: [
-    { sysOrgCode: '转移登记', dept: '张三', createTime: '2019-01-22', personCount: '任务分派', category: 60 },
-    { sysOrgCode: '抵押登记', dept: '李四', createTime: '2019-01-23', personCount: '领导审核', category: 30 },
-    { sysOrgCode: '转移登记', dept: '王武', createTime: '2019-01-25', personCount: '任务处理', category: 20 },
-    { sysOrgCode: '转移登记', dept: '赵楼', createTime: '2019-11-22', personCount: '部门审核', category: 80 },
-    { sysOrgCode: '转移登记', dept: '钱就', createTime: '2019-12-12', personCount: '任务分派', category: 90 },
-    { sysOrgCode: '转移登记', dept: '孙吧', createTime: '2019-03-06', personCount: '任务处理', category: 10 },
-    { sysOrgCode: '抵押登记', dept: '周大', createTime: '2019-04-13', personCount: '任务分派', category: 100 },
-    { sysOrgCode: '抵押登记', dept: '吴二', createTime: '2019-05-09', personCount: '任务上报', category: 50 },
-    { sysOrgCode: '抵押登记', dept: '郑爽', createTime: '2019-07-12', personCount: '任务处理', category: 63 },
-    { sysOrgCode: '抵押登记', dept: '林有', createTime: '2019-12-12', personCount: '任务打回', category: 59 },
-    { sysOrgCode: '转移登记', dept: '码云', createTime: '2019-09-10', personCount: '任务签收', category: 87 },
-  ],
+  dataSource: [],
   columns: [
     {
       title: '所属部门',
@@ -293,35 +256,9 @@ export const myResume = {
       title: '简历时间',
       align: 'center',
       dataIndex: 'acceptDate',
-    }
-  ],
-
-  dataSource: [
-    {
-      reBizCode: 'A001',
-      type: '转移登记',
-      acceptBy: '张四',
-      acceptDate: '2019-01-22'
-    },
-    {
-      reBizCode: 'A002',
-      type: '抵押登记',
-      acceptBy: '李吧',
-      acceptDate: '2019-01-23'
-    },
-    {
-      reBizCode: 'A003',
-      type: '转移登记',
-      acceptBy: '王三',
-      acceptDate: '2019-01-25'
-    },
-    {
-      reBizCode: 'A004',
-      type: '转移登记',
-      acceptBy: '赵二',
-      acceptDate: '2019-11-22'
     },
   ],
+  dataSource: [],
   ipagination: {
     current: 1,
     pageSize: 5,
@@ -333,7 +270,7 @@ export const myResume = {
     showSizeChanger: true,
     total: 0,
   },
-}
+};
 
 export const myInterView = {
   columns: [
@@ -350,34 +287,15 @@ export const myInterView = {
     {
       title: '面试时间',
       align: 'center',
-      dataIndex: 'imterviewTime' ,
+      dataIndex: 'imterviewTime',
     },
     {
       title: '面试地点',
       align: 'center',
-      dataIndex: 'imterviewPlace' ,
-    }
-  ],
-  dataSource: [
-    {
-      positionName: '前端开发',
-      deptName: '技术部',
-      imterviewTime: '2019-01-22',
-      imterviewPlace: 'office'
+      dataIndex: 'imterviewPlace',
     },
-    {
-      positionName: '后端开发',
-      deptName: '技术部',
-      imterviewTime: '2019-01-23',
-      imterviewPlace: 'office'
-    },
-    {
-      positionName: '测试工程师',
-      deptName: '技术部',
-      imterviewTime: '2019-01-25',
-      imterviewPlace: 'office'
-    }
   ],
+  dataSource: [],
   ipagination: {
     current: 1,
     pageSize: 5,
@@ -389,8 +307,7 @@ export const myInterView = {
     showSizeChanger: true,
     total: 0,
   },
-}
-
+};
 
 export const myApply = {
   columns: [
@@ -407,34 +324,15 @@ export const myApply = {
     {
       title: '申请时间',
       align: 'center',
-      dataIndex: 'applyTime' ,
+      dataIndex: 'applyTime',
     },
     {
       title: '申请状态',
       align: 'center',
-      dataIndex: 'applyStatus' ,
-    }
-  ],
-  dataSource: [
-    {
-      positionName: '前端开发',
-      deptName: '技术部',
-      applyTime: '2019-01-22',
-      applyStatus: '已通过'
+      dataIndex: 'applyStatus',
     },
-    {
-      positionName: '后端开发',
-      deptName: '技术部',
-      applyTime: '2019-01-23',
-      applyStatus: '已通过'
-    },
-    {
-      positionName: '测试工程师',
-      deptName: '技术部',
-      applyTime: '2019-01-25',
-      applyStatus: '已通过'
-    }
   ],
+  dataSource: [],
   ipagination: {
     current: 1,
     pageSize: 5,
@@ -446,4 +344,4 @@ export const myApply = {
     showSizeChanger: true,
     total: 0,
   },
-}
+};
