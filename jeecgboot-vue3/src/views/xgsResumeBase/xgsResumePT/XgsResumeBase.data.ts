@@ -188,8 +188,18 @@ export const formSchema: FormSchema[] = [
     field: 'photograph',
     component: 'JImageUpload',
     componentProps: {
-      fileMax: 0,
+      fileMax: 1,
+      showUploadList: true,
+      listType: 'picture-card',
+      style: {
+        height: '140px',
+        width: '100%',
+      },
     },
+    colProps: {
+      span: 12,
+    },
+    colSlot: 'photograph',
   },
   {
     label: '性别',
@@ -258,12 +268,12 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
   },
   {
-    label: '学历',
+    label: '最高学历',
     field: 'education',
     component: 'Input',
   },
   {
-    label: '学位',
+    label: '最高学位',
     field: 'degree',
     component: 'Input',
   },
@@ -346,36 +356,6 @@ export const formSchema: FormSchema[] = [
     },
   },
   {
-    label: '学习经历',
-    field: 'studyExperience',
-    component: 'InputTextArea',
-  },
-  {
-    label: '研究方向与专长',
-    field: 'researchDirection',
-    component: 'InputTextArea',
-  },
-  {
-    label: '承担科研、管理工作情况',
-    field: 'researchWork',
-    component: 'InputTextArea',
-  },
-  {
-    label: '工作主要业绩',
-    field: 'researchResult',
-    component: 'InputTextArea',
-  },
-  {
-    label: '论文专著专利',
-    field: 'researchPaper',
-    component: 'InputTextArea',
-  },
-  {
-    label: '应聘岗位陈述',
-    field: 'positionDescription',
-    component: 'InputTextArea',
-  },
-  {
     label: '应聘部门',
     field: 'applyDept',
     component: 'Input',
@@ -385,32 +365,32 @@ export const formSchema: FormSchema[] = [
     field: 'applyPosition',
     component: 'Input',
   },
-  {
-    label: '岗位类型',
-    field: 'positionType',
-    component: 'JCheckbox',
-    componentProps: {
-      dictCode: '	岗位类型',
-    },
-  },
+  // {
+  //   label: '岗位类型',
+  //   field: 'positionType',
+  //   component: 'JCheckbox',
+  //   componentProps: {
+  //     dictCode: '	岗位类型',
+  //   },
+  // },
   {
     label: '所在地',
     field: 'areaId',
     component: 'InputNumber',
   },
-  {
-    label: '简历名称',
-    field: 'resumeName',
-    component: 'Input',
-  },
-  {
-    label: '简历类别',
-    field: 'resumeType',
-    component: 'JDictSelectTag',
-    componentProps: {
-      dictCode: '岗位分类',
-    },
-  },
+  // {
+  //   label: '简历名称',
+  //   field: 'resumeName',
+  //   component: 'Input',
+  // },
+  // {
+  //   label: '简历类别',
+  //   field: 'resumeType',
+  //   component: 'JDictSelectTag',
+  //   componentProps: {
+  //     dictCode: '岗位分类',
+  //   },
+  // },
   // TODO 主键隐藏字段，目前写死为ID
   {
     label: '',
@@ -742,3 +722,63 @@ export const superQuerySchema = {
     },
   },
 };
+
+export const xgsResumeResearchResultColumns: JVxeColumn[] = [
+  {
+    title: '工作主要业绩',
+    key: 'researchResult',
+    type: JVxeTypes.textarea,
+    width: '500px',
+    placeholder: '请输入${title}，不超过5行',
+    defaultValue: '',
+    validateRules: [
+      { required: false },
+      { maxLength: 500, message: '内容过长，请限制在5行以内' }
+    ],
+  },
+];
+
+export const xgsResumePositionDescriptionColumns: JVxeColumn[] = [
+  {
+    title: '应聘岗位陈述',
+    key: 'positionDescription',
+    type: JVxeTypes.textarea,
+    width: '500px',
+    placeholder: '请输入${title}，不超过5行',
+    defaultValue: '',
+    validateRules: [
+      { required: false },
+      { maxLength: 500, message: '内容过长，请限制在5行以内' }
+    ],
+  },
+];
+
+export const xgsResumeResearchDirectionColumns: JVxeColumn[] = [
+  {
+    title: '研究方向与专长',
+    key: 'researchDirection',
+    type: JVxeTypes.textarea,
+    width: '500px',
+    placeholder: '请输入${title}，不超过5行',
+    defaultValue: '',
+    validateRules: [
+      { required: false },
+      { maxLength: 500, message: '内容过长，请限制在5行以内' }
+    ],
+  },
+];
+
+export const xgsResumeResearchPaperColumns: JVxeColumn[] = [
+  {
+    title: '论文专著专利',
+    key: 'researchPaper',
+    type: JVxeTypes.textarea,
+    width: '500px',
+    placeholder: '请输入${title}，不超过5行',
+    defaultValue: '',
+    validateRules: [
+      { required: false },
+      { maxLength: 500, message: '内容过长，请限制在5行以内' }
+    ],
+  },
+];

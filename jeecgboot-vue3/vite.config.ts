@@ -81,7 +81,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       host: true,
       // @ts-ignore
       https: false,
-      port: VITE_PORT,
+      port: 3100, // 硬编码端口为 3100
       // Load proxy configuration from .env
       proxy: {
         ...createProxy(VITE_PROXY),
@@ -89,6 +89,11 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           target: 'https://www.iie.ac.cn',
           changeOrigin: true, // 开启跨域
           rewrite: (path) => path.replace(/^\/iie/, '')
+        },
+        '/xgszp-boot': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path
         }
       },
       // 合并 server 配置

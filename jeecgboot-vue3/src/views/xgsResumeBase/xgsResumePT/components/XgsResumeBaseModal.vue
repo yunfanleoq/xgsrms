@@ -68,6 +68,62 @@
         :rowSelection="true"
         :toolbar="true"
       />
+      <JVxeTable
+        v-show="activeKey == 'xgsResumeResearchResult'"
+        keep-source
+        resizable
+        ref="xgsResumeResearchResult"
+        :loading="xgsResumeResearchResultTable.loading"
+        :columns="xgsResumeResearchResultTable.columns"
+        :dataSource="xgsResumeResearchResultTable.dataSource"
+        :height="340"
+        :disabled="formDisabled"
+        :rowNumber="true"
+        :rowSelection="true"
+        :toolbar="true"
+      />
+      <JVxeTable
+        v-show="activeKey == 'xgsResumePositionDescription'"
+        keep-source
+        resizable
+        ref="xgsResumePositionDescription"
+        :loading="xgsResumePositionDescriptionTable.loading"
+        :columns="xgsResumePositionDescriptionTable.columns"
+        :dataSource="xgsResumePositionDescriptionTable.dataSource"
+        :height="340"
+        :disabled="formDisabled"
+        :rowNumber="true"
+        :rowSelection="true"
+        :toolbar="true"
+      />
+      <JVxeTable
+        v-show="activeKey == 'xgsResumeResearchDirection'"
+        keep-source
+        resizable
+        ref="xgsResumeResearchDirection"
+        :loading="xgsResumeResearchDirectionTable.loading"
+        :columns="xgsResumeResearchDirectionTable.columns"
+        :dataSource="xgsResumeResearchDirectionTable.dataSource"
+        :height="340"
+        :disabled="formDisabled"
+        :rowNumber="true"
+        :rowSelection="true"
+        :toolbar="true"
+      />
+      <JVxeTable
+        v-show="activeKey == 'xgsResumeResearchPaper'"
+        keep-source
+        resizable
+        ref="xgsResumeResearchPaper"
+        :loading="xgsResumeResearchPaperTable.loading"
+        :columns="xgsResumeResearchPaperTable.columns"
+        :dataSource="xgsResumeResearchPaperTable.dataSource"
+        :height="340"
+        :disabled="formDisabled"
+        :rowNumber="true"
+        :rowSelection="true"
+        :toolbar="true"
+      />
     </div>
   </BasicModal>
 </template>
@@ -77,27 +133,35 @@
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { JVxeTable } from '/@/components/jeecg/JVxeTable';
-  import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods.ts';
-  import { formSchema, xgsResumeWorksColumns, xgsResumeEdusColumns, xgsResumeHomeColumns } from '../XgsResumeBase.data';
-  import { saveOrUpdate, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList } from '../XgsResumeBase.api';
+  import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods';
+  import { formSchema, xgsResumeWorksColumns, xgsResumeEdusColumns, xgsResumeHomeColumns, xgsResumeResearchResultColumns, xgsResumePositionDescriptionColumns, xgsResumeResearchDirectionColumns, xgsResumeResearchPaperColumns } from '../XgsResumeBase.data';
+  import { saveOrUpdate, xgsResumeWorksList, xgsResumeEdusList, xgsResumeHomeList, xgsResumeResearchResultList, xgsResumePositionDescriptionList, xgsResumeResearchDirectionList, xgsResumeResearchPaperList } from '../XgsResumeBase.api';
   import { VALIDATE_FAILED } from '/@/utils/common/vxeUtils';
   // Emits声明
   const emit = defineEmits(['register', 'success']);
   const isUpdate = ref(true);
   const formDisabled = ref(false);
   const modalRef = ref();
-  const refKeys = ref(['xgsResumeBase', 'xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome']);
+  const refKeys = ref(['xgsResumeBase', 'xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', 'xgsResumeResearchResult', 'xgsResumePositionDescription', 'xgsResumeResearchDirection', 'xgsResumeResearchPaper']);
   const tabNav = ref<any>([
     { tableName: 'xgsResumeBase', tableTxt: '基本信息' },
     { tableName: 'xgsResumeWorks', tableTxt: '工作经历' },
     { tableName: 'xgsResumeEdus', tableTxt: '教育经历' },
     { tableName: 'xgsResumeHome', tableTxt: '家庭状况' },
+    { tableName: 'xgsResumeResearchResult', tableTxt: '工作主要业绩' },
+    { tableName: 'xgsResumePositionDescription', tableTxt: '应聘岗位陈述' },
+    { tableName: 'xgsResumeResearchDirection', tableTxt: '研究方向与专长' },
+    { tableName: 'xgsResumeResearchPaper', tableTxt: '论文专著专利' },
   ]);
   const activeKey = ref('xgsResumeBase');
   const xgsResumeWorks = ref();
   const xgsResumeEdus = ref();
   const xgsResumeHome = ref();
-  const tableRefs = { xgsResumeWorks, xgsResumeEdus, xgsResumeHome };
+  const xgsResumeResearchResult = ref();
+  const xgsResumePositionDescription = ref();
+  const xgsResumeResearchDirection = ref();
+  const xgsResumeResearchPaper = ref();
+  const tableRefs = { xgsResumeWorks, xgsResumeEdus, xgsResumeHome, xgsResumeResearchResult, xgsResumePositionDescription, xgsResumeResearchDirection, xgsResumeResearchPaper };
   const xgsResumeWorksTable = reactive({
     loading: false,
     dataSource: [],
@@ -112,6 +176,26 @@
     loading: false,
     dataSource: [],
     columns: xgsResumeHomeColumns,
+  });
+  const xgsResumeResearchResultTable = reactive({
+    loading: false,
+    dataSource: [],
+    columns: xgsResumeResearchResultColumns,
+  });
+  const xgsResumePositionDescriptionTable = reactive({
+    loading: false,
+    dataSource: [],
+    columns: xgsResumePositionDescriptionColumns,
+  });
+  const xgsResumeResearchDirectionTable = reactive({
+    loading: false,
+    dataSource: [],
+    columns: xgsResumeResearchDirectionColumns,
+  });
+  const xgsResumeResearchPaperTable = reactive({
+    loading: false,
+    dataSource: [],
+    columns: xgsResumeResearchPaperColumns,
   });
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate }] = useForm({
@@ -134,6 +218,10 @@
       requestSubTableData(xgsResumeWorksList, { id: data?.record?.id }, xgsResumeWorksTable);
       requestSubTableData(xgsResumeEdusList, { id: data?.record?.id }, xgsResumeEdusTable);
       requestSubTableData(xgsResumeHomeList, { id: data?.record?.id }, xgsResumeHomeTable);
+      requestSubTableData(xgsResumeResearchResultList, { id: data?.record?.id }, xgsResumeResearchResultTable);
+      requestSubTableData(xgsResumePositionDescriptionList, { id: data?.record?.id }, xgsResumePositionDescriptionTable);
+      requestSubTableData(xgsResumeResearchDirectionList, { id: data?.record?.id }, xgsResumeResearchDirectionTable);
+      requestSubTableData(xgsResumeResearchPaperList, { id: data?.record?.id }, xgsResumeResearchPaperTable);
     }
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
@@ -171,6 +259,10 @@
     xgsResumeWorksTable.dataSource = [];
     xgsResumeEdusTable.dataSource = [];
     xgsResumeHomeTable.dataSource = [];
+    xgsResumeResearchResultTable.dataSource = [];
+    xgsResumePositionDescriptionTable.dataSource = [];
+    xgsResumeResearchDirectionTable.dataSource = [];
+    xgsResumeResearchPaperTable.dataSource = [];
   }
   function classifyIntoFormData(allValues) {
     let main = Object.assign({}, allValues.formValue);
@@ -179,6 +271,10 @@
       xgsResumeWorksList: allValues.tablesValue[0].tableData,
       xgsResumeEdusList: allValues.tablesValue[1].tableData,
       xgsResumeHomeList: allValues.tablesValue[2].tableData,
+      xgsResumeResearchResultList: allValues.tablesValue[3].tableData,
+      xgsResumePositionDescriptionList: allValues.tablesValue[4].tableData,
+      xgsResumeResearchDirectionList: allValues.tablesValue[5].tableData,
+      xgsResumeResearchPaperList: allValues.tablesValue[6].tableData,
     };
   }
   //表单提交事件

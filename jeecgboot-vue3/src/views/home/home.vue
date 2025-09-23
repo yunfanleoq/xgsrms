@@ -56,7 +56,7 @@
   import { PageWrapper } from '@/components/Page';
   import { router } from '@/router';
 
-  const listUrl = '/xgsJournalism/xgsJournalism/listForHome';
+  const listUrl = '/xgsJournalism/xgsJournalism/list';
   const imgListUrl = '/xgsHome/xgsHome/listForHome';
 
   const carouselImages = ref([]);

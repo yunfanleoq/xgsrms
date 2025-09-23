@@ -19,7 +19,7 @@
                 <a-input v-model:value="formData.positionDept" placeholder="请输入岗位部门" disabled />
               </a-form-item>
             </a-col>
-            <a-col :span="12">
+            <a-col :span="12"  v-show="false">
               <a-form-item label="岗位类型" v-bind="validateInfos.positionType" id="XgsPositionApplyForm-positionType" name="positionType">
                 <a-input v-model:value="formData.positionType" placeholder="请输入岗位类型" disabled />
               </a-form-item>
@@ -59,8 +59,14 @@
             </a-col>
             <a-col :span="12">
               <a-form-item label="上传PDF简历" id="XgsUserResumeFileForm-filePath" name="filePath">
-                <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" accept=".pdf" />
-                <a-button type="primary" :disabled="!formData.filePath" @click="analysisResume">自动填充简历信息</a-button>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <div style="flex: 1; min-width: 0;">
+                    <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" accept=".pdf" />
+                  </div>
+                  <div style="flex-shrink: 0;">
+                    <a-button type="primary" :disabled="!formData.filePath" @click="analysisResume">自动填充</a-button>
+                  </div>
+                </div>
               </a-form-item>
             </a-col>
           </a-row>

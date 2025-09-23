@@ -14,6 +14,10 @@ enum Api {
   xgsResumeWorksList = '/xgsResume/xgsResumeBase/queryXgsResumeWorksByMainId',
   xgsResumeEdusList = '/xgsResume/xgsResumeBase/queryXgsResumeEdusByMainId',
   xgsResumeHomeList = '/xgsResume/xgsResumeBase/queryXgsResumeHomeByMainId',
+  xgsResumeResearchResultList = '/xgsResume/xgsResumeBase/queryXgsResumeResearchResultByMainId',
+  xgsResumePositionDescriptionList = '/xgsResume/xgsResumeBase/queryXgsResumePositionDescriptionByMainId',
+  xgsResumeResearchDirectionList = '/xgsResume/xgsResumeBase/queryXgsResumeResearchDirectionByMainId',
+  xgsResumeResearchPaperList = '/xgsResume/xgsResumeBase/queryXgsResumeResearchPaperByMainId',
 }
 /**
  * 导出api
@@ -40,6 +44,26 @@ export const xgsResumeEdusList = Api.xgsResumeEdusList;
  * @param params
  */
 export const xgsResumeHomeList = Api.xgsResumeHomeList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeResearchResultList = Api.xgsResumeResearchResultList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumePositionDescriptionList = Api.xgsResumePositionDescriptionList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeResearchDirectionList = Api.xgsResumeResearchDirectionList;
+/**
+ * 查询子表数据
+ * @param params
+ */
+export const xgsResumeResearchPaperList = Api.xgsResumeResearchPaperList;
 /**
  * 列表接口
  * @param params
