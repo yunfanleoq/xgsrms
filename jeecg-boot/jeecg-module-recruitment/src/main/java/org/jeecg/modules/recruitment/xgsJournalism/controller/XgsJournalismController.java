@@ -60,8 +60,8 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 		return Result.OK(pageList);
 	}
 
-	 @ApiOperation(value="新闻内容-分页列表查询", notes="新闻内容-分页列表查询")
-	 @GetMapping(value = "/listForHome")
+	 @ApiOperation(value="新闻内容-分页列表查询2", notes="新闻内容-分页列表查询2")
+	 @GetMapping(value = "/listForHomeNews")
 	 @IgnoreAuth
 	 public Result<IPage<XgsJournalism>> listForHome(XgsJournalism xgsJournalism,
 													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

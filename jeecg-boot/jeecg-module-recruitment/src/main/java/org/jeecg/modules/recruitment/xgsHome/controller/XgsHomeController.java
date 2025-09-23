@@ -46,7 +46,7 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 	 * @return
 	 */
 	//@AutoLog(value = "首页-分页列表查询")
-	@ApiOperation(value="首页-分页列表查询", notes="首页-分页列表查询")
+	@ApiOperation(value="首页-分页列表查询2", notes="首页-分页列表查询2")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsHome>> queryPageList(XgsHome xgsHome,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -59,14 +59,14 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 	}
 
 	 /**
-	  * 分页列表查询
+	  * 轮播图查询
 	  * @param xgsHome
 	  * @param pageNo
 	  * @param pageSize
 	  * @param req
 	  * @return
 	  */
-	 @ApiOperation(value="首页-分页列表查询", notes="首页-分页列表查询")
+	 @ApiOperation(value="首页-轮播图查询", notes="首页-轮播图查询")
 	 @GetMapping(value = "/listForHome")
 	 public Result<IPage<XgsHome>> listForHome(XgsHome xgsHome,
 												 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
