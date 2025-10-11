@@ -34,7 +34,7 @@
                           closable
                           @close="clearError"
                         />
-                        <a-button type="primary" size="small" @click="clearError" style="margin-top: 8px;">
+                        <a-button type="primary" size="small" @click="reupload" style="margin-top: 8px;">
                           重新上传
                         </a-button>
                       </div>
@@ -43,20 +43,15 @@
                       <div v-else-if="formData.photograph" class="large-image-display">
                         <!-- 直接显示大图 -->
                         <img 
-                          :src="formData.photograph" 
-                          class="large-image"
-                          :style="{ 
-                            height: photoCellHeight + 'px',
-                            width: 'auto',
-                            maxWidth: '100%',
-                            objectFit: 'contain'
-                          }"
+                          :src="getImageUrl(formData.photograph)" 
+                          :class="['large-image', imageFitModeClass]"
                           alt="本人照片"
                           role="img"
                           tabindex="0"
                           @click="previewImage(formData.photograph)"
                           @keydown.enter="previewImage(formData.photograph)"
                           @keydown.space.prevent="previewImage(formData.photograph)"
+                          @load="handleImageLoad"
                           @error="handleImageError"
                         />
                         
@@ -92,11 +87,11 @@
                       <!-- 上传按钮 -->
                       <div v-else class="upload-placeholder" role="region" aria-label="照片上传区域">
                         <JImageUpload 
+                          :key="uploaderKey"
                           v-model:value="formData.photograph" 
                           :fileMax="1"
                           :showUploadList="false"
                           :listType="'picture-card'"
-                          :style="{ height: photoCellHeight + 'px', width: '100%' }"
                           @change="handleImageUploadSuccess"
                           @error="handleUploadError"
                           aria-label="上传本人照片"
@@ -439,7 +434,8 @@
 
 <script lang="ts" setup>
   import { defHttp } from '/@/utils/http/axios';
-  import {ref, computed, reactive, onMounted, defineProps, defineExpose, watch, nextTick, onUnmounted} from 'vue';
+  import { ref, computed, reactive, onMounted, defineProps, watch, nextTick, onUnmounted } from 'vue';
+  
   import { JVxeTable } from '/@/components/jeecg/JVxeTable';
   import { useJvxeMethod } from '/@/hooks/system/useJvxeMethods';
   import { xgsResumeWorksColumns, xgsResumeEdusColumns, xgsResumeHomeColumns, xgsResumeResearchResultColumns, xgsResumePositionDescriptionColumns, xgsResumeResearchDirectionColumns, xgsResumeResearchPaperColumns } from '../XgsResumeBase.data';
@@ -447,6 +443,11 @@
   import JImageUpload from '/@/components/Form/src/jeecg/components/JImageUpload.vue';
   import { message } from 'ant-design-vue';
   import { DeleteOutlined, EyeOutlined } from '@ant-design/icons-vue';
+  import { getFileAccessHttpUrl } from '/@/utils/common/compUtils';
+
+  // ensure icon imports are marked as used for linters that don't analyze templates
+  const __iconsUsed = [DeleteOutlined, EyeOutlined];
+  void __iconsUsed;
 
   const refKeys = ref(['xgsResumeBase', 'xgsResumeWorks', 'xgsResumeEdus', 'xgsResumeHome', 'xgsResumeResearchResult', 'xgsResumePositionDescription', 'xgsResumeResearchDirection', 'xgsResumeResearchPaper']);
   const activeKey = ref('xgsResumeBase');
@@ -540,10 +541,20 @@
 
   // 照片单元格动态高度
   const photoCellHeight = ref(240);
+  const photoCellWidth = ref(0);
+  const imageNatural = reactive({ width: 0, height: 0 });
+  const imageFitModeClass = computed(() => {
+    if (!imageNatural.width || !imageNatural.height || !photoCellWidth.value || !photoCellHeight.value) {
+      return 'fit-by-height';
+    }
+    const cellRatio = photoCellWidth.value / photoCellHeight.value;
+    const imageRatio = imageNatural.width / imageNatural.height;
+    // 如果图片更“宽”，优先按高度铺满；如果图片更“窄”，按宽度铺满
+    return imageRatio >= cellRatio ? 'fit-by-height' : 'fit-by-width';
+  });
   let resizeObserver: ResizeObserver | null = null;
   
-  // 图片显示模式：true=直接显示，false=使用JImageUpload组件
-  const useDirectImageDisplay = ref(true);
+  // 图片显示模式变量已不再使用，移除
 
   // 照片上传配置
   const photoConfig = {
@@ -569,15 +580,18 @@
     progress: 0
   });
 
+  // 用于强制重建上传控件
+  const uploaderKey = ref('uploader-initial');
+
   // 测量照片单元格高度
   const measurePhotoCellHeight = () => {
     nextTick(() => {
       const photoCell = document.querySelector('.photo-cell') as HTMLElement;
       if (photoCell) {
         const height = photoCell.offsetHeight;
-        if (height > 0) {
-          photoCellHeight.value = height;
-        }
+        const width = photoCell.offsetWidth;
+        if (height > 0) photoCellHeight.value = height;
+        if (width > 0) photoCellWidth.value = width;
       }
     });
   };
@@ -679,17 +693,35 @@
         formData.photograph = file.response?.message || file.url || file.response?.url || file.response?.data?.url;
         console.log('设置照片URL:', formData.photograph);
       }
+      // 上传完成后，刷新key，确保再次可上传
+      uploaderKey.value = 'uploader-' + Date.now();
     }
   };
 
-  // 获取图片URL（处理相对路径）
+  // 获取图片URL（接入平台前缀并安全编码路径段）
   const getImageUrl = (url: string) => {
     if (!url) return '';
-    
-    console.log('原始图片URL:', url);
-    
-    // 直接返回原始URL，让浏览器处理编码
-    return url;
+    try {
+      const raw = String(url).trim();
+      console.log('原始图片URL:', raw);
+      // 直接透传 data/blob URL
+      if (/^(data:|blob:)/i.test(raw)) return raw;
+      // 通过平台工具补全文件访问前缀（如 /sys/common/static/...）
+      const withBase = getFileAccessHttpUrl(raw);
+      // 使用 URL 处理相对/绝对路径
+      const full = new URL(withBase, window.location.origin);
+      // 先解码再逐段编码，避免重复编码
+      const decodedPath = decodeURI(full.pathname);
+      const encodedPath = decodedPath
+        .split('/')
+        .map((seg) => (seg ? encodeURIComponent(seg) : ''))
+        .join('/');
+      full.pathname = encodedPath;
+      return full.toString();
+    } catch (e) {
+      console.error('构建图片URL失败:', e, url);
+      return url;
+    }
   };
 
   // 预览图片状态
@@ -726,6 +758,8 @@
           formData.photograph = '';
           uploadState.error = null;
           message.success('照片已删除');
+          // 删除后强制重建上传控件，避免内部缓存阻止再次选择
+          uploaderKey.value = 'uploader-' + Date.now();
         }
       });
     });
@@ -739,10 +773,17 @@
     
     uploadState.error = '图片加载失败，请检查图片链接是否有效';
     message.error('图片加载失败，请重新上传');
-    
-    // 切换到JImageUpload组件显示模式
-    console.log('切换到JImageUpload组件显示模式');
-    useDirectImageDisplay.value = false;
+
+    // 清空当前图片地址，显示上传控件
+    formData.photograph = '';
+    console.log('已清空照片URL，显示上传控件以便重新上传');
+  };
+
+  // 图片加载成功后记录其天然尺寸并调整适配策略
+  const handleImageLoad = (event: Event) => {
+    const target = event.target as HTMLImageElement;
+    imageNatural.width = target.naturalWidth || 0;
+    imageNatural.height = target.naturalHeight || 0;
   };
 
   // 处理上传错误
@@ -756,6 +797,19 @@
   // 清除错误状态
   const clearError = () => {
     uploadState.error = null;
+    // 若仍无有效图片，确保展示上传控件
+    if (!formData.photograph) {
+      console.log('错误已清除，等待用户重新上传照片');
+    }
+  };
+
+  // 重新上传：清空当前图片与错误，显示上传控件
+  const reupload = () => {
+    uploadState.error = null;
+    uploadState.uploading = false;
+    formData.photograph = '';
+    message.info('请重新选择并上传照片');
+    uploaderKey.value = 'uploader-' + Date.now();
   };
 
 
@@ -868,13 +922,34 @@
   }
 
   //方法配置
-  const [handleChangeTabs, handleSubmit] = useJvxeMethod(
+  const [handleChangeTabs, handleSubmit, _requestSubTableData, formRef] = useJvxeMethod(
     requestAddOrEdit,
     classifyIntoFormData,
     tableRefs,
     activeKey,
     refKeys
   );
+
+  // 为非 BasicForm 的页面提供一个最小可用的 formRef 代理，避免提交时报 getFieldsValue 为空
+  const buildFormRefProxy = () => ({
+    getFieldsValue: () => ({ ...formData }),
+    validate: () => Promise.resolve(),
+    getProps: () => ({}),
+    scrollToField: () => {},
+  });
+  // 初始化设置一次
+  // 注意：useJvxeMethod 返回的 formRef 在非 BasicForm 场景可能未被绑定
+  try {
+    // 访问以触发 Proxy getter，若异常则兜底
+    // @ts-ignore
+    if (!formRef?.value || typeof formRef.value.getFieldsValue !== 'function') {
+      // @ts-ignore
+      formRef.value = buildFormRefProxy();
+    }
+  } catch (e) {
+    // @ts-ignore
+    formRef.value = buildFormRefProxy();
+  }
   // 弹窗tabs滚动区域的高度
   const tabsStyle = computed(() => {
     let height: Nullable<string> = null;
@@ -1503,24 +1578,31 @@
 
   /** 大图样式 */
   .large-image {
-    width: 100% !important;
-    height: 100% !important;
+    width: auto !important; /* 默认宽度自适应 */
+    height: 100% !important; /* 默认高度填满单元格 */
     max-width: 100% !important;
     max-height: 100% !important;
-    min-width: 100% !important;
-    min-height: 100% !important;
-    object-fit: cover !important; /* 充满容器，可能裁剪部分图片 */
+    object-fit: contain !important; /* 按比例完整显示，不裁剪 */
     object-position: center !important;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: transform 0.2s ease;
     display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
+    position: static !important; /* 不绝对定位，保持flex容器内居中 */
+    margin: 0 auto !important; /* 水平居中 */
+  }
+
+  /* 当需要按宽度铺满时（cell 更“窄”或图片更“高”） */
+  .large-image.fit-by-width {
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  /* 当需要按高度铺满时（cell 更“宽”或图片更“宽”） */
+  .large-image.fit-by-height {
+    width: auto !important;
+    height: 100% !important;
   }
 
   .large-image:hover {
@@ -1627,22 +1709,22 @@
 
   /** 预览按钮样式 */
   .preview-btn {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #1890ff;
-    color: #1890ff;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    border: none;
+    color: #333;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-right: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    margin-right: 6px;
   }
 
   .preview-btn:hover {
-    background: #1890ff;
-    color: white;
+    background: #fff;
+    color: #1890ff;
   }
 
   /** 照片预览模态框样式 */
