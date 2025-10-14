@@ -38,7 +38,8 @@
       <p>职位信息加载中...</p>
     </div>
   </div>
-  <XgsPositionApplyModal ref="registerModalRef" :form-data="record" :formBpm="true" />
+  <!-- 使用新的重构后的在线申请表单 -->
+  <XgsPositionApplyModalNew ref="registerModalRef" :form-data="record" :formBpm="true" />
 </template>
 
 <script setup lang="ts" name="PositionDetail">
@@ -49,7 +50,8 @@
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   import { useMessage } from '@/hooks/web/useMessage';
-  import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
+  // 引入新的重构表单组件
+  import XgsPositionApplyModalNew from '@/views/positions/components/XgsPositionApplyModalNew.vue';
   import { message } from 'ant-design-vue';
   import { useModal } from '@/components/Modal';
   import { defHttp } from '@/utils/http/axios';

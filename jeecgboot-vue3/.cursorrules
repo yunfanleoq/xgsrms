@@ -1,0 +1,81 @@
+{
+  "rules": {
+    "formatting": {
+      "indent": 2,
+      "quotes": "single",
+      "semicolons": true,
+      "maxLineLength": 150,
+      "trailingComma": "es5",
+      "bracketSpacing": true,
+      "arrowParens": "always"
+    },
+    "vue": {
+      "scriptSetup": true,
+      "templateIndent": 2,
+      "attributeOrder": [
+        "DEFINITION",
+        "LIST_RENDERING",
+        "CONDITIONALS",
+        "RENDER_MODIFIERS",
+        "GLOBAL",
+        "UNIQUE",
+        "TWO_WAY_BINDING",
+        "OTHER_DIRECTIVES",
+        "OTHER_ATTR",
+        "EVENTS",
+        "CONTENT"
+      ],
+      "htmlSelfClosing": {
+        "html": {
+          "void": "always",
+          "normal": "never",
+          "component": "always"
+        },
+        "svg": "always",
+        "math": "always"
+      }
+    },
+    "typescript": {
+      "noExplicitAny": false,
+      "noUnusedVars": {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      },
+      "noEmptyFunction": false,
+      "explicitFunctionReturnType": false,
+      "explicitModuleBoundaryTypes": false
+    },
+    "imports": {
+      "order": [
+        "vue",
+        "@vue/*",
+        "@/*",
+        "^[./]"
+      ],
+      "groups": [
+        ["^vue$", "^@vue/"],
+        ["^@/"],
+        ["^[./]"]
+      ]
+    },
+    "naming": {
+      "components": "PascalCase",
+      "directives": "camelCase",
+      "props": "camelCase",
+      "events": "kebab-case",
+      "methods": "camelCase",
+      "computed": "camelCase",
+      "data": "camelCase",
+      "refs": "camelCase"
+    },
+    "comments": {
+      "required": [
+        "component",
+        "method",
+        "computed",
+        "watch"
+      ],
+      "format": "JSDoc"
+    }
+  }
+} 
