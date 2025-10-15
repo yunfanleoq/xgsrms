@@ -2,10 +2,10 @@
   <div>
     <div class="main-content">
       <!-- 轮播图 -->
-      <div class="carousel">
-        <button class="carousel-button left" @click="showPrevImage" v-show="isHovered">◀</button>
-        <img :src="currentImgSrc" alt="轮播图" @mouseover="isHovered = true" @mouseleave="isHovered = false" />
-        <button class="carousel-button right" @click="showNextImage" v-show="isHovered">▶</button>
+      <div class="carousel" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
+        <button class="carousel-button left" @click="showPrevImage">◀</button>
+        <img :src="currentImgSrc" alt="轮播图" />
+        <button class="carousel-button right" @click="showNextImage">▶</button>
         <!-- 圆点导航 -->
         <div class="carousel-dots">
           <span
@@ -55,7 +55,10 @@
   import { defHttp } from '@/utils/http/axios';
   import { PageWrapper } from '@/components/Page';
   import { router } from '@/router';
+  import { useGlobSetting } from '/@/hooks/setting';
 
+  const globSetting = useGlobSetting();
+  const apiUrl = globSetting.apiUrl;
   const listUrl = '/xgsJournalism/xgsJournalism/list';
   const imgListUrl = '/xgsHome/xgsHome/listForHome';
 
@@ -76,9 +79,14 @@
 
       if (response && response.records) {
         carouselImages.value = response.records.map((item) => {
-          const imgTag = item.photograph; // 获取 HTML 字符串
+          // 优先使用本地图片路径，如果没有则使用原始photograph
+          let imageUrl = item.photograph;
+          if (item.localImagePath) {
+            // 构建本地图片访问URL
+            imageUrl = `${apiUrl}/xgsHome/xgsHome/getCarouselImage?imagePath=${encodeURIComponent(item.localImagePath)}`;
+          }
           return {
-            image: imgTag, // 将图片链接放入 image 字段
+            image: imageUrl, // 使用本地图片URL或原始URL
             createTime: item.createTime,
           };
         }); // 截取前5张轮播图
@@ -267,7 +275,7 @@
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    background-color: transparent;
+    background-color: rgba(0, 0, 0, 0.5);
     color: white;
     font-size: 20px;
     border: none;
@@ -278,12 +286,10 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    z-index: 1;
-    visibility: hidden; /* 默认隐藏 */
-    pointer-events: none; /* 不允许点击 */
-    transition:
-      visibility 0.3s,
-      opacity 0.3s;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
   }
 
   .carousel-button.left {
@@ -296,8 +302,12 @@
 
   /* 鼠标悬停时显示按钮 */
   .carousel:hover .carousel-button {
-    visibility: visible; /* 显示按钮 */
-    pointer-events: auto; /* 允许点击 */
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .carousel-button:hover {
+    background-color: rgba(0, 0, 0, 0.7);
   }
 
   /* 圆点导航容器 */

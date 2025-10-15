@@ -93,4 +93,8 @@ public class XgsHome implements Serializable {
 	@Excel(name = "类型", width = 15)
     @ApiModelProperty(value = "类型")
     private String newsType;
+	/**本地图片路径*/
+	@Excel(name = "本地图片路径", width = 15)
+    @ApiModelProperty(value = "本地图片路径")
+    private String localImagePath;
 }

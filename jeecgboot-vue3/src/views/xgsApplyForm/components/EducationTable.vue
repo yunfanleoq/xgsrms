@@ -1,11 +1,5 @@
 <template>
   <div class="education-table">
-    <div class="table-operations" v-if="!disabled">
-      <a-button type="primary" @click="handleAdd">
-        <plus-outlined /> 新增教育经历
-      </a-button>
-    </div>
-    
     <a-table
       :columns="columns"
       :dataSource="localDataSource"
@@ -13,7 +7,6 @@
       :rowKey="record => record.id || record.tempId"
       :scroll="{ x: 1000 }"
       size="middle"
-      class="mt-2"
     >
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'action' && !disabled">
@@ -308,19 +301,12 @@ const getData = () => {
 // 暴露方法
 defineExpose({
   getData,
+  handleAdd,
 });
 </script>
 
 <style lang="less" scoped>
 .education-table {
   width: 100%;
-
-  .table-operations {
-    margin-bottom: 16px;
-  }
-  
-  .mt-2 {
-    margin-top: 8px;
-  }
 }
 </style>

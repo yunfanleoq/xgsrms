@@ -388,7 +388,12 @@
 
         <!-- 工作经历区域 -->
         <tr id="work-experience">
-          <td colspan="6" class="section-header">工作经历</td>
+          <td colspan="6" class="section-header">
+            工作经历
+            <a-button v-if="!formDisabled" type="link" size="small" @click="workExperienceRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -402,7 +407,12 @@
 
         <!-- 教育经历区域 -->
         <tr id="education">
-          <td colspan="6" class="section-header">教育经历</td>
+          <td colspan="6" class="section-header">
+            教育经历
+            <a-button v-if="!formDisabled" type="link" size="small" @click="educationRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -416,7 +426,12 @@
 
         <!-- 家庭状况区域 -->
         <tr id="family-info">
-          <td colspan="6" class="section-header">家庭状况</td>
+          <td colspan="6" class="section-header">
+            家庭状况
+            <a-button v-if="!formDisabled" type="link" size="small" @click="familyStatusRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -430,7 +445,12 @@
 
         <!-- 工作主要业绩区域 -->
         <tr id="work-achievement">
-          <td colspan="6" class="section-header">工作主要业绩</td>
+          <td colspan="6" class="section-header">
+            工作主要业绩
+            <a-button v-if="!formDisabled" type="link" size="small" @click="workAchievementRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -444,7 +464,12 @@
 
         <!-- 应聘岗位陈述区域 -->
         <tr id="position-statement">
-          <td colspan="6" class="section-header">应聘岗位陈述</td>
+          <td colspan="6" class="section-header">
+            应聘岗位陈述
+            <a-button v-if="!formDisabled" type="link" size="small" @click="positionStatementRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -458,7 +483,12 @@
 
         <!-- 研究方向与专长区域 -->
         <tr id="research-direction">
-          <td colspan="6" class="section-header">研究方向与专长</td>
+          <td colspan="6" class="section-header">
+            研究方向与专长
+            <a-button v-if="!formDisabled" type="link" size="small" @click="researchDirectionRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -472,7 +502,12 @@
 
         <!-- 论文专著专利区域 -->
         <tr id="paper-patent">
-          <td colspan="6" class="section-header">论文专著专利</td>
+          <td colspan="6" class="section-header">
+            论文专著专利
+            <a-button v-if="!formDisabled" type="link" size="small" @click="paperPatentRef?.handleAdd()">
+              <plus-outlined /> 新增
+            </a-button>
+          </td>
         </tr>
         <tr>
           <td colspan="6" class="content-cell">
@@ -495,23 +530,19 @@
 
       <!-- 右侧锚点导航 -->
       <div class="anchor-wrapper">
-        <a-affix :offset-top="120" :target="getAffixTarget">
-          <div class="anchor-container">
-            <a-anchor
-              :target-offset="80"
-              :get-container="getAnchorContainer"
-            >
-              <a-anchor-link href="#basic-info" title="基本信息" />
-              <a-anchor-link href="#work-experience" title="工作经历" />
-              <a-anchor-link href="#education" title="教育经历" />
-              <a-anchor-link href="#family-info" title="家庭状况" />
-              <a-anchor-link href="#work-achievement" title="工作主要业绩" />
-              <a-anchor-link href="#position-statement" title="应聘岗位陈述" />
-              <a-anchor-link href="#research-direction" title="研究方向与专长" />
-              <a-anchor-link href="#paper-patent" title="论文专著专利" />
-            </a-anchor>
-          </div>
-        </a-affix>
+          <a-anchor
+            :target-offset="80"
+            :get-container="getAnchorContainer"
+          >
+            <a-anchor-link href="#basic-info" title="基本信息" />
+            <a-anchor-link href="#work-experience" title="工作经历" />
+            <a-anchor-link href="#education" title="教育经历" />
+            <a-anchor-link href="#family-info" title="家庭状况" />
+            <a-anchor-link href="#work-achievement" title="工作主要业绩" />
+            <a-anchor-link href="#position-statement" title="应聘岗位陈述" />
+            <a-anchor-link href="#research-direction" title="研究方向与专长" />
+            <a-anchor-link href="#paper-patent" title="论文专著专利" />
+          </a-anchor>
       </div>
     </div>
   </div>
@@ -966,12 +997,11 @@ defineExpose({
         border-radius: 8px;
         padding: 20px 0;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        min-height: 400px;
-        max-height: calc(100vh - 160px); // 限制最大高度，防止超出视口
         overflow-y: auto; // 如果内容过多，允许滚动
       }
       
       :deep(.ant-anchor-wrapper) {
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         background: transparent;
         padding: 0;
       }
@@ -1042,6 +1072,13 @@ defineExpose({
       font-size: 16px;
       padding: 10px 16px;
       color: #0050b3;
+      
+      :deep(.ant-btn-link) {
+        float: right;
+        margin-top: -2px;
+        color: #1890ff;
+        padding: 0 8px;
+      }
       text-align: center;
       border: 1px solid #91d5ff;
       scroll-margin-top: 80px; // 锚点跳转时的偏移量

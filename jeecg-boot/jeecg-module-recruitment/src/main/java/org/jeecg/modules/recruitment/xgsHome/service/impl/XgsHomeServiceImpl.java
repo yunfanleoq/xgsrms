@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jeecg.modules.recruitment.xgsHome.entity.XgsHome;
 import org.jeecg.modules.recruitment.xgsHome.mapper.XgsHomeMapper;
 import org.jeecg.modules.recruitment.xgsHome.service.IXgsHomeService;
+import org.jeecg.modules.recruitment.xgsHome.util.ImageDownloadUtil;
 import org.jeecg.modules.recruitment.xgsJournalism.entity.XgsJournalism;
 import org.jeecg.modules.recruitment.xgsJournalism.mapper.XgsJournalismMapper;
 import org.jsoup.Jsoup;
@@ -118,10 +119,14 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 String imgUrl = resolveRelativeUrl(apiUrl, href);
 
                 String imgData = downloadImageAsBase64(photographUrl);
+                
+                // 下载图片并保存到本地
+                String localImagePath = ImageDownloadUtil.downloadAndSaveImage(photographUrl);
 
                 // 创建 XgsHome 对象
                 XgsHome homeData = new XgsHome();
-                homeData.setPhotograph(photographUrl); // 图片地址
+                homeData.setPhotograph(photographUrl); // 原始外部图片地址
+                homeData.setLocalImagePath(localImagePath); // 本地图片路径
                 homeData.setNewTitle(title);
                 homeData.setImgHref(imgUrl);
                 homeData.setNews("首页图片");

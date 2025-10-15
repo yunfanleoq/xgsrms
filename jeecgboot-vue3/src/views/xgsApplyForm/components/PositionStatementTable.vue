@@ -1,11 +1,5 @@
 <template>
   <div class="position-statement-table">
-    <div class="table-operations" v-if="!disabled">
-      <a-button type="primary" @click="handleAdd">
-        <plus-outlined /> 新增应聘岗位陈述
-      </a-button>
-    </div>
-    
     <a-table
       :columns="columns"
       :dataSource="localDataSource"
@@ -13,7 +7,6 @@
       :rowKey="record => record.id || record.tempId"
       :scroll="{ x: 800 }"
       size="middle"
-      class="mt-2"
     >
       <template #bodyCell="{ column, record, index }">
         <template v-if="column.key === 'action' && !disabled">
@@ -205,20 +198,13 @@ const getData = () => {
 // 暴露方法
 defineExpose({
   getData,
+  handleAdd,
 });
 </script>
 
 <style lang="less" scoped>
 .position-statement-table {
   width: 100%;
-
-  .table-operations {
-    margin-bottom: 16px;
-  }
-  
-  .mt-2 {
-    margin-top: 8px;
-  }
   
   .content-cell {
     max-height: 100px;

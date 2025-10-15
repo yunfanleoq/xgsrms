@@ -1,6 +1,9 @@
 package org.jeecg.modules.recruitment.xgsHome.controller;
 
 import java.util.Arrays;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.OutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
@@ -199,6 +202,84 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
     @RequestMapping(value = "/importExcel", method = RequestMethod.POST)
     public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) {
         return super.importExcel(request, response, XgsHome.class);
+    }
+
+    /**
+     * 获取本地图片
+     * 
+     * @param imagePath 图片相对路径
+     * @param response HTTP响应
+     */
+    @ApiOperation(value="获取本地轮播图片", notes="获取本地轮播图片")
+    @GetMapping(value = "/getCarouselImage")
+    public void getCarouselImage(@RequestParam(name="imagePath", required=true) String imagePath,
+                                  HttpServletResponse response) {
+        FileInputStream inputStream = null;
+        OutputStream outputStream = null;
+        
+        try {
+            File imageFile = new File(imagePath);
+            
+            if (!imageFile.exists() || !imageFile.isFile()) {
+                log.error("图片文件不存在: {}", imagePath);
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                return;
+            }
+            
+            // 设置响应头
+            String fileName = imageFile.getName();
+            String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+            
+            switch (fileExtension) {
+                case "jpg":
+                case "jpeg":
+                    response.setContentType("image/jpeg");
+                    break;
+                case "png":
+                    response.setContentType("image/png");
+                    break;
+                case "gif":
+                    response.setContentType("image/gif");
+                    break;
+                case "bmp":
+                    response.setContentType("image/bmp");
+                    break;
+                case "webp":
+                    response.setContentType("image/webp");
+                    break;
+                default:
+                    response.setContentType("application/octet-stream");
+            }
+            
+            response.setHeader("Cache-Control", "max-age=86400"); // 缓存1天
+            
+            // 读取文件并写入响应
+            inputStream = new FileInputStream(imageFile);
+            outputStream = response.getOutputStream();
+            
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            
+            outputStream.flush();
+            
+        } catch (Exception e) {
+            log.error("获取图片时发生异常: {}", imagePath, e);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (Exception e) {
+                log.error("关闭流时发生异常", e);
+            }
+        }
     }
 
 }
