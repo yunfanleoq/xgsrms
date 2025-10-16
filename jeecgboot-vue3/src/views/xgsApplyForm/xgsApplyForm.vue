@@ -103,21 +103,17 @@
                       
                       <!-- 上传按钮 -->
                       <div v-else class="upload-placeholder">
-                        <a-upload
+                        <JImageUpload
                           v-if="!formDisabled"
                           :key="uploaderKey"
-                          name="file"
-                          list-type="picture-card"
-                          :show-upload-list="false"
-                          :before-upload="beforeUpload"
-                          :customRequest="customUpload"
-                          accept=".jpg,.jpeg,.png,.gif"
-                        >
-                          <div>
-                            <plus-outlined />
-                            <div style="margin-top: 8px">上传照片</div>
-                          </div>
-                        </a-upload>
+                          v-model:value="formData.photograph"
+                          :fileMax="1"
+                          :showUploadList="false"
+                          :listType="'picture-card'"
+                          @change="handleImageUploadSuccess"
+                          @error="handleUploadError"
+                          aria-label="上传本人照片"
+                        />
                         <div class="upload-tips">
                           <p>支持 JPG、PNG、GIF 格式</p>
                           <p>文件大小不超过 2MB</p>
@@ -551,10 +547,11 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted, defineProps, defineExpose } from 'vue';
 import { defHttp } from '/@/utils/http/axios';
-import { message, Modal, Anchor, AnchorLink, Affix } from 'ant-design-vue';
+import { message, Modal, Anchor, AnchorLink } from 'ant-design-vue';
 import { EyeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons-vue';
 import { getFileAccessHttpUrl } from '/@/utils/common/compUtils';
 import { saveOrUpdate } from '/@/views/xgsResumeBase/xgsResumePT/XgsResumeBase.api';
+import JImageUpload from '/@/components/Form/src/jeecg/components/JImageUpload.vue';
 import { 
   xgsResumeWorksList, 
   xgsResumeEdusList, 
@@ -577,7 +574,6 @@ import PaperPatentTable from './components/PaperPatentTable.vue';
 // 使用 Ant Design Vue 组件别名（兼容性）
 const AAnchor = Anchor;
 const AAnchorLink = AnchorLink;
-const AAffix = Affix;
 
 // Props 接收参数
 const props = defineProps({
@@ -746,55 +742,25 @@ const reupload = () => {
   uploaderKey.value = 'uploader-' + Date.now();
 };
 
-// 上传前验证
-const beforeUpload = (file: File) => {
-  // 检查文件类型
-  const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(file.type);
-  if (!isValidType) {
-    message.error('只能上传 JPG/PNG/GIF 格式的图片!');
-    return false;
-  }
-  
-  // 检查文件大小，限制2MB
-  const isValidSize = file.size / 1024 / 1024 < 2;
-  if (!isValidSize) {
-    message.error('图片大小不能超过 2MB!');
-    return false;
-  }
-  
-  return true;
-};
-
-// 自定义上传实现
-const customUpload = async (options: any) => {
-  const { file, onSuccess, onError } = options;
-  
-  uploadState.uploading = true;
+// 图片上传成功的处理
+const handleImageUploadSuccess = (fileUrl: string) => {
+  uploadState.uploading = false;
   uploadState.error = null;
   
-  try {
-    // 调用文件上传接口
-    const result = await defHttp.uploadFile(
-      { url: '/sys/common/upload' },
-      { file: file }
-    );
-    
-    if (result?.success) {
-      // 上传成功
-      formData.photograph = result.message;
-      onSuccess(result);
-      message.success('照片上传成功!');
-    } else {
-      throw new Error(result?.message || '上传失败');
-    }
-  } catch (error: any) {
-    console.error('照片上传失败:', error);
-    uploadState.error = error.message || '上传失败';
-    onError(error);
-    message.error('照片上传失败: ' + uploadState.error);
-  } finally {
-    uploadState.uploading = false;
+  if (fileUrl) {
+    formData.photograph = fileUrl;
+    message.success('照片上传成功!');
   }
+};
+
+// 图片上传错误的处理
+const handleUploadError = (error: any) => {
+  uploadState.uploading = false;
+  uploadState.error = error?.message || '上传失败';
+  formData.photograph = '';
+  
+  console.error('照片上传失败:', error);
+  message.error('照片上传失败: ' + uploadState.error);
 };
 
 // 表单提交处理
@@ -941,16 +907,6 @@ const setDataByPDF = (data: any) => {
 const getAnchorContainer = () => {
   const modalBody = document.querySelector('.ant-modal-body');
   return (modalBody as HTMLElement) || (window as any);
-};
-
-// 获取固钉目标容器（用于 affix）
-const getAffixTarget = () => {
-  // 检查是否在弹窗中
-  const modalWrap = document.querySelector('.ant-modal-wrap');
-  if (modalWrap) {
-    return modalWrap as HTMLElement;
-  }
-  return window;
 };
 
 // 暴露方法给父组件
