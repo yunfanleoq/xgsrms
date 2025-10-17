@@ -36,6 +36,11 @@ export const columns: BasicColumn[] = [
     dataIndex: 'positionName',
   },
   {
+    title: '岗位类型',
+    align: 'center',
+    dataIndex: 'positionType',
+  },
+  {
     title: '研究方向',
     align: 'center',
     dataIndex: 'researchDirection',
