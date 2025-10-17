@@ -13,7 +13,9 @@
     "gen:icon": "esno ./build/generate/icon/index.ts",
     "batch:prettier": "prettier --write  \"src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
     "upgrade:log": "conventional-changelog -p angular -i CHANGELOG.md -s",
-    "husky:install": "husky install"
+    "husky:install": "husky install",
+    "test:e2e": "playwright test tests/e2e/resume-submit.spec.ts",
+    "test:e2e:headed": "PLAYWRIGHT_HEADLESS=0 playwright test tests/e2e/resume-submit.spec.ts"
   },
   "dependencies": {
     "@ant-design/colors": "^7.0.2",
