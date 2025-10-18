@@ -396,4 +396,7 @@ public class XgsResumeBSH implements Serializable {
     @Dict(dicCode = "岗位分类")
     @ApiModelProperty(value = "简历类别")
     private java.lang.String resumeType;
+    /**其他附件信息*/
+    @ApiModelProperty(value = "其他附件信息")
+    private java.lang.String otherFiles;
 }

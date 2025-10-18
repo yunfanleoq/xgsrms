@@ -67,6 +67,14 @@
             载入中...
           </div>
         </div>
+        
+        <!-- 附件下载区域 -->
+        <div v-if="otherFilesData" class="other-files-section">
+          <a-divider orientation="left">
+            <span style="font-size: 16px; font-weight: 600;">附件材料</span>
+          </a-divider>
+          <FileDownloadList :value="otherFilesData" />
+        </div>
         <!--        <component :is="currentComponent" :form-data="formData" :form-bpm="formBpm" />-->
       </template>
     </JFormContainer>
@@ -80,6 +88,7 @@
   import xgsResumePTForm from '/@/views/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
   import xgsResumeFGForm from '/@/views/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
   import xgsResumeTJForm from '/@/views/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
+  import FileDownloadList from '/@/components/FileList/FileDownloadList.vue';
 
   import { defHttp } from '/@/utils/http/axios';
   import { useMessage } from '/@/hooks/web/useMessage';
@@ -138,6 +147,9 @@
     dataId: '',
     disabled: false,
   });
+  
+  // 附件数据
+  const otherFilesData = ref<string>('');
 
   const initFormData = async () => {
   };
@@ -249,6 +261,11 @@
         resumeFormData.value.dataId = data.xgsPositionApply.resumeId;
         formData.value.disabled = true;
         resumeFormData.value.disabled = true;
+        
+        // 加载附件数据
+        if (data.xgsResumeBasePage && data.xgsResumeBasePage.otherFiles) {
+          otherFilesData.value = data.xgsResumeBasePage.otherFiles;
+        }
         // cons
         // Object.assign(resumeFormData.value, data.xgsResumeBasePage);
       });

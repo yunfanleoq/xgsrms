@@ -5,14 +5,7 @@
         <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
       </a-tab-pane>
       <a-tab-pane key="2" tab="岗位信息" force-render>
-        <XgsPositionsForm
-          v-if="formBool"
-          ref="registerFormPosition"
-          @ok="submitCallback"
-          :formDisabled="true"
-          :formData="positionApply"
-          :formBpm="false"
-        />
+        <BasicForm @register="registerFormPosition" />
       </a-tab-pane>
     </a-tabs>
   </BasicModal>
@@ -23,16 +16,15 @@
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsFlowOpinions.data';
+  import { formSchema as positionFormSchema } from '@/views/positions/XgsPositionPublish.data';
   import { saveOrUpdate } from '../../XgsPositions.api';
   import { useUserStore } from '@/store/modules/user';
-  import XgsPositionsForm from '@/views/positionsCheck/components/XgsPositionsForm.vue';
   // Emits声明
   const emit = defineEmits(['register', 'success']);
   const isUpdate = ref(true);
   const isDetail = ref(false);
   const activeKey = ref('1');
   const positionApply = ref({});
-  const registerFormPosition = ref();
   const userStore = useUserStore();
 
   const formBool = ref(false);
@@ -41,26 +33,36 @@
    * form保存回调事件
    */
   function submitCallback() {
-    handleCancel();
     emit('success');
   }
-  //表单配置
+  //审核意见表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
     labelWidth: 150,
     schemas: formSchema,
     showActionButtonGroup: false,
     baseColProps: { span: 24 },
   });
+  
+  //岗位信息表单配置（只读）
+  const [registerFormPosition, { setFieldsValue: setPositionFieldsValue, resetFields: resetPositionFields }] = useForm({
+    schemas: positionFormSchema,
+    showActionButtonGroup: false,
+    baseColProps: { span: 24 },
+    disabled: true, // 设置为只读
+    labelWidth: 150,
+  });
   //表单赋值
   const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
     console.log('XgsFlowOptionsModal.useModalInner>>>>>', data);
     //重置表单
     await resetFields();
+    await resetPositionFields();
     setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
     isUpdate.value = !!data?.isUpdate;
     isDetail.value = !!data?.showFooter;
     positionApply.value = data.record;
     if (unref(isUpdate)) {
+      // 设置审核意见表单数据
       await setFieldsValue({
         approvalUser: userStore.userInfo.realname,
         approvalNode: data.record.approvalNode,
@@ -68,9 +70,12 @@
         id: data.record.id,
         opinions: data.record.opinions,
       });
+      // 设置岗位信息表单数据
+      await setPositionFieldsValue({
+        ...data.record,
+      });
       formBool.value = true;
     }
-    // registerFormPosition.value = data.record;
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
   });
@@ -84,7 +89,7 @@
       if (['同意'].includes(values.approvalStatus)) {
         values.status = '审核通过';
       } else if (['驳回'].includes(values.approvalStatus)) {
-        values.status = '审核未通过';
+        values.status = '草稿';
       }
       setModalProps({ confirmLoading: true });
       //提交表单

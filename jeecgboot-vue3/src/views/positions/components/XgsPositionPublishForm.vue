@@ -24,8 +24,8 @@
       formData: propTypes.object.def({}),
       formBpm: propTypes.bool.def(true),
     },
-    setup(props) {
-      const [registerForm, { setFieldsValue, setProps, getFieldsValue }] = useForm({
+    setup(props, { expose }) {
+      const [registerForm, { setFieldsValue, setProps, getFieldsValue, resetFields, validate, scrollToField }] = useForm({
         labelWidth: 150,
         schemas: getBpmFormSchema(props.formData),
         showActionButtonGroup: false,
@@ -59,6 +59,15 @@
       }
 
       initFormData();
+
+      // 暴露方法供外部调用
+      expose({
+        resetFields,
+        setFieldsValue,
+        validate,
+        setProps,
+        scrollToField,
+      });
 
       return {
         registerForm,

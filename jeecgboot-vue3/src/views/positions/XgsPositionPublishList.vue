@@ -92,13 +92,17 @@
         fieldMapToTime: [],
       },
       actionColumn: {
-        width: 120,
+        width: 200,
         fixed: 'right',
       },
       beforeFetch: (params) => {
+        // 获取当前用户信息
+        const username = userStore.getUserInfo?.username || '';
+        
+        // 不再按状态过滤，显示用户创建的所有岗位
         return Object.assign(params, queryParam, {
           dept: departName,
-          status: '草稿',
+          createBy: username, // 只显示当前用户创建的岗位
         });
       },
     },
@@ -113,7 +117,16 @@
     },
   });
 
-  const [registerTable, { reload }, { rowSelection, selectedRowKeys }] = tableContext;
+  const [registerTable, { reload }, { rowSelection: defaultRowSelection, selectedRowKeys }] = tableContext;
+  
+  // 自定义 rowSelection，只允许选择草稿状态的行
+  const rowSelection = computed(() => ({
+    ...defaultRowSelection,
+    getCheckboxProps: (record: Recordable) => ({
+      disabled: record.status !== '草稿', // 只有草稿状态可以选中
+      name: record.id,
+    }),
+  }));
 
   // // 高级查询配置
   // const superQueryConfig = reactive(superQuerySchema);
@@ -145,7 +158,7 @@
    * 申请事件
    */
   function handleApply(record: Recordable) {
-    if (record.status === '草稿') {
+    if (record.status === '草稿' || record.status === '审核未通过') {
       const record1 = {
         ...record, // 合并 record 的值
         status: '待审核', // 设置 status 为 '待审核'
@@ -163,13 +176,13 @@
   /**
    * 编辑事件
    */
-  // function handleEdit(record: Recordable) {
-  //   openModal(true, {
-  //     record,
-  //     isUpdate: true,
-  //     showFooter: true,
-  //   });
-  // }
+  function handleEdit(record: Recordable) {
+    openModal(true, {
+      record,
+      isUpdate: true,
+      showFooter: true,
+    });
+  }
   /**
    * 详情
    */
@@ -187,10 +200,11 @@
     await deleteOne({ id: record.id }, handleSuccess);
   }
   /**
-   * 批量删除事件
+   * 批量删除事件 - 只允许删除草稿状态的岗位
    */
   async function batchHandleDelete() {
-    await batchDelete({ ids: selectedRowKeys.value }, handleSuccess);
+    // 由于表格限制了只能选择草稿状态的行，这里可以直接删除
+    await batchDelete({ ids: selectedRowKeys.value.join(',') }, handleSuccess);
   }
   /**
    * 成功回调
@@ -199,27 +213,45 @@
     (selectedRowKeys.value = []) && reload();
   }
   /**
-   * 操作栏
+   * 操作栏 - 根据岗位状态显示不同的操作按钮
    */
   function getTableAction(record) {
-    return [
-      {
-        label: '申请',
-        onClick: handleApply.bind(null, record),
-        auth: 'positions:xgs_positions:edit', //auth虽然是edit，但是实际是申请
-      },
-    ];
+    // 只有草稿状态的岗位才显示申请和编辑按钮
+    if (record.status === '草稿' || record.status === '审核未通过') {
+      return [
+        {
+          label: '申请',
+          onClick: handleApply.bind(null, record),
+          auth: 'positions:xgs_positions:edit',
+        },
+        {
+          label: '编辑',
+          onClick: handleEdit.bind(null, record),
+          auth: 'positions:xgs_positions:edit',
+        },
+      ];
+    } else {
+      // 非草稿状态不显示操作按钮，只在下拉菜单中显示详情
+      return [];
+    }
   }
+  
   /**
-   * 下拉操作栏
+   * 下拉操作栏 - 根据岗位状态显示不同的操作按钮
    */
   function getDropDownAction(record) {
-    return [
-      {
-        label: '详情',
-        onClick: handleDetail.bind(null, record),
-      },
-      {
+    // 基础操作按钮
+    const actions: any[] = [];
+    
+    // 所有状态都可以查看详情
+    actions.push({
+      label: '详情',
+      onClick: handleDetail.bind(null, record),
+    });
+    
+    // 只有草稿状态的岗位可以删除
+    if (record.status === '草稿') {
+      actions.push({
         label: '删除',
         popConfirm: {
           title: '是否确认删除',
@@ -227,8 +259,10 @@
           placement: 'topLeft',
         },
         auth: 'positions:xgs_positions:delete',
-      },
-    ];
+      });
+    }
+    
+    return actions;
   }
 
   // onMounted(() => {

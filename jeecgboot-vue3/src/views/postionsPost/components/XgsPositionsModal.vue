@@ -8,17 +8,18 @@
     import {ref, computed, unref} from 'vue';
     import {BasicModal, useModalInner} from '/@/components/Modal';
     import {BasicForm, useForm} from '/@/components/Form/index';
-    import {formSchema} from '../XgsPositions.data';
+    import {formSchema} from '@/views/positions/XgsPositionPublish.data';
     import {saveOrUpdate} from '../XgsPositions.api';
     // Emits声明
     const emit = defineEmits(['register','success']);
     const isUpdate = ref(true);
     const isDetail = ref(false);
     //表单配置
-    const [registerForm, { setProps,resetFields, setFieldsValue, validate, scrollToField }] = useForm({
+    const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
         schemas: formSchema,
         showActionButtonGroup: false,
-        baseColProps: {span: 12}
+        baseColProps: { span: 24 },
+        labelWidth: 150,
     });
     //表单赋值
     const [registerModal, {setModalProps, closeModal}] = useModalInner(async (data) => {
@@ -34,7 +35,7 @@
             });
         }
         // 隐藏底部时禁用整个表单
-       setProps({ disabled: !data?.showFooter })
+        setProps({ disabled: !data?.showFooter });
     });
     //设置标题
     const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));

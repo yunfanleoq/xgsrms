@@ -401,4 +401,7 @@ public class XgsResumeBase implements Serializable {
     @Dict(dicCode = "简历文件")
     @ApiModelProperty(value = "简历文件")
     private java.lang.String resumeFile;
+    /**其他附件信息*/
+    @ApiModelProperty(value = "其他附件信息")
+    private java.lang.String otherFiles;
 }

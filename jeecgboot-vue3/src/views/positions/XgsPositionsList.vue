@@ -46,6 +46,8 @@
     </BasicTable>
     <!-- 表单区域 -->
     <XgsPositionsModal @register="registerModal" @success="handleSuccess"></XgsPositionsModal>
+    <!-- 状态变更模态框 -->
+    <XgsPositionsStatusModal @register="registerStatusModal" @success="handleSuccess"></XgsPositionsStatusModal>
   </div>
 </template>
 
@@ -55,6 +57,7 @@
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsPositionsModal from './components/XgsPositionsModal.vue';
+  import XgsPositionsStatusModal from './components/XgsPositionsStatusModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositions.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
@@ -64,6 +67,8 @@
   const userStore = useUserStore();
   //注册model
   const [registerModal, { openModal }] = useModal();
+  //注册状态变更模态框
+  const [registerStatusModal, { openModal: openStatusModal }] = useModal();
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
@@ -172,6 +177,14 @@
     ];
   }
   /**
+   * 状态变更事件
+   */
+  function handleChangeStatus(record: Recordable) {
+    openStatusModal(true, {
+      record,
+    });
+  }
+  /**
    * 下拉操作栏
    */
   function getDropDownAction(record) {
@@ -179,6 +192,11 @@
       {
         label: '详情',
         onClick: handleDetail.bind(null, record),
+      },
+      {
+        label: '状态变更',
+        onClick: handleChangeStatus.bind(null, record),
+        auth: 'positions:xgs_positions:edit',
       },
       {
         label: '删除',

@@ -294,6 +294,21 @@ export const formSchema: FormSchema[] = [
       dictCode: '岗位分类',
     },
   },
+  {
+    label: '上传其它材料',
+    field: 'otherFiles',
+    component: 'JUpload',
+    componentProps: {
+      maxCount: 5,
+      maxSize: 10,
+      text: '点击上传（最多5个文件，单个文件不超过10MB）',
+      returnUrl: false,
+      multiple: true,
+    },
+    colProps: {
+      span: 24,
+    },
+  },
   // TODO 主键隐藏字段，目前写死为ID
   {
     label: '',

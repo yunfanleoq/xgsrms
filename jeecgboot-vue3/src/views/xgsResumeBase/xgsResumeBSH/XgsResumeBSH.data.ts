@@ -401,6 +401,21 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
     // dynamicDisabled: false,
   },
+  {
+    label: '上传其它材料',
+    field: 'otherFiles',
+    component: 'JUpload',
+    componentProps: {
+      maxCount: 5,
+      maxSize: 10,
+      text: '点击上传（最多5个文件，单个文件不超过10MB）',
+      returnUrl: false,
+      multiple: true,
+    },
+    colProps: {
+      span: 24,
+    },
+  },
   // {
   //   label: '导师签字',
   //   field: 'teacherSignature',

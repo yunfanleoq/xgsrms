@@ -77,6 +77,8 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
         QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, req.getParameterMap());
+        // 过滤掉已删除的记录
+        queryWrapper.isNull("deleted");
 		Page<XgsPositions> page = new Page<XgsPositions>(pageNo, pageSize);
 		IPage<XgsPositions> pageList = xgsPositionsService.page(page, queryWrapper);
 		return Result.OK(pageList);
@@ -156,7 +158,7 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 		 return Result.OK("发布成功!");
 	 }
 	/**
-	 *   通过id删除
+	 *   通过id删除（逻辑删除）- 只允许删除草稿状态的岗位
 	 *
 	 * @param id
 	 * @return
@@ -166,12 +168,23 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	@RequiresPermissions("positions:xgs_positions:delete")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
-		xgsPositionsService.removeById(id);
-		return Result.OK("删除成功!");
+		// 逻辑删除实现
+		XgsPositions xgsPositions = xgsPositionsService.getById(id);
+		if(xgsPositions != null) {
+			// 只允许删除草稿状态的岗位
+			if(!"草稿".equals(xgsPositions.getStatus())) {
+				return Result.error("只能删除草稿状态的岗位!");
+			}
+			
+			xgsPositions.setDeleted("Y");
+			xgsPositionsService.updateById(xgsPositions);
+			return Result.OK("删除成功!");
+		}
+		return Result.error("未找到对应岗位!");
 	}
 	
 	/**
-	 *  批量删除
+	 *  批量删除（逻辑删除）- 只删除草稿状态的岗位
 	 *
 	 * @param ids
 	 * @return
@@ -181,8 +194,28 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	@RequiresPermissions("positions:xgs_positions:deleteBatch")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
-		this.xgsPositionsService.removeByIds(Arrays.asList(ids.split(",")));
-		return Result.OK("批量删除成功!");
+		// 逻辑删除实现 - 只删除草稿状态的岗位
+		String[] idArray = ids.split(",");
+		int successCount = 0;
+		int totalCount = idArray.length;
+		
+		for(String id : idArray) {
+			XgsPositions xgsPositions = xgsPositionsService.getById(id);
+			// 只删除草稿状态的岗位
+			if(xgsPositions != null && "草稿".equals(xgsPositions.getStatus())) {
+				xgsPositions.setDeleted("Y");
+				xgsPositionsService.updateById(xgsPositions);
+				successCount++;
+			}
+		}
+		
+		if(successCount == 0) {
+			return Result.error("没有可删除的草稿状态岗位!");
+		} else if(successCount < totalCount) {
+			return Result.OK("部分删除成功! 只有草稿状态的岗位被删除，共删除 " + successCount + " 条记录");
+		} else {
+			return Result.OK("批量删除成功!");
+		}
 	}
 	
 	/**
@@ -197,7 +230,7 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	public Result<XgsPositions> queryById(@RequestParam(name="id",required=true) String id) {
 		log.info("queryById查询参数:" + id);
 		XgsPositions xgsPositions = xgsPositionsService.getById(id);
-		if(xgsPositions==null) {
+		if(xgsPositions==null || "Y".equals(xgsPositions.getDeleted())) {
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(xgsPositions);
@@ -212,6 +245,19 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
     @RequiresPermissions("positions:xgs_positions:exportXls")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, XgsPositions xgsPositions) {
+        // 获取当前登录用户
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        String roleCode = loginUser.getRoleCode();
+        
+        // 只有 admin 和 depart_position_manager 角色可以导出全部数据
+        if (!"admin".equals(roleCode) && !"depart_position_manager".equals(roleCode)) {
+            // 其他角色只能导出自己创建的数据
+            xgsPositions.setCreateBy(loginUser.getUsername());
+        }
+        
+        // 设置排除已删除的记录
+        xgsPositions.setDeleted("N");
+        
         return super.exportXls(request, xgsPositions, XgsPositions.class, "招聘岗位列表");
     }
 
@@ -247,6 +293,8 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 			 XgsPositions xgsPositions = new XgsPositions();
 			 xgsPositions.setStatus("招聘中");
 			 QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, req.getParameterMap());
+			 // 过滤掉已删除的记录
+			 queryWrapper.isNull("deleted");
 			 Page<XgsPositions> page = new Page<XgsPositions>(pageNo, pageSize);
 			 IPage<XgsPositions> positionsList = xgsPositionsService.page(page, queryWrapper);
 

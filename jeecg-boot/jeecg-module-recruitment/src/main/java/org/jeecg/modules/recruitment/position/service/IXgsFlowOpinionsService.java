@@ -53,6 +53,7 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
     // 新增状态常量
     String APPROVAL_STATUS_PENDING_REVIEW = "待查看";
     String APPROVAL_STATUS_HR_PENDING_REVIEW = "待人力处查看";
+    // APPROVAL_STATUS_TODO 与 APPROVAL_STATUS_USER_TODO 相同，统一使用 APPROVAL_STATUS_USER_TODO
 
     String APPROVAL_RESULT_AGREE = "同意";
     String APPROVAL_RESULT_REJECT = "驳回";

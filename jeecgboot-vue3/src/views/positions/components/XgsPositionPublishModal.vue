@@ -16,9 +16,10 @@
   const isDetail = ref(false);
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
+    labelWidth: '150px',
     schemas: formSchema,
     showActionButtonGroup: false,
-    baseColProps: { span: 12 },
+    baseColProps: { span: 24 },
   });
   //表单赋值
   const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {

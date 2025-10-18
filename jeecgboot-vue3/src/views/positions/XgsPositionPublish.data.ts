@@ -36,6 +36,11 @@ export const columns: BasicColumn[] = [
     dataIndex: 'positionName',
   },
   {
+    title: '招聘岗位分类',
+    align: 'center',
+    dataIndex: 'category_dictText',
+  },
+  {
     title: '岗位类型',
     align: 'center',
     dataIndex: 'positionType',
@@ -147,9 +152,35 @@ export const formSchema: FormSchema[] = [
     component: 'Input',
   },
   {
+    label: '招聘岗位分类',
+    field: 'category',
+    component: 'JDictSelectTag',
+    componentProps: {
+      dictCode: '岗位分类',
+      type: 'radioButton',
+    },
+    required: true,
+    defaultValue: '普通岗位',
+  },
+  {
+    label: '岗位类型',
+    field: 'positionType',
+    component: 'JDictSelectTag',
+    componentProps: {
+      dictCode: '岗位类型',
+      type: 'radioButton',
+    },
+    required: true,
+    defaultValue: '科研',
+    ifShow: ({ values }) => values.category === '普通岗位',
+  },
+  {
     label: '研究方向',
     field: 'researchDirection',
-    component: 'Input',
+    component: 'InputTextArea',
+    componentProps: {
+      rows: 3,
+    },
   },
   {
     label: '招聘人数',
@@ -164,7 +195,10 @@ export const formSchema: FormSchema[] = [
   {
     label: '专业',
     field: 'professional',
-    component: 'Input',
+    component: 'InputTextArea',
+    componentProps: {
+      rows: 3,
+    },
   },
   {
     label: '工作年限',
@@ -174,7 +208,6 @@ export const formSchema: FormSchema[] = [
   {
     label: '岗位职责',
     field: 'duty',
-    labelWidth: '12.5%',
     component: 'JEditor',
     colProps: {
       span: 24,
@@ -183,8 +216,10 @@ export const formSchema: FormSchema[] = [
   {
     label: '备注',
     field: 'memo',
-    labelWidth: '12.5%',
     component: 'JEditor',
+    componentProps: {
+      height: 200,
+    },
     colProps: {
       span: 24,
     },

@@ -40,6 +40,14 @@
       <xgsResumeTJForm v-else-if="positionType === '人才派遣岗位'" :formData="formData" :formBpm="formBpm" />
       <div v-else> 未知的 positionType </div>
     </div>
+    
+    <!-- 附件下载区域 -->
+    <div v-if="otherFilesData" class="other-files-section">
+      <a-divider orientation="left">
+        <span style="font-size: 16px; font-weight: 600;">附件材料</span>
+      </a-divider>
+      <FileDownloadList :value="otherFilesData" />
+    </div>
   </BasicModal>
 </template>
 
@@ -54,6 +62,7 @@
   import xgsResumeFGForm from '/@/views/userPositions/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
   import xgsResumeTJForm from '/@/views/userPositions/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
   import JUpload from '@/components/Form/src/jeecg/components/JUpload/JUpload.vue';
+  import FileDownloadList from '/@/components/FileList/FileDownloadList.vue';
   import { defHttp } from '@/utils/http/axios';
   import { xgsResumeEdusColumns, xgsResumeHomeColumns, xgsResumeWorksColumns } from '@/views/home/position/components/XgsResumeBase.data';
   import { getDictItems } from '@/views/userPositions/userPositions/XgsUserPositionApply.api';
@@ -72,6 +81,9 @@
   const appplyStatus = ref('');
   const approvalStatus = ref('');
   const flowOpinion = ref('');
+  
+  // 附件数据
+  const otherFilesData = ref<string>('');
 
   function getFlowOpinion(applyId) {
     defHttp.get({ url: '/resume/xgsFlowOpinions/getDepartRejectByApplyId', params: { applyId: applyId } }).then((data) => {
@@ -81,9 +93,22 @@
       }
     });
   }
+  
+  // 加载附件数据
+  function loadOtherFiles(resumeId: string) {
+    if (!resumeId) return;
+    
+    defHttp.get({ url: '/xgsResume/xgsResumeBase/queryById', params: { id: resumeId } }).then((data) => {
+      if (data && data.otherFiles) {
+        otherFilesData.value = data.otherFiles;
+      }
+    }).catch((error) => {
+      console.error('加载附件数据失败:', error);
+    });
+  }
 
   //表单配置
-  const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
+  const [registerForm, { setProps, resetFields, setFieldsValue }] = useForm({
     schemas: formSchema,
     showActionButtonGroup: false,
     baseColProps: { span: 12 },
@@ -113,6 +138,11 @@
     currentNode.value = data.record.approvalNode;
     appplyStatus.value = data.record.status;
     getFlowOpinion(data.record.id);
+    
+    // 加载附件数据
+    if (data.record.resumeId) {
+      loadOtherFiles(data.record.resumeId);
+    }
 
     let statusTypeList = await getDictItems({ dictCode: '审核节点' });
     statusUI(data.record.approvalNode, data.record.status, statusTypeList.result);

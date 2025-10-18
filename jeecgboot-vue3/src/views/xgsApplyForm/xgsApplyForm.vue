@@ -514,6 +514,34 @@
             />
           </td>
         </tr>
+
+        <!-- 上传其它材料区域 -->
+        <tr id="other-files">
+          <td colspan="6" class="section-header">
+            上传其它材料
+          </td>
+        </tr>
+        <tr>
+          <td colspan="6" class="content-cell">
+            <div class="upload-section">
+              <a-form-item name="otherFiles">
+                <JUpload
+                  v-model:value="formData.otherFiles"
+                  :maxCount="5"
+                  :maxSize="10"
+                  text="点击上传（最多5个文件，单个文件不超过10MB）"
+                  :returnUrl="false"
+                  :disabled="formDisabled"
+                  :multiple="true"
+                />
+              </a-form-item>
+              <div class="upload-tips">
+                <p>支持上传PDF、DOC、DOCX、XLS、XLSX、JPG、PNG等格式文件</p>
+                <p>单个文件大小不超过10MB，最多上传5个文件</p>
+              </div>
+            </div>
+          </td>
+        </tr>
       </tbody>
     </table>
 
@@ -538,6 +566,7 @@
             <a-anchor-link href="#position-statement" title="应聘岗位陈述" />
             <a-anchor-link href="#research-direction" title="研究方向与专长" />
             <a-anchor-link href="#paper-patent" title="论文专著专利" />
+            <a-anchor-link href="#other-files" title="上传其它材料" />
           </a-anchor>
       </div>
     </div>
@@ -552,6 +581,7 @@ import { EyeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons-vue
 import { getFileAccessHttpUrl } from '/@/utils/common/compUtils';
 import { saveOrUpdate } from '/@/views/xgsResumeBase/xgsResumePT/XgsResumeBase.api';
 import JImageUpload from '/@/components/Form/src/jeecg/components/JImageUpload.vue';
+import { JUpload } from '/@/components/Form/src/jeecg/components/JUpload';
 import { 
   xgsResumeWorksList, 
   xgsResumeEdusList, 
@@ -644,6 +674,7 @@ const formData = reactive<any>({
   mobile: '',
   applyDept: '',
   applyPosition: '',
+  otherFiles: '',
 });
 
 // 子表数据
@@ -1241,6 +1272,33 @@ defineExpose({
   
   .mt-4 {
     margin-top: 16px;
+  }
+  
+  // 上传其它材料区域样式
+  .upload-section {
+    padding: 20px;
+    
+    .upload-tips {
+      margin-top: 12px;
+      padding: 12px;
+      background-color: #f6f8fa;
+      border-radius: 4px;
+      color: #666;
+      font-size: 13px;
+      
+      p {
+        margin: 4px 0;
+        line-height: 1.6;
+        
+        &:first-child {
+          margin-top: 0;
+        }
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
   }
 }
 
