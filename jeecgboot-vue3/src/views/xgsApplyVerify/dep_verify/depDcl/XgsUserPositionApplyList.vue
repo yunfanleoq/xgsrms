@@ -107,13 +107,11 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    registerModal.value.disableSubmit = true;
-    registerModal.value.edit(record);
-    // openModal(true, {
-    //     record,
-    //     isUpdate: true,
-    //     showFooter: true,
-    //   });
+    registerModal.value.open({
+      record,
+      isUpdate: true,
+      showFooter: true,
+    });
   }
   function handleOpinion(record: Recordable) {
     openModal(true, {
@@ -126,13 +124,11 @@
    * 详情
    */
   function handleDetail(record: Recordable) {
-    registerModal.value.disableSubmit = true;
-    registerModal.value.edit(record);
-    // openModal(true, {
-    //   record,
-    //   isUpdate: true,
-    //   showFooter: false,
-    // });
+    registerModal.value.open({
+      record,
+      isUpdate: true,
+      showFooter: false,
+    });
   }
   /**
    * 删除事件

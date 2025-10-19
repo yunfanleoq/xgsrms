@@ -3,24 +3,26 @@
     :title="title"
     :width="width"
     :visible="visible"
+    :maskClosable="false"
     @ok="handleOk"
     :okButtonProps="{ class: { 'jee-hidden': disableSubmit } }"
     @cancel="handleCancel"
     cancelText="关闭"
   >
-    <XgsPositionApplyForm ref="registerForm" @ok="submitCallback" :formData="formData" :formDisabled="disableSubmit" :formBpm="false" />
+    <XgsPositionApplyForm ref="registerForm" @ok="submitCallback" :formData="formData" :formDisabled="disableSubmit" :formBpm="false" :dataId="dataId" />
   </j-modal>
 </template>
 
 <script lang="ts" setup>
   import { ref, nextTick, defineExpose, onMounted } from 'vue';
-  import XgsPositionApplyForm from './XgsPositionApplyForm.vue';
+  import XgsPositionApplyForm from '@/components/XgsApplyForm/index.vue';
   import JModal from '/@/components/Modal/src/JModal/JModal.vue';
   const title = ref<string>('');
-  const width = ref<number>(1200);
+  const width = ref<string>('80%');
   const visible = ref<boolean>(false);
   const disableSubmit = ref<boolean>(false);
   const registerForm = ref();
+  const dataId = ref<string>('');
   const emit = defineEmits(['register', 'success']);
   const props = defineProps({
     disableSubmit: {
@@ -71,24 +73,28 @@
    * 编辑
    * @param record
    */
-  function edit(record) {
+  async function edit(record) {
     title.value = disableSubmit.value ? '详情' : '编辑';
     visible.value = true;
-    nextTick(() => {
-      registerForm.value.edit(record);
-    });
+    dataId.value = record.resumeId || '';
+    await nextTick();
+    if (registerForm.value && record.resumeId) {
+      await registerForm.value.loadFormData(record.resumeId);
+    }
   }
 
   /**
-   * 编辑
+   * 详情
    * @param record
    */
-  function detail(record) {
+  async function detail(record) {
     title.value = '详情';
     visible.value = true;
-    nextTick(() => {
-      registerForm.value.detail(record);
-    });
+    dataId.value = record.resumeId || '';
+    await nextTick();
+    if (registerForm.value && record.resumeId) {
+      await registerForm.value.loadFormData(record.resumeId);
+    }
   }
 
   /**

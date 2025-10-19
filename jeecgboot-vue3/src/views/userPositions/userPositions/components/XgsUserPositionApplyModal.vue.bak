@@ -1,13 +1,11 @@
 <template>
-  <j-modal
+  <BasicModal
+    v-bind="$attrs"
+    @register="registerModal"
+    destroyOnClose
     :title="title"
-    :width="'80%'"
-    :visible="visible"
-    :maskClosable="false"
-    @ok="handleOk"
-    @cancel="handleCancel"
-    cancelText="关闭"
-    :okButtonProps="{ style: { display: 'none' } }"
+    :width="896"
+    wrapClassName="j-cgform-tab-modal xgsUserPositionApplyModal"
   >
     <a-card title="流程进度" :bordered="true">
       <a-steps :current="statusIndex" progress-dot size="small">
@@ -35,8 +33,13 @@
     </div>
     <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
-    <!-- 使用新的统一申请表单 -->
-    <XgsApplyForm ref="applyFormRef" :formData="formData" :formDisabled="!isDetail" :formBpm="formBpm" :dataId="formData.dataId" />
+    <div>
+      <xgsResumePTForm v-if="positionType === '普通岗位'" :formData="formData" :formBpm="formBpm" />
+      <xgsResumeBSHForm v-else-if="positionType === '博士后岗位'" :formData="formData" :formBpm="formBpm" />
+      <xgsResumeFGForm v-else-if="positionType === '副高级以上岗位'" :formData="formData" :formBpm="formBpm" />
+      <xgsResumeTJForm v-else-if="positionType === '人才派遣岗位'" :formData="formData" :formBpm="formBpm" />
+      <div v-else> 未知的 positionType </div>
+    </div>
     
     <!-- 附件下载区域 -->
     <div v-if="otherFilesData" class="other-files-section">
@@ -45,15 +48,19 @@
       </a-divider>
       <FileDownloadList :value="otherFilesData" />
     </div>
-  </j-modal>
+  </BasicModal>
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, reactive, unref, nextTick, defineExpose } from 'vue';
+  import { ref, computed, reactive, unref } from 'vue';
+  import { BasicModal, useModalInner } from '/@/components/Modal';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsUserPositionApply.data';
-  import JModal from '/@/components/Modal/src/JModal/JModal.vue';
-  import XgsApplyForm from '@/components/XgsApplyForm/index.vue';
+
+  import xgsResumeBSHForm from '/@/views/userPositions/xgsResumeBase/xgsResumeBSH/components/xgsResumeBSHForm.vue';
+  import xgsResumePTForm from '/@/views/userPositions/xgsResumeBase/xgsResumePT/components/xgsResumeBaseForm.vue';
+  import xgsResumeFGForm from '/@/views/userPositions/xgsResumeBase/xgsResumeFG/components/xgsResumeFGForm.vue';
+  import xgsResumeTJForm from '/@/views/userPositions/xgsResumeBase/xgsResumeTJ/components/xgsResumeTJForm.vue';
   import JUpload from '@/components/Form/src/jeecg/components/JUpload/JUpload.vue';
   import FileDownloadList from '/@/components/FileList/FileDownloadList.vue';
   import { defHttp } from '@/utils/http/axios';
@@ -67,11 +74,8 @@
   const isUpdate = ref(true);
   const isDetail = ref(false);
   const positionType = ref('');
-  const formData = ref<any>({});
+  const formData = ref({});
   const formBpm = ref(true);
-  const visible = ref(false);
-  const title = ref('');
-  const applyFormRef = ref<any>(null);
 
   const currentNode = ref('');
   const appplyStatus = ref('');
@@ -87,11 +91,6 @@
         approvalStatus.value = data.approvalStatus;
         flowOpinion.value = data.opinions;
       }
-    }).catch((error) => {
-      // 如果没有找到审批意见数据，不做处理（新提交的申请可能还没有审批意见）
-      console.log('暂无审批意见数据:', error);
-      approvalStatus.value = '';
-      flowOpinion.value = '';
     });
   }
   
@@ -114,73 +113,45 @@
     showActionButtonGroup: false,
     baseColProps: { span: 12 },
   });
-
-  /**
-   * 打开Modal
-   */
-  async function open(record) {
-    visible.value = true;
-    await nextTick();
+  //表单赋值
+  const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
+    console.log('data', data);
     //重置表单
     await resetFields();
-    
-    isUpdate.value = !!record?.isUpdate;
-    isDetail.value = !!record?.showFooter;
-    
+    setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
+    isUpdate.value = !!data?.isUpdate;
+    isDetail.value = !!data?.showFooter;
     if (unref(isUpdate)) {
       //表单赋值
       await setFieldsValue({
-        ...record.record,
+        ...data.record,
       });
     }
-    
-    // 设置标题
-    title.value = !unref(isUpdate) ? '新增' : !unref(isDetail) ? '查看' : '编辑';
-    
-    positionType.value = record.record.positionType;
+    positionType.value = data.record.positionType;
     formData.value = {
-      id: record.record.id,
-      dataId: record.record.resumeId,
-      disabled: title.value !== '编辑',
+      id: data.record.id,
+      dataId: data.record.resumeId,
+      disabled:  title.value !== '编辑',
     };
 
     // 当前状态
-    currentNode.value = record.record.approvalNode;
-    appplyStatus.value = record.record.status;
-    getFlowOpinion(record.record.id);
+    currentNode.value = data.record.approvalNode;
+    appplyStatus.value = data.record.status;
+    getFlowOpinion(data.record.id);
     
     // 加载附件数据
-    if (record.record.resumeId) {
-      loadOtherFiles(record.record.resumeId);
+    if (data.record.resumeId) {
+      loadOtherFiles(data.record.resumeId);
     }
 
     let statusTypeList = await getDictItems({ dictCode: '审核节点' });
-    statusUI(record.record.approvalNode, record.record.status, statusTypeList.result);
+    statusUI(data.record.approvalNode, data.record.status, statusTypeList.result);
     // 隐藏底部时禁用整个表单
-    setProps({ disabled: !record?.showFooter });
-    
-    // 加载表单数据
-    if (applyFormRef.value && record.record.resumeId) {
-      await applyFormRef.value.loadFormData(record.record.resumeId);
-    }
-    
+    setProps({ disabled: !data?.showFooter });
     isReady.value = true;
-  }
-
-  /**
-   * 关闭Modal
-   */
-  function handleCancel() {
-    visible.value = false;
-    emit('success');
-  }
-
-  /**
-   * 确定按钮
-   */
-  function handleOk() {
-    handleCancel();
-  }
+  });
+  //设置标题
+  const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '查看' : '编辑'));
   //简历文件处理
   const fileData = reactive<Record<string, any>>({
     id: '',
@@ -324,11 +295,6 @@
       ];
     }
   }
-
-  // 暴露方法给父组件
-  defineExpose({
-    open,
-  });
 </script>
 
 <style lang="less" scoped>

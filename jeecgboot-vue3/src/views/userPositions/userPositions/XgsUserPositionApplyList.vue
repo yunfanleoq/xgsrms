@@ -11,14 +11,13 @@
       <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
-    <XgsUserPositionApplyModal @register="registerModal" @success="handleSuccess" />
+    <XgsUserPositionApplyModal ref="modalRef" @success="handleSuccess" />
   </div>
 </template>
 
 <script lang="ts" name="xgsUserResume-xgsUserPositionApply" setup>
   import { ref, reactive, computed, unref } from 'vue';
   import { BasicTable, useTable, TableAction } from '/@/components/Table';
-  import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsUserPositionApply.data';
@@ -29,8 +28,8 @@
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
-  //注册model
-  const [registerModal, { openModal }] = useModal();
+  // Modal引用
+  const modalRef = ref();
   //注册table数据
   const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
     tableProps: {
@@ -84,7 +83,7 @@
    * 新增事件
    */
   function handleAdd() {
-    openModal(true, {
+    modalRef.value.open({
       isUpdate: false,
       showFooter: true,
     });
@@ -93,7 +92,7 @@
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    openModal(true, {
+    modalRef.value.open({
       record,
       isUpdate: true,
       showFooter: true,
@@ -103,7 +102,7 @@
    * 详情
    */
   function handleDetail(record: Recordable) {
-    openModal(true, {
+    modalRef.value.open({
       record,
       isUpdate: true,
       showFooter: false,

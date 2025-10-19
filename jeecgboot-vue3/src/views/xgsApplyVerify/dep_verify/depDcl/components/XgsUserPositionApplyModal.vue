@@ -1,12 +1,12 @@
 <template>
-  <BasicModal
-    v-bind="$attrs"
-    @register="registerModal"
-    destroyOnClose
+  <j-modal
     :title="title"
-    :width="896"
-    okText="通过"
+    :width="'80%'"
+    :visible="visible"
+    :maskClosable="false"
     @ok="handleSubmit"
+    @cancel="handleCancel"
+    okText="通过"
   >
     <template #footer>
       <a-button key="back" @click="handleCancel">驳回</a-button>
@@ -20,34 +20,19 @@
       :formData="formData"
       :formBpm="formBpm"
     />
-    <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
-    <div>
-      <xgsResumePTForm v-if="positionType === '普通岗位'" :formData="formData" :formBpm="formBpm"></xgsResumePTForm>
-      <xgsResumeBSHForm v-else-if="positionType === '博士后岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeBSHForm>
-      <xgsResumeFGForm v-else-if="positionType === '副高级以上岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeFGForm>
-      <xgsResumeTJForm v-else-if="positionType === '人才派遣岗位'" :formData="formData" :formBpm="formBpm"></xgsResumeTJForm>
-      <div v-else> 未知的 positionType </div>
-    </div>
-  </BasicModal>
-
+    <!-- 使用新的统一申请表单 -->
+    <XgsApplyForm :formData="formData" :formDisabled="true" :formBpm="formBpm" />
+  </j-modal>
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, unref } from 'vue';
-  import { BasicModal, useModalInner } from '/src/components/Modal';
-  import { BasicForm, useForm } from '/src/components/Form';
+  import { ref, computed, unref, nextTick, defineExpose } from 'vue';
+  import { BasicForm, useForm } from '/@/components/Form';
   import { formSchema } from '../XgsUserPositionApply.data';
   import { saveOrUpdate } from '../XgsUserPositionApply.api';
-  import axios from 'axios';
-
-  import xgsUserPositionApplyForm from './XgsUserPositionApplyForm.vue';
-
-  // import xgsResumeBSHForm from '/src/views/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
-  import xgsResumeBSHForm from '/src/views/xgsApplyVerify/dep_verify/depDcl/xgsResumeBase/xgsResumeBSH/components/XgsResumeBSHForm.vue';
-  import xgsResumePTForm from '/src/views/xgsResumeBase/xgsResumePT/components/XgsResumeBaseForm.vue';
-  import xgsResumeFGForm from '/src/views/xgsResumeBase/xgsResumeFG/components/XgsResumeFGForm.vue';
-  import xgsResumeTJForm from '/src/views/xgsResumeBase/xgsResumeTJ/components/XgsResumeTJForm.vue';
+  import JModal from '/@/components/Modal/src/JModal/JModal.vue';
+  import XgsApplyForm from '@/components/XgsApplyForm/index.vue';
 
   const isReady = ref(false);
 
@@ -60,71 +45,62 @@
   const status = ref('');
   const formData = ref({});
   const formBpm = ref(true);
+  const visible = ref(false);
+  const title = ref('详情');
+
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
     schemas: formSchema,
     showActionButtonGroup: false,
     baseColProps: { span: 12 },
   });
-  //表单赋值
-  const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
-    console.log('data', data);
+
+  /**
+   * 打开Modal
+   */
+  async function open(record) {
+    visible.value = true;
+    await nextTick();
+
+    console.log('data', record);
     //重置表单
     await resetFields();
-    setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
-    isUpdate.value = !!data?.isUpdate;
-    isDetail.value = !!data?.showFooter;
+    
+    isUpdate.value = !!record?.isUpdate;
+    isDetail.value = !!record?.showFooter;
+    
     if (unref(isUpdate)) {
       //表单赋值
       await setFieldsValue({
-        ...data.record,
+        ...record.record,
       });
     }
-    positionType.value = data.record.positionType;
-    status.value = data.record.status;
-    // const params = {id: data.record.id};
-    // if (positionType.value === '普通岗位'){
-    //   formData.value = await getResumePTById(params);
-    // }else if (positionType.value === '博士后岗位'){
-    //   formData.value = await getResumeBSHById(params);
-    // }else if (positionType.value === '副高级以上岗位'){
-    //   formData.value = await getResumeFGById(params);
-    // }else if (positionType.value === '人才派遣岗位'){
-    //   formData.value = await getResumeTJById(params);
-    // }else {
-    //     console.log('未知的 positionType：', positionType.value);
-    // }
-    // console.log("formData", formData.value);
+    
+    positionType.value = record.record.positionType;
+    status.value = record.record.status;
     formData.value = {
-      id: data.record.id,
-      dataId: data.record.id,
+      id: record.record.id,
+      dataId: record.record.id,
       disabled: true,
     };
     // 隐藏底部时禁用整个表单
-    setProps({ disabled: !data?.showFooter });
+    setProps({ disabled: !record?.showFooter });
     isReady.value = true;
-  });
+  }
+
   //设置标题
-  const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '查看'));
+  const titleComputed = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '查看'));
+
   //表单提交事件
   async function handleSubmit(v) {
     try {
-      console.log(
-        'registerForm',
-        useForm({
-          schemas: formSchema,
-          showActionButtonGroup: false,
-          baseColProps: { span: 12 },
-        })
-      );
       console.log('positionType', positionType.value);
       let values = await validate();
-      values.status = "待人力处审核";//修改状态
-      setModalProps({confirmLoading: true});
+      values.status = '待人力处审核'; //修改状态
       // //提交表单
       await saveOrUpdate(values, isUpdate.value);
       // //关闭弹窗
-      closeModal();
+      handleCancel();
       // //刷新列表
       emit('success');
     } catch ({ errorFields }) {
@@ -135,34 +111,39 @@
         }
       }
       return Promise.reject(errorFields);
-    } finally {
-      setModalProps({ confirmLoading: false });
     }
   }
+
   // 取消按钮点击事件
-  async function handleCancel(v) {
-    try {
-      let values = await validate();
-      values.status = "部门未通过";//修改状态
-      setModalProps({ confirmLoading: true });
-      //提交表单
-      await saveOrUpdate(values, isUpdate.value);
-      //关闭弹窗
-      closeModal();
-      //刷新列表
-      emit('success');
-    } catch ({ errorFields }) {
-      if (errorFields) {
-        const firstField = errorFields[0];
-        if (firstField) {
-          scrollToField(firstField.name, { behavior: 'smooth', block: 'center' });
+  async function handleCancel(v?) {
+    if (v) {
+      try {
+        let values = await validate();
+        values.status = '部门未通过'; //修改状态
+        //提交表单
+        await saveOrUpdate(values, isUpdate.value);
+        //关闭弹窗
+        visible.value = false;
+        //刷新列表
+        emit('success');
+      } catch ({ errorFields }) {
+        if (errorFields) {
+          const firstField = errorFields[0];
+          if (firstField) {
+            scrollToField(firstField.name, { behavior: 'smooth', block: 'center' });
+          }
         }
+        return Promise.reject(errorFields);
       }
-      return Promise.reject(errorFields);
-    } finally {
-      setModalProps({ confirmLoading: false });
+    } else {
+      visible.value = false;
     }
   }
+
+  // 暴露方法给父组件
+  defineExpose({
+    open,
+  });
 </script>
 
 <style lang="less" scoped>

@@ -1,11 +1,11 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="1200" @ok="handleSubmit">
+  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="1400" :height="650" :style="{ top: '2vh' }" @ok="handleSubmit">
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane key="1" tab="审核意见">
         <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
       </a-tab-pane>
-      <a-tab-pane key="2" tab="简历信息" force-render>
-        <XgsPositionApplyForm ref="registerFormResume" @ok="submitCallback" :formDisabled="true" :formBpm="false" />
+      <a-tab-pane key="2" tab="岗位申请单" force-render>
+        <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
       </a-tab-pane>
     </a-tabs>
   </BasicModal>
@@ -18,7 +18,7 @@ import {ref, computed, unref, nextTick} from 'vue';
   import { formSchema } from '../XgsFlowOpinions.data';
   import { saveOrUpdate, getResumeData } from '../XgsFlowOpinions.api';
   import { useUserStore } from '@/store/modules/user';
-  import XgsPositionApplyForm from '@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyForm.vue';
+  import XgsApplyForm from '@/components/XgsApplyForm/index.vue';
   // Emits声明
   const emit = defineEmits(['register', 'success']);
   const isUpdate = ref(true);
@@ -26,6 +26,7 @@ import {ref, computed, unref, nextTick} from 'vue';
   const activeKey = ref('1');
   const positionApply = ref({});
   const registerFormResume = ref();
+  const resumeId = ref('');
   const userStore = useUserStore();
 
   /**
@@ -74,7 +75,12 @@ import {ref, computed, unref, nextTick} from 'vue';
         parentId: data.record.id,
       });
     }
-    registerFormResume.value.detail(data.record);
+    // 设置简历ID并加载数据
+    resumeId.value = data.record.resumeId || '';
+    await nextTick();
+    if (registerFormResume.value && data.record.resumeId) {
+      await registerFormResume.value.loadFormData(data.record.resumeId);
+    }
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
   });

@@ -56,12 +56,12 @@
             </a-col>
           </a-row>
         </a-form>
-        <!--        //此处引入简历组件，展示简历填报页面-->
+        <!--        //此处引用简历组件，展示简历填报页面-->
         <div>
-          <xgsResumePTForm v-if="formData.positionType === '普通岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeBSHForm v-else-if="formData.positionType === '博士后岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeFGForm v-else-if="formData.positionType === '副高级以上岗位'" :form-data="formData" :form-bpm="formBpm" />
-          <xgsResumeTJForm v-else-if="formData.positionType === '专家推荐岗位'" :form-data="formData" :form-bpm="formBpm" />
+          <xgsResumePTForm ref="formPT" v-if="formData.positionType === '普通岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
+          <xgsResumeBSHForm ref="formBSH" v-else-if="formData.positionType === '博士后岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
+          <xgsResumeFGForm ref="formFG" v-else-if="formData.positionType === '副高级以上岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
+          <xgsResumeTJForm ref="formTJ" v-else-if="formData.positionType === '专家推荐岗位'" :form-data="resumeFormData" :form-bpm="formBpm" />
           <div v-else>
             <!-- 可选：当 positionType 不匹配任何已知类型时显示的内容 -->
             未知的 positionType

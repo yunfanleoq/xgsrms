@@ -3,28 +3,35 @@
     :title="title"
     :width="width"
     :visible="visible"
-    :maskClosable="false"
     @ok="handleOk"
     :okButtonProps="{ class: { 'jee-hidden': disableSubmit } }"
     @cancel="handleCancel"
     cancelText="关闭"
   >
-    <XgsPositionApplyForm ref="registerForm" @ok="submitCallback" :formData="formData" :formDisabled="disableSubmit" :formBpm="false" :dataId="dataId" />
+    <XgsApplyForm 
+      ref="registerForm" 
+      @ok="submitCallback" 
+      :formData="formData" 
+      :formDisabled="disableSubmit" 
+      :formBpm="formBpm" 
+    />
   </j-modal>
 </template>
 
 <script lang="ts" setup>
-  import { ref, nextTick, defineExpose, onMounted } from 'vue';
-  import XgsPositionApplyForm from '@/components/XgsApplyForm/index.vue';
+  import { ref, nextTick, defineExpose } from 'vue';
+  import XgsApplyForm from './index.vue';
   import JModal from '/@/components/Modal/src/JModal/JModal.vue';
 
   const title = ref<string>('');
-  const width = ref<string>('80%');
+  const width = ref<number>(1400);
   const visible = ref<boolean>(false);
   const disableSubmit = ref<boolean>(false);
   const registerForm = ref();
-  const dataId = ref<string>('');
+  const formBpm = ref<boolean>(false);
+
   const emit = defineEmits(['register', 'success']);
+  
   const props = defineProps({
     disableSubmit: {
       type: Boolean,
@@ -32,41 +39,43 @@
     },
     formData: {
       type: Object,
-      default: () => {
-        return {};
-      },
+      default: () => ({}),
+    },
+    formBpm: {
+      type: Boolean,
+      default: false,
     },
   });
 
-  /**
-   * 初始化表单, 表单初始化,启动时候，触发 add，传参数 record
-   */
-  //   async function initFormdata(record) {
-  //
-  //     await nextTick();
-  //     console.log('initFormdata', props.formData);
-  //     registerForm.value.add(record);
-  //   }
-  // onMounted(() => {
-  //   console.log('nextTick props.formData', props.formData);
-  //   initFormdata(props.formData);
-  // });
+  const formData = ref({});
+
   /**
    * 新增
    */
   function add(record) {
     title.value = '新增';
     visible.value = true;
+    disableSubmit.value = false;
+    formData.value = record || {};
     nextTick(() => {
-      registerForm.value.add(record);
+      if (registerForm.value && registerForm.value.loadData) {
+        registerForm.value.loadData(formData.value);
+      }
     });
   }
 
+  /**
+   * 在线申请
+   */
   function addJob(record) {
     title.value = '在线申请';
     visible.value = true;
+    disableSubmit.value = false;
+    formData.value = record || {};
     nextTick(() => {
-      registerForm.value.add(record);
+      if (registerForm.value && registerForm.value.loadData) {
+        registerForm.value.loadData(formData.value);
+      }
     });
   }
 
@@ -74,34 +83,40 @@
    * 编辑
    * @param record
    */
-  async function edit(record) {
+  function edit(record) {
     title.value = disableSubmit.value ? '详情' : '编辑';
     visible.value = true;
-    dataId.value = record.resumeId || '';
-    await nextTick();
-    if (registerForm.value && record.resumeId) {
-      await registerForm.value.loadFormData(record.resumeId);
-    }
+    formData.value = record || {};
+    nextTick(() => {
+      if (registerForm.value && registerForm.value.loadData) {
+        registerForm.value.loadData(formData.value);
+      }
+    });
   }
 
   /**
-   * 详情
+   * 详情（只读）
    * @param record
    */
-  async function detail(record) {
+  function detail(record) {
     title.value = '详情';
     visible.value = true;
-    dataId.value = record.resumeId || '';
-    await nextTick();
-    if (registerForm.value && record.resumeId) {
-      await registerForm.value.loadFormData(record.resumeId);
-    }
+    disableSubmit.value = true;
+    formData.value = record || {};
+    nextTick(() => {
+      if (registerForm.value && registerForm.value.loadData) {
+        registerForm.value.loadData(formData.value);
+      }
+    });
   }
+
   /**
    * 确定按钮点击事件
    */
   function handleOk() {
-    registerForm.value.submitForm();
+    if (registerForm.value && registerForm.value.submitForm) {
+      registerForm.value.submitForm();
+    }
   }
 
   /**
@@ -117,6 +132,7 @@
    */
   function handleCancel() {
     visible.value = false;
+    formData.value = {};
   }
 
   defineExpose({
@@ -134,4 +150,4 @@
     display: none !important;
   }
 </style>
-<style lang="less" scoped></style>
+
