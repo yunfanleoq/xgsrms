@@ -553,30 +553,24 @@
       </div>
 
       <!-- 右侧锚点导航 -->
-      <div class="anchor-wrapper" 
-           @click.capture.stop="handleAnchorWrapperClick" 
-           @click.stop="handleAnchorWrapperClick"
-           @mousedown.stop
-           @mouseup.stop>
+      <div class="anchor-wrapper">
         <AAffix :target="getAnchorContainer" :offset-top="20">
-          <div class="anchor-container" 
-               @click.capture.stop 
-               @click.stop
-               @mousedown.stop
-               @mouseup.stop>
+          <div class="anchor-container">
             <AAnchor
               :target-offset="80"
               :get-container="getAnchorContainer"
+              @change="handleAnchorChange"
+              @click="handleAnchorClick"
             >
-              <AAnchorLink href="#basic-info" title="基本信息" @click.stop.prevent />
-              <AAnchorLink href="#work-experience" title="工作经历" @click.stop.prevent />
-              <AAnchorLink href="#education" title="教育经历" @click.stop.prevent />
-              <AAnchorLink href="#family-info" title="家庭状况" @click.stop.prevent />
-              <AAnchorLink href="#work-achievement" title="工作主要业绩" @click.stop.prevent />
-              <AAnchorLink href="#position-statement" title="应聘岗位陈述" @click.stop.prevent />
-              <AAnchorLink href="#research-direction" title="研究方向与专长" @click.stop.prevent />
-              <AAnchorLink href="#paper-patent" title="论文专著专利" @click.stop.prevent />
-              <AAnchorLink href="#other-files" title="上传其它材料" @click.stop.prevent />
+              <AAnchorLink href="#basic-info" title="基本信息" />
+              <AAnchorLink href="#work-experience" title="工作经历" />
+              <AAnchorLink href="#education" title="教育经历" />
+              <AAnchorLink href="#family-info" title="家庭状况" />
+              <AAnchorLink href="#work-achievement" title="工作主要业绩" />
+              <AAnchorLink href="#position-statement" title="应聘岗位陈述" />
+              <AAnchorLink href="#research-direction" title="研究方向与专长" />
+              <AAnchorLink href="#paper-patent" title="论文专著专利" />
+              <AAnchorLink href="#other-files" title="上传其它材料" />
             </AAnchor>
           </div>
         </AAffix>
@@ -956,16 +950,29 @@ const loadFormData = async (id?: string) => {
 };
 
 // 初始化
-onMounted(() => {
+onMounted(async () => {
   // 如果有数据ID则加载数据
   if (props.dataId) {
-    loadFormData();
+    await loadFormData();
   }
   
   // 如果有传入表单数据，则合并到本地formData
   if (props.formData) {
     Object.assign(formData, props.formData);
   }
+  
+  // 在组件挂载后，触发 resize 事件以确保 Affix 正确计算
+  // 这对于 Tab 中的组件特别重要
+  await nextTick();
+  
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 200);
+  
+  // 再次延迟触发，确保在 Tab 完全激活后也能正确计算
+  setTimeout(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, 500);
 });
 
 // 监听dataId变化，自动加载数据
@@ -994,45 +1001,79 @@ const setDataByPDF = (data: any) => {
 const getAnchorContainer = () => {
   // 尝试从当前组件向上查找最近的modal滚动容器
   const currentElement = document.querySelector('.apply-form-container');
-  if (currentElement) {
-    let parent = currentElement.parentElement;
-    while (parent) {
-      // 在 Tab 中的情况：查找 modal-body（它是实际的滚动容器）
-      if (parent.classList.contains('ant-modal-body')) {
+  
+  if (!currentElement) {
+    return window as any;
+  }
+  
+  // 向上查找滚动容器
+  let parent = currentElement.parentElement;
+  while (parent) {
+    // 优先查找自定义 Tab 容器（审核弹出框中使用 v-if 的 scrollable-pane）
+    if (parent.classList.contains('scrollable-pane')) {
+      const computedStyle = window.getComputedStyle(parent);
+      if (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll') {
         return parent;
       }
-      // BasicModal 使用 .scrollbar 类作为滚动容器
-      if (parent.classList.contains('scrollbar')) {
+    }
+    
+    // 其次查找原有的 ant-tabs-tabpane（兼容旧代码）
+    if (parent.classList.contains('ant-tabs-tabpane') && parent.classList.contains('ant-tabs-tabpane-active')) {
+      const computedStyle = window.getComputedStyle(parent);
+      if (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll') {
         return parent;
       }
-      // 如果到达 modal-wrap，停止查找
-      if (parent.classList.contains('ant-modal-wrap')) {
-        break;
-      }
-      parent = parent.parentElement;
+    }
+    
+    // 再查找 ant-modal-body（详情弹出框使用）
+    if (parent.classList.contains('ant-modal-body')) {
+      return parent;
+    }
+    
+    // 如果到达 modal-wrap，停止查找
+    if (parent.classList.contains('ant-modal-wrap')) {
+      break;
+    }
+    
+    parent = parent.parentElement;
+  }
+  
+  // 备用方案：查找所有可见的有滚动的容器
+  // 优先查找自定义 scrollable-pane
+  const scrollablePanes = document.querySelectorAll('.scrollable-pane');
+  for (let i = scrollablePanes.length - 1; i >= 0; i--) {
+    const pane = scrollablePanes[i] as HTMLElement;
+    const isVisible = pane.offsetHeight > 0 && pane.offsetParent !== null;
+    const containsCurrent = pane.contains(currentElement);
+    const computedStyle = window.getComputedStyle(pane);
+    
+    if (isVisible && containsCurrent && (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll')) {
+      return pane;
     }
   }
   
-  // 备用方案：优先查找 modal-body（Tab中的主要滚动容器）
+  // 再尝试找 Tab pane
+  const tabPanes = document.querySelectorAll('.ant-tabs-tabpane.ant-tabs-tabpane-active');
+  for (let i = tabPanes.length - 1; i >= 0; i--) {
+    const pane = tabPanes[i] as HTMLElement;
+    const isVisible = pane.offsetHeight > 0 && pane.offsetParent !== null;
+    const containsCurrent = pane.contains(currentElement);
+    const computedStyle = window.getComputedStyle(pane);
+    
+    if (isVisible && containsCurrent && (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll')) {
+      return pane;
+    }
+  }
+  
+  // 最后尝试找 modal-body
   const modalBodies = document.querySelectorAll('.ant-modal-body');
-  for (let i = 0; i < modalBodies.length; i++) {
+  for (let i = modalBodies.length - 1; i >= 0; i--) {
     const body = modalBodies[i] as HTMLElement;
-    if (body.offsetHeight > 0 && body.offsetParent !== null) {
-      if (body.contains(currentElement)) {
-        return body;
-      }
-    }
-  }
-  
-  // 备用方案2：查找 scrollbar
-  const scrollbars = document.querySelectorAll('.scrollbar');
-  for (let i = 0; i < scrollbars.length; i++) {
-    const scrollbar = scrollbars[i] as HTMLElement;
-    if (scrollbar.offsetHeight > 0 && scrollbar.offsetParent !== null) {
-      // 检查是否包含当前表单
-      if (scrollbar.contains(currentElement)) {
-        return scrollbar;
-      }
+    const isVisible = body.offsetHeight > 0 && body.offsetParent !== null;
+    const containsCurrent = body.contains(currentElement);
+    
+    if (isVisible && containsCurrent) {
+      return body;
     }
   }
   
@@ -1040,44 +1081,15 @@ const getAnchorContainer = () => {
   return window as any;
 };
 
-// 处理锚点包装器点击事件，在捕获阶段阻止事件冒泡
-// 使用 capture 阶段拦截，确保在事件到达 Modal 之前就停止
-const handleAnchorWrapperClick = (e: Event) => {
-  // 阻止默认行为（防止 href 导致页面跳转）
+// Anchor 激活项变化监听
+const handleAnchorChange = (_currentActiveLink: string) => {
+  // 可以在这里添加激活项变化的业务逻辑
+};
+
+// Anchor 点击监听 - 阻止默认行为防止窗口关闭
+const handleAnchorClick = (e: Event) => {
+  // 阻止默认行为，防止点击锚点时窗口关闭
   e.preventDefault();
-  // 阻止事件冒泡到 Modal，防止关闭弹窗
-  e.stopPropagation();
-  // 阻止立即传播，确保不会触发父级的其他监听器
-  e.stopImmediatePropagation();
-  
-  // 检查是否是锚点链接的点击，如果是，手动处理滚动
-  const target = e.target as HTMLElement;
-  if (target && target.closest('a[href^="#"]')) {
-    const link = target.closest('a[href^="#"]') as HTMLAnchorElement;
-    const href = link.getAttribute('href');
-    
-    if (href) {
-      // 手动处理滚动，确保功能正常
-      const targetId = href.replace('#', '');
-      const targetElement = document.getElementById(targetId);
-      
-      if (targetElement) {
-        const container = getAnchorContainer();
-        
-        if (container && container !== window) {
-          const containerRect = (container as HTMLElement).getBoundingClientRect();
-          const targetRect = targetElement.getBoundingClientRect();
-          const scrollTop = (container as HTMLElement).scrollTop;
-          const offset = targetRect.top - containerRect.top + scrollTop - 80;
-          
-          (container as HTMLElement).scrollTo({
-            top: offset,
-            behavior: 'smooth'
-          });
-        }
-      }
-    }
-  }
 };
 
 // 暴露方法给父组件
@@ -1114,17 +1126,11 @@ defineExpose({
       min-width: 200px;
       max-width: 200px;
       flex-shrink: 0;
-      position: relative;
-      
-      // 确保 affix 固定时有足够的 z-index
-      :deep(.ant-affix) {
-        z-index: 100 !important;
-        width: 200px !important;
-      }
+      margin-top: 0;
       
       .anchor-container {
-        width: 200px;
-        background-color: #fff;
+        width: 100%; // 使用100%宽度，与父元素一致
+        background-color: #ffffff;
         border: 1px solid #e8e8e8;
         border-radius: 4px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -1132,12 +1138,13 @@ defineExpose({
       }
       
       :deep(.ant-anchor-wrapper) {
-        background: #fff;
+        background: #ffffff;
         padding: 0;
       }
       
       :deep(.ant-anchor) {
         padding: 12px 0;
+        background: #ffffff;
       }
       
       :deep(.ant-anchor-link) {

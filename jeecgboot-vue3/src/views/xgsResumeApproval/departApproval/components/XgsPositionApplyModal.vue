@@ -4,6 +4,7 @@
     :width="width"
     :visible="visible"
     :maskClosable="false"
+    :destroyOnClose="true"
     @ok="handleOk"
     :okButtonProps="{ class: { 'jee-hidden': disableSubmit } }"
     @cancel="handleCancel"

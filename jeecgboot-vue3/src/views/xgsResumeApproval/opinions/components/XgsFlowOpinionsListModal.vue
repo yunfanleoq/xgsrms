@@ -1,5 +1,14 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal" destroyOnClose :title="title" :width="1400" :height="650" :style="{ top: '2vh' }" @ok="handleSubmit">
+  <j-modal
+    :title="title"
+    :width="1400"
+    :visible="visible"
+    :maskClosable="false"
+    :destroyOnClose="true"
+    @ok="handleSubmit"
+    @cancel="handleCancel"
+    cancelText="关闭"
+  >
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane key="1" tab="办理过程">
         <XgsFlowOpinionsList ref="flowListRef" :positionApply="positionApply"></XgsFlowOpinionsList>
@@ -8,18 +17,16 @@
         <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
       </a-tab-pane>
     </a-tabs>
-  </BasicModal>
+  </j-modal>
 </template>
 
 <script lang="ts" setup>
-  import { ref, computed, unref, nextTick } from 'vue';
-  import { BasicModal, useModalInner } from '/@/components/Modal';
-  import { useUserStore } from '@/store/modules/user';
+  import { ref, nextTick, defineExpose } from 'vue';
+  import JModal from '/@/components/Modal/src/JModal/JModal.vue';
   import XgsFlowOpinionsList from '../XgsFlowOpinionsList.vue';
   import XgsApplyForm from '@/components/XgsApplyForm/index.vue';
-  import {saveOrUpdate} from "@/views/xgsResumeApproval/opinions/XgsFlowOpinions.api";
   // Emits声明
-  const emit = defineEmits(['register', 'success']);
+  const emit = defineEmits(['success']);
   const isUpdate = ref(true);
   const isDetail = ref(false);
   const activeKey = ref('1');
@@ -27,16 +34,21 @@
   const registerFormResume = ref();
   const positionApply = ref({});
   const resumeId = ref('');
-  const userStore = useUserStore();
+  const visible = ref(false);
+  const title = ref('办理过程');
 
-  //表单赋值
-  const [registerModal, { setModalProps, closeModal }] = useModalInner(async (data) => {
-    //重置表单
-    setModalProps({ confirmLoading: false, showCancelBtn: !!data?.showFooter, showOkBtn: !!data?.showFooter });
+  /**
+   * 打开Modal
+   */
+  async function open(data) {
+    visible.value = true;
+    activeKey.value = '1'; // 重置到第一个 tab
+    await nextTick();
+    
     isUpdate.value = !!data?.isUpdate;
     isDetail.value = !!data?.showFooter;
-    positionApply.value = null;
-    // flowListRef.value.reload();
+    positionApply.value = {};
+    
     setTimeout(() => {
       positionApply.value = data.record;
     }, 100);
@@ -47,13 +59,28 @@
     if (registerFormResume.value && data.record.resumeId) {
       await registerFormResume.value.loadFormData(data.record.resumeId);
     }
-  });
-  //设置标题
-  const title = ref('办理过程');
-  //表单提交事件
-  async function handleSubmit(v) {
-    return Promise.resolve(v);
   }
+
+  /**
+   * 关闭Modal
+   */
+  function handleCancel() {
+    visible.value = false;
+    emit('success');
+  }
+
+  /**
+   * 确定按钮点击事件
+   */
+  async function handleSubmit() {
+    visible.value = false;
+    emit('success');
+  }
+  
+  // 向父组件暴露方法
+  defineExpose({
+    open
+  });
 </script>
 
 <style lang="less" scoped>

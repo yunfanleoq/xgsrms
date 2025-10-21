@@ -4,47 +4,50 @@
     :width="'80%'"
     :visible="visible"
     :maskClosable="false"
+    :destroyOnClose="true"
     @ok="handleOk"
     @cancel="handleCancel"
     cancelText="关闭"
     :okButtonProps="{ style: { display: 'none' } }"
   >
-    <a-card title="流程进度" :bordered="true">
-      <a-steps :current="statusIndex" progress-dot size="small">
-        <a-step v-for="(item, index) in statusList" :title="item.statusName">
-          <template #description>
-            <div>{{ item.statusType }}</div>
+    <template v-if="visible">
+      <a-card title="流程进度" :bordered="true">
+        <a-steps :current="statusIndex" progress-dot size="small">
+          <a-step v-for="(item, index) in statusList" :title="item.statusName">
+            <template #description>
+              <div>{{ item.statusType }}</div>
+            </template>
+          </a-step>
+        </a-steps>
+        <a-descriptions :title="currentNode" bordered>
+          <a-descriptions-item :label="approvalStatus">{{ flowOpinion }}</a-descriptions-item>
+        </a-descriptions>
+      </a-card>
+      <!--      end-->
+      <div class="contentArea">
+        <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm">
+          <template #uploadResume="{ model, field }">
+            <a-form-item label="文件路径" id="XgsUserResumeFileForm-filePath" name="filePath" v-if=" title == '编辑'">
+              <j-upload v-model:value="fileData.filePath" :max-count="1" :multiple=" title == '编辑'" />
+              <a-button type="primary" :disabled="!fileData.filePath" @click="analysisResume">简历分析</a-button>
+              <div v-text="resumeText" style="width: 800px"></div>
+            </a-form-item>
           </template>
-        </a-step>
-      </a-steps>
-      <a-descriptions :title="currentNode" bordered>
-        <a-descriptions-item :label="approvalStatus">{{ flowOpinion }}</a-descriptions-item>
-      </a-descriptions>
-    </a-card>
-    <!--      end-->
-    <div class="contentArea">
-      <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm">
-        <template #uploadResume="{ model, field }">
-          <a-form-item label="文件路径" id="XgsUserResumeFileForm-filePath" name="filePath" v-if=" title == '编辑'">
-            <j-upload v-model:value="fileData.filePath" :max-count="1" :multiple=" title == '编辑'" />
-            <a-button type="primary" :disabled="!fileData.filePath" @click="analysisResume">简历分析</a-button>
-            <div v-text="resumeText" style="width: 800px"></div>
-          </a-form-item>
-        </template>
-      </BasicForm>
-    </div>
-    <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
+        </BasicForm>
+      </div>
+      <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
-    <!-- 使用新的统一申请表单 -->
-    <XgsApplyForm ref="applyFormRef" :formData="formData" :formDisabled="!isDetail" :formBpm="formBpm" :dataId="formData.dataId" />
-    
-    <!-- 附件下载区域 -->
-    <div v-if="otherFilesData" class="other-files-section">
-      <a-divider orientation="left">
-        <span style="font-size: 16px; font-weight: 600;">附件材料</span>
-      </a-divider>
-      <FileDownloadList :value="otherFilesData" />
-    </div>
+      <!-- 使用新的统一申请表单 -->
+      <XgsApplyForm ref="applyFormRef" :formData="formData" :formDisabled="!isDetail" :formBpm="formBpm" :dataId="formData.dataId" />
+      
+      <!-- 附件下载区域 -->
+      <div v-if="otherFilesData" class="other-files-section">
+        <a-divider orientation="left">
+          <span style="font-size: 16px; font-weight: 600;">附件材料</span>
+        </a-divider>
+        <FileDownloadList :value="otherFilesData" />
+      </div>
+    </template>
   </j-modal>
 </template>
 

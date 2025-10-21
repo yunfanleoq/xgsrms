@@ -41,8 +41,8 @@
     </BasicTable>
     <!-- 表单区域 -->
     <XgsPositionApplyModal ref="registerModal" @success="handleSuccess" />
-    <XgsFlowOpinionsModal @register="opinionModal" @success="handleSuccess" />
-    <XgsFlowOpinionsListModal @register="opinionListModal" @success="handleSuccess" />
+    <XgsFlowOpinionsModal @register="registerOpinionModal" @success="handleSuccess" />
+    <XgsFlowOpinionsListModal @register="registerOpinionListModal" @success="handleSuccess" />
   </div>
 </template>
 
@@ -65,9 +65,10 @@
 
   //注册model
   const registerModal = ref();
-  //注册model
-  const [opinionModal, { openModal }] = useModal();
-  const [opinionListModal, { openModal: openListModal }] = useModal();
+  //注册审核意见modal
+  const [registerOpinionModal, { openModal: openOpinionModal }] = useModal();
+  //注册审批意见列表modal
+  const [registerOpinionListModal, { openModal: openOpinionListModal }] = useModal();
   //注册table数据
   const { tableContext, onExportXls } = useListPage({
     tableProps: {
@@ -113,33 +114,26 @@
    * 新增事件
    */
   function handleAdd() {
-    openModal(true, {
-      isUpdate: false,
-      showFooter: true,
-    });
+    registerModal.value.add();
   }
   /**
    * 编辑事件
    */
   function handleEdit(record: Recordable) {
-    openModal(true, {
-      record,
-      isUpdate: true,
-      showFooter: true,
-    });
+    registerModal.value.edit(record);
   }
   function handleOpinion(record: Recordable) {
-    openModal(true, {
+    openOpinionModal(true, {
       record,
       isUpdate: false,
       showFooter: true,
     });
   }
   function handleOpinionList(record: Recordable) {
-    openListModal(true, {
+    openOpinionListModal(true, {
       record,
       isUpdate: false,
-      showFooter: true,
+      showFooter: false,
     });
   }
   /**
@@ -215,35 +209,8 @@
    */
   async function handleCustomExport() {
     try {
-      // 获取当前选中的列配置
-      const tableInstance = registerTable.value;
-      if (!tableInstance) {
-        console.error('表格实例未初始化');
-        return;
-      }
-      
-      // 获取列配置
-      const columns = tableInstance.getColumns();
-      
-      // 过滤出可见的列（排除操作列和选择列）
-      const visibleColumns = columns.filter(col => 
-        col.dataIndex && 
-        col.dataIndex !== 'action' && 
-        col.dataIndex !== 'selection' &&
-        col.title !== '操作'
-      );
-      
-      // 构建导出参数
-      const exportParams = {
-        ...queryParam,
-        columns: visibleColumns.map(col => ({
-          key: col.dataIndex,
-          title: col.title
-        }))
-      };
-      
-      // 调用导出
-      await onExportXls(exportParams);
+      // 直接调用导出
+      await onExportXls();
     } catch (error) {
       console.error('导出失败:', error);
     }
