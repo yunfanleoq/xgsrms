@@ -33,7 +33,10 @@
       <div class="tabs-container">
         <ul class="tabs">
           <!-- <li :class="{ selected: tabSelected === 'notice' }" @mouseover="tabSelected = 'notice'">通知公告</li> -->
-          <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">招聘公告</li>
+          <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">
+            <span class="tab-icon"><BulbOutlined /></span>
+            招聘公告
+          </li>
         </ul>
         <!-- <a class="more-link" :href="tabSelected === 'notice' ? './home/news' : './home/positions'">查看更多 +</a> -->
         <router-link to="/home/positions"> <span class="more-link">查看更多 +</span></router-link>
@@ -41,7 +44,9 @@
       <div class="announcements-content">
         <ul class="recruitment-list">
           <li v-for="(item, index) in recruitments" :key="index" @click="goToAnnouncementDetail(String(item.id))">
+            <span class="item-icon"><FileTextOutlined /></span>
             <p v-html="item.announcement"></p>
+            <span class="item-arrow"><RightOutlined /></span>
           </li>
         </ul>
       </div>
@@ -54,6 +59,7 @@
   import { defHttp } from '@/utils/http/axios';
   import { router } from '@/router';
   import { useGlobSetting } from '/@/hooks/setting';
+  import { BulbOutlined, FileTextOutlined, RightOutlined } from '@ant-design/icons-vue';
 
   interface CarouselImage {
     image: string;
@@ -463,6 +469,18 @@
     transition: all 0.3s ease;
     padding: 12px 20px;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .tab-icon {
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .tab-icon i {
+    font-size: 20px;
   }
 
   .tabs li:hover,
@@ -496,10 +514,40 @@
     margin: 8px 0;
     padding: 10px;
     border-radius: 4px;
+    display: flex;
+    align-items: center;
+    position: relative;
   }
 
   .recruitment-list li:hover {
     background-color: rgba(61, 84, 167, 0.05);
+    color: #3d54a7;
+  }
+  
+  .item-icon {
+    margin-right: 10px;
+    color: #3d54a7;
+    display: flex;
+    align-items: center;
+  }
+  
+  .item-icon i {
+    font-size: 16px;
+  }
+  
+  .item-arrow {
+    position: absolute;
+    right: 10px;
+    color: #999;
+    display: flex;
+    align-items: center;
+  }
+  
+  .item-arrow i {
+    font-size: 14px;
+  }
+  
+  .recruitment-list li:hover .item-arrow {
     color: #3d54a7;
   }
 
@@ -511,6 +559,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex: 1;
+    padding-right: 24px;
   }
 
   /* 响应式设计 */
