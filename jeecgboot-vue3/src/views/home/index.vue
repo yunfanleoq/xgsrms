@@ -9,8 +9,11 @@
     <header>
       <div class="logo">中国科学院信息工程研究所人才招聘管理系统</div>
       <nav>
-        <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink> | <RouterLink :to="{ name: 'homeNews' }">科研概况</RouterLink> |
-        <RouterLink :to="{ name: 'homeYjsk' }">员工发展</RouterLink>| <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink>|
+        <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink> | 
+        <RouterLink :to="{ name: 'homeNews' }">科研概况</RouterLink> |
+        <RouterLink :to="{ name: 'homeYgqk' }">员工情况</RouterLink> | 
+        <RouterLink :to="{ name: 'homeYjsk' }" v-if="false">员工发展</RouterLink> | 
+        <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink> |
         <RouterLink :to="{ name: 'contactUs' }">联系我们</RouterLink>
       </nav>
       <div>

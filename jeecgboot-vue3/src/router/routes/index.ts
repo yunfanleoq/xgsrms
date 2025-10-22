@@ -88,6 +88,16 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'ygqk',
+      name: 'homeYgqk',
+      component: () => import('/@/views/home/ygqk.vue'),
+      meta: {
+        title: '员工情况',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
       path: 'yjsk',
       name: 'homeYjsk',
       component: () => import('/@/views/home/yjsk.vue'),
