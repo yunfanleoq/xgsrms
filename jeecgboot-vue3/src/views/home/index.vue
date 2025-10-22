@@ -8,56 +8,56 @@
     <!-- 顶部导航栏 -->
     <header>
       <div class="logo">中国科学院信息工程研究所人才招聘管理系统</div>
-      <nav>
-        <RouterLink :to="{ name: 'homeHome' }">首页</RouterLink> | 
-        <RouterLink :to="{ name: 'homeNews' }">科研概况</RouterLink> |
-        <RouterLink :to="{ name: 'homeYgqk' }">员工情况</RouterLink> | 
-        <RouterLink :to="{ name: 'homeYjsk' }" v-if="false">员工发展</RouterLink> | 
-        <RouterLink :to="{ name: 'homePositions' }">招聘信息</RouterLink> |
-        <RouterLink :to="{ name: 'contactUs' }">联系我们</RouterLink>
+      <nav class="nav-menu">
+        <RouterLink :to="{ name: 'homeHome' }" class="nav-link">首页</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'homeNews' }" class="nav-link">科研概况</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'homeYgqk' }" class="nav-link">员工情况</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'homePositions' }" class="nav-link">招聘信息</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'contactUs' }" class="nav-link">联系我们</RouterLink>
       </nav>
-      <div>
-        <div v-if="!isLoggedIn">
-          <button @click="goToLoginPage" class="login">登录</button>
-          |
-          <button @click="goToRegisterPage" class="register">注册</button>
+      <div class="header-actions">
+        <div v-if="!isLoggedIn" class="auth-buttons">
+          <button @click="goToLoginPage" class="btn btn-login">登录</button>
+          <button @click="goToRegisterPage" class="btn btn-register">注册</button>
         </div>
-        <div v-else>
+        <div v-else class="user-section">
           <span class="user-info" v-if="loggedInUser">欢迎, {{ loggedInUser.realname }}</span>
-          <button @click="logout" class="logout">退出</button>
-          <button @click="goToUserCenter" class="user-center">个人中心</button>
+          <button @click="goToUserCenter" class="btn btn-user-center">个人中心</button>
+          <button @click="logout" class="btn btn-logout">退出</button>
         </div>
       </div>
     </header>
+
     <main class="main-content">
       <RouterView />
     </main>
-    <!-- 友情链接 -->
-    <div class="friend-links">
-      <!--      <h3>友情链接</h3>-->
-      <div class="friend-link">
-        <a href="https://www.cas.cn" target="_blank">中国科学院</a>
-        |
-        <a href="http://www.nsfc.gov.cn/" target="_blank">国家自然科学基金</a>
-        |
-        <a href="https://www.casjob.com/" target="_blank">中科人才网</a>
-        |
-        <a href="http://www.iie.cas.cn/" target="_blank">中科院信工所</a>
-      </div>
-    </div>
+
     <footer>
-      <br />
-      <p>© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统. All rights reserved.</p>
+      <!-- 友情链接 -->
+      <div class="friend-links">
+        <a href="https://www.cas.cn" target="_blank" rel="noopener noreferrer">中国科学院</a>
+        <span class="link-separator">|</span>
+        <a href="http://www.nsfc.gov.cn/" target="_blank" rel="noopener noreferrer">国家自然科学基金</a>
+        <span class="link-separator">|</span>
+        <a href="https://www.casjob.com/" target="_blank" rel="noopener noreferrer">中科人才网</a>
+        <span class="link-separator">|</span>
+        <a href="http://www.iie.cas.cn/" target="_blank" rel="noopener noreferrer">中科院信工所</a>
+      </div>
+      <p class="footer-text">© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统. All rights reserved.</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router';
-  import {computed, onMounted, reactive, ref, watchEffect} from 'vue';
+  import { computed, onMounted } from 'vue';
   import { useUserStore } from '@/store/modules/user';
   import { doLogout } from '@/api/sys/user';
-  import {useMultipleTabStore} from "@/store/modules/multipleTab";
+  import { useMultipleTabStore } from '@/store/modules/multipleTab';
   const router = useRouter();
   const userStore = useUserStore();
 
@@ -94,67 +94,39 @@
   };
 </script>
 
-<style>
-  #app nav a:hover,
-  #app nav a:focus {
-    color: #ffffff;
-    text-decoration: underline;
-  }
-  .main-content {
-    flex: 1; /* 允许容器根据内容自动扩展 */
-    //min-height: 1000px; /* 设置最小高度为1000像素 */
-    padding: 20px; /* 可选：添加内边距 */
-    background-color: #f9f9f9; /* 可选：添加背景颜色 */
-  }
-
+<style scoped>
   /* 全局样式 */
-  .friend-link {
-    display: flex;
-    justify-content: space-around; /* 或者使用 space-between 根据需要 */
-    align-items: center;
-    width: 100%;
-    height: 50px;
-    border-radius: 5px;
-    background-color: #7fa5e0;
-    padding: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
-  }
-
-  .link-item {
-    color: white; /* 文字颜色与背景颜色对比 */
-    text-decoration: none; /* 去掉下划线 */
-    font-family: Arial, sans-serif; /* 清晰易读的字体 */
-    font-size: 16px;
-    transition: color 0.3s ease; /* 添加过渡效果 */
-  }
-
-  .link-item:hover {
-    color: #ffcc00; /* 悬停时的文字颜色 */
-  }
-  .friend-links {
-    /*display: flex;*/
-    /*justify-content: space-between;*/
-    align-items: center;
-    width: 100%;
-    /*height: 50px;*/
-    border-radius: 8px;
-    /*background-color: #7fa5e0;*/
-    /*text-align: center;*/
-    padding: 10px;
-  }
-  footer {
-    text-align: center;
-    padding: 10px;
-  }
-
   body {
     margin: 0;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background-color: #f7f9fc;
   }
 
   #app {
     width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Banner 样式 */
+  .banner {
+    background-image: url('@/assets/images/xgs_topbg.png');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .banner-image {
+    height: 100px;
+    width: 80%;
+    max-width: 1200px;
+    border-radius: 7px;
+    object-fit: contain;
+    margin: 0 5px;
   }
 
   /* 顶部导航栏 */
@@ -164,100 +136,238 @@
     align-items: center;
     background: linear-gradient(90deg, #3d54a7, #3d54a7);
     color: white;
-    padding: 10px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 15px 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
   }
 
-  header .logo {
-    font-size: 24px;
+  .logo {
+    font-size: 20px;
     font-weight: bold;
+    white-space: nowrap;
   }
 
-  header nav {
+  /* 导航菜单 */
+  .nav-menu {
     display: flex;
     align-items: center;
-    justify-content: center; /* 居中导航区内容 */
+    justify-content: center;
+    flex: 1;
+    gap: 5px;
   }
 
-  header nav a {
+  .nav-link {
     color: white;
-    margin: 0 15px;
+    padding: 8px 16px;
     text-decoration: none;
-    font-size: 16px;
-    font-weight: 500;
-    font-size: 20px;
+    font-size: 18px;
+    font-weight: 600;
     cursor: pointer;
-    font-weight: bold;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    position: relative;
   }
 
-  header nav a:hover {
+  .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .nav-link.router-link-active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .nav-divider {
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 4px;
+  }
+
+  /* 头部操作区 */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .auth-buttons,
+  .user-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* 按钮样式 */
+  .btn {
+    padding: 8px 20px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .btn-login,
+  .btn-register {
+    background-color: transparent;
     color: white;
+    border: 2px solid white;
+  }
+
+  .btn-login:hover,
+  .btn-register:hover {
+    background-color: white;
+    color: #3d54a7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-logout {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .btn-logout:hover {
+    background-color: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+  }
+
+  .btn-user-center {
+    background-color: #27ae60;
+    color: white;
+  }
+
+  .btn-user-center:hover {
+    background-color: #229954;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+  }
+
+  .user-info {
+    color: white;
+    font-size: 16px;
+    padding: 0 10px;
+  }
+
+  /* 主内容区 */
+  .main-content {
+    flex: 1;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+
+  /* 页脚 */
+  footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #f5f5f5;
+    color: #666;
+    margin-top: auto;
+    border-top: 1px solid #e0e0e0;
+  }
+
+  /* 友情链接 */
+  .friend-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 15px;
+  }
+
+  .friend-links a {
+    color: #666;
+    text-decoration: none;
+    font-size: 14px;
+    padding: 5px 10px;
+    transition: color 0.3s ease;
+  }
+
+  .friend-links a:hover {
+    color: #3d54a7;
     text-decoration: underline;
   }
 
-  header .login,
-  header .register {
-    margin-left: 15px;
-    padding: 5px 15px;
-    border-radius: 5px;
-    margin-right: 15px;
-
-    background-color: transparent;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-    font-weight: bold;
+  .link-separator {
+    color: #ccc;
+    font-size: 14px;
   }
 
-  .banner {
-    background-image: url('@/assets/images/xgs_topbg.png'); /* 替换为你的背景图URL */
-    background-size: cover;
-    display: flex;
-    align-items: center;
+  .footer-text {
+    margin: 0;
+    font-size: 13px;
+    color: #999;
   }
 
-  .banner-image {
-    height: 100px;
-    width: 80%;
-    border-radius: 7px;
-    object-fit: contain; /* 保持图像的宽高比 */
-    margin-right: 10px; /* 可选：设置图像之间的间距 */
+  /* 响应式设计 */
+  @media (max-width: 1024px) {
+    header {
+      flex-wrap: wrap;
+      padding: 10px 20px;
+    }
+
+    .logo {
+      font-size: 16px;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .nav-menu {
+      order: 3;
+      width: 100%;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .nav-link {
+      font-size: 14px;
+      padding: 6px 10px;
+    }
+
+    .header-actions {
+      order: 2;
+    }
   }
 
-  /* 横幅 */
-  .banner img {
-    width: 100%;
-    border-radius: 10px;
-    margin: 20px 0;
-  }
-  .logout {
-    margin-left: 15px;
-    padding: 5px 15px;
-    border-radius: 5px;
-    margin-right: 15px;
+  @media (max-width: 768px) {
+    .banner-image {
+      height: 60px;
+      width: 90%;
+    }
 
-    background-color: #7b467f;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-  }
+    .nav-link {
+      font-size: 12px;
+      padding: 5px 8px;
+    }
 
-  .user-center {
-    margin-left: 15px;
-    padding: 5px 15px;
-    border-radius: 5px;
-    margin-right: 15px;
+    .btn {
+      font-size: 14px;
+      padding: 6px 12px;
+    }
 
-    background-color: #74c25e;
-    color: white;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  .user-info {
-    margin-left: 15px;
-    padding: 5px 15px;
-    border-radius: 5px;
-    /*background-color: #0c8fcf;*/
-    font-size: 20px;
+    .friend-links {
+      gap: 3px;
+    }
+
+    .friend-links a {
+      font-size: 12px;
+      padding: 3px 6px;
+    }
+
+    .link-separator {
+      font-size: 12px;
+    }
+
+    .footer-text {
+      font-size: 12px;
+    }
   }
 </style>
