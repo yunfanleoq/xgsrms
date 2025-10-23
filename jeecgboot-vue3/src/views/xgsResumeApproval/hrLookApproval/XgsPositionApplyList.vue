@@ -42,7 +42,7 @@
     <!-- 表单区域 -->
     <XgsPositionApplyModal ref="registerModal" @success="handleSuccess" />
     <XgsFlowOpinionsModal ref="opinionModal" @success="handleSuccess" />
-    <XgsFlowOpinionsListModal @register="registerOpinionListModal" @success="handleSuccess" />
+    <XgsFlowOpinionsListModal ref="opinionListModal" @success="handleSuccess" />
   </div>
 </template>
 
@@ -68,7 +68,7 @@
   //注册审核意见modal
   const opinionModal = ref();
   //注册审批意见列表modal
-  const [registerOpinionListModal, { openModal: openOpinionListModal }] = useModal();
+  const opinionListModal = ref();
   //注册table数据
   const { tableContext, onExportXls } = useListPage({
     tableProps: {
@@ -130,7 +130,7 @@
     });
   }
   function handleOpinionList(record: Recordable) {
-    openOpinionListModal(true, {
+    opinionListModal.value?.open({
       record,
       isUpdate: false,
       showFooter: false,

@@ -1,22 +1,34 @@
 <template>
   <j-modal
     :title="title"
-    :width="1400"
+    :width="'80%'"
     :visible="visible"
     :maskClosable="false"
     :destroyOnClose="true"
     @ok="handleSubmit"
     @cancel="handleCancel"
     cancelText="关闭"
+    :switchFullscreen="true"
+    class="xgs-flow-opinions-list-modal"
   >
+    <!-- a-tabs 仅用于显示标题和切换状态，不包含内容 -->
     <a-tabs v-model:activeKey="activeKey">
-      <a-tab-pane key="1" tab="办理过程">
-        <XgsFlowOpinionsList ref="flowListRef" :positionApply="positionApply"></XgsFlowOpinionsList>
-      </a-tab-pane>
-      <a-tab-pane key="2" tab="岗位申请单" force-render>
-        <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
-      </a-tab-pane>
+      <a-tab-pane key="1" tab="办理过程" />
+      <a-tab-pane key="2" tab="岗位申请单" />
     </a-tabs>
+
+    <!-- 表单内容区域，使用 v-if 控制显示，不放在 a-tab-pane 里 -->
+    <div class="tab-content-container">
+      <!-- 第一个 Tab: 办理过程 -->
+      <div v-if="activeKey === '1'" class="tab-content-pane">
+        <XgsFlowOpinionsList ref="flowListRef" :positionApply="positionApply"></XgsFlowOpinionsList>
+      </div>
+
+      <!-- 第二个 Tab: 岗位申请表单 -->
+      <div v-if="activeKey === '2'" class="tab-content-pane">
+        <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
+      </div>
+    </div>
   </j-modal>
 </template>
 
@@ -98,5 +110,15 @@
 
   :deep(.ant-calendar-picker) {
     width: 100%;
+  }
+
+  // 隐藏 a-tab-pane 的内容区域（因为我们用 v-if 在外面显示内容）
+  :deep(.ant-tabs-content) {
+    display: none;
+  }
+
+  // Tab 内容容器样式
+  .tab-content-container {
+    margin-top: 16px;
   }
 </style>
