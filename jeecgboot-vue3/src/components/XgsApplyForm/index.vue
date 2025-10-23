@@ -2,7 +2,7 @@
   <div class="apply-form-container">
     <!-- 照片预览模态框 -->
     <a-modal
-      v-model:visible="previewVisible"
+      v-model:open="previewVisible"
       :title="'照片预览'"
       :footer="null"
       width="auto"
@@ -554,24 +554,13 @@
 
       <!-- 右侧锚点导航 -->
       <div class="anchor-wrapper">
-        <AAffix :target="getAnchorContainer" :offset-top="20">
+        <AAffix :target="getAffixContainer" :offset-top="affixOffsetTop">
           <div class="anchor-container">
             <AAnchor
-              :target-offset="80"
               :get-container="getAnchorContainer"
-              @change="handleAnchorChange"
+              :items="anchorItems"
               @click="handleAnchorClick"
-            >
-              <AAnchorLink href="#basic-info" title="基本信息" />
-              <AAnchorLink href="#work-experience" title="工作经历" />
-              <AAnchorLink href="#education" title="教育经历" />
-              <AAnchorLink href="#family-info" title="家庭状况" />
-              <AAnchorLink href="#work-achievement" title="工作主要业绩" />
-              <AAnchorLink href="#position-statement" title="应聘岗位陈述" />
-              <AAnchorLink href="#research-direction" title="研究方向与专长" />
-              <AAnchorLink href="#paper-patent" title="论文专著专利" />
-              <AAnchorLink href="#other-files" title="上传其它材料" />
-            </AAnchor>
+            />
           </div>
         </AAffix>
       </div>
@@ -582,7 +571,7 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted, nextTick, watch, defineProps, defineExpose } from 'vue';
 import { defHttp } from '/@/utils/http/axios';
-import { message, Modal, Anchor, AnchorLink, Affix } from 'ant-design-vue';
+import { message, Modal, Anchor, Affix } from 'ant-design-vue';
 import { EyeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons-vue';
 import { getFileAccessHttpUrl } from '/@/utils/common/compUtils';
 import { saveOrUpdate } from '/@/views/xgsResumeBase/xgsResumePT/XgsResumeBase.api';
@@ -609,8 +598,20 @@ import PaperPatentTable from './components/PaperPatentTable.vue';
 
 // 使用 Ant Design Vue 组件别名（兼容性）
 const AAnchor = Anchor;
-const AAnchorLink = AnchorLink;
 const AAffix = Affix;
+
+// 锚点导航配置
+const anchorItems = [
+  { key: 'basic-info', href: '#basic-info', title: '基本信息' },
+  { key: 'work-experience', href: '#work-experience', title: '工作经历' },
+  { key: 'education', href: '#education', title: '教育经历' },
+  { key: 'family-info', href: '#family-info', title: '家庭状况' },
+  { key: 'work-achievement', href: '#work-achievement', title: '工作主要业绩' },
+  { key: 'position-statement', href: '#position-statement', title: '应聘岗位陈述' },
+  { key: 'research-direction', href: '#research-direction', title: '研究方向与专长' },
+  { key: 'paper-patent', href: '#paper-patent', title: '论文专著专利' },
+  { key: 'other-files', href: '#other-files', title: '上传其它材料' },
+];
 
 // Props 接收参数
 const props = defineProps({
@@ -633,6 +634,9 @@ const workAchievementRef = ref<any>(null);
 const positionStatementRef = ref<any>(null);
 const researchDirectionRef = ref<any>(null);
 const paperPatentRef = ref<any>(null);
+
+// Affix 的动态偏移量
+const affixOffsetTop = ref<number>(20);
 
 // 日期格式
 const dateFormat = 'YYYY-MM-DD';
@@ -936,18 +940,19 @@ const loadFormData = async (id?: string) => {
       tableData.xgsResumeResearchPaperList = [];
     }
     
-    // 数据加载完成后，强制触发 Affix 重新计算宽度
-    // 使用 nextTick 确保 DOM 已更新，然后触发 resize 事件
-    await nextTick();
+    // 数据加载完成后，重新计算 Affix offset
+    await nextTick();  
+    affixOffsetTop.value = 21;
     setTimeout(() => {
-      window.dispatchEvent(new Event('resize'));
-    }, 100);
+      computeAffixOffset();
+    }, 2000);
     
   } catch (error) {
     console.error('加载表单数据失败:', error);
     message.error('加载表单数据失败');
   }
 };
+
 
 // 初始化
 onMounted(async () => {
@@ -961,18 +966,6 @@ onMounted(async () => {
     Object.assign(formData, props.formData);
   }
   
-  // 在组件挂载后，触发 resize 事件以确保 Affix 正确计算
-  // 这对于 Tab 中的组件特别重要
-  await nextTick();
-  
-  setTimeout(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, 200);
-  
-  // 再次延迟触发，确保在 Tab 完全激活后也能正确计算
-  setTimeout(() => {
-    window.dispatchEvent(new Event('resize'));
-  }, 500);
 });
 
 // 监听dataId变化，自动加载数据
@@ -997,99 +990,110 @@ const setDataByPDF = (data: any) => {
   tableData.xgsResumeResearchPaperList = data.value.xgsResumeResearchPaper || [];
 };
 
-// 获取锚点容器（用于 anchor）
+// 获取 Affix 的目标容器（固定定位的参考容器）
+const getAffixContainer = () => {
+  // 优先查找审核弹窗的滚动容器（BasicModal + tab）
+  const scrollablePane = document.querySelector('.scrollable-pane');
+  if (scrollablePane) {
+    return scrollablePane as HTMLElement;
+  }
+  
+  // 其次查找 BasicModal 的 body
+  const basicModalBody = document.querySelector('.ant-modal-body');
+  if (basicModalBody) {
+    return basicModalBody as HTMLElement;
+  }
+  
+  // 最后查找 j-modal 的 body
+  const jModalBody = document.querySelector('.j-modal-body');
+  if (jModalBody) {
+    return jModalBody as HTMLElement;
+  }
+  
+  return window;
+};
+
+// 获取锚点容器（用于 anchor 滚动）
 const getAnchorContainer = () => {
-  // 尝试从当前组件向上查找最近的modal滚动容器
-  const currentElement = document.querySelector('.apply-form-container');
-  
-  if (!currentElement) {
-    return window as any;
+  // 优先查找审核弹窗的滚动容器（BasicModal + tab）
+  const scrollablePane = document.querySelector('.scrollable-pane');
+  if (scrollablePane) {
+    return scrollablePane as HTMLElement;
   }
   
-  // 向上查找滚动容器
-  let parent = currentElement.parentElement;
-  while (parent) {
-    // 优先查找自定义 Tab 容器（审核弹出框中使用 v-if 的 scrollable-pane）
-    if (parent.classList.contains('scrollable-pane')) {
-      const computedStyle = window.getComputedStyle(parent);
-      if (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll') {
-        return parent;
-      }
-    }
-    
-    // 其次查找原有的 ant-tabs-tabpane（兼容旧代码）
-    if (parent.classList.contains('ant-tabs-tabpane') && parent.classList.contains('ant-tabs-tabpane-active')) {
-      const computedStyle = window.getComputedStyle(parent);
-      if (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll') {
-        return parent;
-      }
-    }
-    
-    // 再查找 ant-modal-body（详情弹出框使用）
-    if (parent.classList.contains('ant-modal-body')) {
-      return parent;
-    }
-    
-    // 如果到达 modal-wrap，停止查找
-    if (parent.classList.contains('ant-modal-wrap')) {
-      break;
-    }
-    
-    parent = parent.parentElement;
+  // 其次查找 BasicModal 的 body
+  const basicModalBody = document.querySelector('.ant-modal-body');
+  if (basicModalBody) {
+    return basicModalBody as HTMLElement;
   }
   
-  // 备用方案：查找所有可见的有滚动的容器
-  // 优先查找自定义 scrollable-pane
-  const scrollablePanes = document.querySelectorAll('.scrollable-pane');
-  for (let i = scrollablePanes.length - 1; i >= 0; i--) {
-    const pane = scrollablePanes[i] as HTMLElement;
-    const isVisible = pane.offsetHeight > 0 && pane.offsetParent !== null;
-    const containsCurrent = pane.contains(currentElement);
-    const computedStyle = window.getComputedStyle(pane);
-    
-    if (isVisible && containsCurrent && (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll')) {
-      return pane;
-    }
+  // 最后查找 j-modal 的 body
+  const jModalBody = document.querySelector('.j-modal-body');
+  if (jModalBody) {
+    return jModalBody as HTMLElement;
   }
   
-  // 再尝试找 Tab pane
-  const tabPanes = document.querySelectorAll('.ant-tabs-tabpane.ant-tabs-tabpane-active');
-  for (let i = tabPanes.length - 1; i >= 0; i--) {
-    const pane = tabPanes[i] as HTMLElement;
-    const isVisible = pane.offsetHeight > 0 && pane.offsetParent !== null;
-    const containsCurrent = pane.contains(currentElement);
-    const computedStyle = window.getComputedStyle(pane);
-    
-    if (isVisible && containsCurrent && (computedStyle.overflowY === 'auto' || computedStyle.overflowY === 'scroll')) {
-      return pane;
-    }
-  }
-  
-  // 最后尝试找 modal-body
-  const modalBodies = document.querySelectorAll('.ant-modal-body');
-  for (let i = modalBodies.length - 1; i >= 0; i--) {
-    const body = modalBodies[i] as HTMLElement;
-    const isVisible = body.offsetHeight > 0 && body.offsetParent !== null;
-    const containsCurrent = body.contains(currentElement);
-    
-    if (isVisible && containsCurrent) {
-      return body;
-    }
-  }
-  
-  // 最后返回window
-  return window as any;
+  return window;
 };
 
-// Anchor 激活项变化监听
-const handleAnchorChange = (_currentActiveLink: string) => {
-  // 可以在这里添加激活项变化的业务逻辑
+// 计算 Affix 的动态偏移量，使其与表单顶部对齐
+const computeAffixOffset = () => {
+  // try {
+  //   affixOffsetTop.value = 10;
+  //   const container = getAffixContainer();
+  //   const formContent = document.querySelector('.form-content');
+    
+  //   if (!formContent || !container || container === window) {
+  //     affixOffsetTop.value = 20;
+  //     return;
+  //   }
+    
+  //   const containerRect = (container as HTMLElement).getBoundingClientRect();
+  //   const formRect = formContent.getBoundingClientRect();
+  //   const offset = Math.max(0, Math.round(formRect.top - containerRect.top));
+  //   affixOffsetTop.value = offset;
+  // } catch (error) {
+  //   console.warn('计算 Affix offset 失败:', error);
+  //   affixOffsetTop.value = 20;
+  // }
 };
 
-// Anchor 点击监听 - 阻止默认行为防止窗口关闭
-const handleAnchorClick = (e: Event) => {
+// Anchor 点击监听 - 阻止默认行为并手动滚动
+const handleAnchorClick = (e: Event, link: any) => {
   // 阻止默认行为，防止点击锚点时窗口关闭
   e.preventDefault();
+  
+  // 手动处理滚动
+  if (link && link.href) {
+    const targetId = link.href.replace('#', '');
+    const targetElement = document.getElementById(targetId);
+    const container = getAnchorContainer();
+    
+    if (targetElement && container) {
+      if (container === window) {
+        // 如果容器是 window，使用 scrollIntoView
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        // 如果容器是具体的 DOM 元素，计算滚动位置
+        const containerElement = container as HTMLElement;
+        const containerRect = containerElement.getBoundingClientRect();
+        const targetRect = targetElement.getBoundingClientRect();
+        const scrollTop = containerElement.scrollTop;
+        
+        // 判断是否在审核弹窗中（scrollable-pane）
+        const isInScrollablePane = containerElement.classList?.contains('scrollable-pane') || false;
+        
+        // 根据容器类型调整偏移量
+        const offsetAdjust = isInScrollablePane ? 20 : 80; // 审核弹窗偏移量小一些
+        const offset = targetRect.top - containerRect.top + scrollTop - offsetAdjust;
+        
+        (container as HTMLElement).scrollTo({
+          top: offset,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }
 };
 
 // 暴露方法给父组件
@@ -1098,6 +1102,7 @@ defineExpose({
   handleReset,
   loadFormData,
   setDataByPDF,
+  computeAffixOffset, // 暴露计算方法给父组件调用
 });
 </script>
 
@@ -1140,11 +1145,18 @@ defineExpose({
       :deep(.ant-anchor-wrapper) {
         background: #ffffff;
         padding: 0;
+        width: 100%;
       }
       
       :deep(.ant-anchor) {
         padding: 12px 0;
         background: #ffffff;
+        width: 100%;
+      }
+      
+      // 修复 Affix 固定后的宽度
+      :deep(.ant-affix) {
+        width: 200px !important;
       }
       
       :deep(.ant-anchor-link) {

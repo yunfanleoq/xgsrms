@@ -41,7 +41,7 @@
     </BasicTable>
     <!-- 表单区域 -->
     <XgsPositionApplyModal ref="registerModal" @success="handleSuccess" />
-    <XgsFlowOpinionsModal @register="registerOpinionModal" @success="handleSuccess" />
+    <XgsFlowOpinionsModal ref="opinionModal" @success="handleSuccess" />
     <XgsFlowOpinionsListModal @register="registerOpinionListModal" @success="handleSuccess" />
   </div>
 </template>
@@ -66,7 +66,7 @@
   //注册model
   const registerModal = ref();
   //注册审核意见modal
-  const [registerOpinionModal, { openModal: openOpinionModal }] = useModal();
+  const opinionModal = ref();
   //注册审批意见列表modal
   const [registerOpinionListModal, { openModal: openOpinionListModal }] = useModal();
   //注册table数据
@@ -123,7 +123,7 @@
     registerModal.value.edit(record);
   }
   function handleOpinion(record: Recordable) {
-    openOpinionModal(true, {
+    opinionModal.value?.open({
       record,
       isUpdate: false,
       showFooter: true,

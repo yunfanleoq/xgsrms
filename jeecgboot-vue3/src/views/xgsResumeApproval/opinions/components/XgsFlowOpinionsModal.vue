@@ -1,16 +1,19 @@
 <template>
-  <BasicModal
-    v-bind="$attrs"
-    @register="registerModal"
+  <j-modal
     :title="title"
-    width="80%"
-    :showFooter="showFooter"
+    :width="'80%'"
+    :visible="visible"
+    :maskClosable="false"
+    :destroyOnClose="true"
     @ok="handleOk"
     @cancel="handleCancel"
-    :destroyOnClose="true"
     cancelText="关闭"
+    :switchFullscreen="true"
     class="xgs-flow-opinions-modal"
   >
+    <template v-if="!showFooter" #footer>
+      <a-button @click="handleCancel">关闭</a-button>
+    </template>
     <!-- a-tabs 仅用于显示标题和切换状态，不包含内容 -->
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane key="1" tab="审核意见" />
@@ -25,24 +28,25 @@
       </div>
 
       <!-- 第二个 Tab: 岗位申请表单 -->
-      <div v-if="activeKey === '2'" class="tab-content-pane scrollable-pane">
+      <div v-if="activeKey === '2'" class="tab-content-pane">
         <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
       </div>
     </div>
-  </BasicModal>
+  </j-modal>
 </template>
 
 <script lang="ts" setup>
-import {ref, unref, nextTick} from 'vue';
-  import { BasicModal, useModalInner } from '/@/components/Modal';
+import {ref, unref, nextTick, defineExpose} from 'vue';
   import { BasicForm, useForm } from '/@/components/Form/index';
   import { formSchema } from '../XgsFlowOpinions.data';
   import { saveOrUpdate } from '../XgsFlowOpinions.api';
   import { useUserStore } from '@/store/modules/user';
   import XgsApplyForm from '@/components/XgsApplyForm/index.vue';
+  import JModal from '/@/components/Modal/src/JModal/JModal.vue';
   
   // Emits声明
   const emit = defineEmits(['success', 'register']);
+  const visible = ref(false);
   const isUpdate = ref(true);
   const activeKey = ref('1');
   const positionApply = ref({});
@@ -51,7 +55,6 @@ import {ref, unref, nextTick} from 'vue';
   const userStore = useUserStore();
   const title = ref('审批');
   const showFooter = ref(true);
-
 
   //表单配置
   const [registerForm, { setProps, resetFields, setFieldsValue, validate, scrollToField }] = useForm({
@@ -62,9 +65,10 @@ import {ref, unref, nextTick} from 'vue';
   });
 
   /**
-   * Modal注册
+   * 打开弹窗
    */
-  const [registerModal, { closeModal }] = useModalInner(async (data) => {
+  async function open(data: any) {
+    visible.value = true;
     activeKey.value = '1'; // 重置到第一个 tab
     await nextTick();
     
@@ -107,17 +111,24 @@ import {ref, unref, nextTick} from 'vue';
     await nextTick();
     if (registerFormResume.value && data.record.resumeId) {
       await registerFormResume.value.loadFormData(data.record.resumeId);
+      
+      // 延迟2秒后重新计算导航位置，确保DOM完全渲染
+      setTimeout(() => {
+        if (registerFormResume.value && typeof registerFormResume.value.computeAffixOffset === 'function') {
+          registerFormResume.value.computeAffixOffset();
+        }
+      }, 2000);
     }
     
     // 隐藏底部时禁用整个表单
     setProps({ disabled: !data?.showFooter });
-  });
+  }
 
   /**
    * 关闭Modal
    */
   function handleCancel() {
-    closeModal();
+    visible.value = false;
     emit('success');
   }
 
@@ -138,7 +149,7 @@ import {ref, unref, nextTick} from 'vue';
       await saveOrUpdate(values, isUpdate.value);
       
       //关闭弹窗
-      closeModal();
+      visible.value = false;
       //刷新列表
       emit('success');
     } catch (error: any) {
@@ -152,9 +163,19 @@ import {ref, unref, nextTick} from 'vue';
       return Promise.reject(error);
     }
   }
+  
+  // 暴露方法给父组件
+  defineExpose({
+    open,
+  });
 </script>
 
 <style lang="less" scoped>
+  /** 隐藏确定按钮的样式 */
+  .jee-hidden {
+    display: none !important;
+  }
+
   /** 时间和数字输入框样式 */
   :deep(.ant-input-number) {
     width: 100%;
@@ -172,17 +193,5 @@ import {ref, unref, nextTick} from 'vue';
   // Tab 内容容器样式
   .tab-content-container {
     margin-top: 16px;
-    
-    .tab-content-pane {
-      // 岗位申请表单的容器，需要滚动
-      &.scrollable-pane {
-        max-height: 600px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        
-        // 确保在 Firefox 中也能正常滚动
-        scrollbar-width: thin;
-      }
-    }
   }
 </style>
