@@ -14,7 +14,7 @@
           type="primary" 
           v-auth="'xgsUserResume:xgs_position_apply:exportXls'" 
           preIcon="ant-design:download-outlined" 
-          @click="onExportXls" 
+          @click="handleCustomExport" 
           style="margin-left: 8px"
         > 
           导出
@@ -43,11 +43,17 @@
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositionApply.api';
   import { useModal } from '@/components/Modal';
   import { APPROVAL_NODES } from '/@/enums/approval';
+  import { useMessage } from '/@/hooks/web/useMessage';
+  import { useGlobSetting } from '/@/hooks/setting';
+  import { getToken } from '/@/utils/auth';
 
   const queryParam = reactive<any>({
     approvalNode: APPROVAL_NODES.DEPT,
     approvalStatusValue: '1',
   });
+
+  const { createMessage } = useMessage();
+  const globSetting = useGlobSetting();
 
   //注册model
   const registerModal = ref();
@@ -198,6 +204,27 @@
         auth: 'resume:xgs_position_apply:delete',
       },
     ];
+  }
+
+  /**
+   * 自定义导出
+   */
+  function handleCustomExport() {
+    // 1. 检查是否选中了数据
+    if (selectedRowKeys.value.length === 0) {
+      createMessage.warning('请选择一条数据进行导出');
+      return;
+    }
+    // 2. 检查是否只选中了一条数据
+    if (selectedRowKeys.value.length > 1) {
+      createMessage.warning('只能选择一条数据进行导出');
+      return;
+    }
+    // 3. 调用导出接口
+    const applyId = selectedRowKeys.value[0];
+    const token = getToken();
+    const url = `${globSetting.apiUrl}/xgsExport/exportResumeWord?applyId=${applyId}&token=${token}`;
+    window.open(url, '_blank');
   }
 </script>
 

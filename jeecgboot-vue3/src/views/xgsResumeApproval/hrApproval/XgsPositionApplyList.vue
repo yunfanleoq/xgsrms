@@ -61,6 +61,9 @@
   import XgsFlowOpinionsModal from '@/views/xgsResumeApproval/opinions/components/XgsFlowOpinionsModal.vue';
   import XgsFlowOpinionsListModal from '@/views/xgsResumeApproval/opinions/components/XgsFlowOpinionsListModal.vue';
   import { APPROVAL_NODES } from '/@/enums/approval';
+  import { useMessage } from '/@/hooks/web/useMessage';
+  import { useGlobSetting } from '/@/hooks/setting';
+  import { getToken } from '/@/utils/auth';
   
   const queryParam = reactive<any>({
     approvalNode: APPROVAL_NODES.HR,
@@ -68,6 +71,8 @@
   });
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
+  const { createMessage } = useMessage();
+  const globSetting = useGlobSetting();
   //注册model
   const registerModal = ref();
   //注册 opinion modal
@@ -225,7 +230,28 @@
   /**
    * 自定义导出
    */
-  async function handleCustomExport() {
+  function handleCustomExport() {
+    // 1. 检查是否选中了数据
+    if (selectedRowKeys.value.length === 0) {
+      createMessage.warning('请选择一条数据进行导出');
+      return;
+    }
+    // 2. 检查是否只选中了一条数据
+    if (selectedRowKeys.value.length > 1) {
+      createMessage.warning('只能选择一条数据进行导出');
+      return;
+    }
+    // 3. 调用导出接口
+    const applyId = selectedRowKeys.value[0];
+    const token = getToken();
+    const url = `${globSetting.apiUrl}/xgsExport/exportResumeWord?applyId=${applyId}&token=${token}`;
+    window.open(url, '_blank');
+  }
+
+  /**
+   * 旧的自定义导出逻辑（已弃用，保留备份）
+   */
+  async function handleCustomExportOld() {
     try {
       // 获取当前选中的列配置
       const tableInstance = registerTable.value;
