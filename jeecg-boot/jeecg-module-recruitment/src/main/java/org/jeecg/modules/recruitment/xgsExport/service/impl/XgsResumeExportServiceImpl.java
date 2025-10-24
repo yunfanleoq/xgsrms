@@ -2,10 +2,7 @@ package org.jeecg.modules.recruitment.xgsExport.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.*;
-import org.apache.xmlbeans.XmlCursor;
-import org.apache.xmlbeans.XmlObject;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTBookmark;
-import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTText;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.recruitment.xgsExport.service.IXgsResumeExportService;
@@ -327,7 +324,7 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
     }
 
     /**
-     * 替换段落中的Word书签
+     * 替换段落中的Word书签（简化版本，不使用Saxon）
      * 
      * @param paragraph 段落对象
      * @param dataMap 数据映射
@@ -337,28 +334,29 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
         int replacedCount = 0;
         
         try {
-            // 获取段落中的所有书签
-            CTBookmark[] bookmarks = paragraph.getCTP().getBookmarkStartArray();
+            CTP ctp = paragraph.getCTP();
             
+            // 获取段落中的所有书签
+            CTBookmark[] bookmarks = ctp.getBookmarkStartArray();
             if (bookmarks == null || bookmarks.length == 0) {
                 return 0;
             }
             
+            // 遍历每个书签
             for (CTBookmark bookmark : bookmarks) {
                 String bookmarkName = bookmark.getName();
                 
                 // 从dataMap中查找书签对应的值
                 Object value = dataMap.get(bookmarkName);
                 if (value == null) {
-                    // 如果没有找到对应的值，跳过（不报错）
                     log.debug("未找到书签 [{}] 对应的数据", bookmarkName);
                     continue;
                 }
                 
                 String replacementText = value.toString();
                 
-                // 查找书签所在的位置并替换内容
-                boolean replaced = replaceBookmarkContent(paragraph, bookmark, replacementText);
+                // 使用简化的方式替换书签内容
+                boolean replaced = replaceBookmarkContentSimple(ctp, bookmark, replacementText);
                 if (replaced) {
                     replacedCount++;
                     log.debug("替换书签: [{}] -> [{}]", bookmarkName, replacementText);
@@ -372,57 +370,55 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
     }
 
     /**
-     * 替换单个书签的内容
+     * 简化版书签内容替换（不使用XPath/Saxon）
+     * 直接遍历XML元素查找并替换
      * 
-     * @param paragraph 段落对象
+     * @param ctp 段落的CTP对象
      * @param bookmark 书签对象
      * @param replacementText 替换文本
      * @return 是否替换成功
      */
-    private boolean replaceBookmarkContent(XWPFParagraph paragraph, CTBookmark bookmark, String replacementText) {
+    private boolean replaceBookmarkContentSimple(CTP ctp, CTBookmark bookmark, String replacementText) {
         try {
-            // 获取书签的ID
             long bookmarkId = bookmark.getId().longValue();
+            boolean replaced = false;
             
-            // 使用XmlCursor遍历段落的XML内容
-            XmlCursor cursor = paragraph.getCTP().newCursor();
-            cursor.selectPath("declare namespace w='http://schemas.openxmlformats.org/wordprocessingml/2006/main' "
-                    + ".//w:bookmarkStart[@w:id='" + bookmarkId + "']");
+            // 获取段落的所有子元素（包括书签和文本run）
+            org.apache.xmlbeans.XmlObject[] children = ctp.selectChildren(
+                new javax.xml.namespace.QName("http://schemas.openxmlformats.org/wordprocessingml/2006/main", "*")
+            );
             
-            if (!cursor.toNextSelection()) {
-                cursor.dispose();
-                return false;
-            }
+            boolean inBookmark = false;
             
-            // 移动到书签开始位置的下一个元素
-            cursor.toNextSibling();
-            
-            // 查找书签范围内的文本节点
-            boolean textFound = false;
-            while (cursor.toNextSibling()) {
-                XmlObject obj = cursor.getObject();
+            for (org.apache.xmlbeans.XmlObject child : children) {
+                // 检查是否是书签开始标记
+                if (child instanceof CTBookmark) {
+                    CTBookmark bm = (CTBookmark) child;
+                    if (bm.getId().longValue() == bookmarkId) {
+                        inBookmark = true;
+                        continue;
+                    }
+                }
                 
-                // 检查是否到达书签结束位置
-                if (obj instanceof org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange) {
-                    org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange markupRange = 
-                        (org.openxmlformats.schemas.wordprocessingml.x2006.main.CTMarkupRange) obj;
+                // 检查是否是书签结束标记
+                if (child instanceof CTMarkupRange) {
+                    CTMarkupRange markupRange = (CTMarkupRange) child;
                     if (markupRange.getId().longValue() == bookmarkId) {
                         break; // 到达书签结束位置
                     }
                 }
                 
-                // 查找并替换文本
-                if (obj instanceof org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR) {
-                    org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR run = 
-                        (org.openxmlformats.schemas.wordprocessingml.x2006.main.CTR) obj;
-                    
+                // 如果在书签范围内，且是文本run，则替换
+                if (inBookmark && child instanceof CTR) {
+                    CTR run = (CTR) child;
                     CTText[] textArray = run.getTArray();
+                    
                     if (textArray != null && textArray.length > 0) {
-                        // 只替换第一个文本节点的内容
+                        // 替换第一个文本节点
                         textArray[0].setStringValue(replacementText);
-                        textFound = true;
+                        replaced = true;
                         
-                        // 删除其他文本节点（如果有多个）
+                        // 删除其他文本节点
                         for (int i = textArray.length - 1; i > 0; i--) {
                             run.removeT(i);
                         }
@@ -431,15 +427,12 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
                 }
             }
             
-            cursor.dispose();
-            
-            // 如果没有找到文本节点，尝试在书签位置插入新的文本
-            if (!textFound) {
-                insertTextAtBookmark(paragraph, bookmark, replacementText);
-                return true;
+            // 如果没有找到文本，尝试在书签后插入
+            if (!replaced) {
+                replaced = insertTextAfterBookmark(ctp, bookmark, replacementText);
             }
             
-            return textFound;
+            return replaced;
         } catch (Exception e) {
             log.error("替换书签内容失败: {}", bookmark.getName(), e);
             return false;
@@ -447,33 +440,41 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
     }
 
     /**
-     * 在书签位置插入文本（当书签内没有文本时）
+     * 在书签后插入文本（简化版本）
      * 
-     * @param paragraph 段落对象
+     * @param ctp 段落的CTP对象
      * @param bookmark 书签对象
      * @param text 要插入的文本
+     * @return 是否插入成功
      */
-    private void insertTextAtBookmark(XWPFParagraph paragraph, CTBookmark bookmark, String text) {
+    private boolean insertTextAfterBookmark(CTP ctp, CTBookmark bookmark, String text) {
         try {
             long bookmarkId = bookmark.getId().longValue();
             
-            XmlCursor cursor = paragraph.getCTP().newCursor();
-            cursor.selectPath("declare namespace w='http://schemas.openxmlformats.org/wordprocessingml/2006/main' "
-                    + ".//w:bookmarkStart[@w:id='" + bookmarkId + "']");
-            
-            if (cursor.toNextSelection()) {
-                // 在书签开始位置之后插入新的run
-                XWPFRun run = paragraph.createRun();
-                run.setText(text);
-                
-                // 注意：这种方式会在段落末尾添加文本
-                // 如果需要精确控制位置，可能需要更复杂的XML操作
-                log.debug("在书签 [{}] 位置插入文本", bookmark.getName());
+            // 查找书签在CTP中的位置
+            int bookmarkIndex = -1;
+            CTBookmark[] bookmarks = ctp.getBookmarkStartArray();
+            for (int i = 0; i < bookmarks.length; i++) {
+                if (bookmarks[i].getId().longValue() == bookmarkId) {
+                    bookmarkIndex = i;
+                    break;
+                }
             }
             
-            cursor.dispose();
+            if (bookmarkIndex >= 0) {
+                // 在书签后创建新的run并添加文本
+                CTR newRun = ctp.addNewR();
+                CTText ctText = newRun.addNewT();
+                ctText.setStringValue(text);
+                
+                log.debug("在书签 [{}] 后插入文本", bookmark.getName());
+                return true;
+            }
+            
+            return false;
         } catch (Exception e) {
             log.error("在书签位置插入文本失败: {}", bookmark.getName(), e);
+            return false;
         }
     }
 }
