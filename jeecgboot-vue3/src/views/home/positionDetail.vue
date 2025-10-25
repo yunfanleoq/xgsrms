@@ -1,41 +1,170 @@
 <template>
-  <div class="job-detail">
-    <h2>职位详情</h2>
-    <div class="button-container">
-      <a-button type="primary" @click="goBack">返回</a-button>
-      <a-button type="primary" @click="positionApply" v-if="applyStatus">在线申请</a-button>
-      <a-button type="default" disabled v-else>岗位已申请</a-button>
-      <div>
-        <a-button v-if="!isCollected" danger @click="markFavoriteJob">收藏职位</a-button>
-        <a-button v-else danger @click="delFavoriteJob"> 已收藏</a-button>
+  <div class="job-detail-wrapper">
+    <div class="job-detail-container">
+      <!-- 顶部标题和按钮区域 -->
+      <div class="detail-header">
+        <h1 class="page-title">职位详情</h1>
+        <div class="action-buttons">
+          <a-button size="large" @click="goBack">
+            <template #icon>
+              <LeftOutlined />
+            </template>
+            返回
+          </a-button>
+          <a-button v-if="applyStatus" type="primary" size="large" @click="positionApply">
+            <template #icon>
+              <FileTextOutlined />
+            </template>
+            在线申请
+          </a-button>
+          <a-button v-else type="default" size="large" disabled>
+            <template #icon>
+              <CheckCircleOutlined />
+            </template>
+            岗位已申请
+          </a-button>
+          <a-button v-if="!isCollected" danger size="large" @click="markFavoriteJob">
+            <template #icon>
+              <HeartOutlined />
+            </template>
+            收藏职位
+          </a-button>
+          <a-button v-else danger size="large" @click="delFavoriteJob">
+            <template #icon>
+              <HeartFilled />
+            </template>
+            已收藏
+          </a-button>
+        </div>
       </div>
-    </div>
 
-    <div v-if="job" class="job-info">
-      <div class="job-field"> <strong>职位名称:</strong> {{ job.positionName }} </div>
-      <div class="job-field"> <strong>部门:</strong> {{ job.dept_dictText }} </div>
-      <div class="job-field"> <strong>研究方向:</strong> {{ job.researchDirection }} </div>
-      <div class="job-field">
-        <strong>专业要求:</strong>
-        <pre> {{ job.professional }} </pre>
+      <!-- 职位信息卡片 -->
+      <div v-if="job" class="job-info-card">
+        <!-- 基本信息区域 -->
+        <div class="info-section">
+          <h2 class="section-title">
+            <IdcardOutlined class="title-icon" />
+            基本信息
+          </h2>
+          <a-row :gutter="[24, 16]">
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>职位名称</label>
+                <div class="info-value highlight">{{ job.positionName }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>所属部门</label>
+                <div class="info-value">{{ job.dept_dictText }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>招聘状态</label>
+                <div class="info-value">
+                  <a-tag color="green">{{ job.status_dictText }}</a-tag>
+                </div>
+              </div>
+            </a-col>
+          </a-row>
+        </div>
+
+        <a-divider />
+
+        <!-- 任职要求区域 -->
+        <div class="info-section">
+          <h2 class="section-title">
+            <SolutionOutlined class="title-icon" />
+            任职要求
+          </h2>
+          <a-row :gutter="[24, 16]">
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>学历要求</label>
+                <div class="info-value">{{ job.xlxw }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>工作年限</label>
+                <div class="info-value">{{ job.workYears }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>研究方向</label>
+                <div class="info-value">{{ job.researchDirection }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24">
+              <div class="info-item">
+                <label>专业要求</label>
+                <div class="info-content">{{ job.professional }}</div>
+              </div>
+            </a-col>
+          </a-row>
+        </div>
+
+        <a-divider />
+
+        <!-- 岗位职责区域 -->
+        <div class="info-section">
+          <h2 class="section-title">
+            <ProfileOutlined class="title-icon" />
+            岗位职责
+          </h2>
+          <div class="info-content">{{ job.duty }}</div>
+        </div>
+
+        <a-divider />
+
+        <!-- 联系方式区域 -->
+        <div class="info-section">
+          <h2 class="section-title">
+            <PhoneOutlined class="title-icon" />
+            联系方式
+          </h2>
+          <a-row :gutter="[24, 16]">
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>联系人</label>
+                <div class="info-value">{{ job.ktz_dictText }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>联系电话</label>
+                <div class="info-value">{{ job.telphone || '无' }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
+                <label>电子邮箱</label>
+                <div class="info-value">{{ job.email }}</div>
+              </div>
+            </a-col>
+          </a-row>
+        </div>
+
+        <!-- 备注区域（如果有） -->
+        <template v-if="job.memo">
+          <a-divider />
+          <div class="info-section">
+            <h2 class="section-title">
+              <InfoCircleOutlined class="title-icon" />
+              备注
+            </h2>
+            <div class="info-content">{{ job.memo }}</div>
+          </div>
+        </template>
       </div>
-      <div class="job-field"> <strong>工作年限:</strong> {{ job.workYears }} </div>
-      <div class="job-field"> <strong>学历要求:</strong> {{ job.xlxw }} </div>
-      <div class="job-field"> <strong>招聘状态:</strong> {{ job.status_dictText }} </div>
-      <div class="job-field">
-        <strong>职责:</strong>
-        <pre>{{ job.duty }}</pre>
+
+      <!-- 加载状态 -->
+      <div v-else class="loading-container">
+        <a-spin size="large" />
+        <p class="loading-text">职位信息加载中...</p>
       </div>
-      <div class="job-field"> <strong>联系人:</strong> {{ job.ktz_dictText }} </div>
-      <div class="job-field"> <strong>联系电话:</strong> {{ job.telphone || '无' }} </div>
-      <div class="job-field"> <strong>电子邮箱:</strong> {{ job.email }} </div>
-      <div class="job-field">
-        <strong>备注:</strong>
-        <pre> {{ job.memo || '无' }} </pre>
-      </div>
-    </div>
-    <div v-else>
-      <p>职位信息加载中...</p>
     </div>
   </div>
   <!-- 使用新的重构后的在线申请表单 -->
@@ -53,8 +182,20 @@
   // 引入新的重构表单组件
   import XgsPositionApplyModalNew from '@/views/positions/components/XgsPositionApplyModalNew.vue';
   import { message } from 'ant-design-vue';
-  import { useModal } from '@/components/Modal';
   import { defHttp } from '@/utils/http/axios';
+  // 引入图标
+  import {
+    LeftOutlined,
+    FileTextOutlined,
+    CheckCircleOutlined,
+    HeartOutlined,
+    HeartFilled,
+    IdcardOutlined,
+    SolutionOutlined,
+    ProfileOutlined,
+    PhoneOutlined,
+    InfoCircleOutlined,
+  } from '@ant-design/icons-vue';
 
   // --- 类型定义 ---
   interface Job {
@@ -187,8 +328,6 @@
     });
   };
 
-  const [registerModal, { openModal }] = useModal();
-
   const positionApply = () => {
     if (!userStore.userInfo) {
       message.warning('请先登录');
@@ -236,108 +375,201 @@
   });
 </script>
 
-<style scoped>
-  .job-detail {
-    max-width: 800px;
+<style scoped lang="less">
+  .job-detail-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+    padding: 24px;
+  }
+
+  .job-detail-container {
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
-    background-color: #f9f9f9;
+  }
+
+  /* 顶部标题和按钮区域 */
+  .detail-header {
+    background: #fff;
+    padding: 24px 32px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* 职位信息卡片 */
+  .job-info-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 32px;
+    transition: all 0.3s ease;
+
+    &:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  /* 信息区块 */
+  .info-section {
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f0f0f0;
+
+    .title-icon {
+      margin-right: 10px;
+      font-size: 22px;
+      color: #1890ff;
+    }
+  }
+
+  /* 信息项 */
+  .info-item {
+    label {
+      display: block;
+      font-size: 13px;
+      color: #8c8c8c;
+      margin-bottom: 8px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      color: #262626;
+      line-height: 1.6;
+      font-weight: 500;
+      padding: 8px 12px;
+      background: #fafafa;
+      border-radius: 6px;
+      border-left: 3px solid #1890ff;
+
+      &.highlight {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1890ff;
+        background: #e6f7ff;
+        border-left-color: #1890ff;
+      }
+    }
+  }
+
+  /* 内容区域（多行文本） */
+  .info-content {
+    font-size: 15px;
+    color: #262626;
+    line-height: 1.8;
+    padding: 16px;
+    background: #fafafa;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e8e8e8;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-height: 60px;
   }
 
-  .job-info {
-    margin-top: 20px;
+  /* 分割线 */
+  :deep(.ant-divider) {
+    margin: 32px 0;
+    border-color: #f0f0f0;
   }
 
-  .job-field {
-    margin-bottom: 10px;
-  }
-
-  .job-field strong {
-    display: inline-block;
-    width: 120px;
-    color: #333;
-  }
-
-  .job-field span {
-    color: #555;
-  }
-
-  h2 {
+  /* 加载状态 */
+  .loading-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 80px 32px;
     text-align: center;
   }
 
-  h3 {
-    margin-top: 20px;
-  }
-
-  p {
-    margin: 10px 0;
-  }
-
-  strong {
-    font-weight: bold;
-  }
-
-  .button-container {
-    display: flex;
-    justify-content: space-between; /* 将按钮分别放置在左右两边 */
-    margin-top: 20px; /* 可选：添加顶部间距 */
-  }
-
-  .back-button,
-  .apply-button {
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  .loading-text {
+    margin-top: 16px;
     font-size: 16px;
-  }
-  .favorite-button {
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #c47e6e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+    color: #8c8c8c;
   }
 
-  .marked-favorite-button {
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #b84035;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-
-  .back-button:hover,
-  .apply-button:hover {
-    background-color: #357ab8;
-  }
-
-  .favorite-button:hover {
-    background-color: #ba372a;
-  }
-  .marked-favorite-button:hover {
-    background-color: #52130d;
-  }
-
-  pre {
-    margin: 0;
-    white-space: pre-wrap; /* 保留换行符并自动换行 */
-    word-wrap: break-word; /* 防止长单词溢出 */
-    background-color: #f0f0f0;
-    padding: 8px;
+  /* 标签样式优化 */
+  :deep(.ant-tag) {
+    padding: 4px 12px;
+    font-size: 14px;
     border-radius: 4px;
-    border: 1px solid #ddd;
+    font-weight: 500;
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .job-detail-wrapper {
+      padding: 12px;
+    }
+
+    .detail-header {
+      padding: 16px;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .page-title {
+      font-size: 22px;
+      text-align: center;
+    }
+
+    .action-buttons {
+      justify-content: center;
+    }
+
+    .job-info-card {
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+    }
+
+    .info-item .info-value.highlight {
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .action-buttons {
+      flex-direction: column;
+      width: 100%;
+
+      :deep(.ant-btn) {
+        width: 100%;
+      }
+    }
   }
 </style>

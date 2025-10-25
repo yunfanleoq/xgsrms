@@ -3,7 +3,7 @@ import { defHttp } from '/@/utils/http/axios';
 
 enum Api {
    jobByIdUrl = '/positions/xgsPositions/list',
-   deptListUrl = '/sys/sysDepart/listAll',
+   deptListUrl = '/positions/xgsPositions/getDeptList',
    DictItemsUrl = '/sys/dict/getDictItems',
    positionListUrl = '/positions/xgsPositions/list',
 

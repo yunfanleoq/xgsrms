@@ -86,6 +86,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/xgsHome/**", "anon");
         filterChainDefinitionMap.put("/xgsJournalism/**", "anon");
         filterChainDefinitionMap.put("/positions/xgsPositions/list", "anon");
+        filterChainDefinitionMap.put("/positions/xgsPositions/getDeptList", "anon");
         filterChainDefinitionMap.put("/sys/dict/getDictItems/*", "anon");
 
         filterChainDefinitionMap.put("/sys/cas/client/validateLogin", "anon"); //cas验证登录

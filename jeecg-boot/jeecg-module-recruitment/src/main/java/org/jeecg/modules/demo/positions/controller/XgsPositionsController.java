@@ -1,13 +1,21 @@
 package org.jeecg.modules.demo.positions.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.system.vo.SysDepartModel;
 import org.jeecg.modules.demo.positions.entity.XgsFirstHtml;
 import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
 import org.jeecg.modules.demo.positions.entity.XgsPositions;
@@ -59,6 +67,9 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 
 	 @Autowired
 	 private IXgsMyresumeService xgsMyresumeService;
+	 
+	 @Autowired
+	 private ISysBaseAPI sysBaseAPI;
 	
 	/**
 	 * 分页列表查询
@@ -77,11 +88,86 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
         QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, req.getParameterMap());
+        
+        // 添加关键词搜索：同时搜索职位名称和部门名称（保持原有搜索逻辑）
+        String keyword = req.getParameter("keyword");
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            queryWrapper.and(wrapper -> wrapper
+                .like("position_name", keyword)
+                .or()
+                .like("dept_dict_text", keyword)
+            );
+        }
+        
         // 过滤掉已删除的记录
         queryWrapper.isNull("deleted");
 		Page<XgsPositions> page = new Page<XgsPositions>(pageNo, pageSize);
 		IPage<XgsPositions> pageList = xgsPositionsService.page(page, queryWrapper);
 		return Result.OK(pageList);
+	}
+	
+	/**
+	 * 获取有招聘岗位的部门列表
+	 *
+	 * @param req
+	 * @return
+	 */
+	@ApiOperation(value="获取有招聘岗位的部门列表", notes="获取有招聘岗位的部门列表")
+	@GetMapping(value = "/getDeptList")
+	public Result<List<Map<String, Object>>> getDeptList(HttpServletRequest req) {
+		QueryWrapper<XgsPositions> queryWrapper = new QueryWrapper<>();
+		
+		// 只查询招聘中的岗位
+		queryWrapper.eq("status", "招聘中");
+		
+		// 过滤已删除的记录
+		queryWrapper.isNull("deleted");
+		
+		// 使用 select distinct 去重获取部门ID
+		queryWrapper.select("DISTINCT dept");
+		queryWrapper.isNotNull("dept");
+
+		// 查询有招聘岗位的部门ID列表
+		List<XgsPositions> list = xgsPositionsService.list(queryWrapper);
+		
+		// 提取所有部门ID并去重
+		List<String> deptIds = list.stream()
+			.map(XgsPositions::getDept)
+			.filter(deptId -> deptId != null && !deptId.trim().isEmpty())
+			.distinct()
+			.collect(Collectors.toList());
+
+		// 如果没有部门ID，返回空列表
+		if (deptIds.isEmpty()) {
+			return Result.OK(new ArrayList<>());
+		}
+
+		// 获取所有部门信息
+		List<SysDepartModel> sysDeparts = sysBaseAPI.getAllSysDepart();
+		
+		// 创建部门ID到部门对象的映射，便于快速查找
+		Map<String, SysDepartModel> departMap = sysDeparts.stream()
+			.collect(Collectors.toMap(SysDepartModel::getId, dept -> dept, (d1, d2) -> d1));
+		
+		// 遍历部门ID列表，结合sysDeparts获取部门名称
+		List<Map<String, Object>> deptList = deptIds.stream()
+			.map(deptId -> {
+				Map<String, Object> map = new HashMap<>();
+				SysDepartModel depart = departMap.get(deptId);
+				if (depart != null) {
+					// 在系统部门表中找到了对应的部门信息
+					map.put("id", depart.getId());
+					map.put("departName", depart.getDepartName());
+				} else {
+					// 找不到部门信息，使用dept作为id和departName
+					map.put("id", deptId);
+					map.put("departName", deptId);
+				}
+				return map;
+			})
+			.collect(Collectors.toList());
+		
+		return Result.OK(deptList);
 	}
 	
 	/**

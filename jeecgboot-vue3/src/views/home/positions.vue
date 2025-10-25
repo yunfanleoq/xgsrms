@@ -39,13 +39,29 @@
       </section>
       <div v-else-if="showPositionList">
         <section class="filters">
-          <div class="categories">
-            <button v-for="dept in depts" :key="dept.id" @click="filterDept(dept)" :class="{ active: selectedDept.id === dept.id }">
-              {{ dept.departName }}
-            </button>
+          <div class="filter-section">
+            <div class="filter-label">部门筛选：</div>
+            <div class="dept-buttons">
+              <button
+                class="dept-button"
+                :class="{ active: selectedDept === null }"
+                @click="filterDept(null)"
+              >
+                全部部门
+              </button>
+              <button
+                v-for="dept in depts"
+                :key="dept.id || 'dept-' + dept.departName"
+                class="dept-button"
+                :class="{ active: selectedDept === dept.id }"
+                @click="filterDept(dept.id)"
+              >
+                {{ dept.departName }}
+              </button>
+            </div>
           </div>
           <div class="search-container">
-            <input v-model="searchQuery" placeholder="请输入职位名称" class="search-input" />
+            <input v-model="searchQuery" placeholder="请输入职位名称或部门名称" class="search-input" />
             <div class="search-buttons">
               <button @click="reset" class="search-button">重置</button>
               <button @click="searchPositions" class="search-button">搜索</button>
@@ -56,42 +72,106 @@
           <!-- 职位列表 -->
           <section class="job-list">
             <div v-for="(job, index) in paginatedPositions" :key="index" class="job-card" @click="goToPositionDetail(job.id)">
-              <h3>{{ job.positionName }}</h3>
-              <p
-                >职位数量：<strong>{{ job.personCount }}</strong></p
-              >
-              <p
-                >招聘部门：<strong>{{ job.dept_dictText }}</strong></p
-              >
-              <p
-                >工作年限：<span class="salary">{{ job.workYears }}</span></p
-              >
-              <p
-                >招聘状态：<span class="status-filter">{{ job.status }}</span></p
-              >
-              <p
-                ><span>{{ job.dept_dictText }} </span></p
-              >
+              <div class="job-card-header">
+                <h3 class="job-title">{{ job.positionName }}</h3>
+                <div class="job-status-badge" :class="getStatusClass(job.status)">
+                  {{ job.status }}
+                </div>
+              </div>
+              
+              <div class="job-card-body">
+                <div class="job-info-row">
+                  <div class="job-info-item">
+                    <span class="info-label">招聘部门</span>
+                    <span class="info-value">{{ job.dept_dictText }}</span>
+                  </div>
+                  <div class="job-info-item">
+                    <span class="info-label">招聘人数</span>
+                    <span class="info-value highlight">{{ job.personCount }}人</span>
+                  </div>
+                </div>
+                
+                <div class="job-info-row">
+                  <div class="job-info-item">
+                    <span class="info-label">工作年限</span>
+                    <span class="info-value">{{ job.workYears }}</span>
+                  </div>
+                  <div class="job-info-item" v-if="job.xlxw">
+                    <span class="info-label">学历要求</span>
+                    <span class="info-value">{{ job.xlxw }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="job-card-footer">
+                <span class="view-detail-text">查看详情</span>
+                <RightOutlined class="arrow-icon" />
+              </div>
             </div>
           </section>
           <!-- 分页控件 -->
-          <div class="pagination">
-            <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
-            <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-            <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-
-            <!-- 共多少条-->
-            <label for="total-positions">共{{ totalCount }}条</label>
-            <label for="total-positions">|</label>
-            <label for="positions-per-page">每页：</label>
-            <select id="positions-per-page" v-model.number="positionsPerPage" @change="changePositionsPerPage">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-            <!--        </div>-->
+          <div class="pagination-wrapper">
+            <div class="pagination-controls">
+              <button 
+                class="page-btn" 
+                :disabled="currentPage === 1"
+                @click="goToPage(1)"
+              >
+                首页
+              </button>
+              <button 
+                class="page-btn" 
+                :disabled="currentPage === 1"
+                @click="goToPage(currentPage - 1)"
+              >
+                上一页
+              </button>
+              
+              <span class="page-numbers">
+                <template v-for="page in visiblePages" :key="page">
+                  <span v-if="page === -1" class="page-ellipsis">...</span>
+                  <button 
+                    v-else
+                    class="page-number"
+                    :class="{ active: page === currentPage }"
+                    @click="goToPage(page)"
+                  >
+                    {{ page }}
+                  </button>
+                </template>
+              </span>
+              
+              <button 
+                class="page-btn" 
+                :disabled="currentPage === totalPages"
+                @click="goToPage(currentPage + 1)"
+              >
+                下一页
+              </button>
+              <button 
+                class="page-btn" 
+                :disabled="currentPage === totalPages"
+                @click="goToPage(totalPages)"
+              >
+                末页
+              </button>
+              
+              <span class="page-size-selector">
+                <label>每页</label>
+                <select v-model.number="positionsPerPage" @change="handleSizeChange">
+                  <option :value="2">2</option>
+                  <option :value="5">5</option>
+                  <option :value="10">10</option>
+                  <option :value="20">20</option>
+                  <option :value="50">50</option>
+                </select>
+                <label>条</label>
+              </span>
+              
+              <div class="pagination-info">
+                共 {{ totalCount }} 条记录
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -113,6 +193,7 @@
   // import positionDetail from "@/views/home/positionDetail.vue"
   import PositionDetail from "@/views/home/positionDetail.vue";
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
+  import { RightOutlined } from '@ant-design/icons-vue';
 
   const positionApplyStore = usePositionApplyStoreWithOut();
 
@@ -121,11 +202,11 @@
   // }
   const positionStore = usePositionStore();
 
-  const jobCategories = ref([]);
+  const jobCategories = ref<any[]>([]);
   const showPositionDetail = ref(false);
   const selectedPosition = ref({});
   // 招聘公告相关数据
-  const announcements = ref([]); // 用于存储招聘公告数据
+  const announcements = ref<any[]>([]); // 用于存储招聘公告数据
   const showAnnouncementList = ref(false); // 控制招聘公告列表的显示
   const announce_currentPage = ref(1); // 当前页码
   const itemsPerPage = ref(10); // 每页显示条目数
@@ -170,6 +251,18 @@
     return Math.ceil(announcements.value.length / itemsPerPage.value);
   });
 
+  // 公告分页控制
+  const prevPage = () => {
+    if (announce_currentPage.value > 1) {
+      announce_currentPage.value--;
+    }
+  };
+
+  const nextPage = () => {
+    if (announce_currentPage.value < announce_totalPages.value) {
+      announce_currentPage.value++;
+    }
+  };
 
   // 显示招聘公告列表
   const showAnnouncements = () => {
@@ -199,23 +292,18 @@
   const goToPositionDetail = async (positionId: number) => {
     console.log('Navigating to positionDetail with id:', positionId);
     selectedPosition.value = {id: positionId};
-    // const fetchCurrApplyPosition = async () => {
     try {
       let params = {
         id: positionId,
       };
       const response = await getJobById(params);
-      // job.value = response.result.records[0];
       // 将job存pinia
-      // 获取 Pinia store 实例
-
       console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
       positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
       console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
     } catch (error) {
       console.error('获取职位信息失败:', error);
     }
-    // };
     // 显示职位详情组件，并传递职位信息
     showPositionDetail.value = false;
     router.push({ name: 'positionDetail', params: { id: positionId } });
@@ -235,13 +323,13 @@
     // showPositionDetail.value = false;
   };
 
-  const searchQuery = ref(null);
+  const searchQuery = ref('');
   const selectedCategory = ref(null);
-  const selectedDept = ref({ departName: '', id: null });
+  const selectedDept = ref(null); // 改为直接存储部门ID
 
   const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
 
-  const depts = ref([{ departName: '', id: null }]);
+  const depts = ref<any[]>([]);
 
   // 分页相关的响应式数据
   const currentPage = ref(1);
@@ -249,42 +337,70 @@
 
   // 计算分页后的职位列表
   const paginatedPositions = computed(() => {
-    console.log('Current Page:', currentPage.value);
-    console.log('Positions Per Page:', positionsPerPage.value);
-    const start = (currentPage.value - 1) * positionsPerPage.value;
-    const end = start + positionsPerPage.value;
-    console.log('Start Index:', start, 'End Index:', end);
-    const result = filteredPositions.value.slice(start, end);
-
-    console.log('>>>>>Paginated Positions:', result);
-    return result;
+    // 后端已经处理分页，直接返回数据
+    return positions.value;
   });
 
   // 计算总页数
   const totalPages = computed(() => {
-    const total = Math.ceil(filteredPositions.value.length / positionsPerPage.value);
-    console.log('Total Pages:', total);
-    return total;
+    return Math.ceil(totalCount.value / positionsPerPage.value) || 1;
   });
 
-  // 分页控制函数
-  const prevPage = () => {
-    if (currentPage.value > 1) {
-      currentPage.value--;
+  // 计算可见的页码
+  const visiblePages = computed(() => {
+    const total = totalPages.value;
+    const current = currentPage.value;
+    const pages: number[] = [];
+    
+    if (total <= 7) {
+      // 总页数小于等于7，显示全部页码
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      // 总页数大于7，显示部分页码
+      if (current <= 4) {
+        // 当前页在前面
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push(-1); // 省略号
+        pages.push(total);
+      } else if (current >= total - 3) {
+        // 当前页在后面
+        pages.push(1);
+        pages.push(-1); // 省略号
+        for (let i = total - 4; i <= total; i++) {
+          pages.push(i);
+        }
+      } else {
+        // 当前页在中间
+        pages.push(1);
+        pages.push(-1); // 省略号
+        for (let i = current - 1; i <= current + 1; i++) {
+          pages.push(i);
+        }
+        pages.push(-1); // 省略号
+        pages.push(total);
+      }
     }
+    
+    return pages;
+  });
+
+  // 跳转到指定页
+  const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages.value || page === currentPage.value) {
+      return;
+    }
+    currentPage.value = page;
+    fetchPositions();
   };
 
-  const nextPage = () => {
-    if (currentPage.value < totalPages.value) {
-      currentPage.value++;
-    }
-  };
-
-  const changePositionsPerPage = (event: Event) => {
-    const value = (event.target as HTMLSelectElement).value;
-    console.log('Changing Positions Per Page to:', value);
-    positionsPerPage.value = parseInt(value, 10);
-    currentPage.value = 1; // 重置到第一页
+  // 修改每页显示数量
+  const handleSizeChange = () => {
+    currentPage.value = 1;
+    fetchPositions();
   };
 
   // interface Position {
@@ -311,130 +427,92 @@
   // }
 
   // let positions = reactive([] as  Position[])
-  let positions = ref([]); // 确保 positions 是响应式引用
+  let positions = ref<any[]>([]); // 确保 positions 是响应式引用
 
   let totalCount = ref(0);
   const fetchPositions = () => {
-    getPositionList({
-      pageNo: 1,
-      pageSize: 1000,
-      // // searchQuery: searchQuery.value,
-      // category: selectedCategory.value,
-      // dept: selectedDept.value.id,
-      status: statusFilter.value,
-    }).then((res) => {
+    const params: any = {
+      pageNo: currentPage.value,
+      pageSize: positionsPerPage.value,
+      status: statusFilter.value, // 招聘中
+    };
+
+    // 添加岗位分类筛选
+    if (selectedCategory.value) {
+      params.category = selectedCategory.value;
+    }
+
+    // 添加部门筛选
+    if (selectedDept.value) {
+      params.dept = selectedDept.value;
+    }
+
+    // 添加关键词搜索（同时搜索职位名称和部门名称）
+    if (searchQuery.value) {
+      params.keyword = searchQuery.value;
+    }
+
+    getPositionList(params).then((res) => {
       if (res.success) {
         console.log('fetchPositions>>>>>getPositionList>>>>>>', res);
         let list = res.result;
-        // positionStore.setPositions(list);
-        // console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
         positions.value = list.records;
-        // totalPages.value = list.pages;
-
-        // totalCount.value = list.total;
-
-        // paginatedPositions.value = positions;
+        totalCount.value = list.total; // 设置总记录数
+        console.log('totalCount:', totalCount.value, 'positions length:', positions.value.length);
+        console.log('<<<<<<<<<<<<<<<<<<<<<<fetchPositions>>>>>END>>>>>>positions', positions);
       }
     });
-    // console.log('fetchPositions positionStore.positions>>>>>>>>>>>', positionStore.positions);
-    // positions = positionStore.positions.records;
-    // totalPages.value = positionStore.positions.pages;
-    //
-    // totalCount.value = positionStore.positions.total;
-    //
-    // // paginatedPositions.value = positions;
-    //
-    console.log('<<<<<<<<<<<<<<<<<<<<<<fetchPositions>>>>>END>>>>>>positions', positions);
   };
 
-  // 使用 watch 监控这些值的变化
-  watch([currentPage, selectedCategory, () => selectedDept.value.id], ([newPage, newCategory, newDeptId]) => {
-    console.log('WATCH---------------------Values changed:', newPage, newCategory, newDeptId);
+  // 监听查询条件变化，重置到第一页并重新获取数据
+  watch([selectedCategory, selectedDept, searchQuery], () => {
+    currentPage.value = 1;
     fetchPositions();
-    console.log('WATCH-------END--------------Values changed:', newPage, newCategory, newDeptId);
   });
 
   const reset = () => {
-    selectedDept.value.id = null;
-    selectedDept.value.departName = '';
+    selectedDept.value = null;
     searchQuery.value = '';
     selectedCategory.value = null;
   };
 
+  // 根据状态返回对应的样式类
+  const getStatusClass = (status: string) => {
+    if (status === '招聘中' || status === '进行中') {
+      return 'status-active';
+    } else if (status === '已结束' || status === '已关闭') {
+      return 'status-closed';
+    }
+    return 'status-default';
+  };
+
   const fetchDepts = () => {
-    console.log('fetchDepts>>>>>>>>>>>BEGIN');
-    const params = {
-      orgType: 1, // 只获取一级部门
-    };
-
-    getDeptList(params).then((res) => {
+    
+    getDeptList({}).then((res) => {
       if (res.success) {
-        console.log('fetchDepts>>>>>>>>>>>', res);
-        let list = res.result;
-        // 提取 list 中的 dept 字段形成数组，并赋值给 depts.value
-        list = list.map((item) => ({ departName: item.departName, id: item.id }));
-
-        depts.value = list;
-
-        console.log('getDeptList>>>>>>>>>>>', list, depts.value);
+        depts.value = res.result;
       }
     });
   };
 
   const fetchCategorys = () => {
-    console.log('fetchCategorys>>>>>>>>>>>BEGIN');
     const params = {
       dictCode: '岗位分类', // 只获取一级部门
     };
     getDictItems(params).then((res) => {
       if (res.success) {
-        console.log('getDictItems>>>>>>>>>>>', res);
         let list = res.result;
         // 提取 list 中的 dept 字段形成数组，并赋值给 depts.value
         list = list.map((item) => item.title);
-
         jobCategories.value = list;
-
-        console.log('fetchCategorys>>>>>>>>>>>', list, jobCategories.value);
       }
     });
   };
 
-  onMounted(fetchDepts);
-  onMounted(fetchPositions);
-  onMounted(fetchCategorys);
-
   onMounted(() => {
-    reset();
-  });
-  // 在组件挂载后立即执行一次监听回调
-
-  // 计算属性：过滤后的职位列表
-  const filteredPositions = computed(() => {
-    console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>positions:', positions.value);
-    let filtered = positions.value;
-
-    if (selectedCategory.value) {
-      console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>selectedCategory:', selectedCategory.value);
-      filtered = filtered.filter((p) => p.category === selectedCategory.value);
-    }
-
-    if (searchQuery.value) {
-      console.log('@@@@@@@@@@@@filteredPositions>>>>>>>>>>>searchQuery:', searchQuery.value);
-      filtered = filtered.filter(
-        (p) =>
-          p.positionName.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-          p.dept_dictText.toLowerCase().includes(searchQuery.value.toLowerCase())
-      );
-    }
-
-    if (selectedDept.value.id) {
-      console.log('@@@@@@@@@@@@filteredPosition.idzs>>>>>>>>>>>selectedDept:', selectedDept.value);
-      filtered = filtered.filter((p) => p.dept_dictText === selectedDept.value.departName);
-    }
-    console.log('>>>>>过滤后的职位列表：', filtered);
-    totalCount.value = filtered.length;
-    return filtered;
+    fetchDepts();
+    fetchCategorys();
+    fetchPositions(); // 初始加载数据
   });
 
   // 路由操作
@@ -449,16 +527,15 @@
   };
 
   // 根据dept过滤
-  const filterDept = (dept) => {
-    console.log('过滤部门：' + dept);
-    selectedDept.value.id = dept.id;
-    selectedDept.value.departName = dept.departName;
+  const filterDept = (deptId) => {
+    console.log('过滤部门：', deptId);
+    selectedDept.value = deptId;
+    // watch会自动触发fetchPositions
   };
   // 搜索职位
   const searchPositions = () => {
-    console.log('搜索职位：' + searchQuery.value);
-    selectedDept.value.id = '';
-    selectedDept.value.departName = searchQuery.value;
+    console.log('搜索职位：', searchQuery.value);
+    // watch会自动触发fetchPositions
   };
 </script>
 
@@ -512,79 +589,63 @@
   /* 分类和搜索 */
   .filters {
     display: flex;
-    flex: 1 1 auto;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    flex-direction: column;
+    gap: 20px;
+    padding: 25px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     margin: 20px;
   }
 
-  .categories {
+  .filter-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .filter-label {
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    padding-top: 8px;
+    font-size: 15px;
+  }
+
+  .dept-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px; /* 按钮之间的间距 */
+    gap: 10px;
+    flex: 1;
   }
 
-  .category-button {
-    padding: 8px 16px; /* 按钮内边距 */
-    background-color: #007bff; /* 背景颜色 */
-    color: white; /* 文字颜色 */
-    border: none; /* 去掉边框 */
-    border-radius: 4px; /* 圆角 */
-    cursor: pointer; /* 鼠标悬停时显示为指针 */
-    transition: background-color 0.3s; /* 背景颜色过渡效果 */
-  }
-
-  .category-button:hover {
-    background-color: #0056b3; /* 悬停时的背景颜色 */
-  }
-
-  .filters .categories button {
-    margin-right: 10px;
-    padding: 8px 15px;
+  .dept-button {
+    padding: 8px 20px;
     border-radius: 20px;
-    border: none;
-    background-color: #eef2f7;
-    color: #6a11cb;
+    border: 2px solid #e0e6ed;
+    background-color: #fff;
+    color: #5a6c7d;
+    font-weight: 500;
     cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    font-size: 14px;
   }
 
-  .filters .categories button:hover {
-    background-color: #6a11cb;
+  .dept-button:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
   }
 
-  .filters .categories .active {
-    background-color: #6a11cb;
+  .dept-button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: #fff;
-  }
-
-  .filters .search input {
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    width: 250px;
-    margin-right: 10px;
-  }
-
-  .filters .search button {
-    padding: 10px 20px;
-    background-color: #1c4997;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.3s;
-  }
-
-  .filters .search button:hover {
-    background-color: #a52542;
+    border-color: transparent;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
+    font-weight: 600;
   }
 
   /* 职位列表 */
@@ -597,26 +658,188 @@
     padding: 20px;
   }
 
+  /* 职位卡片样式 */
   .job-card {
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    transition: transform 0.2s;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .job-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
   }
 
   .job-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-color: #667eea;
   }
 
-  .job-card h3 {
+  .job-card:hover::before {
+    transform: scaleY(1);
+  }
+
+  /* 卡片头部 */
+  .job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .job-title {
     font-size: 20px;
-    color: #6a11cb;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+    line-height: 1.4;
+    flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  .job-card .salary {
-    color: #17449e;
-    font-weight: bold;
+  /* 状态徽章 */
+  .job-status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    margin-left: 16px;
+  }
+
+  .status-active {
+    background: #e6fffb;
+    color: #13c2c2;
+    border: 1px solid #87e8de;
+  }
+
+  .status-closed {
+    background: #fff1f0;
+    color: #cf1322;
+    border: 1px solid #ffa39e;
+  }
+
+  .status-default {
+    background: #f0f0f0;
+    color: #595959;
+    border: 1px solid #d9d9d9;
+  }
+
+  /* 卡片主体 */
+  .job-card-body {
+    margin-bottom: 16px;
+  }
+
+  .job-info-row {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+  }
+
+  .job-info-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .job-info-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .info-label {
+    font-size: 13px;
+    color: #8c8c8c;
+    font-weight: 500;
+  }
+
+  .info-value {
+    font-size: 15px;
+    color: #262626;
+    font-weight: 500;
+  }
+
+  .info-value.highlight {
+    color: #1890ff;
+    font-weight: 600;
+    font-size: 16px;
+  }
+
+  /* 卡片底部 */
+  .job-card-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    color: #1890ff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .view-detail-text {
+    transition: all 0.3s ease;
+  }
+
+  .arrow-icon {
+    transition: all 0.3s ease;
+    font-size: 12px;
+  }
+
+  .job-card:hover .view-detail-text {
+    color: #096dd9;
+  }
+
+  .job-card:hover .arrow-icon {
+    transform: translateX(4px);
+    color: #096dd9;
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .job-card {
+      padding: 16px;
+    }
+
+    .job-card-header {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .job-status-badge {
+      margin-left: 0;
+      align-self: flex-start;
+    }
+
+    .job-info-row {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .job-title {
+      font-size: 18px;
+    }
   }
   .pagination {
     display: flex;
@@ -674,9 +897,10 @@
 
   .sidebar {
     width: 250px;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px 20px;
+    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     margin-right: 20px;
   }
 
@@ -685,20 +909,27 @@
     padding: 0;
   }
 
-  .sidebar li {
-    margin: 10px 0;
-    padding: 10px;
+  .sidebar ul li {
+    margin: 15px 0;
+    padding: 12px 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.1);
   }
 
   .sidebar ul li:hover {
-    background-color: #f0f0f0;
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   }
 
   .sidebar ul .active {
-    background-color: #3d54a7;
-    color: #fff;
+    background: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
 
   .announcement-list {
@@ -744,11 +975,6 @@
   }
 
 
-  .filters .categories button .active {
-    background-color: #4caf50;
-    color: white;
-  }
-
   .content {
     flex: 1;
     background-color: #fff;
@@ -763,41 +989,166 @@
 
   .search-container {
     display: flex;
-    justify-content: space-between;
-    flex-direction: column;
-    /*padding: 10px;*/
+    gap: 10px;
     align-items: center;
-    /*margin-bottom: 20px;*/
   }
 
   .search-input {
     flex: 1;
-    padding: 10px;
-    /*margin-right: 10px;*/
-    margin: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 12px 20px;
+    border: 2px solid #e0e6ed;
+    border-radius: 25px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background-color: #fff;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   .search-buttons {
     display: flex;
-    margin: 5px 20px;
-    margin: 5px 20px;
-    align-items: center;
+    gap: 10px;
   }
 
   .search-button {
-    padding: 10px 20px;
-    margin-left: 10px;
+    padding: 12px 28px;
     border: none;
-    border-radius: 4px;
-    background-color: #007bff;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    font-size: 14px;
   }
 
   .search-button:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+  }
+
+  /* 分页器样式 */
+  .pagination-wrapper {
+    margin-top: 30px;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .pagination-info {
+    color: #666;
+    font-size: 14px;
+    margin-left: 20px;
+    white-space: nowrap;
+  }
+
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .page-btn {
+    padding: 8px 16px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .page-btn:hover:not(:disabled) {
+    color: #667eea;
+    border-color: #667eea;
+  }
+
+  .page-btn:disabled {
+    color: #ccc;
+    cursor: not-allowed;
+    background: #f5f5f5;
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 5px;
+  }
+
+  .page-number {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    background: #fff;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .page-number:hover {
+    color: #667eea;
+    border-color: #667eea;
+  }
+
+  .page-number.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+    font-weight: 600;
+  }
+
+  .page-ellipsis {
+    min-width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 14px;
+  }
+
+  .page-size-selector {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: 15px;
+    padding-left: 15px;
+    border-left: 1px solid #e0e0e0;
+  }
+
+  .page-size-selector label {
+    color: #666;
+    font-size: 14px;
+  }
+
+  .page-size-selector select {
+    padding: 6px 10px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    background: #fff;
+    transition: all 0.3s ease;
+  }
+
+  .page-size-selector select:hover {
+    border-color: #667eea;
+  }
+
+  .page-size-selector select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
   }
 </style>
