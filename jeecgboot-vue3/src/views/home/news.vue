@@ -13,11 +13,11 @@
 
         <!--        主要新闻-->
         <ul class="job-list" v-if="activeMenu === firstType">
-          <li v-for="news in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
+          <li v-for="(news, index) in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
             <div class="top-border">
-              <div>
+              <span class="news-index">{{ (currentPage - 1) * jobsPerPage + index + 1 }}</span>
+              <div class="news-content">
                 <div class="head">{{ news.journalismHead }}</div>
-                <br />
                 <div class="news-text" v-html="truncatedText(news.shortText)"></div>
                 <span class="date-time">{{ news.createTime }}</span>
               </div>
@@ -28,10 +28,9 @@
         <!--        其他新闻-->
         <ul class="job-list-2" v-if="activeMenu != firstType">
           <li v-for="(news, index) in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
-            <br v-if="index % 5 == 0" />
-            <div class="top-border-2" v-if="activeMenu != firstType">
+            <div class="top-border-2">
+              <span class="news-index-2">{{ (currentPage - 1) * jobsPerPage + index + 1 }}.</span>
               <div class="head">{{ news.journalismHead }}</div>
-              <!--              <span class="date-time" v-if="news.updateTime">{{news.updateTime}}</span>-->
               <span class="date-time">{{ news.createTime }}</span>
             </div>
           </li>
@@ -39,19 +38,33 @@
 
         <!-- 分页控件 -->
         <div class="pagination">
-          <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
-          <span>第 {{ currentPage }} 页 / 共 {{ totalPages }} 页</span>
-          <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-          <!--        <div class="jobs-per-page">-->
-          <label for="jobs-per-page">每页：</label>
-          <select id="jobs-per-page" v-model.number="jobsPerPage" @change="changeJobsPerPage">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-          <!--        </div>-->
+          <div class="pagination-left">
+            <button class="pagination-btn" @click="goToFirstPage" :disabled="currentPage === 1">首页</button>
+            <button class="pagination-btn" @click="prevPage" :disabled="currentPage === 1">上一页</button>
+            <div class="page-numbers">
+              <button
+                v-for="page in paginationRange"
+                :key="page"
+                :class="['page-number', { active: page === currentPage, ellipsis: page === '...' }]"
+                @click="typeof page === 'number' && goToPage(page)"
+                :disabled="page === '...'"
+              >
+                {{ page }}
+              </button>
+            </div>
+            <button class="pagination-btn" @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+            <button class="pagination-btn" @click="goToLastPage" :disabled="currentPage === totalPages">尾页</button>
+          </div>
+          <div class="pagination-right">
+            <label for="jobs-per-page">每页：</label>
+            <select id="jobs-per-page" v-model.number="jobsPerPage" @change="changeJobsPerPage">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </div>
         </div>
       </section>
     </main>
@@ -71,15 +84,16 @@
   ]);
   const firstType = ref('');
 
-  const newsList = ref([
+  const newsList = ref<any[]>([
     {
       id: 1,
-      journalismHead: '【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊',
+      journalismHead: '【喜报】《Cybersecurity》入选"卓越行动计划"英文期刊',
       updateTime: '2024-12-06',
       image: 'path-to-image-1.jpg',
       url: 'https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg',
       type: '头条新闻',
-      journalismText: '【喜报】《Cybersecurity》入选“卓越行动计划”英文期刊',
+      journalismText: '【喜报】《Cybersecurity》入选"卓越行动计划"英文期刊',
+      shortText: '',
       createTime: '',
       state: '',
     },
@@ -103,7 +117,62 @@
     return total;
   });
 
+  // 计算分页显示范围
+  const paginationRange = computed(() => {
+    const total = totalPages.value;
+    const current = currentPage.value;
+    const range: (number | string)[] = [];
+
+    if (total <= 7) {
+      // 总页数小于等于7，显示所有页码
+      for (let i = 1; i <= total; i++) {
+        range.push(i);
+      }
+    } else {
+      // 总页数大于7，显示省略号
+      if (current <= 3) {
+        // 当前页在前面
+        for (let i = 1; i <= 5; i++) {
+          range.push(i);
+        }
+        range.push('...');
+        range.push(total);
+      } else if (current >= total - 2) {
+        // 当前页在后面
+        range.push(1);
+        range.push('...');
+        for (let i = total - 4; i <= total; i++) {
+          range.push(i);
+        }
+      } else {
+        // 当前页在中间
+        range.push(1);
+        range.push('...');
+        for (let i = current - 1; i <= current + 1; i++) {
+          range.push(i);
+        }
+        range.push('...');
+        range.push(total);
+      }
+    }
+    return range;
+  });
+
   // 分页控制函数
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page;
+    }
+  };
+
+  const goToFirstPage = () => {
+    currentPage.value = 1;
+  };
+
+  const goToLastPage = () => {
+    currentPage.value = totalPages.value;
+  };
+
   const prevPage = () => {
     if (currentPage.value > 1) {
       currentPage.value--;
@@ -210,63 +279,95 @@
 
   .sidebar {
     width: 250px;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    margin-right: 20px;
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    padding: 15px;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+    margin-right: 25px;
+    border-radius: 8px;
   }
 
   .sidebar ul {
     list-style: none;
     padding: 0;
+    margin: 0;
   }
 
   .sidebar li {
-    margin: 10px 0;
-    padding: 10px;
+    margin: 8px 0;
+    padding: 12px 16px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-size: 15px;
+    line-height: 1.6;
+    border-left: 3px solid transparent;
+    font-weight: 500;
+    color: #333;
   }
 
   .sidebar li:hover {
-    background-color: #f0f0f0;
+    background-color: #e3e7ed;
+    border-left-color: #3d54a7;
+    transform: translateX(3px);
   }
 
   .sidebar li.active {
-    background-color: #3d54a7;
+    background: linear-gradient(135deg, #3d54a7, #5068b8);
     color: #fff;
+    border-left-color: #2a3d7a;
+    box-shadow: 0 2px 8px rgba(61, 84, 167, 0.3);
   }
 
   .content {
     flex: 1;
     background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 1000px;
+    padding: 30px 40px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    max-width: 1100px;
+    border-radius: 8px;
   }
 
   .content h2 {
-    margin-bottom: 20px;
-    color: #3d54a7;
+    margin-bottom: 25px;
+    color: #2c3e50;
+    font-size: 24px;
+    font-weight: 600;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #3d54a7;
   }
 
   .job-list {
     list-style: none;
-    padding-left: 50px;
-    padding-right: 50px;
+    padding: 0;
+    margin: 0;
   }
 
   .job-list li {
-    margin-bottom: 20px;
+    margin-bottom: 0;
+    transition: background-color 0.2s ease;
+  }
+
+  .job-list li:hover {
+    background-color: #f8f9fa;
   }
 
   .job-list-2 {
     list-style: none;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 0;
+    margin: 0;
   }
 
   .job-list-2 li {
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #e9ecef;
+  }
+
+  .job-list-2 li:last-child {
+    border-bottom: none;
+  }
+
+  .job-list-2 li:hover {
+    background-color: #f8f9fa;
   }
 
   .pagination {
@@ -300,84 +401,212 @@
   }
 
   .top-border {
-    border-top: 1px solid #3d54a7;
-    padding-bottom: 20px;
-    padding-top: 20px;
+    display: flex;
+    align-items: flex-start;
+    border-bottom: 1px solid #e9ecef;
+    padding: 20px 0;
     cursor: pointer;
   }
 
-  .top-border * .head {
-    font-weight: bold; /* 加粗 */
-    color: #3d54a7; /* #3d54a7 */
-    font-size: 20px;
+  .top-border:last-child {
+    border-bottom: none;
   }
 
-  .top-border * .head:hover {
-    font-weight: bold; /* 加粗 */
-    color: #7188da; /* #3d54a7 */
-    font-size: 20px;
+  .news-index {
+    flex-shrink: 0;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3d54a7, #5068b8);
+    color: #fff;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-right: 15px;
+    margin-top: 3px;
   }
 
-  .top-border * .date-time {
-    color: #aaa; /* #aaa */
-    font-size: 15px;
+  .news-content {
+    flex: 1;
+    min-width: 0;
   }
 
-  .top-border * .news-text {
-    max-width: 1000px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .top-border .head {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    transition: color 0.2s ease;
   }
-  .top-border * .news-text:hover {
-    max-width: 1000px;
-    color: #5578e7;
+
+  .top-border:hover .head {
+    color: #3d54a7;
+  }
+
+  .top-border .date-time {
+    color: #999;
+    font-size: 13px;
+    display: inline-block;
+    margin-top: 8px;
+  }
+
+  .top-border .news-text {
+    color: #666;
+    line-height: 1.8;
+    font-size: 14px;
+    margin-bottom: 8px;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .top-border-2 {
-    padding-bottom: 20px;
+    padding: 14px 10px;
     cursor: pointer;
     display: flex;
-    justify-content: space-between; /* 两端对齐 */
-    align-items: center; /* 可选，用于垂直居中对齐 */
+    align-items: center;
+    gap: 10px;
+  }
+
+  .news-index-2 {
+    flex-shrink: 0;
+    color: #3d54a7;
+    font-weight: 600;
+    font-size: 14px;
+    width: 30px;
   }
 
   .top-border-2 .head {
-    font-weight: bold; /* 加粗 */
-    color: #3d54a7; /* #3d54a7 */
+    flex: 1;
+    font-weight: 500;
+    color: #2c3e50;
     font-size: 15px;
+    line-height: 1.6;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.2s ease;
   }
 
-  .top-border-2 .head:hover {
-    font-weight: bold; /* 加粗 */
-    color: #7188da; /* #3d54a7 */
-    font-size: 15px;
+  .top-border-2:hover .head {
+    color: #3d54a7;
   }
 
   .top-border-2 .date-time {
-    color: #aaa; /* #aaa */
-    font-size: 10px;
+    flex-shrink: 0;
+    color: #999;
+    font-size: 13px;
+    margin-left: 15px;
   }
 
   .pagination {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    margin-top: 20px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
   }
 
-  .pagination button {
-    margin: 0 10px;
-    padding: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+  .pagination-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pagination-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
     cursor: pointer;
+    transition: all 0.2s ease;
   }
 
-  .pagination button:disabled {
-    background-color: #ddd;
+  .pagination-btn:hover:not(:disabled) {
+    border-color: #3d54a7;
+    color: #3d54a7;
+  }
+
+  .pagination-btn:disabled {
+    background-color: #f5f5f5;
+    color: #bbb;
     cursor: not-allowed;
+    border-color: #e0e0e0;
+  }
+
+  .page-numbers {
+    display: flex;
+    gap: 6px;
+  }
+
+  .page-number {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page-number:hover:not(.active):not(.ellipsis):not(:disabled) {
+    border-color: #3d54a7;
+    color: #3d54a7;
+  }
+
+  .page-number.active {
+    background: linear-gradient(135deg, #3d54a7, #5068b8);
+    color: #fff;
+    border-color: #3d54a7;
+    font-weight: 600;
+  }
+
+  .page-number.ellipsis {
+    border: none;
+    background: transparent;
+    cursor: default;
+    color: #999;
+  }
+
+  .pagination-right label {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .pagination-right select {
+    padding: 6px 12px;
+    border: 1px solid #d9d9d9;
+    border-radius: 4px;
+    background-color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+  }
+
+  .pagination-right select:hover {
+    border-color: #3d54a7;
+  }
+
+  .pagination-right select:focus {
+    outline: none;
+    border-color: #3d54a7;
+    box-shadow: 0 0 0 2px rgba(61, 84, 167, 0.1);
   }
 </style>
