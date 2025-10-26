@@ -2,8 +2,6 @@
   <div>
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
-      <!--字段回显插槽-->
-      <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
     <XgsFlowOpinionsModal @register="registerModal" @success="handleSuccess" />
@@ -156,10 +154,10 @@
   watch(
     () => props.positionApply,
     (newVal, oldVal) => {
-      if (newVal) {
+      if (newVal && newVal.id) {
         queryParam.positionApplyId = newVal.id;
+        reload();
       }
-      reload();
     }
   );
 

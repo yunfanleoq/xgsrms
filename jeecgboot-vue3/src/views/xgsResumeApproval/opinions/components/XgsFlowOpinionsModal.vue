@@ -20,15 +20,15 @@
       <a-tab-pane key="2" tab="岗位申请单" />
     </a-tabs>
 
-    <!-- 表单内容区域，使用 v-if 控制显示，不放在 a-tab-pane 里 -->
+    <!-- 表单内容区域，使用 v-show 控制显示，避免组件销毁导致表单数据丢失 -->
     <div class="tab-content-container">
       <!-- 第一个 Tab: 审核意见表单 -->
-      <div v-if="activeKey === '1'" class="tab-content-pane">
+      <div v-show="activeKey === '1'" class="tab-content-pane">
         <BasicForm @register="registerForm" name="XgsFlowOpinionsForm" />
       </div>
 
       <!-- 第二个 Tab: 岗位申请表单 -->
-      <div v-if="activeKey === '2'" class="tab-content-pane">
+      <div v-show="activeKey === '2'" class="tab-content-pane">
         <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
       </div>
     </div>
