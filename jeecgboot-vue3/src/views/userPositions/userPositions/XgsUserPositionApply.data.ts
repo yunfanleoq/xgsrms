@@ -27,6 +27,11 @@ export const columns: BasicColumn[] = [
     dataIndex: 'positionType',
   },
   {
+    title: '申请时间',
+    align: 'center',
+    dataIndex: 'createTime',
+  },
+  {
     title: '申请状态',
     align: 'center',
     dataIndex: 'status',

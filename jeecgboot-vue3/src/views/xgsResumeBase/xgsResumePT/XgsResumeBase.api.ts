@@ -18,6 +18,8 @@ enum Api {
   xgsResumePositionDescriptionList = '/xgsResume/xgsResumeBase/queryXgsResumePositionDescriptionByMainId',
   xgsResumeResearchDirectionList = '/xgsResume/xgsResumeBase/queryXgsResumeResearchDirectionByMainId',
   xgsResumeResearchPaperList = '/xgsResume/xgsResumeBase/queryXgsResumeResearchPaperByMainId',
+  queryById = '/xgsResume/xgsResumeBase/queryById',
+  getLatestResume = '/xgsResume/xgsResumeBase/list', // 使用列表API，后面会添加参数来获取最新简历
 }
 /**
  * 导出api
@@ -102,5 +104,35 @@ export const batchDelete = (params, handleSuccess) => {
  */
 export const saveOrUpdate = (params, isUpdate) => {
   const url = isUpdate ? Api.edit : Api.save;
-  return defHttp.post({ url: url, params });
+  return defHttp.post({ url: url, params }, { isTransformResponse: false });
+};
+
+/**
+ * 获取最新的简历
+ * @param userName 用户名（可选）
+ */
+export const getLatestResume = async (userName?: string) => {
+  // 查询参数：按创建时间降序排序，取第一条
+  // 不按名称查询，因为名称可能不完全匹配，而是按创建时间获取当前用户最新的简历
+  const params: any = {
+    column: 'createTime',
+    order: 'desc',
+    pageNo: 1,
+    pageSize: 1
+  };
+  
+  console.log('查询最新简历的参数:', params);
+  
+  try {
+    const result = await defHttp.get({ url: Api.getLatestResume, params }, { isTransformResponse: false });
+    console.log('查询简历接口返回:', result);
+    
+    if (result.success && result.result && result.result.records && result.result.records.length > 0) {
+      return result.result.records[0];
+    }
+    return null;
+  } catch (error) {
+    console.error('获取最新简历失败:', error);
+    return null;
+  }
 };

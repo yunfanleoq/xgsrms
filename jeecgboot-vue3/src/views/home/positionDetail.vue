@@ -168,7 +168,7 @@
     </div>
   </div>
   <!-- 使用新的重构后的在线申请表单 -->
-  <XgsPositionApplyModalNew ref="registerModalRef" :form-data="record" :formBpm="true" />
+  <XgsPositionApplyModalNew ref="registerModalRef" :form-data="record" :formBpm="true" @success="handleApplySuccess" />
 </template>
 
 <script setup lang="ts" name="PositionDetail">
@@ -337,7 +337,7 @@
       message.error('职位信息加载失败，请稍后再试');
       return;
     }
-    registerModalRef.value.addJob(positionApplyStore.currPositionApply);
+    // 先设置 record 数据
     record.value = {
       applyId: '',
       disabled: false,
@@ -351,6 +351,18 @@
       status: '申请中',
       userName: userStore.getUserInfo.realname,
     };
+    // 然后打开 Modal，传递 record 数据
+    registerModalRef.value.addJob(record.value);
+  };
+
+  /**
+   * 处理申请成功回调
+   * 重新检查申请状态，更新按钮显示
+   */
+  const handleApplySuccess = () => {
+    console.log('✅ 申请成功，重新检查申请状态');
+    // 重新检查是否已申请，更新 applyStatus 状态
+    checkHasApplied();
   };
 
   const fetchCurrApplyPosition = async () => {

@@ -3,14 +3,17 @@
   :title="title" 
   :width="width" 
   :visible="visible" 
-  :showOkBtn="false"
+  :confirmLoading="confirmLoading"
+  @ok="handleOk"
   @cancel="handleCancel" 
+  okText="提交申请"
   cancelText="关闭"
   :get-container="getContainer">
     <XgsPositionApplyFormNew ref="registerForm" 
     @ok="submitCallback" :formData="formData" 
     :formDisabled="disableSubmit" 
-    :formBpm="false">
+    :formBpm="false"
+    :hideSubmitBtn="true">
   </XgsPositionApplyFormNew>
   </j-modal>
 </template>
@@ -21,9 +24,10 @@
   import JModal from '/@/components/Modal/src/JModal/JModal.vue';
 
   const title = ref<string>('');
-  const width = ref<number>(1200);
+  const width = ref<string>('90%');
   const visible = ref<boolean>(false);
   const disableSubmit = ref<boolean>(false);
+  const confirmLoading = ref<boolean>(false);
   const registerForm = ref();
   const emit = defineEmits(['register', 'success']);
   const props = defineProps({
@@ -71,12 +75,18 @@
   }
 
   /**
-   * 确定按钮点击事件 - 现已隐藏确定按钮，保留此方法以维护兼容性
-   * @deprecated 此方法已弃用，但保留以维护兼容性
+   * 确定按钮点击事件
    */
-  // @ts-ignore - 保留此方法以维护兼容性
-  function _handleOk() {
-    registerForm.value.submitForm();
+  async function handleOk() {
+    try {
+      confirmLoading.value = true;
+      await registerForm.value.submitForm();
+      // submitForm 成功后会触发 emit('ok')，进而调用 submitCallback
+    } catch (error) {
+      console.error('表单提交失败:', error);
+    } finally {
+      confirmLoading.value = false;
+    }
   }
 
   /**

@@ -545,7 +545,7 @@
       </tbody>
     </table>
 
-    <div class="form-actions mt-4" v-if="!formDisabled">
+    <div class="form-actions mt-4" v-if="!props.formDisabled && !props.hideSubmitBtn">
       <a-button type="primary" @click="handleSubmit">提交</a-button>
       <a-button class="ml-2" @click="handleReset">重置</a-button>
     </div>
@@ -615,6 +615,8 @@ const props = defineProps({
   formBpm: { type: Boolean, default: false },
   // 表单数据ID
   dataId: { type: String, default: '' },
+  // 是否隐藏提交按钮
+  hideSubmitBtn: { type: Boolean, default: false },
 });
 
 // 组件引用
@@ -694,10 +696,10 @@ const rules = {
   sex: [{ required: true, message: '请选择性别', trigger: 'change' }],
   nativePlace: [{ required: true, message: '请输入籍贯', trigger: 'blur' }],
   birthday: [{ required: true, message: '请选择出生年月', trigger: 'change' }],
-  idNumber: [
-    { required: true, message: '请输入身份证号', trigger: 'blur' },
-    { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的身份证号码', trigger: 'blur' }
-  ],
+  // idNumber: [
+  //   { required: true, message: '请输入身份证号', trigger: 'blur' },
+  //   { pattern: /(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, message: '请输入正确的身份证号码', trigger: 'blur' }
+  // ],
   email: [
     { pattern: /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/, message: '请输入正确的邮箱格式', trigger: 'blur' }
   ],
@@ -817,6 +819,18 @@ const handleSubmit = async () => {
     // 保存数据
     const isUpdate = !!formData.id;
     const result = await saveOrUpdate(submitData, isUpdate);
+    
+    console.log('saveOrUpdate返回结果:', result);
+    
+    // 如果保存成功且返回了ID，更新formData
+    if (result && result.success) {
+      if (result.result && result.result.id) {
+        formData.id = result.result.id;
+      } else if (result.result && typeof result.result === 'string') {
+        formData.id = result.result;
+      }
+      console.log('简历保存后的ID:', formData.id);
+    }
     
     message.success('保存成功');
     return result;
@@ -940,12 +954,45 @@ const getAnchorContainer = () => {
   return (modalBody as HTMLElement) || (window as any);
 };
 
+// 验证表单（不保存）
+const validateForm = async () => {
+  try {
+    // 验证基本信息表单
+    if (formRef.value) {
+      await formRef.value.validate();
+    }
+    return true;
+  } catch (error) {
+    console.error('表单验证失败:', error);
+    return Promise.reject(error);
+  }
+};
+
+// 获取表单数据（不保存，供父组件使用）
+const getFormData = () => {
+  // 整合所有数据
+  const submitData = {
+    ...formData,
+    xgsResumeWorksList: workExperienceRef.value?.getData() || [],
+    xgsResumeEdusList: educationRef.value?.getData() || [],
+    xgsResumeHomeList: familyStatusRef.value?.getData() || [],
+    xgsResumeResearchResultList: workAchievementRef.value?.getData() || [],
+    xgsResumePositionDescriptionList: positionStatementRef.value?.getData() || [],
+    xgsResumeResearchDirectionList: researchDirectionRef.value?.getData() || [],
+    xgsResumeResearchPaperList: paperPatentRef.value?.getData() || []
+  };
+  
+  return submitData;
+};
+
 // 暴露方法给父组件
 defineExpose({
   handleSubmit,
   handleReset,
   loadFormData,
   setDataByPDF,
+  validateForm, // 新增：只验证表单，不保存
+  getFormData,  // 新增：获取表单数据而不保存
 });
 </script>
 

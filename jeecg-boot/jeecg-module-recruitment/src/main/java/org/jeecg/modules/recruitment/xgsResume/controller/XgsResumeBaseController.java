@@ -150,7 +150,7 @@ public class XgsResumeBaseController {
 		XgsResumeBase xgsResumeBase = new XgsResumeBase();
 		BeanUtils.copyProperties(xgsResumeBasePage, xgsResumeBase);
 		xgsResumeBaseService.saveMain(xgsResumeBase, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
-		return Result.OK("添加成功！");
+		return Result.OK("添加成功！", xgsResumeBase.getId());
 	}
 	
 	/**
@@ -171,7 +171,7 @@ public class XgsResumeBaseController {
 			return Result.error("未找到对应数据");
 		}
 		xgsResumeBaseService.updateMain(xgsResumeBase, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
-		return Result.OK("编辑成功!");
+		return Result.OK("编辑成功!", xgsResumeBase.getId());
 	}
 	
 	/**

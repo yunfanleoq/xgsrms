@@ -412,12 +412,6 @@
 					</exclusion>
 				</exclusions>
 			</dependency>
-			<!-- Saxon for XmlCursor XPath queries (required for Word bookmark processing) -->
-			<dependency>
-				<groupId>net.sf.saxon</groupId>
-				<artifactId>Saxon-HE</artifactId>
-				<version>9.4</version>
-			</dependency>
 			<!-- 积木BI-->
 			<dependency>
 				<groupId>org.jeecgframework.jimureport</groupId>
