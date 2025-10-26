@@ -211,7 +211,7 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 			 xgsFlowOpinions = list.getRecords().get(0);
 		 }
 		 if(xgsFlowOpinions==null) {
-			 return Result.error("未找到对应数据");
+			 return Result.error(200, "未找到对应数据");
 		 }
 		 return Result.OK(xgsFlowOpinions);
 	 }

@@ -211,6 +211,74 @@ public class XgsResumeBSHController {
 		return Result.OK(xgsResumeHomeList);
 	}
 
+	/**
+	 * 通过主表id查询工作主要业绩列表
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="工作主要业绩主表ID查询", notes="工作主要业绩-通主表ID查询")
+	@GetMapping(value = "/queryXgsResumeResearchResultByMainId")
+	public Result<List<Object>> queryXgsResumeResearchResultByMainId(@RequestParam(name="id",required=true) String id) {
+		XgsResumeBSH xgsResumeBSH = xgsResumeBSHService.getById(id);
+		if(xgsResumeBSH != null && xgsResumeBSH.getResearchResult() != null) {
+			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBSH.getResearchResult(), Object.class);
+			return Result.OK(list);
+		}
+		return Result.OK(new java.util.ArrayList<>());
+	}
+
+	/**
+	 * 通过主表id查询应聘岗位陈述列表
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="应聘岗位陈述主表ID查询", notes="应聘岗位陈述-通主表ID查询")
+	@GetMapping(value = "/queryXgsResumePositionDescriptionByMainId")
+	public Result<List<Object>> queryXgsResumePositionDescriptionByMainId(@RequestParam(name="id",required=true) String id) {
+		XgsResumeBSH xgsResumeBSH = xgsResumeBSHService.getById(id);
+		if(xgsResumeBSH != null && xgsResumeBSH.getPositionDescription() != null) {
+			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBSH.getPositionDescription(), Object.class);
+			return Result.OK(list);
+		}
+		return Result.OK(new java.util.ArrayList<>());
+	}
+
+	/**
+	 * 通过主表id查询研究方向与专长列表
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="研究方向与专长主表ID查询", notes="研究方向与专长-通主表ID查询")
+	@GetMapping(value = "/queryXgsResumeResearchDirectionByMainId")
+	public Result<List<Object>> queryXgsResumeResearchDirectionByMainId(@RequestParam(name="id",required=true) String id) {
+		XgsResumeBSH xgsResumeBSH = xgsResumeBSHService.getById(id);
+		if(xgsResumeBSH != null && xgsResumeBSH.getResearchDirection() != null) {
+			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBSH.getResearchDirection(), Object.class);
+			return Result.OK(list);
+		}
+		return Result.OK(new java.util.ArrayList<>());
+	}
+
+	/**
+	 * 通过主表id查询论文专著专利列表
+	 *
+	 * @param id
+	 * @return
+	 */
+	@ApiOperation(value="论文专著专利主表ID查询", notes="论文专著专利-通主表ID查询")
+	@GetMapping(value = "/queryXgsResumeResearchPaperByMainId")
+	public Result<List<Object>> queryXgsResumeResearchPaperByMainId(@RequestParam(name="id",required=true) String id) {
+		XgsResumeBSH xgsResumeBSH = xgsResumeBSHService.getById(id);
+		if(xgsResumeBSH != null && xgsResumeBSH.getResearchPaper() != null) {
+			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBSH.getResearchPaper(), Object.class);
+			return Result.OK(list);
+		}
+		return Result.OK(new java.util.ArrayList<>());
+	}
+
     /**
     * 导出excel
     *

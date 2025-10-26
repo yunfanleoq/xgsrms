@@ -253,8 +253,11 @@
   const favoriteJob = ref<FavoriteJob | null>(null);
   const record = ref<Partial<ApplyRecord>>({});
 
-  // 检查 是否已经申请
-  function checkHasApplied() {
+  /**
+   * 检查是否已经申请
+   * @param showMessage 是否显示消息提示，默认为 false（静默更新按钮状态）
+   */
+  function checkHasApplied(showMessage = false) {
     defHttp
       .post({ url: '/positions/xgsPositionApply/checkApplyByPosId', timeout: 600000, data: { positionId: jobId } }, { isTransformResponse: false })
       .then((data) => {
@@ -262,7 +265,10 @@
           applyStatus.value = true;
         } else {
           applyStatus.value = false;
-          createMessage.warning('岗位已申请，请勿重复申请！');
+          // 只在需要时显示消息提示（页面首次加载时）
+          if (showMessage) {
+            createMessage.warning('岗位已申请，请勿重复申请！');
+          }
         }
       });
   }
@@ -357,12 +363,12 @@
 
   /**
    * 处理申请成功回调
-   * 重新检查申请状态，更新按钮显示
+   * 重新检查申请状态，更新按钮显示（静默更新，不显示提示）
    */
   const handleApplySuccess = () => {
     console.log('✅ 申请成功，重新检查申请状态');
-    // 重新检查是否已申请，更新 applyStatus 状态
-    checkHasApplied();
+    // 重新检查是否已申请，更新 applyStatus 状态（不显示消息提示）
+    checkHasApplied(false);
   };
 
   const fetchCurrApplyPosition = async () => {
@@ -381,7 +387,8 @@
     await fetchCurrApplyPosition();
     // 仅在用户登录后执行需要认证的API调用
     if (userStore.userInfo) {
-      checkHasApplied();
+      // 页面首次加载时检查申请状态，如果已申请则显示提示消息
+      checkHasApplied(true);
       fetchFavoriteJob();
     }
   });

@@ -1,5 +1,6 @@
 package org.jeecg.modules.demo.positions.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
@@ -101,6 +102,26 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
             }
         }
 
+        // 处理4个新增的子表列表，将其转为JSON字符串保存
+        // 工作主要业绩
+        if(xgsResumeBasePage.getXgsResumeResearchResultList() != null && xgsResumeBasePage.getXgsResumeResearchResultList().size() > 0) {
+            xgsResumeBase.setResearchResult(JSON.toJSONString(xgsResumeBasePage.getXgsResumeResearchResultList()));
+        }
+        // 应聘岗位陈述
+        if(xgsResumeBasePage.getXgsResumePositionDescriptionList() != null && xgsResumeBasePage.getXgsResumePositionDescriptionList().size() > 0) {
+            xgsResumeBase.setPositionDescription(JSON.toJSONString(xgsResumeBasePage.getXgsResumePositionDescriptionList()));
+        }
+        // 研究方向与专长
+        if(xgsResumeBasePage.getXgsResumeResearchDirectionList() != null && xgsResumeBasePage.getXgsResumeResearchDirectionList().size() > 0) {
+            xgsResumeBase.setResearchDirection(JSON.toJSONString(xgsResumeBasePage.getXgsResumeResearchDirectionList()));
+        }
+        // 论文专著专利
+        if(xgsResumeBasePage.getXgsResumeResearchPaperList() != null && xgsResumeBasePage.getXgsResumeResearchPaperList().size() > 0) {
+            xgsResumeBase.setResearchPaper(JSON.toJSONString(xgsResumeBasePage.getXgsResumeResearchPaperList()));
+        }
+        // 更新简历主表数据
+        xgsResumeBaseMapper.updateById(xgsResumeBase);
+
         xgsPositionApply.setUserId(loginUser.getId());
         xgsPositionApply.setPositionId(xgsPositionApplyVO.getPositionId());
         xgsPositionApply.setResumeId(xgsResumeBase.getId());
@@ -174,6 +195,21 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         xgsResumeBasePage.setXgsResumeEdusList(xgsResumeEdusList);
         xgsResumeBasePage.setXgsResumeWorksList(xgsResumeWorksList);
         xgsResumeBasePage.setXgsResumeHomeList(xgsResumeHomeList);
+
+        // 将JSON字符串转换为列表，供前端显示
+        if(StringUtils.isNotEmpty(xgsResumeBase.getResearchResult())) {
+            xgsResumeBasePage.setXgsResumeResearchResultList(JSON.parseArray(xgsResumeBase.getResearchResult(), Object.class));
+        }
+        if(StringUtils.isNotEmpty(xgsResumeBase.getPositionDescription())) {
+            xgsResumeBasePage.setXgsResumePositionDescriptionList(JSON.parseArray(xgsResumeBase.getPositionDescription(), Object.class));
+        }
+        if(StringUtils.isNotEmpty(xgsResumeBase.getResearchDirection())) {
+            xgsResumeBasePage.setXgsResumeResearchDirectionList(JSON.parseArray(xgsResumeBase.getResearchDirection(), Object.class));
+        }
+        if(StringUtils.isNotEmpty(xgsResumeBase.getResearchPaper())) {
+            xgsResumeBasePage.setXgsResumeResearchPaperList(JSON.parseArray(xgsResumeBase.getResearchPaper(), Object.class));
+        }
+
         // 返回申请信息
         xgsPositionApplyVO.setXgsPositionApply(positionApply);
         xgsPositionApplyVO.setXgsResumeBasePage(xgsResumeBasePage);

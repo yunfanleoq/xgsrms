@@ -410,6 +410,9 @@ public class XgsResumeBasePage {
 	@Dict(dicCode = "简历文件")
 	@ApiModelProperty(value = "简历文件")
 	private java.lang.String resumeFile;
+	/**其他附件信息*/
+	@ApiModelProperty(value = "其他附件信息")
+	private java.lang.String otherFiles;
 
 	@ExcelCollection(name="工作经历")
 	@ApiModelProperty(value = "工作经历")
@@ -420,5 +423,18 @@ public class XgsResumeBasePage {
 	@ExcelCollection(name="家庭状况")
 	@ApiModelProperty(value = "家庭状况")
 	private List<XgsResumeHome> xgsResumeHomeList;
+
+	/** 工作主要业绩列表 (前端提交，后端转JSON存储) */
+	@ApiModelProperty(value = "工作主要业绩列表")
+	private List<Object> xgsResumeResearchResultList;
+	/** 应聘岗位陈述列表 (前端提交，后端转JSON存储) */
+	@ApiModelProperty(value = "应聘岗位陈述列表")
+	private List<Object> xgsResumePositionDescriptionList;
+	/** 研究方向与专长列表 (前端提交，后端转JSON存储) */
+	@ApiModelProperty(value = "研究方向与专长列表")
+	private List<Object> xgsResumeResearchDirectionList;
+	/** 论文专著专利列表 (前端提交，后端转JSON存储) */
+	@ApiModelProperty(value = "论文专著专利列表")
+	private List<Object> xgsResumeResearchPaperList;
 
 }
