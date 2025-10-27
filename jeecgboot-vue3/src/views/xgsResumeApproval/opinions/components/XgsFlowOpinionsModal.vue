@@ -41,8 +41,10 @@ import {ref, unref, nextTick, defineExpose} from 'vue';
   import { formSchema } from '../XgsFlowOpinions.data';
   import { saveOrUpdate } from '../XgsFlowOpinions.api';
   import { useUserStore } from '@/store/modules/user';
+  // @ts-ignore: SFC default export typing for .vue
   import XgsApplyForm from '@/components/XgsApplyForm/index.vue';
   import JModal from '/@/components/Modal/src/JModal/JModal.vue';
+  import { APPROVAL_NODES } from '/@/enums/approval';
   
   // Emits声明
   const emit = defineEmits(['success', 'register']);
@@ -87,7 +89,7 @@ import {ref, unref, nextTick, defineExpose} from 'vue';
       title.value = '详情';
     } else {
       // 新增审批意见时，根据当前记录的审批环节设置表单
-      let approvalNode = data.record.approvalNode;
+      let approvalNode = data.record.approvalNode || APPROVAL_NODES.HR_PENDING_REVIEW;
       let opinions = '同意';
       
       // 如果当前是"待查看"状态，确保审批环节设置为"待查看"
@@ -97,11 +99,12 @@ import {ref, unref, nextTick, defineExpose} from 'vue';
       }
       
       await setFieldsValue({
-        approvalUser: userStore.userInfo?.realname || '',
+        approvalUser: userStore.getUserInfo?.realname || userStore.getUserInfo?.username || '',
         approvalNode: approvalNode,
         approvalStatus: '同意',
         opinions: opinions,
         parentId: data.record.id,
+        userId: userStore.getUserInfo?.username || '',
       });
       title.value = '审批';
     }

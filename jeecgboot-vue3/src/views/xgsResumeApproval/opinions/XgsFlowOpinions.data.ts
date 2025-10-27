@@ -68,6 +68,12 @@ export const formSchema: FormSchema[] = [
     component: 'InputTextArea',
   },
   {
+    label: '用户ID',
+    field: 'userId',
+    component: 'Input',
+    show: false,
+  },
+  {
     label: '业务ID',
     field: 'parentId',
     component: 'Input',

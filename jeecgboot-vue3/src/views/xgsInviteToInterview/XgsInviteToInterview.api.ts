@@ -63,5 +63,13 @@ export const batchDelete = (params, handleSuccess) => {
  */
 export const saveOrUpdate = (params, isUpdate) => {
   const url = isUpdate ? Api.edit : Api.save;
-  return defHttp.post({ url: url, params });
+  // 兼容后端旧字段: 同时提交 inviteLetter 与 interviewInformation
+  const payload: any = { ...params };
+  if (payload.interviewInformation && !payload.inviteLetter) {
+    payload.inviteLetter = payload.interviewInformation;
+  }
+  if (payload.inviteLetter && !payload.interviewInformation) {
+    payload.interviewInformation = payload.inviteLetter;
+  }
+  return defHttp.post({ url: url, params: payload });
 };

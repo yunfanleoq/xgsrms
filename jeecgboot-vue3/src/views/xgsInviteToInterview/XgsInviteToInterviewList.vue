@@ -31,7 +31,6 @@
         <TableAction :actions="getTableAction(record)" />
       </template>
       <!--字段回显插槽-->
-      <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
     <XgsPositionApplyModal ref="userDetail" @success="handleSuccess" />
@@ -40,29 +39,26 @@
 </template>
 
 <script lang="ts" name="xgsInviteToInterview-xgsInviteToInterview" setup>
-  import { ref, reactive, computed, unref } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/@/components/Table';
+  import { ref, reactive } from 'vue';
+  import { BasicTable, TableAction } from '/@/components/Table';
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsInviteToInterviewModal from './components/XgsInviteToInterviewModal.vue';
   import { columns, searchFormSchema, superQuerySchema } from './XgsInviteToInterview.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsInviteToInterview.api';
-  import { downloadFile } from '/@/utils/common/renderUtils';
-  import { useUserStore } from '/@/store/modules/user';
   import XgsPositionApplyModal from '@/views/xgsResumeApproval/departApproval/components/XgsPositionApplyModal.vue';
   import {defHttp} from "@/utils/http/axios";
   import {useMessage} from "@/hooks/web/useMessage";
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
-  const userStore = useUserStore();
 
-  const { createMessage, createConfirm } = useMessage();
+  const { createConfirm } = useMessage();
   //注册model
   const [registerModal, { openModal }] = useModal();
   //用于详情展示
   const userDetail = ref();
   //注册table数据
-  const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
+  const { tableContext, onExportXls } = useListPage({
     tableProps: {
       title: '面试',
       api: list,
@@ -190,19 +186,28 @@
   function getTableAction(record) {
     return [
       {
-        label: '发送邀请',
+        label: '查看',
+        onClick: handleDetail.bind(null, record),
+      },
+      {
+        label: '编辑',
         onClick: handleEdit.bind(null, record),
         auth: 'positions:xgs_position_apply:edit',
       },
       {
-        label: '撤回邀请',
+        label: '邀请',
+        onClick: handleEdit.bind(null, record),
+        auth: 'positions:xgs_position_apply:edit',
+      },
+      {
+        label: '撤回',
         popConfirm: {
           title: '是否撤回邀请',
           confirm: cancelInvite.bind(null, record),
         },
       },
       {
-        label: '面试通过',
+        label: '通过',
         popConfirm: {
           title: '是否面试通过',
           confirm: interviewPass.bind(null, record),
@@ -210,7 +215,7 @@
         auth: 'positions:xgs_position_apply:edit',
       },
       {
-        label: '面试未通过',
+        label: '未通过',
         popConfirm: {
           title: '面试未通过',
           confirm: interviewFail.bind(null, record),

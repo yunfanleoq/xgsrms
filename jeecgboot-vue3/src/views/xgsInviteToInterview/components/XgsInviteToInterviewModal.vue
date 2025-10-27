@@ -32,6 +32,7 @@
       //表单赋值
       await setFieldsValue({
         ...data.record,
+        interviewInformation: data.record?.interviewInformation ?? data.record?.inviteLetter,
       });
     }
     // 隐藏底部时禁用整个表单
@@ -43,6 +44,13 @@
   async function handleSubmit(v) {
     try {
       let values = await validate();
+      // 兼容旧字段：入参同时带上 inviteLetter 与 interviewInformation
+      if (values && values.interviewInformation && !values.inviteLetter) {
+        values.inviteLetter = values.interviewInformation;
+      }
+      if (values && values.inviteLetter && !values.interviewInformation) {
+        values.interviewInformation = values.inviteLetter;
+      }
       setModalProps({ confirmLoading: true });
       //提交表单
       await saveOrUpdate(values, isUpdate.value);
@@ -50,14 +58,12 @@
       closeModal();
       //刷新列表
       emit('success');
-    } catch ({ errorFields }) {
-      if (errorFields) {
-        const firstField = errorFields[0];
-        if (firstField) {
-          scrollToField(firstField.name, { behavior: 'smooth', block: 'center' });
-        }
+    } catch (e: any) {
+      const fields = e?.errorFields || e;
+      if (fields && fields[0]) {
+        scrollToField(fields[0].name, { behavior: 'smooth' } as any);
       }
-      return Promise.reject(errorFields);
+      return Promise.reject(fields);
     } finally {
       setModalProps({ confirmLoading: false });
     }

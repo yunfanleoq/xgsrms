@@ -44,7 +44,8 @@ export const columns: BasicColumn[] = [
   {
     title: '邀请信息',
     align: 'center',
-    dataIndex: 'inviteLetter',
+    dataIndex: 'interviewInformation',
+    customRender: ({ text, record }) => text ?? record.inviteLetter,
   },
   {
     title: '邀请状态',
@@ -179,7 +180,7 @@ export const formSchema: FormSchema[] = [
   },
   {
     label: '邀请信息',
-    field: 'inviteLetter',
+    field: 'interviewInformation',
     component: 'Input',
     dynamicRules: ({ model, schema }) => {
       return [{ required: true, message: '请输邀请信息!' }];
