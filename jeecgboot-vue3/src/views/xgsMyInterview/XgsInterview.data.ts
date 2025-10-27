@@ -1,8 +1,8 @@
 import { BasicColumn } from '/@/components/Table';
 import { FormSchema } from '/@/components/Table';
-import { rules } from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import { getWeekMonthQuarterYear } from '/@/utils';
+// import { rules } from '/@/utils/helper/validator';
+// import { render } from '/@/utils/common/renderUtils';
+// import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
   {
@@ -33,7 +33,8 @@ export const columns: BasicColumn[] = [
   {
     title: '邀请信息',
     align: 'center',
-    dataIndex: 'inviteLetter',
+    dataIndex: 'interviewInformation',
+    customRender: ({ text, record }) => text ?? record.inviteLetter,
   },
   {
     title: '是否接受邀请',
@@ -116,13 +117,16 @@ export const formSchema: FormSchema[] = [
     dynamicDisabled: true,
   },
   {
-    label: '面试信息',
-    field: 'interviewInformation',
+    label: '面试地点',
+    field: 'interviewPlace',
     component: 'Input',
     dynamicDisabled: true,
-    dynamicRules: ({ model, schema }) => {
-      return [{ required: true, message: '请输入面试官!' }];
-    },
+  },
+  {
+    label: '邀请信息',
+    field: 'inviteLetter',
+    component: 'Input',
+    dynamicDisabled: true,
   },
   {
     label: '面试时间',
@@ -133,9 +137,7 @@ export const formSchema: FormSchema[] = [
       showTime: true,
       valueFormat: 'YYYY-MM-DD HH:mm:ss',
     },
-    dynamicRules: ({ model, schema }) => {
-      return [{ required: true, message: '请输入面试时间!' }];
-    },
+    // 仅展示
   },
   {
     label: '邀请状态',
@@ -150,9 +152,7 @@ export const formSchema: FormSchema[] = [
         // { label: '待邀请', value: '待邀请' },
       ],
     },
-    dynamicRules: ({ model, schema }) => {
-      return [{ required: true, message: '请输入邀请状态!' }];
-    },
+    // 仅展示
   },
   // TODO 主键隐藏字段，目前写死为ID
   {
