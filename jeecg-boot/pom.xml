@@ -473,6 +473,13 @@
 						<nonFilteredFileExtension>docx</nonFilteredFileExtension>
 						<nonFilteredFileExtension>xls</nonFilteredFileExtension>
 						<nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
+						<nonFilteredFileExtension>bcmap</nonFilteredFileExtension>
+						<nonFilteredFileExtension>css</nonFilteredFileExtension>
+						<nonFilteredFileExtension>js</nonFilteredFileExtension>
+						<nonFilteredFileExtension>html</nonFilteredFileExtension>
+						<nonFilteredFileExtension>png</nonFilteredFileExtension>
+						<nonFilteredFileExtension>cur</nonFilteredFileExtension>
+						<nonFilteredFileExtension>pdf</nonFilteredFileExtension>
 					</nonFilteredFileExtensions>
 				</configuration>
             </plugin>

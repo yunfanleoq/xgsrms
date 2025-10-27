@@ -1,7 +1,6 @@
 <template>
   <div :class="prefixCls" class="login-background-img">
     <AppLocalePicker class="absolute top-4 right-4 enter-x xl:text-gray-600" :showText="false" />
-    <span @click="goHome">← 返回首页</span>
     <div class="aui-logo" v-if="!getIsMobile">
       <div>
         <h3>

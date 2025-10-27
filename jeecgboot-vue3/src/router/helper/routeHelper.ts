@@ -4,7 +4,7 @@ import type { Router, RouteRecordNormalized } from 'vue-router';
 import { getParentLayout, LAYOUT, EXCEPTION_COMPONENT } from '/@/router/constant';
 import { cloneDeep, omit } from 'lodash-es';
 import { warn } from '/@/utils/log';
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import { getTenantId, getToken } from "/@/utils/auth";
 import { URL_HASH_TAB, _eval } from '/@/utils';
 //引入online lib路由
@@ -174,7 +174,7 @@ function promoteRouteLevel(routeModule: AppRouteModule) {
   // Use vue-router to splice menus
   let router: Router | null = createRouter({
     routes: [routeModule as unknown as RouteRecordNormalized],
-    history: createWebHashHistory(),
+    history: createWebHistory(import.meta.env.VITE_PUBLIC_PATH),
   });
 
   const routes = router.getRoutes();

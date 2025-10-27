@@ -4,7 +4,10 @@
       <breadcrumb />
       <!-- 暂时放这里 -->
       <div class="right-info">
-        <router-link to="/index">返回首页&nbsp;&nbsp;&nbsp;</router-link>
+        <router-link to="/index" class="back-home-btn">
+          <span class="home-icon">🏠</span>
+          <span>返回首12页</span>
+        </router-link>
         <lin-notify
           height="370"
           @readMessages="readMessages"
@@ -104,6 +107,43 @@ export default {
 .lin-notify {
   margin-right: 20px;
 }
+
+.back-home-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  margin-right: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  
+  .home-icon {
+    font-size: 16px;
+    margin-right: 6px;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    
+    .home-icon {
+      transform: scale(1.1);
+    }
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+  }
+}
+
 .app-nav-bar {
   width: 100%;
   height: $navbar-height;

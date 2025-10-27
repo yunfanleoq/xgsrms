@@ -56,7 +56,6 @@
   import { useRouter } from 'vue-router';
   import { computed, onMounted } from 'vue';
   import { useUserStore } from '@/store/modules/user';
-  import { doLogout } from '@/api/sys/user';
   import { useMultipleTabStore } from '@/store/modules/multipleTab';
   const router = useRouter();
   const userStore = useUserStore();
@@ -70,10 +69,11 @@
 
   const currentYear = computed(() => new Date().getFullYear());
 
-  const logout = () => {
-    doLogout().then(() => {
-      router.push({ name: 'Login' });
-    });
+  const logout = async () => {
+    // 调用 userStore 的 logout 方法，会清除用户状态
+    await userStore.logout(false);
+    // 退出后跳转到首页
+    router.push({ name: 'homeHome' });
   };
 
   const goToUserCenter = () => {

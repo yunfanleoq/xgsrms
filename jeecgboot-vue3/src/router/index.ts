@@ -3,7 +3,6 @@ import type { App } from 'vue';
 
 import { basicRoutes } from './routes';
 import { createRouter as createVueRouter, destroyRouter, router } from './router';
-import { createWebHistory } from 'vue-router';
 
 // 白名单应该包含基本静态路由
 const WHITE_NAME_LIST: string[] = [];
@@ -17,11 +16,16 @@ getRouteNames(basicRoutes);
  * 创建路由实例
  */
 export function createRouter() {
-  const router = createVueRouter({
-    history: createWebHistory(),
+  // 使用 router.ts 中配置好的 router，添加基本路由
+  createVueRouter({
     routes: basicRoutes as unknown as RouteRecordRaw[],
     strict: true,
     scrollBehavior: () => ({ left: 0, top: 0 }),
+  });
+
+  // 添加基本路由到已创建的 router 实例
+  basicRoutes.forEach((route) => {
+    router.addRoute(route as unknown as RouteRecordRaw);
   });
 
   // TODO 【QQYUN-4517】【表单设计器】记录分享路由守卫测试

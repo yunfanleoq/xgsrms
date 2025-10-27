@@ -13,7 +13,10 @@
       <!-- 欢迎语 -->
       <span v-if="getShowContent && getShowBreadTitle && !getIsMobile" :class="[prefixCls, `${prefixCls}--${getHeaderTheme}`,'headerIntroductionClass']"> {{t('layout.header.welcomeIn')}} {{ title }} </span>
 
-      <button class="home-btn" @click="gotoHome"> 返回首页</button>
+      <button class="home-btn" @click="gotoHome">
+        <span class="home-icon">🏠</span>
+        <span>返回首页</span>
+      </button>
 
     </div>
     <!-- left end -->
@@ -235,19 +238,47 @@
   @prefix-cls: ~'@{namespace}-layout-header';
 
   .home-btn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    background-color: #40aede;
-    border-radius: 6px;
-    height: 45px;
-    padding: 0 8px;
-    font-weight: bold ;
-    font-size: 20px;
-    color: #9ff36c;
-  }
-  .home-btn:hover {
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 20px;
+    height: 36px;
+    padding: 0 18px;
+    margin-left: 16px;
+    font-weight: 500;
+    font-size: 14px;
     color: #fff;
-    background-color: #9ff36c;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    outline: none;
+
+    .home-icon {
+      font-size: 16px;
+      margin-right: 6px;
+      transition: transform 0.3s ease;
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      
+      .home-icon {
+        transform: scale(1.1) rotate(-5deg);
+      }
+    }
+
+    &:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
+    }
+
+    &:focus {
+      outline: none;
+    }
   }
 
 
