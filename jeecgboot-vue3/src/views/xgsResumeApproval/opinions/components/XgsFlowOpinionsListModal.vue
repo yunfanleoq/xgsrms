@@ -17,15 +17,15 @@
       <a-tab-pane key="2" tab="岗位申请单" />
     </a-tabs>
 
-    <!-- 表单内容区域，使用 v-if 控制显示，不放在 a-tab-pane 里 -->
+    <!-- 表单内容区域，使用 v-show 控制显示，避免组件销毁导致数据丢失 -->
     <div class="tab-content-container">
       <!-- 第一个 Tab: 办理过程 -->
-      <div v-if="activeKey === '1'" class="tab-content-pane">
+      <div v-show="activeKey === '1'" class="tab-content-pane">
         <XgsFlowOpinionsList ref="flowListRef" :positionApply="positionApply"></XgsFlowOpinionsList>
       </div>
 
       <!-- 第二个 Tab: 岗位申请表单 -->
-      <div v-if="activeKey === '2'" class="tab-content-pane">
+      <div v-show="activeKey === '2'" class="tab-content-pane">
         <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
       </div>
     </div>
@@ -59,11 +59,9 @@
     
     isUpdate.value = !!data?.isUpdate;
     isDetail.value = !!data?.showFooter;
-    positionApply.value = {};
     
-    setTimeout(() => {
-      positionApply.value = data.record;
-    }, 100);
+    // 直接设置positionApply，不要延迟设置，避免watch触发时数据为空
+    positionApply.value = data.record;
     
     // 设置简历ID并加载数据
     resumeId.value = data.record.resumeId || '';

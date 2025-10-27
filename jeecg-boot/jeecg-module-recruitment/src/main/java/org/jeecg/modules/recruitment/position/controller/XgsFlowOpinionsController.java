@@ -63,8 +63,9 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		log.info("审批办理过程表-分页列表查询 查询参数:{}",req.getParameter("positionApplyId"));
 		String positionApplyId = req.getParameter("positionApplyId");
+		log.info("审批办理过程表-分页列表查询 查询参数 positionApplyId: {}", positionApplyId);
+		
         // 自定义查询规则
         Map<String, QueryRuleEnum> customeRuleMap = new HashMap<>();
         // 自定义多选的查询规则为：LIKE_WITH_OR
@@ -72,8 +73,18 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
         customeRuleMap.put("approvalStatus", QueryRuleEnum.LIKE_WITH_OR);
         QueryWrapper<XgsFlowOpinions> queryWrapper = QueryGenerator.initQueryWrapper(xgsFlowOpinions, req.getParameterMap(),customeRuleMap);
 		Page<XgsFlowOpinions> page = new Page<XgsFlowOpinions>(pageNo, pageSize);
-		queryWrapper.eq("parent_id", positionApplyId);
+		
+		// 只有当positionApplyId不为空时才添加查询条件
+		if (positionApplyId != null && !positionApplyId.isEmpty()) {
+			queryWrapper.eq("parent_id", positionApplyId);
+		} else {
+			// 如果没有传递positionApplyId，返回空结果
+			log.warn("审批办理过程表-分页列表查询：positionApplyId参数为空，返回空结果");
+			return Result.OK(new Page<>(pageNo, pageSize));
+		}
+		
 		IPage<XgsFlowOpinions> pageList = xgsFlowOpinionsService.page(page, queryWrapper);
+		log.info("审批办理过程表-分页列表查询 查询结果数量: {}", pageList.getRecords().size());
 		return Result.OK(pageList);
 	}
 	
@@ -88,8 +99,8 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 //	@RequiresPermissions("resume:xgs_flow_opinions:add")
 	@PostMapping(value = "/add")
 	public Result<String> add(@RequestBody XgsFlowOpinions xgsFlowOpinions) {
-		xgsFlowOpinionsService.add(xgsFlowOpinions);
-		return Result.OK("添加成功！");
+		String resultMessage = xgsFlowOpinionsService.add(xgsFlowOpinions);
+		return Result.OK(resultMessage);
 	}
 	
 	/**

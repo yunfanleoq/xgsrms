@@ -61,6 +61,7 @@ public interface IXgsFlowOpinionsService extends IService<XgsFlowOpinions> {
     /**
      * 办理
      * @param xgsFlowOpinions
+     * @return 审批结果信息
      */
-    void add(XgsFlowOpinions xgsFlowOpinions);
+    String add(XgsFlowOpinions xgsFlowOpinions);
 }
