@@ -61,7 +61,7 @@
             </div>
           </div>
           <div class="search-container">
-            <input v-model="searchQuery" placeholder="请输入职位名称或部门名称" class="search-input" />
+            <input v-model="searchQuery" placeholder="请输入职位名称或部门名称" class="search-input" @keyup.enter="searchPositions" />
             <div class="search-buttons">
               <button @click="reset" class="search-button">重置</button>
               <button @click="searchPositions" class="search-button">搜索</button>
@@ -185,7 +185,7 @@
 <script setup lang="ts" name="positions">
   // 无需额外脚本内容
   import { ref, computed, onMounted, reactive, watch } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { useRouter, useRoute } from 'vue-router';
   import { usePositionStore } from '@/store/modules/positions';
   import {getDictItems, getPositionList, getDeptList, getJobById} from '@/api/xgsrms/home';
   import Line from "@/views/demo/charts/Line.vue";
@@ -201,6 +201,10 @@
   //   components: {PositionDetail}
   // }
   const positionStore = usePositionStore();
+
+  // 路由相关（需要在最前面定义，因为后面的函数会用到）
+  const router = useRouter();
+  const route = useRoute();
 
   const jobCategories = ref<any[]>([]);
   const showPositionDetail = ref(false);
@@ -278,8 +282,19 @@
 
   // 切换招聘公告页码 showPositionList
   const showPositionList = ref(true);
-  // 从router 获取id 参数
-  const router = useRouter();
+  
+  // 监听路由变化，当回到positions页面（没有子路由）时，显示职位列表
+  watch(
+    () => route.path,
+    (newPath) => {
+      // 当路由是 /home/positions（没有子路由）时，显示职位列表
+      if (newPath === '/home/positions') {
+        showPositionList.value = true;
+      }
+    },
+    { immediate: true }
+  );
+  
   watch(
     () => router.currentRoute.value.query.showPositionList,
     (newId) => {
@@ -465,7 +480,8 @@
   };
 
   // 监听查询条件变化，重置到第一页并重新获取数据
-  watch([selectedCategory, selectedDept, searchQuery], () => {
+  // 注意：searchQuery 不在这里监听，而是通过点击搜索按钮触发
+  watch([selectedCategory, selectedDept], () => {
     currentPage.value = 1;
     fetchPositions();
   });
@@ -474,6 +490,9 @@
     selectedDept.value = null;
     searchQuery.value = '';
     selectedCategory.value = null;
+    // 重置后重新加载数据
+    currentPage.value = 1;
+    fetchPositions();
   };
 
   // 根据状态返回对应的样式类
@@ -535,7 +554,9 @@
   // 搜索职位
   const searchPositions = () => {
     console.log('搜索职位：', searchQuery.value);
-    // watch会自动触发fetchPositions
+    // 重置到第一页并触发搜索
+    currentPage.value = 1;
+    fetchPositions();
   };
 </script>
 

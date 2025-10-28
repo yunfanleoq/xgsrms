@@ -323,7 +323,6 @@
     background-color: #fff;
     padding: 30px 40px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    max-width: 1100px;
     border-radius: 8px;
   }
 

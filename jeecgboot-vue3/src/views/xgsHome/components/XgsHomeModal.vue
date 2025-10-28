@@ -8,16 +8,18 @@
     import {ref, computed, unref} from 'vue';
     import {BasicModal, useModalInner} from '/@/components/Modal';
     import {BasicForm, useForm} from '/@/components/Form/index';
-    import {formSchema} from '../XgsHome.data';
+    import {getFormSchemaByType} from '../XgsHome.data';
     import {saveOrUpdate} from '../XgsHome.api';
     // Emits声明
     const emit = defineEmits(['register','success']);
     const isUpdate = ref(true);
     const isDetail = ref(false);
+    const currentNewsType = ref<string>('招聘公告');
+    
     //表单配置
-    const [registerForm, { setProps,resetFields, setFieldsValue, validate, scrollToField }] = useForm({
+    const [registerForm, { setProps,resetFields, setFieldsValue, validate, scrollToField, updateSchema }] = useForm({
         labelWidth: 150,
-        schemas: formSchema,
+        schemas: getFormSchemaByType('招聘公告'),
         showActionButtonGroup: false,
         baseColProps: {span: 24}
     });
@@ -28,17 +30,32 @@
         setModalProps({confirmLoading: false,showCancelBtn:!!data?.showFooter,showOkBtn:!!data?.showFooter});
         isUpdate.value = !!data?.isUpdate;
         isDetail.value = !!data?.showFooter;
+        
+        // 获取newsType并动态设置表单schemas
+        currentNewsType.value = data?.newsType || '招聘公告';
+        const schemas = getFormSchemaByType(currentNewsType.value);
+        setProps({ schemas });
+        
         if (unref(isUpdate)) {
             //表单赋值
             await setFieldsValue({
                 ...data.record,
             });
+        } else {
+            // 新增时设置newsType默认值
+            await setFieldsValue({
+                newsType: currentNewsType.value,
+            });
         }
+        
         // 隐藏底部时禁用整个表单
        setProps({ disabled: !data?.showFooter })
     });
     //设置标题
-    const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));
+    const title = computed(() => {
+        const typeText = currentNewsType.value === '招聘公告' ? '招聘公告' : '新闻';
+        return (!unref(isUpdate) ? `新增${typeText}` : !unref(isDetail) ? `${typeText}详情` : `编辑${typeText}`);
+    });
     //表单提交事件
     async function handleSubmit(v) {
         try {

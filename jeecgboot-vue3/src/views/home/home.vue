@@ -3,18 +3,30 @@
     <div class="main-content">
       <!-- 轮播图 -->
       <div class="carousel" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
-        <button class="carousel-button left" @click="showPrevImage">◀</button>
-        <img :src="currentImgSrc" alt="轮播图" />
-        <button class="carousel-button right" @click="showNextImage">▶</button>
-        <!-- 圆点导航 -->
-        <div class="carousel-dots">
-          <span
-            v-for="(image, index) in carouselImages"
-            :key="index"
-            :class="['dot', { active: index === currentIndex }]"
-            @click="currentIndex = index"
-          ></span>
+        <!-- Loading 状态 -->
+        <div v-if="isLoadingCarousel" class="carousel-loading">
+          <a-spin size="large" tip="加载中..." />
         </div>
+        <!-- 无图片占位 -->
+        <div v-else-if="!currentImgSrc" class="carousel-placeholder">
+          <PictureOutlined class="placeholder-icon" />
+          <p class="placeholder-text">暂无轮播图片</p>
+        </div>
+        <!-- 轮播图内容 -->
+        <template v-else>
+          <button class="carousel-button left" @click="showPrevImage">◀</button>
+          <img :src="currentImgSrc" alt="轮播图" @error="handleImageError" />
+          <button class="carousel-button right" @click="showNextImage">▶</button>
+          <!-- 圆点导航 -->
+          <div class="carousel-dots">
+            <span
+              v-for="(_image, index) in carouselImages"
+              :key="index"
+              :class="['dot', { active: index === currentIndex }]"
+              @click="currentIndex = index"
+            ></span>
+          </div>
+        </template>
       </div>
       <!-- 新闻区域 -->
       <div class="news">
@@ -58,8 +70,7 @@
   import { ref, onMounted, onBeforeUnmount, watchEffect } from 'vue';
   import { defHttp } from '@/utils/http/axios';
   import { router } from '@/router';
-  import { useGlobSetting } from '/@/hooks/setting';
-  import { BulbOutlined, FileTextOutlined, RightOutlined } from '@ant-design/icons-vue';
+  import { BulbOutlined, FileTextOutlined, RightOutlined, PictureOutlined } from '@ant-design/icons-vue';
 
   interface CarouselImage {
     image: string;
@@ -81,43 +92,51 @@
     createTime: string;
   }
 
-  const globSetting = useGlobSetting();
-  const apiUrl = globSetting.apiUrl;
   const listUrl = '/xgsJournalism/xgsJournalism/list';
   const imgListUrl = '/xgsHome/xgsHome/listForHome';
 
   const carouselImages = ref<CarouselImage[]>([]);
   const currentIndex = ref(0);
   const currentImgSrc = ref('');
+  const isLoadingCarousel = ref(true); // 轮播图加载状态
+  
   watchEffect(() => {
     currentImgSrc.value = carouselImages.value[currentIndex.value]?.image || '';
   });
 
   // 获取轮播图数据的函数
   const fetchCarouselImages = async () => {
+    isLoadingCarousel.value = true; // 开始加载
     try {
       const response = await defHttp.get({
         url: imgListUrl, // 替换为你的轮播图数据接口
-        params: { newsType: 'homeImages', pageNo: 1, pageSize: 5 },
+        params: { newsType: 'homeImages', pageNo: 1, pageSize: 10 },
       });
 
       if (response && response.records) {
-        carouselImages.value = response.records.map((item) => {
-          // 优先使用本地图片路径，如果没有则使用原始photograph
-          let imageUrl = item.photograph;
-          if (item.localImagePath) {
-            // 构建本地图片访问URL
-            imageUrl = `${apiUrl}/xgsHome/xgsHome/getCarouselImage?imagePath=${encodeURIComponent(item.localImagePath)}`;
-          }
-          return {
-            image: imageUrl, // 使用本地图片URL或原始URL
-            createTime: item.createTime,
-          };
-        }); // 截取前5张轮播图
+        carouselImages.value = response.records
+          .filter((item) => item.images) // 过滤掉没有images字段的数据
+          .map((item) => {
+            // 直接使用images字段（Base64编码）
+            let imageUrl = item.images;
+            
+            // 如果Base64数据不包含data URI前缀，则添加
+            if (imageUrl && !imageUrl.startsWith('data:image')) {
+              imageUrl = `data:image/jpeg;base64,${imageUrl}`;
+            }
+            
+            return {
+              image: imageUrl, // 使用Base64编码的图片数据
+              createTime: item.createTime,
+            };
+          })
+          .slice(0, 5); // 截取前5张轮播图
         console.log('处理后的 carouselImages', carouselImages.value);
       }
     } catch (error) {
       console.error('请求轮播图数据失败:', error);
+    } finally {
+      isLoadingCarousel.value = false; // 加载结束
     }
   };
 
@@ -150,6 +169,12 @@
 
   const showNextImage = () => {
     currentIndex.value = (currentIndex.value + 1) % carouselImages.value.length;
+  };
+
+  // 图片加载错误处理
+  const handleImageError = () => {
+    console.error('轮播图加载失败');
+    // 可以在这里设置一个默认的错误图片
   };
 
   // 新闻列表数据
@@ -277,6 +302,40 @@
     height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
+  }
+
+  /* 轮播图加载状态 */
+  .carousel-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  }
+
+  /* 轮播图占位符 */
+  .carousel-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  }
+
+  .placeholder-icon {
+    font-size: 80px;
+    color: #d9d9d9;
+    margin-bottom: 16px;
+  }
+
+  .placeholder-text {
+    font-size: 16px;
+    color: #999;
+    margin: 0;
   }
 
   /* 轮播图按钮 */

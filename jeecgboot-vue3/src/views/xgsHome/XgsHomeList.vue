@@ -1,5 +1,13 @@
 <template>
   <div>
+    <!-- Radio Button Group切换：招聘公告和新闻 -->
+    <div style="text-align: center; margin: 6px 0 16px 0">
+      <a-radio-group v-model:value="activeKey" @change="handleTabChange" button-style="solid" size="mini">
+        <a-radio-button value="homeImages">新闻图片</a-radio-button>
+        <a-radio-button value="rczp">招聘公告</a-radio-button>
+      </a-radio-group>
+    </div>
+
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->
@@ -34,17 +42,17 @@
       </template>
       <!--字段回显插槽-->
       <template #bodyCell="{ column, record, index, text }">
-        <template v-if="column.dataIndex === 'recruitAnnouncement'">
+        <template v-if="column.dataIndex === 'rczp'">
           <!--富文本件字段回显插槽-->
           <div v-html="text"></div>
         </template>
-        <template v-if="column.dataIndex === 'news'">
+        <template v-if="column.dataIndex === 'homeImages'">
           <!--富文本件字段回显插槽-->
           <div v-html="text"></div>
         </template>
-        <template v-if="column.dataIndex === 'photograph'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
+        <template v-if="column.dataIndex === 'localImagePath'">
+          <!--图片字段回显插槽-->
+          <img v-if="text" :src="getImageUrl(text)" style="max-width: 100px; max-height: 100px" />
         </template>
       </template>
     </BasicTable>
@@ -59,14 +67,24 @@
   import { useModal } from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsHomeModal from './components/XgsHomeModal.vue';
-  import { columns, searchFormSchema, superQuerySchema } from './XgsHome.data';
+  import { announcementColumns, newsColumns, searchFormSchema, superQuerySchema } from './XgsHome.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsHome.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
   import { defHttp } from '@/utils/http/axios';
+  
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
+  
+  // Tab激活key，默认招聘公告
+  const activeKey = ref<string>('homeImages');
+  
+  // 根据Tab动态获取列定义
+  const currentColumns = computed(() => {
+    return activeKey.value === 'homeImages' ? newsColumns : announcementColumns;
+  });
+  
   //注册model
   const [registerModal, { openModal }] = useModal();
   //注册table数据
@@ -74,7 +92,7 @@
     tableProps: {
       title: '首页',
       api: list,
-      columns,
+      columns: currentColumns,
       canResize: false,
       formConfig: {
         //labelWidth: 120,
@@ -89,6 +107,8 @@
         fixed: 'right',
       },
       beforeFetch: (params) => {
+        // 根据Tab设置newsType过滤条件
+        params.newsType = activeKey.value === 'announcement' ? 'rczp' : 'homeImages';
         return Object.assign(params, queryParam);
       },
     },
@@ -117,14 +137,36 @@
     });
     reload();
   }
+  
+  /**
+   * Tab切换事件
+   */
+  function handleTabChange() {
+    reload();
+  }
+  
   /**
    * 新增事件
    */
   function handleAdd() {
+    const newsType = activeKey.value === 'announcement' ? 'rczp' : 'homeImages';
     openModal(true, {
       isUpdate: false,
       showFooter: true,
+      newsType,
     });
+  }
+  
+  /**
+   * 获取图片URL
+   */
+  function getImageUrl(path: string) {
+    if (!path) return '';
+    // 如果是完整路径，使用后端接口获取
+    if (path.startsWith('/') || path.startsWith('D:') || path.startsWith('C:')) {
+      return `/jeecg-boot/xgsHome/xgsHome/getCarouselImage?imagePath=${encodeURIComponent(path)}`;
+    }
+    return path;
   }
 
   /**
@@ -152,6 +194,7 @@
       record,
       isUpdate: true,
       showFooter: true,
+      newsType: record.newsType || (activeKey.value === 'announcement' ? 'rczp' : 'homeImages'),
     });
   }
   /**
@@ -162,6 +205,7 @@
       record,
       isUpdate: true,
       showFooter: false,
+      newsType: record.newsType || (activeKey.value === 'announcement' ? 'rczp' : 'homeImages'),
     });
   }
   /**
