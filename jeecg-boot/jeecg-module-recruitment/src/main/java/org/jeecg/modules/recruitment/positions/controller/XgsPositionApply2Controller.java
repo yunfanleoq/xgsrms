@@ -1,4 +1,4 @@
-package org.jeecg.modules.demo.positions.controller;
+package org.jeecg.modules.recruitment.positions.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -13,10 +13,8 @@ import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.positions.entity.XgsPositions;
-import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
-import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;

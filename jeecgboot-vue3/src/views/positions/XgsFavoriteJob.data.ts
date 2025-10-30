@@ -1,8 +1,5 @@
 import {BasicColumn} from '/@/components/Table';
 import {FormSchema} from '/@/components/Table';
-import { rules} from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
    {
@@ -42,6 +39,15 @@ export const columns: BasicColumn[] = [
     title: '招聘人数',
     align:"center",
     dataIndex: 'positionCount'
+   },
+   {
+    title: '是否已申请',
+    align:"center",
+    dataIndex: 'hasApplied',
+    width: 100,
+    customRender: ({ text }) => {
+      return text === '1' ? '已申请' : '未申请';
+    },
    },
 ];
 //查询数据

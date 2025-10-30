@@ -158,7 +158,7 @@
     console.log("chakan+++++===", record)
      return [
        {
-         label: '查看',
+         label: '1查看',
          onClick: handleEdit.bind(null, record.positionId),
          auth: 'positions:xgs_favorite_job:edit'
        },

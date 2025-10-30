@@ -1,4 +1,4 @@
-package org.jeecg.modules.demo.positions.entity;
+package org.jeecg.modules.recruitment.positions.entity;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;

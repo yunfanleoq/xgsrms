@@ -1,8 +1,8 @@
-package org.jeecg.modules.demo.positions.service.impl;
+package org.jeecg.modules.recruitment.positions.service.impl;
 
-import org.jeecg.modules.demo.positions.entity.XgsFavoriteJob;
-import org.jeecg.modules.demo.positions.mapper.XgsFavoriteJobMapper;
-import org.jeecg.modules.demo.positions.service.IXgsFavoriteJobService;
+import org.jeecg.modules.recruitment.positions.entity.XgsFavoriteJob;
+import org.jeecg.modules.recruitment.positions.mapper.XgsFavoriteJobMapper;
+import org.jeecg.modules.recruitment.positions.service.IXgsFavoriteJobService;
 import org.springframework.stereotype.Service;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

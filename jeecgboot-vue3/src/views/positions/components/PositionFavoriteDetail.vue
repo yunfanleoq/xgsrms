@@ -1,389 +1,301 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModalWin" destroyOnClose :title="title" :width="896" :height="720">
-    <div class="job-detail">
-      <h2>职位详情</h2>
-      <div class="button-container">
-        <button @click="positionApply" class="apply-button">在线申请</button>
-        <div>
-          <button v-if="!isCollected" class="favorite-button" @click="markFavoriteJob">收藏职位</button>
-          <button v-else class="marked-favorite-button" @click="delFavoriteJob"> 已收藏</button>
-        </div>
+  <BasicModal v-bind="$attrs" @register="registerModalWin" destroyOnClose :title="title" :width="1000" :height="720">
+    <!-- 职位信息卡片 -->
+    <div v-if="job" class="job-info-card">
+      <!-- 基本信息区域 -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <IdcardOutlined class="title-icon" />
+          基本信息
+        </h2>
+        <a-row :gutter="[24, 16]">
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>职位名称</label>
+              <div class="info-value highlight">{{ job.positionName }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>所属部门</label>
+              <div class="info-value">{{ job.dept_dictText }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>招聘状态</label>
+              <div class="info-value">
+                <a-tag color="green">{{ job.status_dictText }}</a-tag>
+              </div>
+            </div>
+          </a-col>
+        </a-row>
       </div>
 
-      <div v-if="job" class="job-info">
-        <div class="job-field"> <strong>职位名称:</strong> {{ job.positionName }} </div>
-        <div class="job-field"> <strong>部门:</strong> {{ job.dept_dictText }} </div>
-        <div class="job-field"> <strong>研究方向:</strong> {{ job.researchDirection }} </div>
-        <div class="job-field">
-          <strong>专业要求:</strong>
-          <pre> {{ job.professional }} </pre>
-        </div>
-        <div class="job-field"> <strong>工作年限:</strong> {{ job.workYears }} </div>
-        <div class="job-field"> <strong>学历要求:</strong> {{ job.xlxw }} </div>
-        <div class="job-field"> <strong>招聘状态:</strong> {{ job.status_dictText }} </div>
-        <div class="job-field">
-          <strong>职责:</strong>
-          <pre>{{ job.duty }}</pre>
-        </div>
-        <div class="job-field"> <strong>联系人:</strong> {{ job.ktz_dictText }} </div>
-        <div class="job-field"> <strong>联系电话:</strong> {{ job.telphone || '无' }} </div>
-        <div class="job-field"> <strong>电子邮箱:</strong> {{ job.email }} </div>
-        <div class="job-field">
-          <strong>备注:</strong>
-          <pre> {{ job.memo || '无' }} </pre>
-        </div>
+      <a-divider />
+
+      <!-- 任职要求区域 -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <SolutionOutlined class="title-icon" />
+          任职要求
+        </h2>
+        <a-row :gutter="[24, 16]">
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>学历要求</label>
+              <div class="info-value">{{ job.xlxw }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>工作年限</label>
+              <div class="info-value">{{ job.workYears }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>研究方向</label>
+              <div class="info-value">{{ job.researchDirection }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24">
+            <div class="info-item">
+              <label>专业要求</label>
+              <div class="info-content">{{ job.professional }}</div>
+            </div>
+          </a-col>
+        </a-row>
       </div>
-      <div v-else>
-        <p>职位信息加载中...</p>
+
+      <a-divider />
+
+      <!-- 岗位职责区域 -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <ProfileOutlined class="title-icon" />
+          岗位职责
+        </h2>
+        <div class="info-content">{{ job.duty }}</div>
       </div>
+
+      <a-divider />
+
+      <!-- 联系方式区域 -->
+      <div class="info-section">
+        <h2 class="section-title">
+          <PhoneOutlined class="title-icon" />
+          联系方式
+        </h2>
+        <a-row :gutter="[24, 16]">
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>联系人</label>
+              <div class="info-value">{{ job.ktz_dictText }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>联系电话</label>
+              <div class="info-value">{{ job.telphone || '无' }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
+              <label>电子邮箱</label>
+              <div class="info-value">{{ job.email }}</div>
+            </div>
+          </a-col>
+        </a-row>
+      </div>
+
+      <!-- 备注区域（如果有） -->
+      <template v-if="job.memo">
+        <a-divider />
+        <div class="info-section">
+          <h2 class="section-title">
+            <InfoCircleOutlined class="title-icon" />
+            备注
+          </h2>
+          <div class="info-content">{{ job.memo }}</div>
+        </div>
+      </template>
     </div>
-<!--    <XgsPositionApplyModal @register="registerModal" :form-data="record" :formBpm="true" />-->
-    <XgsResumeBSHModal v-if="job.category === '博士后岗位'" @register="registerModal" :form-data="record" :formBpm="false" />
-    <XgsResumeFGModal v-else-if="job.category === '副高级以上岗位'" @register="registerModal" :form-data="record" :formBpm="true" />
-    <XgsResumeTJModal v-else-if="job.category === '人才派遣岗位'" @register="registerModal" :form-data="record" :formBpm="true" />
-    <XgsResumeBaseModal v-else @register="registerModal" :form-data="record" :formBpm="false" />
 
+    <!-- 加载状态 -->
+    <div v-else class="loading-container">
+      <a-spin size="large" />
+      <p class="loading-text">职位信息加载中...</p>
+    </div>
   </BasicModal>
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue';
-  import { useRoute } from 'vue-router';
+  import { ref } from 'vue';
   import { getJobById } from '@/api/xgsrms/home';
-  import { xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList } from '@/api/xgsrms/positions';
-  import { useUserStore } from '@/store/modules/user';
-  import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
-  import { useMessage } from '@/hooks/web/useMessage'; // 假设你有一个 API 来获取职位信息
-  // import XgsPositionApplyModal from '@/views/home/position/XgsPositionApplyModal.vue';
-  import XgsPositionApplyModal from '@/views/home/position/components/XgsResumeBaseModal.vue';
+  import {BasicModal, useModalInner} from '@/components/Modal';
+  // 引入图标
+  import {
+    IdcardOutlined,
+    SolutionOutlined,
+    ProfileOutlined,
+    PhoneOutlined,
+    InfoCircleOutlined,
+  } from '@ant-design/icons-vue';
 
-
-  import {saveOrUpdate} from '../XgsFavoriteJob.api';
-  import data from "emoji-mart-vue-fast/data/apple.json";
-  import XgsResumeBSHModal
-    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumeBSH/components/XgsResumeBSHModal.vue";
-  import XgsResumeFGModal
-    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumeFG/components/XgsResumeFGModal.vue";
-  import XgsResumeTJModal
-    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumeTJ/components/XgsResumeTJModal.vue";
-  import XgsResumeBaseModal
-    from "@/views/userPositions/xgsResumeFavoriteBase/xgsResumePT/components/XgsResumeBaseModal.vue";
-  import XgsUserPositionApplyModal
-    from "@/views/userPositions/userPositions/components/XgsUserPositionApplyModal.vue";
-  import JUpload from "@/components/Form/src/jeecg/components/JUpload/JUpload.vue";
-
-  import { message } from 'ant-design-vue';
-  import {BasicModal, useModal, useModalInner} from '@/components/Modal';
-
-  import {BasicForm, useForm} from '/@/components/Form/index';
-  import {formSchema} from '../XgsFavoriteJob.data';
-
-  const positionApplyStore = usePositionApplyStoreWithOut();
-
-  const route = useRoute();
-  // const jobId = route.params.id as string;
-  let jobId = '';
-  const job = ref({});
-
-  const userStore = useUserStore();
-
-  const createMessage = useMessage();
-
-  const isCollected = ref(false);
-  const favoriteJob = ref({});
-  const userId = ref('');
-
-  const record = ref({});
-
-  const fetchFavoriteJob = () => {
-    // 判断 userStore.userInfo 是否为 null，为null则赋值为 false，不为 null 则赋值 true
-    let curUserId = '';
-    if (userStore.userInfo === null) {
-      curUserId = '';
-    } else {
-      curUserId = userStore.userInfo.username;
-    }
-    xgsFavoriteJobList({ userId: curUserId, positionId: jobId }).then((res) => {
-      if (res.result.records.length > 0) {
-        isCollected.value = true;
-        favoriteJob.value = res.result.records[0];
-      }
-    });
-  };
-
-  onMounted(fetchFavoriteJob);
-
-  const markFavoriteJob = () => {
-    // 判断 userStore.userInfo 是否为 null，为null则提示用户登录，不为 null 则赋值 true
-    if (userStore.userInfo === null) {
-      // 使用 message.warning
-      message.warning('请先登录');
-      console.log('请先登录');
-      return;
-    }
-    // TODO: 实现收藏职位的功能
-    let params = {
-      // id: jobId,
-      userId: userStore.userInfo.username,
-      userName: userStore.userInfo.realname,
-      positionId: jobId,
-      positionName: job.value.positionName,
-      positionDept: job.value.dept_dictText,
-      positionKtz: job.value.ktz_dictText,
-      positionCount: job.value.personCount,
-    };
-
-    xgsFavoriteJobAdd(params).then((res) => {
-      if (res.code == 200) {
-        isCollected.value = true;
-        // 使用 message.warning
-        message.success(`收藏职位成功`);
-        console.log(`${res.message}`);
-      } else {
-        message.error(`${res.message}`);
-        console.log(`${res.message}`);
-      }
-    });
-  };
-
-  // 取消收藏职位的功能
-  const delFavoriteJob = () => {
-    // TODO: 实现取消收藏职位的功能
-    let params = {
-      id: favoriteJob.value.id,
-    };
-    console.log('delFavoriteJob', params);
-
-    xgsFavoriteJobDel(params).then((res) => {
-      if (res.code === 200) {
-        isCollected.value = false;
-
-        message.success(`取消收藏职位成功`);
-        console.log(`${res.message}`, isCollected.value);
-      } else {
-        message.error(`取消收藏职位失败`);
-        console.log(`${res.message}`);
-      }
-    });
-  };
-  const positionApplyFormData = ref({});
-  const XgsPositionApplyFormShow = ref(false);
-
-  const [registerModal, { openModal }] = useModal();
-  function positionApply() {
-    if (userStore.userInfo === null) {
-      // 使用 message.warning
-      message.warning('请先登录');
-      return;
-    } else {
-      let jobDefault = {
-        applyId: '',
-        disabled: false,
-        mark: '',
-        applyPositionDept: job.value.dept_dictText,
-        positionId: job.value.id,
-        applyPositionName: job.value.positionName,
-        applyPositionType: job.value.category,
-        resumeId: '',
-        resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
-        status: '申请中',
-        applyUserName: userStore.getUserInfo.realname,
-        email: '',
-        researchDirection: '',
-      };
-      let jobDetail = Object.assign({}, positionApplyStore.currPositionApply, jobDefault);
-      openModal(true, {
-        isUpdate: false,
-        showFooter: true,
-        jobDetail: jobDetail,
-      });
-    }
+  interface Job {
+    id: string;
+    positionName: string;
+    dept_dictText: string;
+    researchDirection: string;
+    professional: string;
+    workYears: string;
+    xlxw: string;
+    status_dictText: string;
+    duty: string;
+    ktz_dictText: string;
+    telphone?: string;
+    email: string;
+    memo?: string;
+    category: string;
+    personCount?: number;
   }
 
-  const positionApply2 = () => {
-    if (userStore.userInfo === null) {
-      // 使用 message.warning
-      message.warning('请先登录');
-      console.log('请先登录');
-      return;
-    } else {
-      XgsPositionApplyFormShow.value = true;
-      registerModal.value.addJob(positionApplyStore.currPositionApply);
-      // record.value = positionApplyStore.currPositionApply;
-      record.value.applyId = '';
-      record.value.disabled = false;
-      record.value.mark = '';
-      record.value.positionDept = job.value.dept_dictText;
-      record.value.positionId = job.value.id;
-      record.value.positionName = job.value.positionName;
-      record.value.positionType = job.value.category;
-      record.value.resumeId = '';
-      record.value.resumeName = userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName;
-      record.value.status = '申请中';
-      record.value.userName = userStore.getUserInfo.realname;
-    }
-  };
+  let jobId = '';
+  const job = ref<Job | null>(null);
+  let favoriteRecord: any = null; // 保存收藏记录，用于备用数据
 
   const fetchCurrApplyPosition = async () => {
     try {
-      let params = {
-        id: jobId,
-      };
-      console.log('id======================', jobId);
-      const response = await getJobById(params);
-      job.value = response.result.records[0];
-      // 将job存pinia
-      // 获取 Pinia store 实例
-
-      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
-      positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
-      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
+      if (!jobId) {
+        console.error('岗位ID为空');
+        return;
+      }
+      const response = await getJobById({ id: jobId });
+      console.log('岗位详情API响应:', response);
+      if (response && response.result) {
+        const jobData = response.result;
+        console.log('岗位数据:', jobData);
+        
+        // 如果 dept_dictText 为空或是ID，使用收藏记录中的部门名称
+        if (favoriteRecord && favoriteRecord.positionDept) {
+          if (!jobData.dept_dictText || /^\d+$/.test(jobData.dept_dictText)) {
+            jobData.dept_dictText = favoriteRecord.positionDept;
+          }
+        }
+        
+        // 处理招聘状态字段 - 可能是 status_dictText 或 status
+        if (!jobData.status_dictText) {
+          jobData.status_dictText = jobData.status || '招聘中';
+        }
+        
+        console.log('处理后的招聘状态:', jobData.status_dictText);
+        console.log('处理后的部门:', jobData.dept_dictText);
+        
+        job.value = jobData;
+      }
     } catch (error) {
       console.error('获取职位信息失败:', error);
     }
   };
 
-  //
-  const isReady = ref(false);
-
-  const favoriteJobId = ref('')
-  // Emits声明
-  const emit = defineEmits(['register','success']);
-  const isUpdate = ref(true);
-  const isDetail = ref(false);
-  //表单配置
-  const [registerForm, { setProps,resetFields, setFieldsValue, validate, scrollToField }] = useForm({
-    schemas: formSchema,
-    showActionButtonGroup: false,
-    baseColProps: {span: 12}
-  });
   //表单赋值
-  const [registerModalWin, {setModalProps, closeModal}] = useModalInner(async (data) => {
-    console.log('data', data)
-    //重置表单
-    await resetFields();
-    setModalProps({confirmLoading: false,showCancelBtn:!!data?.showFooter,showOkBtn:!!data?.showFooter});
-    // isUpdate.value = !!data?.isUpdate;
-    // isDetail.value = !!data?.showFooter;
-    isUpdate.value = true;
-    isDetail.value = true;
-    // 隐藏底部时禁用整个表单
-    setProps({ disabled: !data?.showFooter })
-    isReady.value = true;
-    jobId = data.record
-    favoriteJobId.value = data.record
-    fetchCurrApplyPosition();
+  const [registerModalWin, {setModalProps}] = useModalInner(async (data) => {
+    setModalProps({confirmLoading: false, showCancelBtn: false, showOkBtn: false});
+    // 保存收藏记录
+    favoriteRecord = data.record;
+    // 从收藏记录中获取岗位ID
+    jobId = data.record.positionId || data.record.id || data.record;
+    await fetchCurrApplyPosition();
   });
   //设置标题
-  // const title = computed(() => (!unref(isUpdate) ? '新增' : !unref(isDetail) ? '详情' : '编辑'));
-  const title = ref('岗位详情')
-  // onMounted(() => {
-  //   fetchCurrApplyPosition();
-  // });
+  const title = ref('岗位详情');
 </script>
 
-<style scoped>
-  .job-detail {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+<style scoped lang="less">
+  .job-info-card {
+    padding: 16px;
+    background: #fff;
   }
 
-  .job-info {
-    margin-top: 20px;
+  .info-section {
+    margin-bottom: 8px;
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 600;
+      color: #1890ff;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #e8f4ff;
+
+      .title-icon {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+    }
+
+    .info-item {
+      margin-bottom: 8px;
+
+      label {
+        display: block;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 6px;
+        font-weight: 500;
+      }
+
+      .info-value {
+        font-size: 15px;
+        color: #262626;
+        line-height: 1.6;
+        word-break: break-word;
+
+        &.highlight {
+          font-size: 18px;
+          font-weight: 600;
+          color: #1890ff;
+        }
+      }
+    }
+
+    .info-content {
+      font-size: 14px;
+      color: #595959;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background-color: #fafafa;
+      padding: 16px;
+      border-radius: 6px;
+      border: 1px solid #e8e8e8;
+    }
   }
 
-  .job-field {
-    margin-bottom: 10px;
-  }
-
-  .job-field strong {
-    display: inline-block;
-    width: 120px;
-    color: #333;
-  }
-
-  .job-field span {
-    color: #555;
-  }
-
-  h2 {
-    text-align: center;
-  }
-
-  h3 {
-    margin-top: 20px;
-  }
-
-  p {
-    margin: 10px 0;
-  }
-
-  strong {
-    font-weight: bold;
-  }
-
-  .button-container {
+  .loading-container {
     display: flex;
-    justify-content: space-between; /* 将按钮分别放置在左右两边 */
-    margin-top: 20px; /* 可选：添加顶部间距 */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+
+    .loading-text {
+      margin-top: 16px;
+      font-size: 14px;
+      color: #8c8c8c;
+    }
   }
 
-  .back-button,
-  .apply-button {
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #4a90e2;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  .favorite-button {
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #c47e6e;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
+  :deep(.ant-divider) {
+    margin: 24px 0;
   }
 
-  .marked-favorite-button {
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #b84035;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-
-  .back-button:hover,
-  .apply-button:hover {
-    background-color: #357ab8;
-  }
-
-  .favorite-button:hover {
-    background-color: #ba372a;
-  }
-  .marked-favorite-button:hover {
-    background-color: #52130d;
-  }
-
-  pre {
-    margin: 0;
-    white-space: pre-wrap; /* 保留换行符并自动换行 */
-    word-wrap: break-word; /* 防止长单词溢出 */
-    background-color: #f0f0f0;
-    padding: 8px;
+  :deep(.ant-tag) {
+    font-size: 14px;
+    padding: 4px 12px;
     border-radius: 4px;
-    border: 1px solid #ddd;
   }
 </style>

@@ -1,11 +1,9 @@
 package org.jeecg.modules.recruitment.xgsInviteToInterview.controller;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.shiro.SecurityUtils;
@@ -14,9 +12,8 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.modules.demo.positions.entity.XgsPositions;
-import org.jeecg.modules.demo.positions.service.IXgsPositionsService;
-import org.jeecg.modules.recruitment.xgsInterview.entity.XgsInterview;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionsService;
 import org.jeecg.modules.recruitment.xgsInterview.service.IXgsInterviewService;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.service.IXgsInviteToInterviewService;
@@ -31,7 +28,6 @@ import org.jeecg.modules.recruitment.xgsInviteToInterview.vo.XgsInviteToIntervie
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;

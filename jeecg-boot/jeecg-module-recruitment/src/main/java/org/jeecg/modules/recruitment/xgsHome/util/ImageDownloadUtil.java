@@ -129,6 +129,77 @@ public class ImageDownloadUtil {
     }
 
     /**
+     * 保存Base64编码的图片到本地
+     *
+     * @param base64Data Base64编码的图片数据（可以包含data:image/png;base64,前缀）
+     * @return 保存后的本地相对路径
+     */
+    public static String saveBase64Image(String base64Data) {
+        if (base64Data == null || base64Data.trim().isEmpty()) {
+            log.error("Base64图片数据为空");
+            return null;
+        }
+
+        FileOutputStream outputStream = null;
+
+        try {
+            // 创建保存目录
+            Path uploadDir = Paths.get(uploadPath);
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+                log.info("创建图片保存目录: {}", uploadDir.toAbsolutePath());
+            }
+
+            // 处理Base64数据，移除前缀
+            String base64String = base64Data;
+            String fileExtension = ".jpg"; // 默认扩展名
+            
+            if (base64Data.contains(",")) {
+                String[] parts = base64Data.split(",");
+                if (parts.length == 2) {
+                    // 提取MIME类型
+                    String mimeType = parts[0];
+                    if (mimeType.contains("image/png")) {
+                        fileExtension = ".png";
+                    } else if (mimeType.contains("image/jpeg") || mimeType.contains("image/jpg")) {
+                        fileExtension = ".jpg";
+                    } else if (mimeType.contains("image/gif")) {
+                        fileExtension = ".gif";
+                    } else if (mimeType.contains("image/webp")) {
+                        fileExtension = ".webp";
+                    }
+                    base64String = parts[1];
+                }
+            }
+
+            // 生成唯一文件名
+            String fileName = UUID.randomUUID().toString() + fileExtension;
+            String filePath = uploadPath + File.separator + fileName;
+            File localFile = new File(filePath);
+
+            // 解码Base64并保存
+            byte[] imageBytes = java.util.Base64.getDecoder().decode(base64String);
+            outputStream = new FileOutputStream(localFile);
+            outputStream.write(imageBytes);
+
+            log.info("Base64图片保存成功: {}", filePath);
+            return filePath;
+
+        } catch (Exception e) {
+            log.error("保存Base64图片时发生异常", e);
+            return null;
+        } finally {
+            try {
+                if (outputStream != null) {
+                    outputStream.close();
+                }
+            } catch (IOException e) {
+                log.error("关闭流时发生异常", e);
+            }
+        }
+    }
+
+    /**
      * 删除本地图片文件
      *
      * @param localPath 本地图片路径

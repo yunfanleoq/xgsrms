@@ -2,7 +2,7 @@ import { defHttp } from '/@/utils/http/axios';
 
 
 enum Api {
-   jobByIdUrl = '/positions/xgsPositions/list',
+   jobByIdUrl = '/positions/xgsPositions/queryById',
    deptListUrl = '/positions/xgsPositions/getDeptList',
    DictItemsUrl = '/sys/dict/getDictItems',
    positionListUrl = '/positions/xgsPositions/list',

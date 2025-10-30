@@ -1,6 +1,6 @@
-package org.jeecg.modules.demo.positions.service;
+package org.jeecg.modules.recruitment.positions.service;
 
-import org.jeecg.modules.demo.positions.entity.XgsPositions;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

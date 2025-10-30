@@ -48,6 +48,57 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
 
     private String apiUrl = "https://www.iie.ac.cn"; // 目标网站的 URL
 
+    /**
+     * 保存实体，自动处理图片
+     */
+    @Override
+    public boolean save(XgsHome entity) {
+        processImageFields(entity);
+        return super.save(entity);
+    }
+
+    /**
+     * 更新实体，自动处理图片
+     */
+    @Override
+    public boolean updateById(XgsHome entity) {
+        processImageFields(entity);
+        return super.updateById(entity);
+    }
+
+    /**
+     * 处理图片字段：如果images字段有Base64数据，自动保存为本地文件
+     */
+    private void processImageFields(XgsHome entity) {
+        if (entity == null) {
+            return;
+        }
+
+        // 如果images字段有Base64数据，保存为本地文件
+        if (StringUtils.isNotBlank(entity.getImages())) {
+            String base64Data = entity.getImages();
+            // 检查是否为Base64格式（包含data:image前缀或纯Base64字符串）
+            if (base64Data.startsWith("data:image") || isBase64(base64Data)) {
+                String localPath = ImageDownloadUtil.saveBase64Image(base64Data);
+                if (StringUtils.isNotBlank(localPath)) {
+                    entity.setLocalImagePath(localPath);
+                    logger.info("Base64图片已保存到本地: {}", localPath);
+                }
+            }
+        }
+    }
+
+    /**
+     * 简单判断字符串是否为Base64编码
+     */
+    private boolean isBase64(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return false;
+        }
+        // Base64字符串只包含A-Z, a-z, 0-9, +, /, =
+        return str.matches("^[A-Za-z0-9+/=]+$");
+    }
+
     private static String downloadImageAsBase64(String imgUrl) {
         try {
             URL url = new URL(imgUrl);
@@ -130,7 +181,7 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 homeData.setNewTitle(title);
                 homeData.setImgHref(imgUrl);
                 homeData.setNews("首页图片");
-                homeData.setNewsType("homeImages");
+                homeData.setNewsType("新闻"); // 设置为新闻类型
                 homeData.setRecruitAnnouncementTitle("");
                 homeData.setRecruitAnnouncement(" ");
                 homeData.setImages(imgData);

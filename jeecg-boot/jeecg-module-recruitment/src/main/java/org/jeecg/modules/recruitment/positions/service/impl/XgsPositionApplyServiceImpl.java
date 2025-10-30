@@ -1,4 +1,4 @@
-package org.jeecg.modules.demo.positions.service.impl;
+package org.jeecg.modules.recruitment.positions.service.impl;
 
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -6,10 +6,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
-import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
-import org.jeecg.modules.demo.positions.vo.XgsPositionApplyVO;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.mapper.XgsPositionApplyMapper;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
+import org.jeecg.modules.recruitment.positions.vo.XgsPositionApplyVO;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeEdus;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeHome;

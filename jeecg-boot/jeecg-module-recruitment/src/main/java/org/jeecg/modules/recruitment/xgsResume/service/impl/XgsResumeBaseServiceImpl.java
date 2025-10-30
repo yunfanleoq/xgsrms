@@ -2,8 +2,8 @@ package org.jeecg.modules.recruitment.xgsResume.service.impl;
 
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeWorks;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeEdus;

@@ -1,6 +1,7 @@
-package org.jeecg.modules.demo.positions.controller;
+package org.jeecg.modules.recruitment.positions.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -9,8 +10,10 @@ import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.config.shiro.IgnoreAuth;
-import org.jeecg.modules.demo.positions.entity.XgsFavoriteJob;
-import org.jeecg.modules.demo.positions.service.IXgsFavoriteJobService;
+import org.jeecg.modules.recruitment.positions.entity.XgsFavoriteJob;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.service.IXgsFavoriteJobService;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -40,6 +43,9 @@ public class XgsFavoriteJobController extends JeecgController<XgsFavoriteJob, IX
 	@Autowired
 	private IXgsFavoriteJobService xgsFavoriteJobService;
 
+	@Autowired
+	private IXgsPositionApplyService xgsPositionApplyService;
+
 
 	 /**
 	  * 分页列表查询 我的申请列表
@@ -64,6 +70,19 @@ public class XgsFavoriteJobController extends JeecgController<XgsFavoriteJob, IX
 		 QueryWrapper<XgsFavoriteJob> queryWrapper = QueryGenerator.initQueryWrapper(xgsFavoriteJob, req.getParameterMap());
 		 queryWrapper.eq("create_by", sysUser.getUsername());
 		 pageList = xgsFavoriteJobService.page(page, queryWrapper);
+		 
+		 // 为每个收藏的岗位检查是否已申请
+		 List<XgsFavoriteJob> records = pageList.getRecords();
+		 for (XgsFavoriteJob job : records) {
+			 // 检查用户是否已申请该岗位
+			 QueryWrapper<XgsPositionApply> applyQueryWrapper = new QueryWrapper<>();
+			 applyQueryWrapper.eq("create_by", sysUser.getUsername());
+			 applyQueryWrapper.eq("position_id", job.getPositionId());
+			 long count = xgsPositionApplyService.count(applyQueryWrapper);
+			 // 设置是否已申请标记（通过自定义字段）
+			 job.setHasApplied(count > 0 ? "1" : "0");
+		 }
+		 
 		 return Result.OK(pageList);
 	 }
 

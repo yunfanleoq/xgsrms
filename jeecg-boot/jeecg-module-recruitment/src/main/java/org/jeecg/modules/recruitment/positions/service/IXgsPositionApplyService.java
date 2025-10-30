@@ -1,9 +1,9 @@
-package org.jeecg.modules.demo.positions.service;
+package org.jeecg.modules.recruitment.positions.service;
 
 import org.jeecg.common.api.vo.Result;
-import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.jeecg.modules.demo.positions.vo.XgsPositionApplyVO;
+import org.jeecg.modules.recruitment.positions.vo.XgsPositionApplyVO;
 
 /**
  * @Description: 岗位申请

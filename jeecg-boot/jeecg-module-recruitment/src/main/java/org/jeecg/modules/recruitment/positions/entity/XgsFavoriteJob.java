@@ -1,4 +1,4 @@
-package org.jeecg.modules.demo.positions.entity;
+package org.jeecg.modules.recruitment.positions.entity;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableField;
 import org.jeecg.common.constant.ProvinceCityArea;
 import org.jeecg.common.util.SpringContextUtils;
 import lombok.Data;
@@ -85,4 +86,8 @@ public class XgsFavoriteJob implements Serializable {
 	@Excel(name = "招聘人数", width = 15)
     @ApiModelProperty(value = "招聘人数")
     private String positionCount;
+	/**是否已申请（非数据库字段，用于前端显示）*/
+	@TableField(exist = false)
+    @ApiModelProperty(value = "是否已申请（0-未申请，1-已申请）")
+    private String hasApplied;
 }

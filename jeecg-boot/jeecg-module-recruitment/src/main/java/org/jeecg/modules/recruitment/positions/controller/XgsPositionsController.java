@@ -1,7 +1,6 @@
-package org.jeecg.modules.demo.positions.controller;
+package org.jeecg.modules.recruitment.positions.controller;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,18 +8,17 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
-import org.jeecg.modules.demo.positions.entity.XgsFirstHtml;
-import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.positions.entity.XgsPositions;
-import org.jeecg.modules.demo.positions.service.IXgsPositionApplyService;
-import org.jeecg.modules.demo.positions.service.IXgsPositionsService;
+import org.jeecg.modules.recruitment.positions.entity.XgsFirstHtml;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionsService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -89,14 +87,23 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 								   HttpServletRequest req) {
         QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, req.getParameterMap());
         
-        // 添加关键词搜索：同时搜索职位名称和部门名称（保持原有搜索逻辑）
+        // 添加关键词搜索：同时搜索职位名称和部门名称
         String keyword = req.getParameter("keyword");
         if (keyword != null && !keyword.trim().isEmpty()) {
-            queryWrapper.and(wrapper -> wrapper
-                .like("position_name", keyword)
-                .or()
-                .like("dept_dict_text", keyword)
-            );
+            // 先根据关键词从部门表查询匹配的部门ID列表
+            List<SysDepartModel> allDepts = sysBaseAPI.getAllSysDepart();
+            List<String> matchedDeptIds = allDepts.stream()
+                .filter(dept -> dept.getDepartName() != null && dept.getDepartName().contains(keyword))
+                .map(SysDepartModel::getId)
+                .collect(Collectors.toList());
+            
+            // 构建查询条件：职位名称 LIKE keyword OR 部门ID IN (匹配的部门ID列表)
+            queryWrapper.and(wrapper -> {
+                wrapper.like("position_name", keyword);
+                if (!matchedDeptIds.isEmpty()) {
+                    wrapper.or().in("dept", matchedDeptIds);
+                }
+            });
         }
         
         // 过滤掉已删除的记录

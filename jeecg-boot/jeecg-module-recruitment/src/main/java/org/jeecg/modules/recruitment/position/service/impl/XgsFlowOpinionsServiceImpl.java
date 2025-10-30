@@ -1,7 +1,7 @@
 package org.jeecg.modules.recruitment.position.service.impl;
 
-import org.jeecg.modules.demo.positions.entity.XgsPositionApply;
-import org.jeecg.modules.demo.positions.mapper.XgsPositionApplyMapper;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.mapper.XgsPositionApplyMapper;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.mapper.XgsFlowOpinionsMapper;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
