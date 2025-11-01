@@ -1,9 +1,6 @@
 package org.jeecg.modules.recruitment.positions.controller;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -321,13 +318,24 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	@ApiOperation(value="招聘岗位列表-通过id查询", notes="招聘岗位列表-通过id查询")
 	@GetMapping(value = "/queryById")
 	public Result<XgsPositions> queryById(@RequestParam(name="id",required=true) String id) {
-		log.info("queryById查询参数:" + id);
 		XgsPositions xgsPositions = xgsPositionsService.getById(id);
 		if(xgsPositions==null || "Y".equals(xgsPositions.getDeleted())) {
 			return Result.error("未找到对应数据");
 		}
 		return Result.OK(xgsPositions);
 	}
+
+	 @ApiOperation(value="招聘岗位列表-通过id查询", notes="招聘岗位列表-通过id查询")
+	 @GetMapping(value = "/getPageById")
+	 public Result<IPage<XgsPositions>> getPageById(@RequestParam(name="id",required=true) String id) {
+		 IPage<XgsPositions> page =  new Page<>(1,1);
+		 XgsPositions xgsPositions = xgsPositionsService.getById(id);
+		 if(xgsPositions==null || "Y".equals(xgsPositions.getDeleted())) {
+			 return Result.error("未找到对应数据");
+		 }
+		 page.setRecords(Collections.singletonList(xgsPositions));
+		 return Result.OK(page);
+	 }
 
     /**
     * 导出excel

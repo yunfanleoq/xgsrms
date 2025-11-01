@@ -44,7 +44,7 @@
         <div class="info-section">
           <h2 class="section-title">
             <IdcardOutlined class="title-icon" />
-            基本信息
+            基本信息（{{ job.category }}）
           </h2>
           <a-row :gutter="[24, 16]">
             <a-col :xs="24" :sm="12" :md="8">
@@ -63,7 +63,7 @@
               <div class="info-item">
                 <label>招聘状态</label>
                 <div class="info-value">
-                  <a-tag color="green">{{ job.status_dictText }}</a-tag>
+                  <a-tag color="green">{{ job.status }}</a-tag>
                 </div>
               </div>
             </a-col>
@@ -174,7 +174,7 @@
 <script setup lang="ts" name="PositionDetail">
   import { ref, onMounted } from 'vue';
   import { useRoute, useRouter } from 'vue-router';
-  import { getJobById } from '@/api/xgsrms/home';
+  import { getJobById, getPageById } from '@/api/xgsrms/home';
   import { xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList } from '@/api/xgsrms/positions';
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
@@ -201,11 +201,13 @@
   interface Job {
     id: string;
     positionName: string;
+    dept: string;
     dept_dictText: string;
     researchDirection: string;
     professional: string;
     workYears: string;
     xlxw: string;
+    status: string;
     status_dictText: string;
     duty: string;
     ktz_dictText: string;
@@ -213,6 +215,7 @@
     email: string;
     memo?: string;
     category: string;
+    category_dictText: string;
     personCount?: number;
   }
 
@@ -373,10 +376,10 @@
 
   const fetchCurrApplyPosition = async () => {
     try {
-      const response = await getJobById({ id: jobId });
-      if (response.success && response.result.records.length > 0) {
+      const response = await getPageById({ id: jobId });
+      if (response.success && response.result) {
         job.value = response.result.records[0];
-        positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(job.value));
+        positionApplyStore.currPositionApply = job.value as any;
       }
     } catch (error) {
       console.error('获取职位信息失败:', error);

@@ -147,7 +147,7 @@
       resumeId: formData.value.resumeId,
       dataId: formData.value.resumeId,
       disabled: formData.value.disabled,
-      positionType: formData.value.positionType,
+      positionType: formData.value.positionType || '普通岗位', // 传递岗位类型，默认为普通岗位
       positionName: formData.value.positionName,
       positionDept: formData.value.positionDept,
       positionId: formData.value.positionId,

@@ -111,20 +111,18 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       path: 'positions',
       name: 'homePositions',
       component: () => import('/@/views/home/positions.vue'),
-      children: [
-        {
-          path: 'positionDetail/:id',
-          name: 'positionDetail',
-          component: () => import('/@/views/home/positionDetail.vue'),
-          meta: {
-            title: '招聘岗位明细',
-            ignoreAuth: true,
-            ignoreMenu: true,
-          },
-        },
-      ],
       meta: {
         title: '招聘岗位',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'positions/positionDetail/:id',
+      name: 'positionDetail',
+      component: () => import('/@/views/home/positionDetail.vue'),
+      meta: {
+        title: '招聘岗位明细',
         ignoreAuth: true,
         ignoreMenu: true,
       },

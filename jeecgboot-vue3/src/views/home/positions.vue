@@ -175,7 +175,7 @@
           </div>
         </div>
       </div>
-      <div>
+      <div v-if="!showPositionList">
         <router-view></router-view>
       </div>
     </main>
@@ -290,6 +290,9 @@
       // 当路由是 /home/positions（没有子路由）时，显示职位列表
       if (newPath === '/home/positions') {
         showPositionList.value = true;
+      } else if (newPath.includes('/home/positions/positionDetail/')) {
+        // 当路由是详情页时，隐藏职位列表
+        showPositionList.value = false;
       }
     },
     { immediate: true }
@@ -304,8 +307,7 @@
     }
   );
 
-  const goToPositionDetail = async (positionId: number) => {
-    console.log('Navigating to positionDetail with id:', positionId);
+  const goToPositionDetail = async (positionId: string | number) => {
     selectedPosition.value = {id: positionId};
     try {
       let params = {
@@ -313,17 +315,14 @@
       };
       const response = await getJobById(params);
       // 将job存pinia
-      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
-      positionApplyStore.currPositionApply = JSON.parse(JSON.stringify(response.result.records[0]));
-      console.log('>>>>>>fetchCurrApplyPosition', positionApplyStore.currPositionApply);
+      positionApplyStore.currPositionApply = response.result;
     } catch (error) {
       console.error('获取职位信息失败:', error);
     }
     // 显示职位详情组件，并传递职位信息
     showPositionDetail.value = false;
-    router.push({ name: 'positionDetail', params: { id: positionId } });
+    router.push({ name: 'positionDetail', params: { id: String(positionId) } });
     showPositionList.value = false;
-    console.log('Navigation completed.');
   };
 
   const filterJobCategory = (category) => {
@@ -469,12 +468,9 @@
 
     getPositionList(params).then((res) => {
       if (res.success) {
-        console.log('fetchPositions>>>>>getPositionList>>>>>>', res);
         let list = res.result;
         positions.value = list.records;
         totalCount.value = list.total; // 设置总记录数
-        console.log('totalCount:', totalCount.value, 'positions length:', positions.value.length);
-        console.log('<<<<<<<<<<<<<<<<<<<<<<fetchPositions>>>>>END>>>>>>positions', positions);
       }
     });
   };
