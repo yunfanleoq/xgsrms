@@ -128,9 +128,13 @@ public class XgsResumeExportVO {
         bookmarkMap.put("档案所在单位", nvl(personFilesUnit));
         bookmarkMap.put("现行政职务", nvl(adminPosition));
         bookmarkMap.put("任职时间", formatDate(adminPositionDate));
+        bookmarkMap.put("任职时间年", formatDate(adminPositionDate, "yyyy"));
+        bookmarkMap.put("任职时间月", formatDate(adminPositionDate, "MM"));
         bookmarkMap.put("现岗位", nvl(professionLevel));
         bookmarkMap.put("聘任时间", formatDate(professionLevelDate));
-        
+        bookmarkMap.put("聘任时间年", formatDate(professionLevelDate, "yyyy"));
+        bookmarkMap.put("聘任时间月", formatDate(professionLevelDate, "MM"));
+
         // 联系方式
         bookmarkMap.put("与本所职工关系", nvl(xgsRelation));
         bookmarkMap.put("联系电话", nvl(mobile));
@@ -212,5 +216,16 @@ public class XgsResumeExportVO {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         return sdf.format(date);
     }
+    /**
+     * 格式化日期
+     */
+    private String formatDate(Date date, String format) {
+        if (date == null) {
+            return "";
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        return sdf.format(date);
+    }
+
 }
 

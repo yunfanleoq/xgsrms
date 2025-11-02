@@ -96,8 +96,8 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
             log.info("成功加载Word文档，开始替换内容");
             
             // 8. 替换文档中的所有占位符 {{变量名}}
-            int replacedCount = replacePlaceholders(document, dataMap);
-            log.info("成功替换{}个占位符", replacedCount);
+//            int replacedCount = replacePlaceholders(document, dataMap);
+//            log.info("成功替换{}个占位符", replacedCount);
             
             // 9. 替换Word内置书签
             int bookmarkReplacedCount = replaceBookmarks(document, dataMap);
@@ -151,16 +151,19 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
         if (positionType == null) {
             throw new RuntimeException("岗位类型为空");
         }
-        
+//        const isPT = computed(() => positionType.value === '普通岗位');
+//const isBSH = computed(() => positionType.value === '博士后岗位');
+//const isFG = computed(() => positionType.value === '副高级以上岗位');
+//const isTJ = computed(() => positionType.value === '人才派遣岗位');
         // 模板文件必须是Office 2007+格式（.docx）
         switch (positionType) {
             case "普通岗位":
                 return "export_template_PT.docx";
             case "博士后岗位":
                 return "export_template_BSH.docx";
-            case "副高级岗位":
+            case "副高级以上岗位":
                 return "export_template_FG.docx";
-            case "专家推荐岗位":
+            case "人才派遣岗位":
                 return "export_template_TJ.docx";
             default:
                 throw new RuntimeException("不支持的岗位类型: " + positionType + "。支持的类型：普通岗位、博士后岗位、副高级岗位、专家推荐岗位");
@@ -355,8 +358,8 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
                 
                 String replacementText = value.toString();
                 
-                // 使用简化的方式替换书签内容
-                boolean replaced = replaceBookmarkContentSimple(ctp, bookmark, replacementText);
+                // 使用改进的方式替换书签内容，确保只显示替换后的内容
+                boolean replaced = replaceBookmarkContentCompletely(ctp, bookmark, replacementText);
                 if (replaced) {
                     replacedCount++;
                     log.debug("替换书签: [{}] -> [{}]", bookmarkName, replacementText);
@@ -435,6 +438,121 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
             return replaced;
         } catch (Exception e) {
             log.error("替换书签内容失败: {}", bookmark.getName(), e);
+            return false;
+        }
+    }
+    
+    /**
+     * 完全替换书签内容，移除书签标记，只保留替换后的文本
+     * 
+     * @param ctp 段落的CTP对象
+     * @param bookmark 书签对象
+     * @param replacementText 替换文本
+     * @return 是否替换成功
+     */
+    private boolean replaceBookmarkContentCompletely(CTP ctp, CTBookmark bookmark, String replacementText) {
+        try {
+            long bookmarkId = bookmark.getId().longValue();
+            String bookmarkName = bookmark.getName();
+            
+            // 第一步：找到书签结束标记的位置，以便在其后找到正确的插入位置
+            CTMarkupRange bookmarkEnd = null;
+            CTMarkupRange[] bookmarkEnds = ctp.getBookmarkEndArray();
+            for (CTMarkupRange end : bookmarkEnds) {
+                if (end.getId().longValue() == bookmarkId) {
+                    bookmarkEnd = end;
+                    break;
+                }
+            }
+            
+            if (bookmarkEnd == null) {
+                log.warn("未找到书签 [{}] 的结束标记", bookmarkName);
+                return false;
+            }
+            
+            // 第二步：找到书签范围内的所有Run，并记录第一个Run的位置
+            java.util.List<Integer> runsToRemove = new java.util.ArrayList<>();
+            boolean inBookmark = false;
+            int insertPosition = -1;
+            
+            for (int i = 0; i < ctp.sizeOfRArray(); i++) {
+                // 检查这个位置是否是书签开始
+                CTBookmark[] bookmarksAtPosition = ctp.getBookmarkStartArray();
+                for (CTBookmark bm : bookmarksAtPosition) {
+                    if (bm.getId().longValue() == bookmarkId) {
+                        inBookmark = true;
+                        insertPosition = i; // 记录插入位置
+                        break;
+                    }
+                }
+                
+                // 如果在书签范围内，记录要删除的Run
+                if (inBookmark) {
+                    runsToRemove.add(i);
+                }
+                
+                // 检查是否到达书签结束位置
+                CTMarkupRange[] endsAtPosition = ctp.getBookmarkEndArray();
+                for (CTMarkupRange end : endsAtPosition) {
+                    if (end.getId().longValue() == bookmarkId) {
+                        inBookmark = false;
+                        break;
+                    }
+                }
+                
+                if (!inBookmark && insertPosition >= 0) {
+                    break; // 已经处理完书签范围
+                }
+            }
+            
+            // 第三步：先删除书签范围内的所有Run（从后往前删除）
+            for (int i = runsToRemove.size() - 1; i >= 0; i--) {
+                int runIndex = runsToRemove.get(i);
+                // 需要调整索引，因为前面的删除会影响后面的索引
+                int adjustedIndex = runIndex - (runsToRemove.size() - 1 - i);
+                if (adjustedIndex >= 0 && adjustedIndex < ctp.sizeOfRArray()) {
+                    ctp.removeR(adjustedIndex);
+                }
+            }
+            
+            // 第四步：在原书签位置插入新的Run
+            if (insertPosition >= 0) {
+                // 调整插入位置（因为删除了Runs）
+                int adjustedInsertPosition = Math.min(insertPosition, ctp.sizeOfRArray());
+                
+                CTR newRun = ctp.insertNewR(adjustedInsertPosition);
+                CTText newText = newRun.addNewT();
+                newText.setStringValue(replacementText);
+                
+                log.debug("在位置 {} 插入替换文本: [{}] = [{}]", adjustedInsertPosition, bookmarkName, replacementText);
+            }
+            
+            // 第五步：删除书签标记（开始和结束）
+            // 删除书签开始标记
+            CTBookmark[] bookmarksStart = ctp.getBookmarkStartArray();
+            for (int i = 0; i < bookmarksStart.length; i++) {
+                if (bookmarksStart[i].getId().longValue() == bookmarkId) {
+                    ctp.removeBookmarkStart(i);
+                    log.debug("删除书签开始标记: [{}]", bookmarkName);
+                    break;
+                }
+            }
+            
+            // 删除书签结束标记
+            CTMarkupRange[] bookmarksEnd = ctp.getBookmarkEndArray();
+            for (int i = 0; i < bookmarksEnd.length; i++) {
+                if (bookmarksEnd[i].getId().longValue() == bookmarkId) {
+                    ctp.removeBookmarkEnd(i);
+                    log.debug("删除书签结束标记: [{}]", bookmarkName);
+                    break;
+                }
+            }
+            
+            log.info("成功替换书签 [{}] 为 [{}]", bookmarkName, replacementText);
+            return true;
+            
+        } catch (Exception e) {
+            log.error("完全替换书签内容失败: {}", bookmark.getName(), e);
             return false;
         }
     }
