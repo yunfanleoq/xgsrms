@@ -2,56 +2,72 @@
   <a-spin :spinning="confirmLoading">
     <JFormContainer :disabled="disabled">
       <template #detail>
-        <a-form ref="formRef" class="antd-modal-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="XgsPositionApplyForm">
-          <a-row>
-            <a-col :span="12">
-              <a-form-item label="申请人" v-bind="validateInfos.userName" id="XgsPositionApplyForm-userName" name="userName">
-                <a-input v-model:value="formData.userName" placeholder=""  allow-clear disabled></a-input>
-              </a-form-item>
-            </a-col>
-
-            <a-col :span="12">
-              <a-form-item label="岗位名称" v-bind="validateInfos.positionName" id="XgsPositionApplyForm-positionName" name="positionName">
-                <a-input v-model:value="formData.positionName" placeholder=""  allow-clear disabled></a-input>
-              </a-form-item>
-            </a-col>
-            <a-col :span="12">
-              <a-form-item label="岗位部门" v-bind="validateInfos.positionDept" id="XgsPositionApplyForm-positionDept" name="positionDept">
-                <a-input v-model:value="formData.positionDept" placeholder=""  allow-clear disabled></a-input>
-              </a-form-item>
-            </a-col>
-            <a-col :span="12">
-              <a-form-item label="岗位类型" v-bind="validateInfos.positionType" id="XgsPositionApplyForm-positionType" name="positionType">
-                <a-input v-model:value="formData.positionType" placeholder=""  allow-clear disabled></a-input>
-              </a-form-item>
-            </a-col>
-            <a-col :span="12">
-              <a-form-item label="上传PDF简历" id="XgsPositionApplyForm-filePath" name="filePath">
-                <div style="display: flex; align-items: flex-start; gap: 10px;">
-                  <div style="flex: 1; min-width: 0;">
-                    <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" accept=".pdf" />
-                  </div>
-                  <div style="flex-shrink: 0;">
-                    <a-button type="primary" :disabled="!formData.filePath" @click="analysisResume">自动填充</a-button>
-                  </div>
+        <a-row :gutter="20">
+          <a-col :span="12">
+            <!-- 优化后的只读信息展示区域 -->
+            <div class="position-info-card">
+              <div class="info-header">
+                <span class="info-header-title">申请岗位信息</span>
+              </div>
+              <div class="info-content">
+                <div class="info-item">
+                  <span class="info-label">申请人：</span>
+                  <span class="info-value">{{ formData.userName || '-' }}</span>
                 </div>
-              </a-form-item>
-            </a-col>
-            <a-col :span="12" v-show="false">
-              <a-form-item label="申请状态" v-bind="validateInfos.status" id="XgsPositionApplyForm-status" name="status">
-                <a-input v-model:value="formData.status" placeholder="" style="width: 100%" disabled />
-              </a-form-item>
-            </a-col>
+                <div class="info-item">
+                  <span class="info-label">岗位名称：</span>
+                  <span class="info-value highlight">{{ formData.positionName || '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">岗位部门：</span>
+                  <span class="info-value">{{ formData.positionDept || '-' }}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">岗位类型：</span>
+                  <span class="info-value">{{ formData.positionType || '-' }}</span>
+                </div>
+              </div>
+            </div>
 
-            <a-col :span="12" v-show="false">
-              <a-form-item label="简历名称" v-bind="validateInfos.resumeName" id="XgsPositionApplyForm-resumeName" name="resumeName">
-                <a-input v-model:value="formData.resumeName" placeholder="请输入简历名称"  allow-clear ></a-input>
-              </a-form-item>
-            </a-col>
+          </a-col>
+          <a-col :span="12">
 
-            <a-col :span="12" v-show="false">
-              <a-form-item label="备注" v-bind="validateInfos.mark" id="XgsPositionApplyForm-mark" name="mark" :label-col="{ span: 2 }" :wrapper-col="{ span: 22 }">
-                <a-textarea v-model:value="formData.mark" placeholder="" allow-clear :auto-size="{ minRows: 1, maxRows: 10 }" style="width: 93%;" />
+            <!-- 文件上传区域 -->
+            <div class="upload-section-card">
+              <div class="upload-header">
+                <span class="upload-header-title">上传简历文件</span>
+                <span class="upload-hint">支持 PDF 格式，上传后可自动填充表单信息</span>
+              </div>
+              <div class="upload-content">
+                <div class="upload-area">
+                  <j-upload v-model:value="formData.filePath" :max-count="1" :multiple="false" accept=".pdf" />
+                </div>
+                <div class="upload-action">
+                  <a-button 
+                    type="primary" 
+                    size="large"
+                    :disabled="!formData.filePath" 
+                    @click="analysisResume"
+                    class="auto-fill-btn"
+                  >
+                    <template #icon>
+                      <span class="btn-icon">✨</span>
+                    </template>
+                    自动填充表单
+                  </a-button>
+                </div>
+              </div>
+            </div>
+            
+          </a-col>
+        </a-row>
+
+        <!-- 隐藏的表单字段 -->
+        <a-form ref="formRef" class="antd-modal-form hidden-form" :labelCol="labelCol" :wrapperCol="wrapperCol" name="XgsPositionApplyForm" style="display: none;">
+          <a-row>
+            <a-col :span="24">
+              <a-form-item label="上传PDF简历" id="XgsPositionApplyForm-filePath" name="filePath">
+                <a-input v-model:value="formData.filePath" />
               </a-form-item>
             </a-col>
           </a-row>
@@ -62,9 +78,7 @@
           <!-- 使用我们重构的表单组件 -->
           <xgsApplyForm 
             ref="resumeFormRef"
-            :formData="resumeFormData"
             :formDisabled="disabled"
-            :formBpm="formBpm"
             :hideSubmitBtn="hideSubmitBtn"
           />
         </div>
@@ -85,24 +99,12 @@
   import JFormContainer from '/@/components/Form/src/container/JFormContainer.vue';
   import JUpload from '/@/components/Form/src/jeecg/components/JUpload/JUpload.vue';
 
+  import { useUserStore } from '/@/store/modules/user';
+  const userStore = useUserStore();
+
   const props = defineProps({
     formDisabled: { type: Boolean, default: false },
     hideSubmitBtn: { type: Boolean, default: false },
-    formData: { type: Object, default: () => ({
-        id: '',
-        userName: '',
-        positionName: '',
-        positionDept: '',
-        positionType: '',
-        status: '',
-        resumeName: '',
-        mark: '',
-        resumeId: '',
-        positionId: '',
-        applyId: '',
-        disabled: false,
-        filePath: '',
-      })},
     formBpm: { type: Boolean, default: true }
   });
 
@@ -110,6 +112,8 @@
   const formRef = ref();
   const useForm = Form.useForm;
   const emit = defineEmits(['register', 'ok']);
+
+  // 岗位信息
   const formData = ref({
     id: '',
     userName: '',
@@ -125,7 +129,8 @@
     disabled: false,
     filePath: '', // PDF简历文件路径
   })
-  
+
+  // 个人简历填报信息
   const resumeFormData = ref({
     userName: '',
     resumeName: '',
@@ -139,22 +144,6 @@
     applyDept: '',
     applyPosition: '',
   })
-
-  const initFormData = async () => {
-    resumeFormData.value = {
-      userName: formData.value.userName,
-      resumeName: formData.value.resumeName,
-      resumeId: formData.value.resumeId,
-      dataId: formData.value.resumeId,
-      disabled: formData.value.disabled,
-      positionType: formData.value.positionType || '普通岗位', // 传递岗位类型，默认为普通岗位
-      positionName: formData.value.positionName,
-      positionDept: formData.value.positionDept,
-      positionId: formData.value.positionId,
-      applyDept: formData.value.positionDept,
-      applyPosition: formData.value.positionName,
-    }
-  }
   
   // 分析简历
   function analysisResume() {
@@ -192,10 +181,6 @@
     }
   }
   
-  onMounted(() => {
-    initFormData();
-  })
-
   const { createMessage } = useMessage();
   const labelCol = ref<any>({ xs: { span: 24 }, sm: { span: 5 } });
   const wrapperCol = ref<any>({ xs: { span: 24 }, sm: { span: 16 } });
@@ -217,61 +202,59 @@
     return props.formDisabled;
   });
 
-  //页面完全加载完成并显示一秒后初始化数据
-  nextTick(() => {
-    setTimeout(() => {
-      console.log('Props formData:', props.formData);
-      formData.value.positionType = props.formData.category || '普通岗位';
-      formData.value.resumeId = props.formData.resumeId || '';
-      formData.value.positionId = props.formData.positionId || '';
-      formData.value.applyId = props.formData.applyId || '';
-      formData.value.userName = props.formData.userName || '';
-      formData.value.positionName = props.formData.positionName || '';
-      formData.value.positionDept = props.formData.positionDept || '';
-      formData.value.status = props.formData.status || '';
-      formData.value.resumeName = props.formData.resumeName || '';
-      formData.value.mark = props.formData.mark || '';
-      
-      // 同步数据到简历表单
-      initFormData();
-    }, 1000);
-  });
-  
+
+  // 初始化数据
+  const initFormData = async () => {
+    resumeFormData.value = {
+      userName: formData.value.userName,
+      resumeName: formData.value.resumeName,
+      resumeId: formData.value.resumeId,
+      dataId: formData.value.resumeId,
+      disabled: formData.value.disabled,
+      positionType: formData.value.positionType || '普通岗位', // 传递岗位类型，默认为普通岗位
+      positionName: formData.value.positionName,
+      positionDept: formData.value.positionDept,
+      positionId: formData.value.positionId,
+      applyDept: formData.value.positionDept,
+      applyPosition: formData.value.positionName,
+    }
+  }
+
   /**
    * 新增
    */
-  function add(record) {
-    console.log('添加记录:', record);
-    edit(record);
+  function add(positionInfo) {
+    console.log('添加记录:', positionInfo);
+    positionInfo.realname = userStore.getUserInfo.realname;
+    positionInfo.username = userStore.getUserInfo.username;
+    let positionApplyInfo = {};
+    positionApplyInfo['filePath'] = '';
+    positionApplyInfo['positionDept'] = positionInfo.positionDept;
+    positionApplyInfo['positionName'] = positionInfo.positionName;
+    positionApplyInfo['positionType'] = positionInfo.positionType;
+    positionApplyInfo['resumeName'] = positionInfo.realname + positionInfo.username + '_' + positionInfo.positionName;
+    positionApplyInfo['userName'] = positionInfo.realname;
+    positionApplyInfo['resumeId'] = '';
+    positionApplyInfo['positionId'] = positionInfo.id || positionInfo.positionId;
+    nextTick(() => {
+      resetFields();
+      // 赋值到表单数据
+      Object.assign(formData.value, positionApplyInfo);
+      // 同步数据到简历表单
+      initFormData();
+      resumeFormRef.value.createResumeBaseByPositionInfo(resumeFormData.value);
+    });
   }
 
-  import { useUserStore } from '/@/store/modules/user';
-  const userStore = useUserStore();
   /**
    * 编辑
    */
-  function edit(record) {
-    console.log('编辑记录:', record);
+  function edit(positionId: string) {
+    console.log('编辑记录:', positionId);
     nextTick(() => {
       resetFields();
-      let tmpData = {};
-      record.realname = userStore.getUserInfo.realname;
-      record.username = userStore.getUserInfo.username;
-
-      tmpData['filePath'] = '';
-      tmpData['positionDept'] = record.positionDept;
-      tmpData['positionName'] = record.positionName;
-      tmpData['positionType'] = record.positionType;
-      tmpData['resumeName'] = record.realname + record.username + '_' + record.positionName;
-      tmpData['userName'] = record.realname;
-      tmpData['resumeId'] = '';
-      tmpData['positionId'] = record.id || record.positionId;
-
       // 赋值到表单数据
-      Object.assign(formData.value, tmpData);
-      
-      // 同步数据到简历表单
-      initFormData();
+      resumeFormRef.value.loadResumeBaseById(positionId);
     });
   }
 
@@ -387,8 +370,232 @@
 </script>
 
 <style lang="less" scoped>
+  /* 岗位信息卡片样式 */
+  .position-info-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 20px;
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+  }
+
+  .info-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 10px 16px;
+    border-bottom: none;
+  }
+
+  .info-header-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: #fff;
+      margin-right: 8px;
+      border-radius: 2px;
+    }
+  }
+
+  .info-content {
+    padding: 16px;
+    background: #fff;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fafafa;
+    border-radius: 6px;
+    border-left: 3px solid #667eea;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: #f0f5ff;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+    }
+  }
+
+  .info-label {
+    font-size: 13px;
+    color: #8c8c8c;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .info-value {
+    font-size: 14px;
+    color: #262626;
+    font-weight: 500;
+    word-break: break-all;
+    flex: 1;
+    
+    &.highlight {
+      font-size: 15px;
+      font-weight: 600;
+      color: #667eea;
+    }
+  }
+
+  /* 响应式设计 */
+  @media (max-width: 768px) {
+    .info-content {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    
+    .position-info-card {
+      margin-bottom: 16px;
+    }
+    
+    .info-header {
+      padding: 8px 12px;
+    }
+    
+    .info-content {
+      padding: 12px;
+    }
+    
+    .info-item {
+      padding: 6px 10px;
+    }
+  }
+
+  /* 上传区域样式 */
+  .upload-section-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+    border-radius: 8px;
+    padding: 0;
+    margin-bottom: 20px;
+    border: 1px solid #e0e6ed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+  }
+
+  .upload-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .upload-header-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    
+    &::before {
+      content: '📎';
+      display: inline-block;
+      margin-right: 6px;
+      font-size: 16px;
+    }
+  }
+
+  .upload-hint {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
+  }
+
+  .upload-content {
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .upload-area {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .upload-action {
+    flex-shrink: 0;
+  }
+
+  .auto-fill-btn {
+    height: 40px;
+    padding: 0 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    transition: all 0.3s ease;
+    
+    &:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-icon {
+      font-size: 16px;
+      margin-right: 4px;
+    }
+  }
+
+  /* 上传区域响应式 */
+  @media (max-width: 768px) {
+    .upload-header {
+      padding: 8px 12px;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .upload-hint {
+      font-size: 11px;
+    }
+    
+    .upload-content {
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+    }
+    
+    .upload-action {
+      width: 100%;
+      
+      .auto-fill-btn {
+        width: 100%;
+      }
+    }
+    
+    .upload-section-card {
+      margin-bottom: 16px;
+    }
+  }
+
   .antd-modal-form {
     padding: 14px;
+  }
+  
+  .hidden-form {
+    display: none !important;
   }
   
   .form-item-full-width .ant-form-item {

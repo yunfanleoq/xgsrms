@@ -695,20 +695,14 @@ const AAnchorLink = AnchorLink;
 
 // Props 接收参数
 const props = defineProps({
-  // 表单数据
-  formData: { type: Object, default: () => ({}) },
   // 表单是否禁用（查看模式）
   formDisabled: { type: Boolean, default: false },
-  // 表单BPM模式
-  formBpm: { type: Boolean, default: false },
-  // 表单数据ID
-  dataId: { type: String, default: '' },
   // 是否隐藏提交按钮
   hideSubmitBtn: { type: Boolean, default: false },
 });
 
 // 岗位类型计算属性
-const positionType = computed(() => props.formData?.positionType || '普通岗位');
+const positionType = computed(() => formData?.positionType || '普通岗位');
 const isPT = computed(() => positionType.value === '普通岗位');
 const isBSH = computed(() => positionType.value === '博士后岗位');
 const isFG = computed(() => positionType.value === '副高级以上岗位');
@@ -1003,16 +997,15 @@ const handleReset = async () => {
   message.success('表单已重置');
 };
 
-// 加载表单数据
-const loadFormData = async (id?: string) => {
-  const queryId = id || props.dataId;
-  if (!queryId) return;
+// 编辑 加载表单数据 根据 resumeBaseid 加载已存在数据
+const loadResumeBaseById = async (resumeBaseId?: string) => {
+  if (!resumeBaseId) return;
   
   try {
     // 查询主表数据
     const data = await defHttp.get({ 
       url: '/xgsResume/xgsResumeBase/queryById', 
-      params: { id: queryId } 
+      params: { id: resumeBaseId } 
     });
     
     // 设置主表数据
@@ -1060,18 +1053,10 @@ const loadFormData = async (id?: string) => {
   }
 };
 
-// 初始化
-onMounted(() => {
-  // 如果有数据ID则加载数据
-  if (props.dataId) {
-    loadFormData();
-  }
-  
-  // 如果有传入表单数据，则合并到本地formData
-  if (props.formData) {
-    Object.assign(formData, props.formData);
-  }
-});
+// 在线申请 根据岗位信息 新建申请表单
+const createResumeBaseByPositionInfo = async (positionInfo) => {
+  Object.assign(formData, positionInfo);
+}
 
 // 设置数据方法（用于外部调用）
 const setDataByPDF = (data: any) => {
@@ -1193,7 +1178,8 @@ const getFormData = () => {
 defineExpose({
   handleSubmit,
   handleReset,
-  loadFormData,
+  loadResumeBaseById,
+  createResumeBaseByPositionInfo,
   setDataByPDF,
   validateForm, // 新增：只验证表单，不保存
   getFormData,  // 新增：获取表单数据而不保存

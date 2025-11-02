@@ -321,7 +321,13 @@
     }
     // 显示职位详情组件，并传递职位信息
     showPositionDetail.value = false;
-    router.push({ name: 'positionDetail', params: { id: String(positionId) } });
+    
+    // 跳转到详情页
+    await router.push({ name: 'positionDetail', params: { id: String(positionId) } });
+    
+    // 路由跳转后立即滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
     showPositionList.value = false;
   };
 

@@ -276,8 +276,10 @@
       });
   }
 
-  const goBack = () => {
-    router.push({ name: 'homePositions', query: { showPositionList: 'true' } });
+  const goBack = async () => {
+    await router.push({ name: 'homePositions', query: { showPositionList: 'true' } });
+    // 返回列表页后滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const fetchFavoriteJob = () => {
@@ -336,7 +338,7 @@
       }
     });
   };
-
+  // 在线申请 按钮
   const positionApply = () => {
     if (!userStore.userInfo) {
       message.warning('请先登录');
@@ -387,6 +389,9 @@
   };
 
   onMounted(async () => {
+    // 页面加载时滚动到顶部
+    document.body.scrollTo({ top: 0, behavior: 'smooth' });
+    
     await fetchCurrApplyPosition();
     // 仅在用户登录后执行需要认证的API调用
     if (userStore.userInfo) {

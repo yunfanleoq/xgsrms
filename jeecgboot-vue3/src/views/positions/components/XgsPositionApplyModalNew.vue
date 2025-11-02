@@ -9,8 +9,9 @@
   okText="提交申请"
   cancelText="关闭"
   :get-container="getContainer">
-    <XgsPositionApplyFormNew ref="registerForm" 
-    @ok="submitCallback" :formData="formData" 
+    <XgsPositionApplyFormNew 
+    ref="registerForm" 
+    @ok="submitCallback" 
     :formDisabled="disableSubmit" 
     :formBpm="false"
     :hideSubmitBtn="true">
@@ -54,11 +55,11 @@
     });
   }
 
-  function addJob(record) {
+  function addJob(positionInfo) {
     title.value = '在线申请';
     visible.value = true;
     nextTick(() => {
-      registerForm.value.add(record);
+      registerForm.value.add(positionInfo);
     });
   }
 
