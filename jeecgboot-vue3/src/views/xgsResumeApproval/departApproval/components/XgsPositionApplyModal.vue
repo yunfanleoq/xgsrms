@@ -10,7 +10,11 @@
     @cancel="handleCancel"
     cancelText="关闭"
   >
-    <XgsPositionApplyForm ref="registerForm" @ok="submitCallback" :formData="formData" :formDisabled="disableSubmit" :formBpm="false" :dataId="dataId" />
+    <XgsPositionApplyForm ref="registerForm" 
+    @ok="submitCallback" 
+    :formDisabled="disableSubmit" 
+    :formBpm="false" 
+    :dataId="dataId" />
   </j-modal>
 </template>
 
@@ -93,8 +97,8 @@
     visible.value = true;
     dataId.value = record.resumeId || '';
     await nextTick();
-    if (registerForm.value && record.resumeId) {
-      await registerForm.value.loadFormData(record.resumeId);
+    if (registerForm.value && record) {
+      await registerForm.value.loadFormData(record);
     }
   }
 

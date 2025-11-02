@@ -29,7 +29,7 @@
 
       <!-- 第二个 Tab: 岗位申请表单 -->
       <div v-show="activeKey === '2'" class="tab-content-pane">
-        <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" :dataId="resumeId" />
+        <XgsApplyForm ref="registerFormResume" :formDisabled="true" :formBpm="false" />
       </div>
     </div>
   </j-modal>
@@ -112,15 +112,8 @@ import {ref, unref, nextTick, defineExpose} from 'vue';
     // 设置简历ID并加载数据
     resumeId.value = data.record.resumeId || '';
     await nextTick();
-    if (registerFormResume.value && data.record.resumeId) {
-      await registerFormResume.value.loadFormData(data.record.resumeId);
-      
-      // 延迟2秒后重新计算导航位置，确保DOM完全渲染
-      setTimeout(() => {
-        if (registerFormResume.value && typeof registerFormResume.value.computeAffixOffset === 'function') {
-          registerFormResume.value.computeAffixOffset();
-        }
-      }, 2000);
+    if (registerFormResume.value && data.record) {
+      await registerFormResume.value.loadFormData(data.record);
     }
     
     // 隐藏底部时禁用整个表单

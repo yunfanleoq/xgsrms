@@ -25,7 +25,9 @@
       </a-card>
       <!--      end-->
       <div class="contentArea">
-        <BasicForm @register="registerForm" name="XgsUserPositionApplyForm" :positionType="positionType" :formData="formData" :formBpm="formBpm">
+        <BasicForm @register="registerForm" 
+        name="XgsUserPositionApplyForm" 
+        :formBpm="formBpm">
           <template #uploadResume="{ model, field }">
             <a-form-item label="文件路径" id="XgsUserResumeFileForm-filePath" name="filePath" v-if=" title == '编辑'">
               <j-upload v-model:value="fileData.filePath" :max-count="1" :multiple=" title == '编辑'" />
@@ -35,10 +37,11 @@
           </template>
         </BasicForm>
       </div>
-      <!--      <xgsUserPositionApplyForm ref="registerForm"  :positionType="positionType" :formData="formData" :formBpm="formBpm" />-->
 
       <!-- 使用新的统一申请表单 -->
-      <XgsApplyForm ref="applyFormRef" :formData="formData" :formDisabled="!isDetail" :formBpm="formBpm" :dataId="formData.dataId" />
+      <XgsApplyForm ref="applyFormRef" 
+      :formDisabled="!isDetail" 
+      :formBpm="formBpm" />
       
       <!-- 附件下载区域 -->
       <div v-if="otherFilesData" class="other-files-section">
@@ -130,23 +133,17 @@
     isUpdate.value = !!record?.isUpdate;
     isDetail.value = !!record?.showFooter;
     
-    if (unref(isUpdate)) {
-      //表单赋值
-      await setFieldsValue({
-        ...record.record,
-      });
-    }
-    
     // 设置标题
     title.value = !unref(isUpdate) ? '新增' : !unref(isDetail) ? '查看' : '编辑';
     
-    positionType.value = record.record.positionType;
-    formData.value = {
-      id: record.record.id,
-      dataId: record.record.resumeId,
-      disabled: title.value !== '编辑',
-    };
+    formData.value = record.record;
+    formData.value.disabled = title.value !== '编辑';
+    //设置表单的值
+    await setFieldsValue({...formData.value});
+    //默认是禁用
+    await setProps({ disabled: true });
 
+    positionType.value = record.record.positionType;
     // 当前状态
     currentNode.value = record.record.approvalNode;
     appplyStatus.value = record.record.status;
@@ -163,8 +160,8 @@
     setProps({ disabled: !record?.showFooter });
     
     // 加载表单数据
-    if (applyFormRef.value && record.record.resumeId) {
-      await applyFormRef.value.loadFormData(record.record.resumeId);
+    if (applyFormRef.value && record.record) {
+      await applyFormRef.value.loadFormData(record.record);
     }
     
     isReady.value = true;
@@ -244,9 +241,6 @@
   // statusResume:最后一次(当前)审核状态
   // statusTypeList:获取到的审核节点集合
   function statusUI(statusType, statusResume, statusTypeList) {
-    console.log('statusType==========================', statusType);
-    console.log('statusResume==========================', statusResume);
-    console.log('statusTypeList==========================', statusTypeList);
     const statusText = ref('审核中');
     let thisStatusList: { statusName: string; statusType: string }[] = [];
 
@@ -282,50 +276,6 @@
     thisStatusList[thisStatusList.length - 1].statusType = '';
 
     statusList.value = thisStatusList;
-  }
-
-  function statusUI2(statusType) {
-    if (statusType == '待部门审核') {
-      statusIndex.value = 1;
-      statusList.value = [
-        { statusName: '申请人', statusType: '' },
-        { statusName: '部门审核', statusType: '待审核' },
-        { statusName: '人力处审核', statusType: '' },
-        { statusName: '初审完成', statusType: '' },
-      ];
-    } else if (statusType == '部门未通过') {
-      statusIndex.value = 1;
-      statusList.value = [
-        { statusName: '申请人', statusType: '' },
-        { statusName: '部门审核', statusType: '未通过' },
-        { statusName: '人力处审核', statusType: '' },
-        { statusName: '初审完成', statusType: '' },
-      ];
-    } else if (statusType == '待人力处审核') {
-      statusIndex.value = 2;
-      statusList.value = [
-        { statusName: '申请人', statusType: '' },
-        { statusName: '部门审核', statusType: '已通过' },
-        { statusName: '人力处审核', statusType: '待审核' },
-        { statusName: '初审完成', statusType: '' },
-      ];
-    } else if (statusType == '人力处未通过') {
-      statusIndex.value = 2;
-      statusList.value = [
-        { statusName: '申请人', statusType: '' },
-        { statusName: '部门审核', statusType: '已通过' },
-        { statusName: '人力处审核', statusType: '已通过' },
-        { statusName: '初审完成', statusType: '' },
-      ];
-    } else if (statusType == '初审通过') {
-      statusIndex.value = 3;
-      statusList.value = [
-        { statusName: '申请人', statusType: '' },
-        { statusName: '部门审核', statusType: '' },
-        { statusName: '人力处审核', statusType: '' },
-        { statusName: '初审完成', statusType: '' },
-      ];
-    }
   }
 
   // 暴露方法给父组件

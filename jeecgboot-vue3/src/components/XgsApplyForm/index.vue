@@ -569,7 +569,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, nextTick, watch, defineProps, defineExpose } from 'vue';
+import { ref, reactive, onMounted, nextTick, computed, defineProps, defineExpose } from 'vue';
 import { defHttp } from '/@/utils/http/axios';
 import { message, Modal, Anchor, Affix } from 'ant-design-vue';
 import { EyeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons-vue';
@@ -615,14 +615,10 @@ const anchorItems = [
 
 // Props 接收参数
 const props = defineProps({
-  // 表单数据
-  formData: { type: Object, default: () => ({}) },
   // 表单是否禁用（查看模式）
   formDisabled: { type: Boolean, default: false },
   // 表单BPM模式
   formBpm: { type: Boolean, default: false },
-  // 表单数据ID
-  dataId: { type: String, default: '' },
 });
 
 // 组件引用
@@ -653,6 +649,19 @@ const uploaderKey = ref('uploader-initial');
 // 预览相关
 const previewVisible = ref(false);
 const previewImageUrl = ref('');
+
+// 岗位申请信息
+const positionApply = ref<any>({
+  positionType: '普通岗位'
+});
+
+
+// 岗位类型计算属性
+const positionType = computed(() => positionApply.value.positionType || '普通岗位');
+const isPT = computed(() => positionType.value === '普通岗位');
+const isBSH = computed(() => positionType.value === '博士后岗位');
+const isFG = computed(() => positionType.value === '副高级以上岗位');
+const isTJ = computed(() => positionType.value === '人才派遣岗位');
 
 // 表单数据
 const formData = reactive<any>({
@@ -861,8 +870,9 @@ const handleReset = async () => {
 };
 
 // 加载表单数据
-const loadFormData = async (id?: string) => {
-  const queryId = id || props.dataId;
+const loadFormData = async (positionApplyInfo) => {
+  positionApply.value = positionApplyInfo;
+  const queryId = positionApplyInfo.resumeId;
   if (!queryId) return;
   
   try {
@@ -943,37 +953,12 @@ const loadFormData = async (id?: string) => {
     // 数据加载完成后，重新计算 Affix offset
     await nextTick();  
     affixOffsetTop.value = 21;
-    setTimeout(() => {
-      computeAffixOffset();
-    }, 2000);
-    
   } catch (error) {
     console.error('加载表单数据失败:', error);
     message.error('加载表单数据失败');
   }
 };
 
-
-// 初始化
-onMounted(async () => {
-  // 如果有数据ID则加载数据
-  if (props.dataId) {
-    await loadFormData();
-  }
-  
-  // 如果有传入表单数据，则合并到本地formData
-  if (props.formData) {
-    Object.assign(formData, props.formData);
-  }
-  
-});
-
-// 监听dataId变化，自动加载数据
-watch(() => props.dataId, (newVal, oldVal) => {
-  if (newVal && newVal !== oldVal) {
-    loadFormData(newVal);
-  }
-}, { immediate: false });
 
 // 设置数据方法（用于外部调用）
 const setDataByPDF = (data: any) => {
@@ -1036,28 +1021,6 @@ const getAnchorContainer = () => {
   return window;
 };
 
-// 计算 Affix 的动态偏移量，使其与表单顶部对齐
-const computeAffixOffset = () => {
-  // try {
-  //   affixOffsetTop.value = 10;
-  //   const container = getAffixContainer();
-  //   const formContent = document.querySelector('.form-content');
-    
-  //   if (!formContent || !container || container === window) {
-  //     affixOffsetTop.value = 20;
-  //     return;
-  //   }
-    
-  //   const containerRect = (container as HTMLElement).getBoundingClientRect();
-  //   const formRect = formContent.getBoundingClientRect();
-  //   const offset = Math.max(0, Math.round(formRect.top - containerRect.top));
-  //   affixOffsetTop.value = offset;
-  // } catch (error) {
-  //   console.warn('计算 Affix offset 失败:', error);
-  //   affixOffsetTop.value = 20;
-  // }
-};
-
 // Anchor 点击监听 - 阻止默认行为并手动滚动
 const handleAnchorClick = (e: Event, link: any) => {
   // 阻止默认行为，防止点击锚点时窗口关闭
@@ -1101,8 +1064,7 @@ defineExpose({
   handleSubmit,
   handleReset,
   loadFormData,
-  setDataByPDF,
-  computeAffixOffset, // 暴露计算方法给父组件调用
+  setDataByPDF
 });
 </script>
 

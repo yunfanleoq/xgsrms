@@ -104,7 +104,7 @@
   function handleDetail(record: Recordable) {
     modalRef.value.open({
       record,
-      isUpdate: true,
+      isUpdate: false,
       showFooter: false,
     });
   }

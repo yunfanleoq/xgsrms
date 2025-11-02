@@ -66,15 +66,8 @@
     // 设置简历ID并加载数据
     resumeId.value = data.record.resumeId || '';
     await nextTick();
-    if (registerFormResume.value && data.record.resumeId) {
-      await registerFormResume.value.loadFormData(data.record.resumeId);
-      
-      // 延迟2秒后重新计算导航位置，确保DOM完全渲染
-      setTimeout(() => {
-        if (registerFormResume.value && typeof registerFormResume.value.computeAffixOffset === 'function') {
-          registerFormResume.value.computeAffixOffset();
-        }
-      }, 2000);
+    if (registerFormResume.value && data.record) {
+      await registerFormResume.value.loadFormData(data.record);
     }
   }
 
