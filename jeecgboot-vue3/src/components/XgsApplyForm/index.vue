@@ -199,8 +199,8 @@
             </td>
           </tr>
 
-          <!-- 第七行：是否应届毕业生 + 是否统招统分 -->
-          <tr>
+          <!-- 第七行：是否应届毕业生 + 是否统招统分 - 仅普通岗位 -->
+          <tr v-if="isPT">
             <td class="label-cell">是否应届毕业生</td>
             <td class="field-cell">
               <a-form-item name="yjbys">
@@ -231,6 +231,23 @@
                 />
               </a-form-item>
             </td>
+          </tr>
+          
+          <!-- 婚姻状况 - 博士后和副高 -->
+          <tr v-if="isBSH || isFG">
+            <td class="label-cell">婚姻状况</td>
+            <td class="field-cell">
+              <a-form-item name="maritalStatus">
+                <a-input v-model:value="formData.maritalStatus" placeholder="请输入婚姻状况" />
+              </a-form-item>
+            </td>
+            <td class="label-cell" v-if="isFG">国籍</td>
+            <td class="field-cell" v-if="isFG">
+              <a-form-item name="nationality">
+                <a-input v-model:value="formData.nationality" placeholder="请输入国籍" />
+              </a-form-item>
+            </td>
+            <td colspan="2" v-else></td>
           </tr>
 
           <!-- 第八行：毕业院校 + 最高学历 + 最高学位 -->
@@ -379,6 +396,77 @@
                   </div>
                 </div>
               </a-form-item>
+          </td>
+        </tr>
+        
+        <!-- 人才派遣岗位推荐人信息 -->
+        <tr v-if="isTJ">
+          <td colspan="6" class="section-header">推荐人信息</td>
+        </tr>
+        <tr v-if="isTJ">
+          <td class="label-cell">被推荐人</td>
+          <td class="field-cell">
+            <a-form-item name="propositus">
+              <a-input v-model:value="formData.propositus" placeholder="请输入被推荐人" />
+            </a-form-item>
+          </td>
+          <td class="label-cell">推荐人</td>
+          <td class="field-cell">
+            <a-form-item name="referrer">
+              <a-input v-model:value="formData.referrer" placeholder="请输入推荐人" />
+            </a-form-item>
+          </td>
+          <td class="label-cell">推荐人技术职务</td>
+          <td class="field-cell">
+            <a-form-item name="referrerPosition">
+              <a-input v-model:value="formData.referrerPosition" placeholder="请输入推荐人技术职务" />
+            </a-form-item>
+          </td>
+        </tr>
+        <tr v-if="isTJ">
+          <td class="label-cell">推荐人工作单位</td>
+          <td colspan="3" class="field-cell">
+            <a-form-item name="referrerUnit">
+              <a-input v-model:value="formData.referrerUnit" placeholder="请输入推荐人工作单位" />
+            </a-form-item>
+          </td>
+          <td class="label-cell">拟申报岗位等级</td>
+          <td class="field-cell">
+            <a-form-item name="positionClass">
+              <a-input v-model:value="formData.positionClass" placeholder="请输入拟申报岗位等级" />
+            </a-form-item>
+          </td>
+        </tr>
+        <tr v-if="isTJ">
+          <td class="label-cell">推荐人联系方式</td>
+          <td class="field-cell">
+            <a-form-item name="referrerMobile">
+              <a-input v-model:value="formData.referrerMobile" placeholder="请输入推荐人联系方式" />
+            </a-form-item>
+          </td>
+          <td class="label-cell">推荐人电子邮箱</td>
+          <td class="field-cell">
+            <a-form-item name="referrerEmail">
+              <a-input v-model:value="formData.referrerEmail" placeholder="请输入推荐人电子邮箱" />
+            </a-form-item>
+          </td>
+          <td class="label-cell">推荐人签名</td>
+          <td class="field-cell">
+            <a-form-item name="referrerSignature">
+              <JImageUpload
+                v-model:value="formData.referrerSignature"
+                :fileMax="1"
+                aria-label="上传推荐人签名"
+              />
+            </a-form-item>
+          </td>
+        </tr>
+        <tr v-if="isTJ">
+          <td class="label-cell">推荐原因</td>
+          <td colspan="5" class="field-cell">
+            <a-form-item name="cause">
+              <a-textarea v-model:value="formData.cause" placeholder="请输入推荐原因" :rows="4" />
+            </a-form-item>
           </td>
         </tr>
 
@@ -569,7 +657,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted, nextTick, computed, defineProps, defineExpose } from 'vue';
+import { ref, reactive, nextTick, computed, defineProps, defineExpose } from 'vue';
 import { defHttp } from '/@/utils/http/axios';
 import { message, Modal, Anchor, Affix } from 'ant-design-vue';
 import { EyeOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons-vue';
@@ -655,9 +743,8 @@ const positionApply = ref<any>({
   positionType: '普通岗位'
 });
 
-
 // 岗位类型计算属性
-const positionType = computed(() => positionApply.value.positionType || '普通岗位');
+const positionType = computed(() => formData?.positionType || positionApply.value.positionType || '普通岗位');
 const isPT = computed(() => positionType.value === '普通岗位');
 const isBSH = computed(() => positionType.value === '博士后岗位');
 const isFG = computed(() => positionType.value === '副高级以上岗位');
@@ -695,6 +782,24 @@ const formData = reactive<any>({
   applyDept: '',
   applyPosition: '',
   otherFiles: '',
+  positionType: '普通岗位',
+  
+  // 博士后、副高特有字段
+  maritalStatus: '', // 婚姻状况
+  
+  // 副高特有字段
+  nationality: '', // 国籍
+  
+  // 人才派遣特有字段
+  propositus: '', // 被推荐人
+  referrer: '', // 推荐人
+  referrerPosition: '', // 推荐人技术职务
+  referrerUnit: '', // 推荐人工作单位
+  referrerMobile: '', // 推荐人联系方式
+  referrerEmail: '', // 推荐人电子邮箱
+  referrerSignature: '', // 推荐人签名
+  positionClass: '', // 拟申报岗位等级
+  cause: '', // 推荐原因
 });
 
 // 子表数据
@@ -872,6 +977,10 @@ const handleReset = async () => {
 // 加载表单数据
 const loadFormData = async (positionApplyInfo) => {
   positionApply.value = positionApplyInfo;
+  // 设置岗位类型
+  if (positionApplyInfo.positionType) {
+    formData.positionType = positionApplyInfo.positionType;
+  }
   const queryId = positionApplyInfo.resumeId;
   if (!queryId) return;
   
