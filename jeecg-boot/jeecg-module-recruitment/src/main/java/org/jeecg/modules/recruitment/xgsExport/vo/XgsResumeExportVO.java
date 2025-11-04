@@ -123,15 +123,15 @@ public class XgsResumeExportVO {
         bookmarkMap.put("毕业时间", formatDate(graduateDate));
         
         // 工作信息
-        bookmarkMap.put("参加工作时间", formatDate(workDate));
+        bookmarkMap.put("参加工作时间", formatDate(workDate, "yyyy年MM月"));
         bookmarkMap.put("目前工作单位", nvl(workUnit));
         bookmarkMap.put("档案所在单位", nvl(personFilesUnit));
         bookmarkMap.put("现行政职务", nvl(adminPosition));
-        bookmarkMap.put("任职时间", formatDate(adminPositionDate));
+        bookmarkMap.put("任职时间", formatDate(adminPositionDate, "yyyy年MM月"));
         bookmarkMap.put("任职时间年", formatDate(adminPositionDate, "yyyy"));
         bookmarkMap.put("任职时间月", formatDate(adminPositionDate, "MM"));
         bookmarkMap.put("现岗位", nvl(professionLevel));
-        bookmarkMap.put("聘任时间", formatDate(professionLevelDate));
+        bookmarkMap.put("聘任时间", formatDate(professionLevelDate, "yyyy年MM月"));
         bookmarkMap.put("聘任时间年", formatDate(professionLevelDate, "yyyy"));
         bookmarkMap.put("聘任时间月", formatDate(professionLevelDate, "MM"));
 
@@ -144,8 +144,8 @@ public class XgsResumeExportVO {
         bookmarkMap.put("学习经历", nvl(studyExperience));
         bookmarkMap.put("研究方向与专长", nvl(researchDirection));
         bookmarkMap.put("承担科研管理工作情况", nvl(researchWork));
-        bookmarkMap.put("主要论著目录", nvl(researchWorks));
         bookmarkMap.put("工作主要业绩", nvl(researchResult));
+        bookmarkMap.put("主要论著目录", nvl(researchWorks));
         bookmarkMap.put("论文专著专利", nvl(researchPaper));
         bookmarkMap.put("获科技奖情况", nvl(carryPrizeScience));
         bookmarkMap.put("获荣誉奖情况", nvl(carryPrizeHonor));
@@ -154,7 +154,7 @@ public class XgsResumeExportVO {
         bookmarkMap.put("研究问题协助", nvl(researchQuestionsSolve));
         
         // 应聘信息
-        bookmarkMap.put("应聘岗位陈述", nvl(positionDescription));
+        bookmarkMap.put("应聘岗位陈述", nvl(positionDescription));  // [[{"id":"","positionDescription":"asdfasdf","tempId":"temp_1"}]]
         bookmarkMap.put("应聘部门", nvl(applyDept));
         bookmarkMap.put("应聘岗位名称", nvl(applyPosition));
         bookmarkMap.put("岗位类型", nvl(positionType));

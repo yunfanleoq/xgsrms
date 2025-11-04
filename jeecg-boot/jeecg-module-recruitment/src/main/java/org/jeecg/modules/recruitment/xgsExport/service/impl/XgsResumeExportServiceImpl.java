@@ -443,7 +443,7 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
     }
     
     /**
-     * 完全替换书签内容，移除书签标记，只保留替换后的文本
+     * 完全替换书签内容，保留书签标记
      * 
      * @param ctp 段落的CTP对象
      * @param bookmark 书签对象
@@ -455,104 +455,148 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
             long bookmarkId = bookmark.getId().longValue();
             String bookmarkName = bookmark.getName();
             
-            // 第一步：找到书签结束标记的位置，以便在其后找到正确的插入位置
+            // 第一步：找到书签开始和结束标记在XML中的位置
+            int bookmarkStartPos = -1;
+            int bookmarkEndPos = -1;
+            
+            // 使用XmlCursor定位书签开始位置
+            org.apache.xmlbeans.XmlCursor startCursor = bookmark.newCursor();
+            bookmarkStartPos = getElementPosition(ctp, startCursor);
+            startCursor.dispose();
+            
+            // 找到书签结束标记
             CTMarkupRange bookmarkEnd = null;
             CTMarkupRange[] bookmarkEnds = ctp.getBookmarkEndArray();
             for (CTMarkupRange end : bookmarkEnds) {
                 if (end.getId().longValue() == bookmarkId) {
                     bookmarkEnd = end;
+                    org.apache.xmlbeans.XmlCursor endCursor = end.newCursor();
+                    bookmarkEndPos = getElementPosition(ctp, endCursor);
+                    endCursor.dispose();
                     break;
                 }
             }
             
-            if (bookmarkEnd == null) {
-                log.warn("未找到书签 [{}] 的结束标记", bookmarkName);
+            if (bookmarkEnd == null || bookmarkStartPos == -1 || bookmarkEndPos == -1) {
+                log.warn("未找到书签 [{}] 的完整标记位置", bookmarkName);
                 return false;
             }
             
-            // 第二步：找到书签范围内的所有Run，并记录第一个Run的位置
-            java.util.List<Integer> runsToRemove = new java.util.ArrayList<>();
-            boolean inBookmark = false;
-            int insertPosition = -1;
+            log.debug("书签 [{}] 位置范围: {} - {}", bookmarkName, bookmarkStartPos, bookmarkEndPos);
+            
+            // 第二步：找到书签范围内的所有Run，并清空它们的文本内容
+            java.util.List<Integer> runsInBookmark = new java.util.ArrayList<>();
             
             for (int i = 0; i < ctp.sizeOfRArray(); i++) {
-                // 检查这个位置是否是书签开始
-                CTBookmark[] bookmarksAtPosition = ctp.getBookmarkStartArray();
-                for (CTBookmark bm : bookmarksAtPosition) {
-                    if (bm.getId().longValue() == bookmarkId) {
-                        inBookmark = true;
-                        insertPosition = i; // 记录插入位置
-                        break;
-                    }
-                }
+                CTR run = ctp.getRArray(i);
+                org.apache.xmlbeans.XmlCursor runCursor = run.newCursor();
+                int runPos = getElementPosition(ctp, runCursor);
+                runCursor.dispose();
                 
-                // 如果在书签范围内，记录要删除的Run
-                if (inBookmark) {
-                    runsToRemove.add(i);
-                }
-                
-                // 检查是否到达书签结束位置
-                CTMarkupRange[] endsAtPosition = ctp.getBookmarkEndArray();
-                for (CTMarkupRange end : endsAtPosition) {
-                    if (end.getId().longValue() == bookmarkId) {
-                        inBookmark = false;
-                        break;
-                    }
-                }
-                
-                if (!inBookmark && insertPosition >= 0) {
-                    break; // 已经处理完书签范围
+                // 如果Run在书签范围内，记录下来
+                if (runPos > bookmarkStartPos && runPos < bookmarkEndPos) {
+                    runsInBookmark.add(i);
                 }
             }
             
-            // 第三步：先删除书签范围内的所有Run（从后往前删除）
-            for (int i = runsToRemove.size() - 1; i >= 0; i--) {
-                int runIndex = runsToRemove.get(i);
-                // 需要调整索引，因为前面的删除会影响后面的索引
-                int adjustedIndex = runIndex - (runsToRemove.size() - 1 - i);
-                if (adjustedIndex >= 0 && adjustedIndex < ctp.sizeOfRArray()) {
-                    ctp.removeR(adjustedIndex);
+            log.debug("书签 [{}] 范围内找到 {} 个Run", bookmarkName, runsInBookmark.size());
+            
+            // 第三步：清空书签范围内所有Run的文本内容
+            for (int runIndex : runsInBookmark) {
+                if (runIndex >= 0 && runIndex < ctp.sizeOfRArray()) {
+                    CTR run = ctp.getRArray(runIndex);
+                    // 清空所有文本节点
+                    int textCount = run.sizeOfTArray();
+                    for (int j = textCount - 1; j >= 0; j--) {
+                        run.removeT(j);
+                    }
                 }
             }
             
-            // 第四步：在原书签位置插入新的Run
-            if (insertPosition >= 0) {
-                // 调整插入位置（因为删除了Runs）
-                int adjustedInsertPosition = Math.min(insertPosition, ctp.sizeOfRArray());
+            // 第四步：在书签开始位置后插入新的Run和文本
+            // 找到第一个合适的插入位置（书签开始标记之后）
+            int insertRunPosition = -1;
+            for (int i = 0; i < ctp.sizeOfRArray(); i++) {
+                CTR run = ctp.getRArray(i);
+                org.apache.xmlbeans.XmlCursor runCursor = run.newCursor();
+                int runPos = getElementPosition(ctp, runCursor);
+                runCursor.dispose();
                 
-                CTR newRun = ctp.insertNewR(adjustedInsertPosition);
+                if (runPos > bookmarkStartPos) {
+                    insertRunPosition = i;
+                    break;
+                }
+            }
+            
+            // 如果在书签范围内找到了Run，在第一个Run中插入文本
+            if (!runsInBookmark.isEmpty() && runsInBookmark.get(0) < ctp.sizeOfRArray()) {
+                CTR firstRun = ctp.getRArray(runsInBookmark.get(0));
+                CTText newText = firstRun.addNewT();
+                newText.setStringValue(replacementText);
+                log.debug("在书签 [{}] 的第一个Run中插入文本: [{}]", bookmarkName, replacementText);
+            } else if (insertRunPosition >= 0) {
+                // 如果书签内没有Run，在书签后创建新Run
+                CTR newRun = ctp.insertNewR(insertRunPosition);
                 CTText newText = newRun.addNewT();
                 newText.setStringValue(replacementText);
-                
-                log.debug("在位置 {} 插入替换文本: [{}] = [{}]", adjustedInsertPosition, bookmarkName, replacementText);
+                log.debug("在书签 [{}] 后创建新Run并插入文本: [{}]", bookmarkName, replacementText);
+            } else {
+                // 如果无法确定位置，在段落末尾添加
+                CTR newRun = ctp.addNewR();
+                CTText newText = newRun.addNewT();
+                newText.setStringValue(replacementText);
+                log.debug("在段落末尾为书签 [{}] 添加文本: [{}]", bookmarkName, replacementText);
             }
             
-            // 第五步：删除书签标记（开始和结束）
-            // 删除书签开始标记
-            CTBookmark[] bookmarksStart = ctp.getBookmarkStartArray();
-            for (int i = 0; i < bookmarksStart.length; i++) {
-                if (bookmarksStart[i].getId().longValue() == bookmarkId) {
-                    ctp.removeBookmarkStart(i);
-                    log.debug("删除书签开始标记: [{}]", bookmarkName);
-                    break;
-                }
-            }
-            
-            // 删除书签结束标记
-            CTMarkupRange[] bookmarksEnd = ctp.getBookmarkEndArray();
-            for (int i = 0; i < bookmarksEnd.length; i++) {
-                if (bookmarksEnd[i].getId().longValue() == bookmarkId) {
-                    ctp.removeBookmarkEnd(i);
-                    log.debug("删除书签结束标记: [{}]", bookmarkName);
-                    break;
-                }
-            }
-            
-            log.info("成功替换书签 [{}] 为 [{}]", bookmarkName, replacementText);
+            log.info("成功替换书签 [{}] 的内容为 [{}]（保留书签标记）", bookmarkName, replacementText);
             return true;
             
         } catch (Exception e) {
-            log.error("完全替换书签内容失败: {}", bookmark.getName(), e);
+            log.error("替换书签内容失败: {}", bookmark.getName(), e);
+            return false;
+        }
+    }
+    
+    /**
+     * 获取XML元素在父元素中的位置索引
+     * 
+     * @param parent 父元素
+     * @param cursor 元素的XmlCursor
+     * @return 位置索引，未找到返回-1
+     */
+    private int getElementPosition(org.apache.xmlbeans.XmlObject parent, org.apache.xmlbeans.XmlCursor cursor) {
+        try {
+            org.apache.xmlbeans.XmlCursor parentCursor = parent.newCursor();
+            parentCursor.toFirstChild();
+            
+            int position = 0;
+            do {
+                if (cursorsEqual(parentCursor, cursor)) {
+                    parentCursor.dispose();
+                    return position;
+                }
+                position++;
+            } while (parentCursor.toNextSibling());
+            
+            parentCursor.dispose();
+            return -1;
+        } catch (Exception e) {
+            log.error("获取元素位置失败", e);
+            return -1;
+        }
+    }
+    
+    /**
+     * 比较两个XmlCursor是否指向同一个元素
+     * 
+     * @param cursor1 第一个cursor
+     * @param cursor2 第二个cursor
+     * @return 是否相同
+     */
+    private boolean cursorsEqual(org.apache.xmlbeans.XmlCursor cursor1, org.apache.xmlbeans.XmlCursor cursor2) {
+        try {
+            return cursor1.getObject() == cursor2.getObject();
+        } catch (Exception e) {
             return false;
         }
     }

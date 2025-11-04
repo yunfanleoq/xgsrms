@@ -96,7 +96,7 @@
                     <a class="aui-linek-code aui-flex-box" @click="registerHandleClick">{{ t('sys.login.registerButton') }}</a>
                   </div>
                   <div class="aui-flex">
-                    <a class="aui-linek-code aui-flex-box" @click="goHome">返回首页</a>
+                    <a class="aui-home-button" @click="goHome">返回首页</a>
                   </div>
                 </div>
               </div>
@@ -495,6 +495,24 @@
     flex: 1;
     color: #fff;
   }
+  
+  .aui-home-button {
+    height: 42px;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 8px;
+    margin: 8px 0;
+    text-align: center;
+    background: #f0f7ff !important;
+    color: #1890ff !important;
+    border: 1px solid #1890ff;
+    transition: all 0.3s;
+  }
+  
+  .aui-home-button:hover {
+    background-color: #d6ebff;
+    color: #1890ff;
+  }
   .aui-phone-logo {
     position: absolute;
     margin-left: 10px;
@@ -558,6 +576,7 @@
         background: @dark-bg !important;
         color: white !important;
       }
+      
       .aui-code-line {
         border-left: none !important;
       }
