@@ -20,7 +20,6 @@
                 <div class="position-type">基础科学研究</div>
                 <div class="position-type">技术科学研究</div>
                 <div class="position-type">教学与研究</div>
-                <div class="position-type">工程技术研究</div>
               </div>
             </div>
           </div>
@@ -30,8 +29,8 @@
             <div class="category-group">
               <div class="category-title">支撑类岗位</div>
               <div class="position-types">
+                <div class="position-type">工程技术研究</div>
                 <div class="position-type">科技支撑保障</div>
-                <div class="position-type">科研助理等</div>
               </div>
             </div>
           </div>
@@ -42,6 +41,7 @@
               <div class="category-title">管理类岗位</div>
               <div class="position-types">
                 <div class="position-type">管理岗位</div>
+                <div class="position-type">科研助理</div>
               </div>
             </div>
           </div>
@@ -59,8 +59,6 @@
         <div class="position-category">
           <h4>1. 基础科学研究</h4>
           <div class="path-diagram">
-            <div class="path-node level-junior">研究实习员</div>
-            <div class="path-arrow">→</div>
             <div class="path-node level-assistant">助理研究员</div>
             <div class="path-arrow">→</div>
             <div class="path-node level-associate">副研究员</div>
@@ -68,15 +66,13 @@
             <div class="path-node level-senior">研究员</div>
           </div>
           <p class="path-description">
-            专注于理论研究和基础科学探索，通过高水平学术论文、重大科研项目和原创性成果推动职级晋升。
+            主要从事通过网络空间安全相关领域中的安全现象揭示客观规律为主要目的的探索性研究工作。围绕世界科技前沿，探索开拓新的知识领域，促进学科发展。对网络空间安全的基本科学数据、资料和信息系统进行考察、采集、鉴定，开展理论方法创新工作的岗位。具备原始创新和基础研究能力。
           </p>
         </div>
 
         <div class="position-category">
           <h4>2. 技术科学研究</h4>
           <div class="path-diagram">
-            <div class="path-node level-junior">研究实习员</div>
-            <div class="path-arrow">→</div>
             <div class="path-node level-assistant">助理研究员</div>
             <div class="path-arrow">→</div>
             <div class="path-node level-associate">副研究员</div>
@@ -84,15 +80,13 @@
             <div class="path-node level-senior">研究员</div>
           </div>
           <p class="path-description">
-            侧重应用研究和技术开发，通过技术创新、专利成果和技术转化实现职业发展。
+            主要从事网络空间安全相关领域应用技术研究工作。围绕国家战略需求、国民经济主战场，以应用转化为导向，系统地研究和发展相关领域的关键技术，发明新技术、新方法，推动技术创新的岗位。具备以重大应用目标导向，凝炼科学问题和技术问题的能力。
           </p>
         </div>
 
         <div class="position-category">
           <h4>3. 教学与研究</h4>
           <div class="path-diagram">
-            <div class="path-node level-junior">研究实习员</div>
-            <div class="path-arrow">→</div>
             <div class="path-node level-assistant">助理研究员</div>
             <div class="path-arrow">→</div>
             <div class="path-node level-associate">副研究员</div>
@@ -100,52 +94,51 @@
             <div class="path-node level-senior">研究员</div>
           </div>
           <p class="path-description">
-            结合教学与科研工作，通过学术成果、人才培养和教学质量推动职业发展。
-          </p>
-        </div>
-
-        <div class="position-category">
-          <h4>4. 工程技术研究</h4>
-          <div class="path-diagram">
-            <div class="path-node level-junior">研究实习员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-assistant">助理研究员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-associate">副研究员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-senior">研究员</div>
-          </div>
-          <p class="path-description">
-            专注于工程技术研发和系统实现，通过工程项目、技术成果和系统应用推动职级提升。
+            主要从事网络空间安全相关领域的研究生、本科生教育教学和科学研究工作。落实科教融合战略目标，围绕学科发展和培养体系建设，开展课程体系、教育教学方法以及基础科学研究。具备网络空间安全学科课程体系优化和原始创新、基础研究的能力。
           </p>
         </div>
       </div>
 
       <!-- 工程技术系列 -->
       <div class="path-section engineering-bg">
-        <h3>二、工程技术系列（支撑类岗位）</h3>
+        <h3>二、工程技术系列</h3>
         <p class="series-description">
           工程技术系列主要面向提供科研技术支撑和保障服务的专业技术人员，包括科技支撑保障和科研助理等岗位。该系列强调专业技能和服务质量，为技术支撑人员提供专业化的职业发展路径。
         </p>
 
+        
         <div class="position-category">
-          <h4>1. 科技支撑保障</h4>
+          <h4>1. 工程技术研究</h4>
           <div class="path-diagram">
-            <div class="path-node level-junior">技术员</div>
+            <div class="path-node level-assistant">助理研究员</div>
             <div class="path-arrow">→</div>
-            <div class="path-node level-assistant">助理工程师</div>
+            <div class="path-node level-associate">副研究员</div>
             <div class="path-arrow">→</div>
-            <div class="path-node level-associate">工程师</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-senior">高级工程师</div>
+            <div class="path-node level-senior">研究员</div>
           </div>
           <p class="path-description">
-            提供实验室管理、设备维护、技术服务等支撑保障工作，通过专业技能提升和服务质量优化实现职级晋升。
+            主要从事利用应用研究的成果和现有的知识与技术，策划、承担、组织、参与本领域重大工程项目的工作。围绕国家战略需求、产业需求，组织行业发展规划，开展技术攻关，突破关键核心技术的岗位。具备技术创新和集成创新能力。
           </p>
         </div>
 
         <div class="position-category">
-          <h4>2. 科研助理等</h4>
+          <h4>2. 科技支撑保障</h4>
+          <div class="path-diagram">
+            <div class="path-node level-junior">助理工程师</div>
+            <div class="path-arrow">→</div>
+            <div class="path-node level-assistant">工程师</div>
+            <div class="path-arrow">→</div>
+            <div class="path-node level-associate">高级工程师</div>
+            <div class="path-arrow">→</div>
+            <div class="path-node level-senior">正高级工程师</div>
+          </div>
+          <p class="path-description">
+            支撑类岗位，即科技支撑保障岗位，主要是指从事围绕国家和行业重大需求，开展工程技术项目集成建设、重要系统业务支撑和运维支撑工作。具备业务体系规划、解决技术难题能力。以及从事战略研究、科学传播、图书资料、学报编辑等工作的岗位。
+          </p>
+        </div>
+
+        <div class="position-category">
+          <h4>3. 科研助理</h4>
           <div class="path-diagram">
             <div class="path-node level-junior">初级科研助理</div>
             <div class="path-arrow">→</div>
