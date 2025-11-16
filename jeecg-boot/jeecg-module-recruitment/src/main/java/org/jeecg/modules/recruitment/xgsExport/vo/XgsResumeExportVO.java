@@ -1,6 +1,11 @@
 package org.jeecg.modules.recruitment.xgsExport.vo;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -114,8 +119,8 @@ public class XgsResumeExportVO {
         bookmarkMap.put("户口所在地", nvl(hukou));
         
         // 学历信息
-        bookmarkMap.put("是否应届毕业生", nvl(yjbys));
-        bookmarkMap.put("是否统招统分", nvl(tztf));
+        bookmarkMap.put("是否应届毕业生", convertYesNo(yjbys));
+        bookmarkMap.put("是否统招统分", convertYesNo(tztf));
         bookmarkMap.put("毕业院校", nvl(graduateCollege));
         bookmarkMap.put("学历", nvl(education));
         bookmarkMap.put("学位", nvl(degree));
@@ -142,19 +147,20 @@ public class XgsResumeExportVO {
         
         // 研究相关
         bookmarkMap.put("学习经历", nvl(studyExperience));
-        bookmarkMap.put("研究方向与专长", nvl(researchDirection));
         bookmarkMap.put("承担科研管理工作情况", nvl(researchWork));
-        bookmarkMap.put("工作主要业绩", nvl(researchResult));
+        bookmarkMap.put("工作主要业绩", parseJsonArrayField(researchResult, "researchResult"));
+        // 应聘信息
+        bookmarkMap.put("应聘岗位陈述", parseJsonArrayField(positionDescription, "positionDescription"));
+        bookmarkMap.put("研究方向与专长", parseJsonArrayField(researchDirection, "researchDirection"));
+        bookmarkMap.put("论文专著专利", parseJsonArrayField(researchPaper, "researchPaper"));
+
         bookmarkMap.put("主要论著目录", nvl(researchWorks));
-        bookmarkMap.put("论文专著专利", nvl(researchPaper));
         bookmarkMap.put("获科技奖情况", nvl(carryPrizeScience));
         bookmarkMap.put("获荣誉奖情况", nvl(carryPrizeHonor));
         bookmarkMap.put("拟研究计划", nvl(researchProposal));
         bookmarkMap.put("科研条件", nvl(researchCondition));
         bookmarkMap.put("研究问题协助", nvl(researchQuestionsSolve));
         
-        // 应聘信息
-        bookmarkMap.put("应聘岗位陈述", nvl(positionDescription));  // [[{"id":"","positionDescription":"asdfasdf","tempId":"temp_1"}]]
         bookmarkMap.put("应聘部门", nvl(applyDept));
         bookmarkMap.put("应聘岗位名称", nvl(applyPosition));
         bookmarkMap.put("岗位类型", nvl(positionType));
@@ -204,6 +210,54 @@ public class XgsResumeExportVO {
      */
     private String nvl(String value) {
         return value == null ? "" : value;
+    }
+
+    /**
+     * 将"1"转换为"是"，其他转换为"否"
+     */
+    private String convertYesNo(String value) {
+        return "1".equals(value) ? "是" : "否";
+    }
+
+    /**
+     * 解析JSON数组字段，提取指定字段的值并拼接
+     * 
+     * @param jsonArrayStr JSON数组字符串，格式如：[{"researchResult":"内容1"},{"researchResult":"内容2"}]
+     * @param fieldName 要提取的字段名
+     * @return 拼接后的字符串，多个值用换行符分隔
+     */
+    private String parseJsonArrayField(String jsonArrayStr, String fieldName) {
+        if (StringUtils.isEmpty(jsonArrayStr)) {
+            return "";
+        }
+        
+        try {
+            // 解析JSON数组
+            JSONArray jsonArray = JSON.parseArray(jsonArrayStr);
+            if (jsonArray == null || jsonArray.isEmpty()) {
+                return "";
+            }
+            
+            // 提取每个对象中指定字段的值
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JSONObject jsonObject = jsonArray.getJSONObject(i);
+                if (jsonObject != null && jsonObject.containsKey(fieldName)) {
+                    String value = jsonObject.getString(fieldName);
+                    if (StringUtils.isNotEmpty(value)) {
+                        if (result.length() > 0) {
+                            result.append("\n"); // 使用换行符分隔
+                        }
+                        result.append(value);
+                    }
+                }
+            }
+            
+            return result.toString();
+        } catch (Exception e) {
+            // 如果解析失败，返回原始字符串
+            return jsonArrayStr;
+        }
     }
 
     /**

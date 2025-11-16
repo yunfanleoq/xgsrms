@@ -1,6 +1,5 @@
 <template>
   <div class="category-content">
-    <h2>岗位发展路径</h2>
     <div class="content-wrapper">
       <div class="intro-section">
         <p>
@@ -15,7 +14,6 @@
           <div class="series-column natural-science">
             <div class="series-header">自然科学系列</div>
             <div class="category-group">
-              <div class="category-title">科技类岗位</div>
               <div class="position-types">
                 <div class="position-type">基础科学研究</div>
                 <div class="position-type">技术科学研究</div>
@@ -27,7 +25,6 @@
           <div class="series-column engineering">
             <div class="series-header">工程技术系列</div>
             <div class="category-group">
-              <div class="category-title">支撑类岗位</div>
               <div class="position-types">
                 <div class="position-type">工程技术研究</div>
                 <div class="position-type">科技支撑保障</div>
@@ -38,7 +35,6 @@
           <div class="series-column staff">
             <div class="series-header">职员系列</div>
             <div class="category-group">
-              <div class="category-title">管理类岗位</div>
               <div class="position-types">
                 <div class="position-type">管理岗位</div>
                 <div class="position-type">科研助理</div>
@@ -110,11 +106,13 @@
         <div class="position-category">
           <h4>1. 工程技术研究</h4>
           <div class="path-diagram">
-            <div class="path-node level-assistant">助理研究员</div>
+            <div class="path-node level-junior">助理工程师</div>
             <div class="path-arrow">→</div>
-            <div class="path-node level-associate">副研究员</div>
+            <div class="path-node level-assistant">工程师</div>
             <div class="path-arrow">→</div>
-            <div class="path-node level-senior">研究员</div>
+            <div class="path-node level-associate">副高级专业技术岗位</div>
+            <div class="path-arrow">→</div>
+            <div class="path-node level-senior">正高级专业技术岗位</div>
           </div>
           <p class="path-description">
             主要从事利用应用研究的成果和现有的知识与技术，策划、承担、组织、参与本领域重大工程项目的工作。围绕国家战略需求、产业需求，组织行业发展规划，开展技术攻关，突破关键核心技术的岗位。具备技术创新和集成创新能力。
@@ -128,9 +126,9 @@
             <div class="path-arrow">→</div>
             <div class="path-node level-assistant">工程师</div>
             <div class="path-arrow">→</div>
-            <div class="path-node level-associate">高级工程师</div>
+            <div class="path-node level-associate">副高级专业技术岗位</div>
             <div class="path-arrow">→</div>
-            <div class="path-node level-senior">正高级工程师</div>
+            <div class="path-node level-senior">正高级专业技术岗位</div>
           </div>
           <p class="path-description">
             支撑类岗位，即科技支撑保障岗位，主要是指从事围绕国家和行业重大需求，开展工程技术项目集成建设、重要系统业务支撑和运维支撑工作。具备业务体系规划、解决技术难题能力。以及从事战略研究、科学传播、图书资料、学报编辑等工作的岗位。
@@ -139,17 +137,11 @@
 
         <div class="position-category">
           <h4>3. 科研助理</h4>
-          <div class="path-diagram">
-            <div class="path-node level-junior">初级科研助理</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-assistant">科研助理</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-associate">高级科研助理</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-senior">资深科研助理</div>
-          </div>
-          <p class="path-description">
+          <p class="series-description">
             协助科研人员开展研究工作，包括数据收集、实验操作、文献整理等，通过工作经验积累和专业能力提升实现职业发展。
+          </p>
+          <p class="path-description" style="text-align: center;">
+            <img src="../../../assets/images/gangwei-3.png">
           </p>
         </div>
       </div>
@@ -161,22 +153,9 @@
           职员系列主要面向从事行政管理、人力资源、财务、综合事务等管理工作的人员。该系列强调管理能力和综合素质，为管理人员提供从基层到高层的完整职业发展通道。
         </p>
 
-        <div class="position-category">
-          <h4>管理岗位</h4>
-          <div class="path-diagram">
-            <div class="path-node level-junior">九级职员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-assistant">八级职员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-associate">七级职员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-senior">六级职员</div>
-            <div class="path-arrow">→</div>
-            <div class="path-node level-expert">五级职员及以上</div>
-          </div>
-          <p class="path-description">
-            从事行政管理、人力资源、财务管理、综合事务等工作，通过管理绩效、组织能力和战略规划能力实现职级晋升。研究所为管理人员提供系统的培训和发展机会，支持管理人员向专业化、职业化方向发展。
-          </p>
+        <!-- 岗位职级 -->
+        <div class="position-category" style="text-align: center;">
+          <img src="../../../assets/images/gangwei-5.png">
         </div>
       </div>
 
@@ -430,25 +409,30 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
   }
 
+  /* 初级岗位 - 浅蓝色 */
   .path-node.level-junior {
-    background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+    background: linear-gradient(135deg, #6ba3d8 0%, #4a90c2 100%);
   }
 
+  /* 中级岗位 - 中蓝色 */
   .path-node.level-assistant {
-    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+    background: linear-gradient(135deg, #4a90c2 0%, #2e6da4 100%);
   }
 
+  /* 高级岗位 - 深蓝色 */
   .path-node.level-associate {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #2e6da4 0%, #1e4d72 100%);
   }
 
+  /* 资深岗位 - 最深蓝色 */
   .path-node.level-senior {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #1e4d72 0%, #0d2c4a 100%);
   }
 
+  /* 专家岗位 - 深蓝灰色 */
   .path-node.level-expert {
-    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-    color: #333;
+    background: linear-gradient(135deg, #0d2c4a 0%, #1a1a2e 100%);
+    color: white;
   }
 
   .path-arrow {
@@ -528,5 +512,120 @@
   strong {
     color: #3d54a7;
     font-weight: bold;
+  }
+
+  /* 职员系列 - 岗位职级样式 */
+  .staff-level-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin: 20px 0;
+  }
+
+  .staff-level-box {
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 3px solid;
+  }
+
+  .staff-level-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .staff-level-box.technical-position {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #42a5f5;
+  }
+
+  .staff-level-box.employee-rank {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-color: #42a5f5;
+  }
+
+  .level-header {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1976d2;
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid rgba(25, 118, 210, 0.3);
+  }
+
+  .level-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
+  }
+
+  .level-badge {
+    background: white;
+    color: #1976d2;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-weight: bold;
+    font-size: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #42a5f5;
+  }
+
+  /* 行政岗位样式 */
+  .admin-position-container {
+    background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 100%);
+    border-radius: 12px;
+    padding: 25px;
+    margin: 20px 0;
+    border: 3px solid #ec407a;
+    box-shadow: 0 4px 15px rgba(236, 64, 122, 0.2);
+  }
+
+  .admin-header {
+    font-size: 18px;
+    font-weight: bold;
+    color: #c2185b;
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+  }
+
+  .path-diagram.admin-path {
+    background: rgba(255, 255, 255, 0.7);
+  }
+
+  /* 行政岗位等级节点样式 */
+  .path-node.level-admin-1 {
+    background: linear-gradient(135deg, #f8bbd0 0%, #f48fb1 100%);
+  }
+
+  .path-node.level-admin-2 {
+    background: linear-gradient(135deg, #f48fb1 0%, #ec407a 100%);
+  }
+
+  .path-node.level-admin-3 {
+    background: linear-gradient(135deg, #ec407a 0%, #c2185b 100%);
+  }
+
+  .path-node.level-admin-4 {
+    background: linear-gradient(135deg, #c2185b 0%, #880e4f 100%);
+  }
+
+  /* 管理说明样式 */
+  .management-note {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border-left: 4px solid #3d54a7;
+  }
+
+  .management-note strong {
+    color: #c2185b;
+    font-size: 15px;
   }
 </style>
