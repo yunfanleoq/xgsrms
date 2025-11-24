@@ -35,7 +35,7 @@
     // --- 状态定义 ---
     const menuList = ref<{ text: string; value: string; component: any }[]>([
       { text: '人才概况', value: '人才概况', component: markRaw(RencaiGaikuang) },
-      { text: '岗位发展路径', value: '岗位发展路径', component: markRaw(GangweiFazhanlu) },
+      { text: '职业发展路径', value: '职业发展路径', component: markRaw(GangweiFazhanlu) },
       { text: '薪酬福利情况', value: '薪酬福利情况', component: markRaw(XinchouFuli) }
     ]);
     

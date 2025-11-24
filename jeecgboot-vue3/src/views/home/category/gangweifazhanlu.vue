@@ -409,30 +409,29 @@
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
   }
 
-  /* 初级岗位 - 浅蓝色 */
+  /* 初级岗位 - 浅蓝色系 */
   .path-node.level-junior {
-    background: linear-gradient(135deg, #6ba3d8 0%, #4a90c2 100%);
+    background: linear-gradient(135deg, #6BB6FF 0%, #4A9EFF 100%);
   }
 
-  /* 中级岗位 - 中蓝色 */
+  /* 中级岗位 - 中蓝色系 */
   .path-node.level-assistant {
-    background: linear-gradient(135deg, #4a90c2 0%, #2e6da4 100%);
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
   }
 
-  /* 高级岗位 - 深蓝色 */
+  /* 副高级岗位 - 深蓝色系 */
   .path-node.level-associate {
-    background: linear-gradient(135deg, #2e6da4 0%, #1e4d72 100%);
+    background: linear-gradient(135deg, #2E5C8A 0%, #1E4A6B 100%);
   }
 
-  /* 资深岗位 - 最深蓝色 */
+  /* 正高级岗位 - 更深蓝色系 */
   .path-node.level-senior {
-    background: linear-gradient(135deg, #1e4d72 0%, #0d2c4a 100%);
+    background: linear-gradient(135deg, #1E3A5F 0%, #0F2A47 100%);
   }
 
-  /* 专家岗位 - 深蓝灰色 */
+  /* 专家级岗位 - 最深蓝色系 */
   .path-node.level-expert {
-    background: linear-gradient(135deg, #0d2c4a 0%, #1a1a2e 100%);
-    color: white;
+    background: linear-gradient(135deg, #0F1E3A 0%, #050A14 100%);
   }
 
   .path-arrow {
