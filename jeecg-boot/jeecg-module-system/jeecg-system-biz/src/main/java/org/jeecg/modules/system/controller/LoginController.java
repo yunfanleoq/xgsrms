@@ -34,12 +34,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import org.jeecg.config.JeecgSecurityConfig;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import java.util.Calendar;
 /**
  * @Author scott
  * @since 2018-12-17
@@ -67,20 +68,29 @@ public class LoginController {
 	private BaseCommonService baseCommonService;
 	@Autowired
 	private JeecgBaseConfig jeecgBaseConfig;
-
+		
+	@Autowired
+	private JeecgSecurityConfig jeecgSecurityConfig;
 	private final String BASE_CHECK_CODES = "qwertyuiplkjhgfdsazxcvbnmQWERTYUPLKJHGFDSAZXCVBNM1234567890";
 
-	@ApiOperation("登录接口")
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel, HttpServletRequest request){
-		Result<JSONObject> result = new Result<JSONObject>();
-		String username = sysLoginModel.getUsername();
-		String password = sysLoginModel.getPassword();
-		if(isLoginFailOvertimes(username)){
-			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
-		}
+    @ApiOperation("登录接口")
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel, HttpServletRequest request){
+        Result<JSONObject> result = new Result<JSONObject>();
+        String username = sysLoginModel.getUsername();
+        String password = sysLoginModel.getPassword();
+        
+        // 检查密码是否过期
+        Result<?> passwordExpireResult = checkPasswordExpire(username);
+        if (!passwordExpireResult.isSuccess()) {
+            return Result.error(passwordExpireResult.getMessage());
+        }
+        
+        if(isLoginFailOvertimes(username)){
+            return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
+        }
 
-		// step.1 验证码check
+        // step.1 验证码check
         String captcha = sysLoginModel.getCaptcha();
         if(captcha==null){
             result.error500("验证码无效");
@@ -844,7 +854,7 @@ public class LoginController {
 	}
 
 	/**
-	 * 登录失败超出次数5 返回true
+	 * 登录失败超出次数返回true
 	 * @param username
 	 * @return
 	 */
@@ -853,13 +863,14 @@ public class LoginController {
 		Object failTime = redisUtil.get(key);
 		if(failTime!=null){
 			Integer val = Integer.parseInt(failTime.toString());
-			if(val>5){
+			// 使用配置的最大失败次数
+			int maxFailTimes = jeecgSecurityConfig.getLogin().getMaxFailTimes();
+			if(val >= maxFailTimes){
 				return true;
 			}
 		}
 		return false;
 	}
-
 	/**
 	 * 记录登录失败次数
 	 * @param username
@@ -871,10 +882,10 @@ public class LoginController {
 		if(failTime!=null){
 			val = Integer.parseInt(failTime.toString());
 		}
-		// 10分钟，一分钟为60s
-		redisUtil.set(key, ++val, 600);
+		// 使用配置的锁定时长
+		int lockDuration = jeecgSecurityConfig.getLogin().getLockDuration();
+		redisUtil.set(key, ++val, lockDuration);
 	}
-
 	/**
 	 * 发送短信验证码接口(修改密码)
 	 *
@@ -953,4 +964,48 @@ public class LoginController {
 		return Result.ok();
 	}
 	
+	/**
+	 * 检查密码是否过期
+	 * @param username 用户名
+	 * @return 检查结果
+	 */
+    private Result<?> checkPasswordExpire(String username) {
+        // 获取用户信息
+        SysUser user = sysUserService.getUserByName(username);
+        if (user == null) {
+            return Result.error("用户不存在！");
+        }
+        
+        // 检查是否启用了密码过期策略
+        int expireDays = jeecgSecurityConfig.getPassword().getExpireDays();
+        if (expireDays <= 0) {
+            // -1表示永不过期，直接返回成功
+            return Result.ok();
+        }
+        
+        // 检查密码最后修改时间
+        Date passwordUpdateTime = user.getPasswordUpdateTime();
+        if (passwordUpdateTime == null) {
+            // 如果没有记录密码修改时间，默认为用户创建时间
+            passwordUpdateTime = user.getCreateTime();
+            if (passwordUpdateTime == null) {
+                // 如果创建时间也没有，不检查过期
+                return Result.ok();
+            }
+        }
+        
+        // 计算密码过期时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(passwordUpdateTime);
+        calendar.add(Calendar.DAY_OF_MONTH, expireDays);
+        Date expireDate = calendar.getTime();
+        
+        // 检查是否已过期
+        if (new Date().after(expireDate)) {
+            return Result.error("密码已过期，请修改密码后重新登录！");
+        }
+        
+        return Result.ok();
+    }
+    
 }

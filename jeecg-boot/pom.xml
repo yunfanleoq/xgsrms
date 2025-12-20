@@ -4,13 +4,13 @@
   <artifactId>jeecg-boot-parent</artifactId>
   <version>3.7.2</version>
   <packaging>pom</packaging>
-  <name>JEECG BOOT ${project.version}</name>
+  <name>SPRING BOOT ${project.version}</name>
 
 	<developers>
 		<developer>
-			<name>北京国炬信息技术有限公司</name>
-			<email>jeecgos@163.com</email>
-			<url>http://www.guojusoft.com</url>
+			<name>有限公司</name>
+			<email>asdfasdf@163.com</email>
+			<url>http://www.asdfasdf.com</url>
 		</developer>
 	</developers>
 
@@ -30,6 +30,7 @@
 	<properties>
 		<jeecgboot.version>3.7.2</jeecgboot.version>
 		<java.version>1.8</java.version>
+		<tomcat.version>9.0.98</tomcat.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- 微服务 -->
@@ -121,6 +122,10 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

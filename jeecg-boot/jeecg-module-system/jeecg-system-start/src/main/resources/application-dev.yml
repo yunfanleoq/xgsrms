@@ -197,7 +197,7 @@ mybatis-plus:
       table-underline: true
   configuration:
     # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
 #jeecg专用配置
@@ -304,6 +304,21 @@ jeecg:
     api-key: ??
     secret-key: ??
 
+  # 安全策略配置
+  security:
+    # 密码策略
+    password:
+      expire-days: 90  # 密码有效期天数，-1表示永不过期
+    # 登录失败策略
+    login:
+      max-fail-times: 5  # 最大失败次数
+      lock-duration: 300  # 锁定时长（秒）
+    # Token策略
+    token:
+      expire-time: 604800000  # JWT Token过期时间（毫秒），默认7天
+    # Session策略
+    session:
+      timeout: 1800  # Session超时时间（秒），默认30分钟
 #cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas

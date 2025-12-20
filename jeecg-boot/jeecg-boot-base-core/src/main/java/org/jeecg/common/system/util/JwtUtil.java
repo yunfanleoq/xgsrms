@@ -29,6 +29,9 @@ import org.jeecg.common.system.vo.SysUserCacheInfo;
 import org.jeecg.common.util.DateUtils;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.config.JeecgSecurityConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * @Author Scott
@@ -36,10 +39,20 @@ import org.jeecg.common.util.oConvertUtils;
  * @Desc JWT工具类
  **/
 @Slf4j
+@Component
 public class JwtUtil {
 
 	/**Token有效期为7天（Token在reids中缓存时间为两倍）*/
-	public static final long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000;
+	public static long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000;
+	
+	private static JeecgSecurityConfig jeecgSecurityConfig;
+	
+	@Autowired
+	public void setJeecgSecurityConfig(JeecgSecurityConfig config) {
+		jeecgSecurityConfig = config;
+		// 更新过期时间
+		EXPIRE_TIME = config.getToken().getExpireTime();
+	}
 	static final String WELL_NUMBER = SymbolConstant.WELL_NUMBER + SymbolConstant.LEFT_CURLY_BRACKET;
 
     /**
@@ -111,7 +124,10 @@ public class JwtUtil {
 	 * @return 加密的token
 	 */
 	public static String sign(String username, String secret) {
-		Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
+		// 使用配置的过期时间
+		long expireTime = jeecgSecurityConfig != null ? 
+			jeecgSecurityConfig.getToken().getExpireTime() : EXPIRE_TIME;
+		Date date = new Date(System.currentTimeMillis() + expireTime);
 		Algorithm algorithm = Algorithm.HMAC256(secret);
 		// 附带username信息
 		return JWT.create().withClaim("username", username).withExpiresAt(date).sign(algorithm);

@@ -245,10 +245,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             return Result.error("两次输入密码不一致!");
         }
         String password = PasswordUtil.encrypt(username, newpassword, user.getSalt());
-        this.userMapper.update(new SysUser().setPassword(password), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
+        // 更新密码修改时间
+        this.userMapper.update(new SysUser().setPassword(password).setPasswordUpdateTime(new Date()), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
         return Result.ok("密码重置成功!");
     }
-
+    
     @Override
     @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
     public Result<?> changePassword(SysUser sysUser) {
@@ -257,11 +258,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         String password = sysUser.getPassword();
         String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
         sysUser.setPassword(passwordEncode);
+        // 更新密码修改时间
+        sysUser.setPasswordUpdateTime(new Date());
         this.userMapper.updateById(sysUser);
         return Result.ok("密码修改成功!");
-    }
-
-    @Override
+    }    @Override
     @CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
 	@Transactional(rollbackFor = Exception.class)
 	public boolean deleteUser(String userId) {

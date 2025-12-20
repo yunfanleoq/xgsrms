@@ -205,7 +205,12 @@ public class SysUser implements Serializable {
      * 流程状态
      */
     private String bpmStatus;
-
+        
+    /** 密码最后修改时间 */
+    @TableField("password_update_time")
+    @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date passwordUpdateTime;
     /**
      * 是否已经绑定第三方
      */
