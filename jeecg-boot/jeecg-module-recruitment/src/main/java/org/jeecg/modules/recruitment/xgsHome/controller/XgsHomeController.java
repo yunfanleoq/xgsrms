@@ -218,6 +218,7 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
         OutputStream outputStream = null;
         
         try {
+
             File imageFile = new File(imagePath);
             
             if (!imageFile.exists() || !imageFile.isFile()) {

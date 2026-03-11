@@ -50,9 +50,9 @@ spring:
   mail:
     # 定时任务发送邮件
     timeJobSend: false
-    host: smtp.163.com
-    username: zktvbj@163.com
-    password: JJSNHZCJEFUVAYFX
+    host: mail.cstnet.ac.cn
+    username: liuyanliang@iie.ac.cn
+    password: K9WW48aP!R69qBfj
     properties:
       mail:
         smtp:
