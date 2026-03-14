@@ -50,16 +50,16 @@ spring:
   mail:
     # 定时任务发送邮件
     timeJobSend: false
-    host: mail.cstnet.ac.cn
+    host: mail.cstnet.cn
+    port: 465
     username: liuyanliang@iie.ac.cn
     password: K9WW48aP!R69qBfj
     properties:
       mail:
         smtp:
           auth: true
-          starttls:
+          ssl:
             enable: true
-            required: true
   ## quartz定时任务,采用数据库方式
   quartz:
     job-store-type: jdbc
