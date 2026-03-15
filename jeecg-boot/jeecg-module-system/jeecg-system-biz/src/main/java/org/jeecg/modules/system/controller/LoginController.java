@@ -81,10 +81,15 @@ public class LoginController {
         String password = sysLoginModel.getPassword();
         
         // 检查密码是否过期
-        Result<?> passwordExpireResult = checkPasswordExpire(username);
-        if (!passwordExpireResult.isSuccess()) {
-            return Result.error(passwordExpireResult.getMessage());
-        }
+		try {
+			Result<?> passwordExpireResult = checkPasswordExpire(username);
+			if (!passwordExpireResult.isSuccess()) {
+				return Result.error(passwordExpireResult.getMessage());
+			}
+		} catch (Exception ex) {
+			log.error(ex.getMessage(), ex);
+			return Result.error("用户名或者密码错误");
+		}
         
         if(isLoginFailOvertimes(username)){
             return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");

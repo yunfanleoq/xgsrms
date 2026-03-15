@@ -14,6 +14,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.jeecg.common.api.CommonAPI;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.aspect.annotation.PermissionData;
 import org.jeecg.common.base.BaseMap;
@@ -104,6 +105,8 @@ public class SysUserController {
 
     @Autowired
     private JeecgRedisClient jeecgRedisClient;
+    @Autowired
+    private CommonAPI commonAPI;
     
     /**
      * 获取租户下用户数据（支持租户隔离）
@@ -460,7 +463,69 @@ public class SysUserController {
         String[] arr = new String[]{departId, realname, username, id};
         SqlInjectionUtil.filterContent(arr, SymbolConstant.SINGLE_QUOTATION_MARK);
         //update-end-author:taoyan date:2022-7-14 for: VUEN-1702【禁止问题】sql注入漏洞
-        IPage<SysUser> pageList = sysUserDepartService.queryDepartUserPageList(departId, username, realname, pageSize, pageNo,id,isMultiTranslate);
+
+        LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Set<String> hasRoles = null;
+        if (loginUser == null) {
+            loginUser = commonAPI.getUserByName(JwtUtil.getUserNameByToken(SpringContextUtils.getHttpServletRequest()));
+
+        }
+        //当前登录人拥有的角色
+        hasRoles = commonAPI.queryUserRolesById(loginUser.getId());
+
+        log.info("get loginUser info: {}", loginUser);
+        log.info("get loginRoles info: {}", hasRoles != null ? hasRoles.toArray() : "空");
+
+        IPage<SysUser> pageList = new Page<>(pageNo, pageSize);
+        //如果是超级管理员 或者 允许开发的角色，则不做限制
+        if ("admin".equals(loginUser.getUsername())) {
+            pageList = sysUserDepartService.queryDepartUserPageList(departId, username, realname, pageSize, pageNo,id,isMultiTranslate);
+        } else {
+//             人力处岗聘主管	hr_position_manager
+//             部门岗聘主管	depart_position_manager
+//             求职者	register
+//             第三方登录角色	third_role
+//             管理员	admin
+            // register 角色只能看到 hr_position_manager 和 depart_position_manager 角色下的人员
+            // 先查询具有 hr_position_manager 角色的用户
+            IPage<SysUser> hrManagerPage = sysUserService.getUserByRoleId(new Page<>(pageNo, pageSize), "hr_position_manager", null);
+            // 查询具有 depart_position_manager 角色的用户
+            IPage<SysUser> departManagerPage = sysUserService.getUserByRoleId(new Page<>(pageNo, pageSize), "depart_position_manager", null);
+
+            // 合并两个结果集
+            List<SysUser> allRecords = new ArrayList<>();
+            if (hrManagerPage != null && hrManagerPage.getRecords() != null) {
+                allRecords.addAll(hrManagerPage.getRecords());
+            }
+            if (departManagerPage != null && departManagerPage.getRecords() != null) {
+                allRecords.addAll(departManagerPage.getRecords());
+            }
+
+            // 在内存中过滤 username 和 realname
+            List<SysUser> filteredRecords = allRecords;
+            if (oConvertUtils.isNotEmpty(username)) {
+                final String searchUsername = username;
+                filteredRecords = filteredRecords.stream()
+                    .filter(user -> user.getUsername() != null && user.getUsername().contains(searchUsername))
+                    .collect(Collectors.toList());
+            }
+            if (oConvertUtils.isNotEmpty(realname)) {
+                final String searchRealname = realname;
+                filteredRecords = filteredRecords.stream()
+                    .filter(user -> user.getRealname() != null && user.getRealname().contains(searchRealname))
+                    .collect(Collectors.toList());
+            }
+
+            // 分页处理
+            int total = filteredRecords.size();
+            int fromIndex = Math.min((pageNo - 1) * pageSize, total);
+            int toIndex = Math.min(fromIndex + pageSize, total);
+            List<SysUser> pageRecords = filteredRecords.subList(fromIndex, toIndex);
+
+            pageList = new Page<>(pageNo, pageSize, total);
+            pageList.setRecords(pageRecords);
+        }
+
         return Result.OK(pageList);
     }
 
