@@ -3,12 +3,7 @@ package org.jeecg.modules.system.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.jeecg.common.api.CommonAPI;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.base.BaseMap;
 import org.jeecg.common.config.TenantContext;
@@ -23,6 +19,8 @@ import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.SymbolConstant;
 import org.jeecg.common.modules.redis.client.JeecgRedisClient;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.util.JwtUtil;
+import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -87,6 +85,8 @@ public class SysRoleController {
 	private BaseCommonService baseCommonService;
 	@Autowired
 	private JeecgRedisClient jeecgRedisClient;
+	@Autowired
+	private CommonAPI commonAPI;
 	
 	/**
 	  * 分页列表查询 【系统角色，不做租户隔离】
@@ -501,9 +501,28 @@ public class SysRoleController {
 		//全部权限ids
 		List<String> ids = new ArrayList<>();
 		try {
+			LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+			Set<String> hasRoles = null;
+			if (loginUser == null) {
+				loginUser = commonAPI.getUserByName(JwtUtil.getUserNameByToken(SpringContextUtils.getHttpServletRequest()));
+
+			}
+			//当前登录人拥有的角色
+			hasRoles = commonAPI.queryUserRolesById(loginUser.getId());
+
+			log.info("get loginUser info: {}", loginUser);
+			log.info("get loginRoles info: {}", hasRoles != null ? hasRoles.toArray() : "空");
+
 			LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+
+			//如果是超级管理员 或者 允许开发的角色，则不做限制
+			if ("hr_position_manager,depart_position_manager,admin".contains(loginUser.getUsername())) {
+				query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
+			} else {
+				query.eq(SysPermission::getDelFlag, "-1"); // not found
+			}
 			query.orderByAsc(SysPermission::getSortNo);
+
 			List<SysPermission> list = sysPermissionService.list(query);
 			for(SysPermission sysPer : list) {
 				ids.add(sysPer.getId());

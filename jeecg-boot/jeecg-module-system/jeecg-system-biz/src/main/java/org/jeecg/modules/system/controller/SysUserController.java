@@ -121,19 +121,47 @@ public class SysUserController {
 	public Result<IPage<SysUser>> queryPageList(SysUser user,@RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,HttpServletRequest req) {
 		QueryWrapper<SysUser> queryWrapper = QueryGenerator.initQueryWrapper(user, req.getParameterMap());
-        //------------------------------------------------------------------------------------------------
-        //是否开启系统管理模块的多租户数据隔离【SAAS多租户模式】
-        if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
-            String tenantId = oConvertUtils.getString(TenantContext.getTenant(), "-1");
-            List<String> userIds = userTenantService.getUserIdsByTenantId(Integer.valueOf(tenantId));
-            if (oConvertUtils.listIsNotEmpty(userIds)) {
-                queryWrapper.in("id", userIds);
-            }else{
-                queryWrapper.eq("id", "通过租户查询不到任何用户");
-            }
+
+
+         LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        Set<String> hasRoles = null;
+        if (loginUser == null) {
+            loginUser = commonAPI.getUserByName(JwtUtil.getUserNameByToken(SpringContextUtils.getHttpServletRequest()));
+
         }
-        //------------------------------------------------------------------------------------------------
-        return sysUserService.queryPageList(req, queryWrapper, pageSize, pageNo);
+        //当前登录人拥有的角色
+        hasRoles = commonAPI.queryUserRolesById(loginUser.getId());
+
+        log.info("get loginUser info: {}", loginUser);
+        log.info("get loginRoles info: {}", hasRoles != null ? hasRoles.toArray() : "空");
+
+        IPage<SysUser> pageList;
+        //如果是超级管理员 或者 允许开发的角色，则不做限制
+        if ("hr_position_manager,depart_position_manager,admin".contains(loginUser.getUsername())) {
+            //------------------------------------------------------------------------------------------------
+            //是否开启系统管理模块的多租户数据隔离【SAAS 多租户模式】
+            if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
+                String tenantId = oConvertUtils.getString(TenantContext.getTenant(), "-1");
+                List<String> userIds = userTenantService.getUserIdsByTenantId(Integer.valueOf(tenantId));
+                if (oConvertUtils.listIsNotEmpty(userIds)) {
+                    queryWrapper.in("id", userIds);
+                }else{
+                    queryWrapper.eq("id", "通过租户查询不到任何用户");
+                }
+            }
+            //------------------------------------------------------------------------------------------------
+            pageList = sysUserService.queryPageList(req, queryWrapper, pageSize, pageNo).getResult();
+        } else {
+//             人力处岗聘主管	hr_position_manager
+//             部门岗聘主管	depart_position_manager
+//             求职者	register
+//             第三方登录角色	third_role
+//             管理员	admin
+            // 使用封装的方法获取指定角色下的用户列表
+            pageList = sysUserService.getUsersBySpecialRoles(pageNo, pageSize, user.getUsername(), user.getRealname(), loginUser, hasRoles);
+        }
+
+        return Result.OK(pageList);
 	}
 
     /**
@@ -478,7 +506,7 @@ public class SysUserController {
 
         IPage<SysUser> pageList = new Page<>(pageNo, pageSize);
         //如果是超级管理员 或者 允许开发的角色，则不做限制
-        if ("admin".equals(loginUser.getUsername())) {
+        if ("hr_position_manager,depart_position_manager,admin".contains(loginUser.getUsername())) {
             pageList = sysUserDepartService.queryDepartUserPageList(departId, username, realname, pageSize, pageNo,id,isMultiTranslate);
         } else {
 //             人力处岗聘主管	hr_position_manager
@@ -486,44 +514,16 @@ public class SysUserController {
 //             求职者	register
 //             第三方登录角色	third_role
 //             管理员	admin
-            // register 角色只能看到 hr_position_manager 和 depart_position_manager 角色下的人员
-            // 先查询具有 hr_position_manager 角色的用户
-            IPage<SysUser> hrManagerPage = sysUserService.getUserByRoleId(new Page<>(pageNo, pageSize), "hr_position_manager", null);
-            // 查询具有 depart_position_manager 角色的用户
-            IPage<SysUser> departManagerPage = sysUserService.getUserByRoleId(new Page<>(pageNo, pageSize), "depart_position_manager", null);
-
-            // 合并两个结果集
-            List<SysUser> allRecords = new ArrayList<>();
-            if (hrManagerPage != null && hrManagerPage.getRecords() != null) {
-                allRecords.addAll(hrManagerPage.getRecords());
-            }
-            if (departManagerPage != null && departManagerPage.getRecords() != null) {
-                allRecords.addAll(departManagerPage.getRecords());
-            }
-
-            // 在内存中过滤 username 和 realname
-            List<SysUser> filteredRecords = allRecords;
-            if (oConvertUtils.isNotEmpty(username)) {
-                final String searchUsername = username;
-                filteredRecords = filteredRecords.stream()
-                    .filter(user -> user.getUsername() != null && user.getUsername().contains(searchUsername))
-                    .collect(Collectors.toList());
-            }
-            if (oConvertUtils.isNotEmpty(realname)) {
-                final String searchRealname = realname;
-                filteredRecords = filteredRecords.stream()
-                    .filter(user -> user.getRealname() != null && user.getRealname().contains(searchRealname))
-                    .collect(Collectors.toList());
-            }
-
-            // 分页处理
-            int total = filteredRecords.size();
-            int fromIndex = Math.min((pageNo - 1) * pageSize, total);
-            int toIndex = Math.min(fromIndex + pageSize, total);
-            List<SysUser> pageRecords = filteredRecords.subList(fromIndex, toIndex);
-
-            pageList = new Page<>(pageNo, pageSize, total);
-            pageList.setRecords(pageRecords);
+            // 使用封装的方法获取指定角色下的用户列表
+            IPage<SysUser> specialRoleUsers = sysUserService.getUsersBySpecialRoles(pageNo, pageSize, username, realname, loginUser, hasRoles);
+            pageList = specialRoleUsers;
+            // 如果是 register 角色，返回特殊过滤的用户列表
+            // if (hasRoles != null && hasRoles.contains("register") && specialRoleUsers != null && specialRoleUsers.getRecords() != null) {
+            //     pageList = specialRoleUsers;
+            // } else {
+            //     // 其他角色正常查询
+            //     pageList = sysUserDepartService.queryDepartUserPageList(departId, username, realname, pageSize, pageNo,id,isMultiTranslate);
+            // }
         }
 
         return Result.OK(pageList);
