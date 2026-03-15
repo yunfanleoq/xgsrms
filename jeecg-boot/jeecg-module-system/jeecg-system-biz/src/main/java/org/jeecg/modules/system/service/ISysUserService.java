@@ -142,11 +142,25 @@ public interface ISysUserService extends IService<SysUser> {
 	public IPage<SysUser> getUserByDepIds(Page<SysUser> page, List<String> departIds, String username);
 
 	/**
-	 * 根据 userIds查询，查询用户所属部门的名称（多个部门名逗号隔开）
+	 * 根据 userIds 查询，查询用户所属部门的名称（多个部门名逗号隔开）
 	 * @param userIds
 	 * @return
 	 */
 	public Map<String,String> getDepNamesByUserIds(List<String> userIds);
+	
+	/**
+	 * 获取指定角色下的用户列表（支持 register 角色的特殊权限控制）
+	 * register 角色只能查看 hr_position_manager 和 depart_position_manager 角色下的用户
+	 * 
+	 * @param pageNo 页码
+	 * @param pageSize 每页大小
+	 * @param username 用户名过滤条件
+	 * @param realname 真实姓名过滤条件
+	 * @param loginUser 当前登录用户
+	 * @param hasRoles 当前登录用户的角色集合
+	 * @return IPage<SysUser> 分页用户列表
+	 */
+	IPage<SysUser> getUsersBySpecialRoles(Integer pageNo, Integer pageSize, String username, String realname, LoginUser loginUser, Set<String> hasRoles);
 
     /**
      * 根据部门 Id 和 QueryWrapper 查询

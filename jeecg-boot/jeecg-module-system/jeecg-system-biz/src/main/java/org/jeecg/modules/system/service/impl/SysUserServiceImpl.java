@@ -555,7 +555,79 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			}
 		}
 		return userRoleList;
-		//update-end---author:wangshuai ---date:20230220  for：[QQYUN-3980]组织管理中 职位功能 职位表加租户id 加职位-用户关联表------------
+		//update-end---author:wangshuai ---date:20230220  for：[QQYUN-3980]组织管理中 职位功能 职位表加租户 id 加职位 - 用户关联表------------
+	}
+	
+	/**
+	 * 获取指定角色下的用户列表（支持 register 角色的特殊权限控制）
+	 * register 角色只能查看 hr_position_manager 和 depart_position_manager 角色下的用户
+	 * 
+	 * @param pageNo 页码
+	 * @param pageSize 每页大小
+	 * @param username 用户名过滤条件
+	 * @param realname 真实姓名过滤条件
+	 * @param loginUser 当前登录用户
+	 * @param hasRoles 当前登录用户的角色集合
+	 * @return IPage<SysUser> 分页用户列表
+	 */
+	@Override
+	public IPage<SysUser> getUsersBySpecialRoles(Integer pageNo, Integer pageSize, String username, String realname, LoginUser loginUser, Set<String> hasRoles) {
+		IPage<SysUser> pageList = new Page<>(pageNo, pageSize);
+			
+		// 如果是超级管理员，不做限制
+		if (loginUser != null && "admin".equals(loginUser.getUsername())) {
+			// 管理员返回空页面，由调用方自行处理
+			return pageList;
+		}
+			
+		// 检查当前用户是否有 register 角色
+		boolean hasRegisterRole = hasRoles != null && hasRoles.contains("register");
+			
+		if (hasRegisterRole) {
+			// register 角色只能看到 hr_position_manager 和 depart_position_manager 角色下的人员
+			// 先查询具有 hr_position_manager 角色的用户
+			IPage<SysUser> hrManagerPage = this.getUserByRoleId(new Page<>(pageNo, pageSize), "hr_position_manager", null);
+			// 查询具有 depart_position_manager 角色的用户
+			IPage<SysUser> departManagerPage = this.getUserByRoleId(new Page<>(pageNo, pageSize), "depart_position_manager", null);
+				
+			// 合并两个结果集
+			List<SysUser> allRecords = new ArrayList<>();
+			if (hrManagerPage != null && hrManagerPage.getRecords() != null) {
+				allRecords.addAll(hrManagerPage.getRecords());
+			}
+			if (departManagerPage != null && departManagerPage.getRecords() != null) {
+				allRecords.addAll(departManagerPage.getRecords());
+			}
+				
+			// 在内存中过滤 username 和 realname
+			List<SysUser> filteredRecords = allRecords;
+			if (oConvertUtils.isNotEmpty(username)) {
+				final String searchUsername = username;
+				filteredRecords = filteredRecords.stream()
+					.filter(user -> user.getUsername() != null && user.getUsername().contains(searchUsername))
+					.collect(Collectors.toList());
+			}
+			if (oConvertUtils.isNotEmpty(realname)) {
+				final String searchRealname = realname;
+				filteredRecords = filteredRecords.stream()
+					.filter(user -> user.getRealname() != null && user.getRealname().contains(searchRealname))
+					.collect(Collectors.toList());
+			}
+				
+			// 分页处理
+			int total = filteredRecords.size();
+			int fromIndex = Math.min((pageNo - 1) * pageSize, total);
+			int toIndex = Math.min(fromIndex + pageSize, total);
+			List<SysUser> pageRecords = (total > 0) ? filteredRecords.subList(fromIndex, toIndex) : new ArrayList<>();
+				
+			pageList = new Page<>(pageNo, pageSize, total);
+			pageList.setRecords(pageRecords);
+		} else {
+			// 其他角色正常返回空页面，由调用方自行处理
+			// 如果需要默认查询所有用户，可以在这里添加逻辑
+		}
+			
+		return pageList;
 	}
 
 
