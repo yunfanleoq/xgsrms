@@ -138,9 +138,10 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/**/*.wasm", "anon");
         //update-end--Author:scott Date:20221116 for：排除静态资源后缀
 
-        filterChainDefinitionMap.put("/druid/**", "anon");
-        filterChainDefinitionMap.put("/swagger-ui.html", "anon");
-        filterChainDefinitionMap.put("/swagger**/**", "anon");
+        // 安全配置 关闭 swagger
+//        filterChainDefinitionMap.put("/druid/**", "anon");
+//        filterChainDefinitionMap.put("/swagger-ui.html", "anon");
+//        filterChainDefinitionMap.put("/swagger**/**", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
         filterChainDefinitionMap.put("/v2/**", "anon");
 
@@ -149,7 +150,7 @@ public class ShiroConfig {
         // update-end--Author:sunjianlei Date:20210510 for：排除消息通告查看详情页面（用于第三方APP）
 
         //积木报表排除
-        filterChainDefinitionMap.put("/jmreport/**", "anon");
+//        filterChainDefinitionMap.put("/jmreport/**", "anon");
         filterChainDefinitionMap.put("/**/*.js.map", "anon");
         filterChainDefinitionMap.put("/**/*.css.map", "anon");
         
