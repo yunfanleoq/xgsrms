@@ -3,7 +3,7 @@ package org.jeecg.modules.recruitment.xgsInviteToInterview.controller;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.shiro.SecurityUtils;
@@ -12,7 +12,9 @@ import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.query.QueryRuleEnum;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
+import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionsService;
 import org.jeecg.modules.recruitment.xgsInterview.service.IXgsInterviewService;
 import org.jeecg.modules.recruitment.xgsInviteToInterview.entity.XgsInviteToInterview;
@@ -50,6 +52,8 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	private IXgsInterviewService interviewService;
 	 @Autowired
 	 private IXgsPositionsService positionsService;
+	@Autowired
+	private IXgsPositionApplyService xgsPositionApplyService;
 	 @Autowired
 	 private ISysBaseAPI sysBaseAPI;
 
@@ -69,13 +73,12 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+        // 管理端列表（xgsInviteToInterviewList、xgsInterviewList）：不按登录人过滤，返回全部；候选人「我的面试」用 /myInterviewList
         // 自定义查询规则
         Map<String, QueryRuleEnum> customeRuleMap = new HashMap<>();
         // 自定义多选的查询规则为：LIKE_WITH_OR
 //        customeRuleMap.put("status", QueryRuleEnum.LIKE_WITH_OR);
 //        customeRuleMap.put("inviteStatus", QueryRuleEnum.LIKE_WITH_OR);
-		xgsInviteToInterview.setCandidateId(sysUser.getId());
         QueryWrapper<XgsInviteToInterview> queryWrapper = QueryGenerator.initQueryWrapper(xgsInviteToInterview, req.getParameterMap(),customeRuleMap);
 		Page<XgsInviteToInterview> page = new Page<XgsInviteToInterview>(pageNo, pageSize);
 		IPage<XgsInviteToInterview> pageList = xgsInviteToInterviewService.page(page, queryWrapper);
@@ -95,6 +98,7 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 					}
 				}
 			}
+			fillResumeIdFromApply(interview, vo);
 			return vo;
 		});
 		return Result.OK(pageList);
@@ -143,10 +147,40 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 					 }
 				 }
 			 }
+			 fillResumeIdFromApply(interview, vo);
 			 return vo;
 		 });
 		 return Result.OK(pageList);
 	 }
+
+	/** 从岗位投递记录带出 resumeId，供前端简历详情弹窗使用 */
+	private void fillResumeIdFromApply(XgsInviteToInterview interview, XgsInviteToInterviewVO vo) {
+		if (interview.getApplyId() == null) {
+			return;
+		}
+		XgsPositionApply apply = xgsPositionApplyService.getById(interview.getApplyId());
+		if (apply != null && apply.getResumeId() != null) {
+			vo.setResumeId(apply.getResumeId());
+		}
+	}
+
+	/**
+	 * 候选人本人操作（接受/拒绝邀请）：校验当前登录用户 id 与记录的 candidateId 一致。
+	 *
+	 * @return null 表示通过；否则为错误文案
+	 */
+	private String assertCurrentUserIsCandidate(XgsInviteToInterview invite) {
+		if (invite == null) {
+			return "未找到对应数据";
+		}
+		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+		String uid = sysUser == null ? null : sysUser.getId();
+		String candidateId = invite.getCandidateId();
+		if (uid == null || candidateId == null || !candidateId.equals(uid)) {
+			return "无权操作：仅候选人本人可操作";
+		}
+		return null;
+	}
 	
 	/**
 	 *   添加
@@ -283,11 +317,14 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	  * @return
 	  */
 	 @AutoLog(value = "面试邀请-接受邀请")
-	 @ApiOperation(value="面试邀请-接受邀请", notes="面试邀请-接受邀请")
-	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @ApiOperation(value="面试邀请-接受邀请", notes="面试邀请-接受邀请（仅候选人本人，不依赖菜单权限）")
 	 @PostMapping(value = "/invitePass")
 	 public Result<String> invitePass(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
 		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 String deny = assertCurrentUserIsCandidate(invite);
+		 if (deny != null) {
+			 return Result.error(deny);
+		 }
 		 invite.setInviteResult("接受邀请");
 		 xgsInviteToInterviewService.updateById(invite);
 		 return Result.OK("接受邀请操作成功！");
@@ -300,11 +337,14 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	  * @return
 	  */
 	 @AutoLog(value = "面试邀请-拒绝邀请")
-	 @ApiOperation(value="面试邀请-拒绝邀请", notes="面试邀请-拒绝邀请")
-	 @RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:add")
+	 @ApiOperation(value="面试邀请-拒绝邀请", notes="面试邀请-拒绝邀请（仅候选人本人，不依赖菜单权限）")
 	 @PostMapping(value = "/inviteRefuse")
 	 public Result<String> inviteRefuse(@RequestBody XgsInviteToInterview xgsInviteToInterview) {
 		 XgsInviteToInterview invite = xgsInviteToInterviewService.getById(xgsInviteToInterview.getId());
+		 String deny = assertCurrentUserIsCandidate(invite);
+		 if (deny != null) {
+			 return Result.error(deny);
+		 }
 		 invite.setInviteResult("拒绝邀请");
 		 xgsInviteToInterviewService.updateById(invite);
 		 return Result.OK("拒绝邀请操作成功！");
