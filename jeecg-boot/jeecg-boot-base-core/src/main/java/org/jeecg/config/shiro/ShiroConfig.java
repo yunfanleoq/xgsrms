@@ -13,6 +13,7 @@ import org.crazycake.shiro.*;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.JeecgBaseConfig;
+import org.jeecg.config.JeecgSecurityConfig;
 import org.jeecg.config.shiro.filters.CustomShiroFilterFactoryBean;
 import org.jeecg.config.shiro.filters.JwtFilter;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
@@ -56,6 +57,8 @@ public class ShiroConfig {
     private JeecgBaseConfig jeecgBaseConfig;
     @Autowired(required = false)
     private RedisProperties redisProperties;
+    @Autowired(required = false)
+    private JeecgSecurityConfig jeecgSecurityConfig;
     
     /**
      * Filter Chain定义说明
@@ -193,7 +196,9 @@ public class ShiroConfig {
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);
         //如果cloudServer为空 则说明是单体 需要加载跨域配置【微服务跨域切换】
         Object cloudServer = env.getProperty(CommonConstant.CLOUD_SERVER_KEY);
-        filterMap.put("jwt", new JwtFilter(cloudServer==null));
+        boolean allowTokenInQuery = jeecgSecurityConfig == null || jeecgSecurityConfig.isAllowTokenInQuery();
+        String corsCsv = jeecgSecurityConfig != null ? jeecgSecurityConfig.getCorsAllowedOrigins() : "";
+        filterMap.put("jwt", new JwtFilter(cloudServer == null, allowTokenInQuery, corsCsv));
         shiroFilterFactoryBean.setFilters(filterMap);
         // <!-- 过滤链定义，从上向下顺序执行，一般将/**放在最为下边
         filterChainDefinitionMap.put("/**", "jwt");

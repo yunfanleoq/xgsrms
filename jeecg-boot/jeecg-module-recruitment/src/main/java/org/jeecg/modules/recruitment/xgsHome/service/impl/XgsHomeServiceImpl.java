@@ -46,6 +46,9 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
     @Autowired
     private XgsJournalismMapper xgsJournalismMapper;  // 注入 Mapper
 
+    @Autowired
+    private ImageDownloadUtil imageDownloadUtil;
+
     private String apiUrl = "https://www.iie.ac.cn"; // 目标网站的 URL
 
     /**
@@ -79,7 +82,7 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
             String base64Data = entity.getImages();
             // 检查是否为Base64格式（包含data:image前缀或纯Base64字符串）
             if (base64Data.startsWith("data:image") || isBase64(base64Data)) {
-                String localPath = ImageDownloadUtil.saveBase64Image(base64Data);
+                String localPath = imageDownloadUtil.saveBase64Image(base64Data);
                 if (StringUtils.isNotBlank(localPath)) {
                     entity.setLocalImagePath(localPath);
                     logger.info("Base64图片已保存到本地: {}", localPath);
@@ -172,7 +175,7 @@ public class XgsHomeServiceImpl extends ServiceImpl<XgsHomeMapper, XgsHome> impl
                 String imgData = downloadImageAsBase64(photographUrl);
                 
                 // 下载图片并保存到本地
-                String localImagePath = ImageDownloadUtil.downloadAndSaveImage(photographUrl);
+                String localImagePath = imageDownloadUtil.downloadAndSaveImage(photographUrl);
 
                 // 创建 XgsHome 对象
                 XgsHome homeData = new XgsHome();

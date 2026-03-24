@@ -26,12 +26,14 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.*;
+import org.jeecg.config.JeecgSecurityConfig;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.system.entity.*;
 import org.jeecg.modules.system.model.DepartIdModel;
 import org.jeecg.modules.system.model.SysUserSysDepartModel;
 import org.jeecg.modules.system.service.*;
+import org.jeecg.modules.system.vo.PasswordResetRequest;
 import org.jeecg.modules.system.vo.SysDepartUsersVO;
 import org.jeecg.modules.system.vo.SysUserRoleVO;
 import org.jeecg.modules.system.vo.lowapp.DepartAndUserInfo;
@@ -107,6 +109,9 @@ public class SysUserController {
     private JeecgRedisClient jeecgRedisClient;
     @Autowired
     private CommonAPI commonAPI;
+
+    @Autowired(required = false)
+    private JeecgSecurityConfig jeecgSecurityConfig;
     
     /**
      * 获取租户下用户数据（支持租户隔离）
@@ -1222,17 +1227,35 @@ public class SysUserController {
 
 
     /**
-	 * 用户更改密码
-	 */
-	@GetMapping("/passwordChange")
-	public Result<SysUser> passwordChange(@RequestParam(name="username")String username,
-										  @RequestParam(name="password")String password,
-			                              @RequestParam(name="smscode", required = false)String smscode,
-			                              @RequestParam(name="emailCode", required = false)String emailCode,
-                                          @RequestParam(name="phone", required = false) String phone,
-			                              @RequestParam(name="email", required = false) String email) {
+     * 用户更改密码（推荐：POST，敏感信息在请求体，避免进入 URL/代理日志）
+     */
+    @PostMapping("/passwordChange")
+    public Result<SysUser> passwordChangePost(@RequestBody PasswordResetRequest body) {
+        if (body == null) {
+            return Result.error("参数不能为空");
+        }
+        return passwordChangeCore(body.getUsername(), body.getPassword(), body.getSmscode(), body.getEmailCode(), body.getPhone(), body.getEmail());
+    }
+
+    /**
+     * 用户更改密码（兼容：GET；生产请配置 jeecg.security.allow-password-change-get=false）
+     */
+    @GetMapping("/passwordChange")
+    public Result<SysUser> passwordChangeGet(@RequestParam(name = "username") String username,
+                                            @RequestParam(name = "password") String password,
+                                            @RequestParam(name = "smscode", required = false) String smscode,
+                                            @RequestParam(name = "emailCode", required = false) String emailCode,
+                                            @RequestParam(name = "phone", required = false) String phone,
+                                            @RequestParam(name = "email", required = false) String email) {
+        if (jeecgSecurityConfig != null && !jeecgSecurityConfig.isAllowPasswordChangeGet()) {
+            return Result.error("已禁止通过 GET 重置密码，请使用 POST /sys/user/passwordChange");
+        }
+        return passwordChangeCore(username, password, smscode, emailCode, phone, email);
+    }
+
+    private Result<SysUser> passwordChangeCore(String username, String password, String smscode, String emailCode, String phone, String email) {
         Result<SysUser> result = new Result<SysUser>();
-        if(oConvertUtils.isEmpty(username) || oConvertUtils.isEmpty(password)) {
+        if (oConvertUtils.isEmpty(username) || oConvertUtils.isEmpty(password)) {
             result.setMessage("重置密码失败！");
             result.setSuccess(false);
             return result;
@@ -1240,61 +1263,52 @@ public class SysUserController {
 
         SysUser sysUser = null;
         String redisKey = null;
-        // 手机短信 重置密码
-        if (oConvertUtils.isNotEmpty(smscode) && oConvertUtils.isNotEmpty(phone) ) {
-            //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-            redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+phone;
-            Object object= redisUtil.get(redisKey);
-            //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-            if(null==object) {
+        if (oConvertUtils.isNotEmpty(smscode) && oConvertUtils.isNotEmpty(phone)) {
+            redisKey = CommonConstant.PHONE_REDIS_KEY_PRE + phone;
+            Object object = redisUtil.get(redisKey);
+            if (null == object) {
                 result.setMessage("短信验证码失效！");
                 result.setSuccess(false);
                 return result;
             }
-            if(!smscode.equals(object.toString())) {
+            if (!smscode.equals(object.toString())) {
                 result.setMessage("短信验证码不匹配！");
                 result.setSuccess(false);
                 return result;
             }
-            sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,username).eq(SysUser::getPhone,phone));
+            sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username).eq(SysUser::getPhone, phone));
         }
-        // 邮箱 重置密码
-        if (oConvertUtils.isNotEmpty(emailCode) && oConvertUtils.isNotEmpty(email) ) {
-            //update-begin-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-            redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+email;
-            Object object= redisUtil.get(redisKey);
-            //update-end-author:taoyan date:2022-9-13 for: VUEN-2245 【漏洞】发现新漏洞待处理20220906
-            if(null==object) {
+        if (oConvertUtils.isNotEmpty(emailCode) && oConvertUtils.isNotEmpty(email)) {
+            redisKey = CommonConstant.PHONE_REDIS_KEY_PRE + email;
+            Object object = redisUtil.get(redisKey);
+            if (null == object) {
                 result.setMessage("邮箱验证码失效！");
                 result.setSuccess(false);
                 return result;
             }
-            if(!emailCode.equals(object.toString())) {
+            if (!emailCode.equals(object.toString())) {
                 result.setMessage("邮箱验证码不匹配！");
                 result.setSuccess(false);
                 return result;
             }
-            sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername,username).eq(SysUser::getEmail,email));
+            sysUser = this.sysUserService.getOne(new LambdaQueryWrapper<SysUser>().eq(SysUser::getUsername, username).eq(SysUser::getEmail, email));
         }
 
         if (sysUser == null) {
             result.setMessage("当前登录用户和绑定的手机号不匹配，无法修改密码！");
             result.setSuccess(false);
             return result;
-        } else {
-            String salt = oConvertUtils.randomGen(8);
-            sysUser.setSalt(salt);
-            String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
-            sysUser.setPassword(passwordEncode);
-            this.sysUserService.updateById(sysUser);
-            //update-begin---author:wangshuai ---date:20220316  for：[VUEN-234]密码重置添加敏感日志------------
-            baseCommonService.addLog("重置 "+username+" 的密码，操作人： " +sysUser.getUsername() ,CommonConstant.LOG_TYPE_2, 2);
-            //update-end---author:wangshuai ---date:20220316  for：[VUEN-234]密码重置添加敏感日志------------
-            result.setSuccess(true);
-            result.setMessage("密码重置完成！");
-            redisUtil.removeAll(redisKey);
-            return result;
         }
+        String salt = oConvertUtils.randomGen(8);
+        sysUser.setSalt(salt);
+        String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
+        sysUser.setPassword(passwordEncode);
+        this.sysUserService.updateById(sysUser);
+        baseCommonService.addLog("重置 " + username + " 的密码，操作人： " + sysUser.getUsername(), CommonConstant.LOG_TYPE_2, 2);
+        result.setSuccess(true);
+        result.setMessage("密码重置完成！");
+        redisUtil.removeAll(redisKey);
+        return result;
     }
 	
 

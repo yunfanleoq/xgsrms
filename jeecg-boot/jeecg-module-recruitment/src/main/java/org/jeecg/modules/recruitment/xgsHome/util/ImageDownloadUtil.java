@@ -13,25 +13,27 @@ import java.nio.file.Paths;
 import java.util.UUID;
 
 /**
- * @Description: 图片下载工具类
- * @Author: System
- * @Date: 2025-10-15
- * @Version: V1.0
+ * 轮播图保存到 {@code jeecg.path.upload} 下，相对路径固定为 {@code upload/carousel/文件名}，
+ * 与 {@link org.jeecg.modules.recruitment.xgsHome.controller.XgsHomeController#getCarouselImage} 解析规则一致。
+ * 旧版曾写入 JVM 当前工作目录，导致与接口读路径不一致、生产 404。
  */
 @Slf4j
 @Component
 public class ImageDownloadUtil {
 
-    // 图片保存的根目录，从配置文件读取，默认为upload/images
-    private static String uploadPath = "upload/carousel";
+    /** 相对 jeecg.path.upload 的子目录，与 getCarouselImage 中 resolveSafeImagePath 一致 */
+    private static final String CAROUSEL_REL = "upload/carousel";
+
+    @Value("${jeecg.path.upload}")
+    private String jeecgUploadPath;
 
     /**
      * 下载图片并保存到服务器本地
      *
      * @param imageUrl 图片URL地址
-     * @return 保存后的本地相对路径
+     * @return 相对 jeecg.path.upload 的路径，正斜杠（如 upload/carousel/uuid.png）
      */
-    public static String downloadAndSaveImage(String imageUrl) {
+    public String downloadAndSaveImage(String imageUrl) {
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
             log.error("图片URL为空");
             return null;
@@ -42,20 +44,14 @@ public class ImageDownloadUtil {
         FileOutputStream outputStream = null;
 
         try {
-            // 创建保存目录
-            Path uploadDir = Paths.get(uploadPath);
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-                log.info("创建图片保存目录: {}", uploadDir.toAbsolutePath());
-            }
+            Path carouselDir = carouselDir();
+            Files.createDirectories(carouselDir);
 
-            // 生成唯一文件名
             String fileExtension = getFileExtension(imageUrl);
             String fileName = UUID.randomUUID().toString() + fileExtension;
-            String filePath = uploadPath + File.separator + fileName;
-            File localFile = new File(filePath);
+            Path localPath = carouselDir.resolve(fileName);
+            File localFile = localPath.toFile();
 
-            // 下载图片
             URL url = new URL(imageUrl);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -74,8 +70,9 @@ public class ImageDownloadUtil {
                     outputStream.write(buffer, 0, bytesRead);
                 }
 
-                log.info("图片下载成功: {} -> {}", imageUrl, filePath);
-                return filePath;
+                String rel = CAROUSEL_REL + "/" + fileName;
+                log.info("图片下载成功: {} -> {}", imageUrl, localPath.toAbsolutePath());
+                return rel;
             } else {
                 log.error("图片下载失败，HTTP响应码: {}, URL: {}", responseCode, imageUrl);
                 return null;
@@ -101,40 +98,31 @@ public class ImageDownloadUtil {
         }
     }
 
-    /**
-     * 从URL中提取文件扩展名
-     *
-     * @param url 图片URL
-     * @return 文件扩展名，如.jpg, .png等
-     */
     private static String getFileExtension(String url) {
         if (url == null || url.isEmpty()) {
-            return ".jpg"; // 默认扩展名
+            return ".jpg";
         }
 
-        // 移除URL参数
         String urlWithoutParams = url.split("\\?")[0];
 
-        // 提取扩展名
         int lastDotIndex = urlWithoutParams.lastIndexOf('.');
         if (lastDotIndex > 0 && lastDotIndex < urlWithoutParams.length() - 1) {
             String extension = urlWithoutParams.substring(lastDotIndex);
-            // 验证扩展名是否为常见图片格式
             if (extension.matches("\\.(jpg|jpeg|png|gif|bmp|webp)")) {
                 return extension;
             }
         }
 
-        return ".jpg"; // 默认返回.jpg
+        return ".jpg";
     }
 
     /**
      * 保存Base64编码的图片到本地
      *
      * @param base64Data Base64编码的图片数据（可以包含data:image/png;base64,前缀）
-     * @return 保存后的本地相对路径
+     * @return 相对 jeecg.path.upload 的路径，正斜杠
      */
-    public static String saveBase64Image(String base64Data) {
+    public String saveBase64Image(String base64Data) {
         if (base64Data == null || base64Data.trim().isEmpty()) {
             log.error("Base64图片数据为空");
             return null;
@@ -143,21 +131,15 @@ public class ImageDownloadUtil {
         FileOutputStream outputStream = null;
 
         try {
-            // 创建保存目录
-            Path uploadDir = Paths.get(uploadPath);
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-                log.info("创建图片保存目录: {}", uploadDir.toAbsolutePath());
-            }
+            Path carouselDir = carouselDir();
+            Files.createDirectories(carouselDir);
 
-            // 处理Base64数据，移除前缀
             String base64String = base64Data;
-            String fileExtension = ".jpg"; // 默认扩展名
-            
+            String fileExtension = ".jpg";
+
             if (base64Data.contains(",")) {
                 String[] parts = base64Data.split(",");
                 if (parts.length == 2) {
-                    // 提取MIME类型
                     String mimeType = parts[0];
                     if (mimeType.contains("image/png")) {
                         fileExtension = ".png";
@@ -172,18 +154,17 @@ public class ImageDownloadUtil {
                 }
             }
 
-            // 生成唯一文件名
             String fileName = UUID.randomUUID().toString() + fileExtension;
-            String filePath = uploadPath + File.separator + fileName;
-            File localFile = new File(filePath);
+            Path localPath = carouselDir.resolve(fileName);
+            File localFile = localPath.toFile();
 
-            // 解码Base64并保存
             byte[] imageBytes = java.util.Base64.getDecoder().decode(base64String);
             outputStream = new FileOutputStream(localFile);
             outputStream.write(imageBytes);
 
-            log.info("Base64图片保存成功: {}", filePath);
-            return filePath;
+            String rel = CAROUSEL_REL + "/" + fileName;
+            log.info("Base64图片保存成功: {}", localPath.toAbsolutePath());
+            return rel;
 
         } catch (Exception e) {
             log.error("保存Base64图片时发生异常", e);
@@ -200,22 +181,33 @@ public class ImageDownloadUtil {
     }
 
     /**
-     * 删除本地图片文件
-     *
-     * @param localPath 本地图片路径
-     * @return 是否删除成功
+     * 删除本地图片（支持库中存的相对路径 upload/carousel/xxx）
      */
-    public static boolean deleteLocalImage(String localPath) {
+    public boolean deleteLocalImage(String localPath) {
         if (localPath == null || localPath.trim().isEmpty()) {
             return false;
         }
 
         try {
-            File file = new File(localPath);
+            String normalized = localPath.replace("\\", "/").trim();
+            if (normalized.contains("..")) {
+                return false;
+            }
+            Path basePath = Paths.get(jeecgUploadPath).toAbsolutePath().normalize();
+            Path candidate = Paths.get(normalized);
+            if (!candidate.isAbsolute()) {
+                candidate = basePath.resolve(candidate);
+            }
+            candidate = candidate.toAbsolutePath().normalize();
+            if (!candidate.startsWith(basePath)) {
+                log.warn("拒绝删除越界路径: {}", localPath);
+                return false;
+            }
+            File file = candidate.toFile();
             if (file.exists() && file.isFile()) {
                 boolean deleted = file.delete();
                 if (deleted) {
-                    log.info("删除本地图片: {}", localPath);
+                    log.info("删除本地图片: {}", candidate);
                 }
                 return deleted;
             }
@@ -225,5 +217,8 @@ public class ImageDownloadUtil {
 
         return false;
     }
-}
 
+    private Path carouselDir() {
+        return Paths.get(jeecgUploadPath).resolve("upload").resolve("carousel").normalize();
+    }
+}

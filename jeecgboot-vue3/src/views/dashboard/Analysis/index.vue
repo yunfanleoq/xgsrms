@@ -23,12 +23,17 @@
   defHttp
     .get({ url: '/sys/api/queryLoginUserRoles' }, { errorMessageMode: 'none' })
     .then((res) => {
-      if (res.data.includes('admin')) {
+      // 接口经 transform 后返回 result（角色编码数组），不是 axios 的 res.data
+      const roles = Array.isArray(res) ? res : res && typeof res === 'object' && Array.isArray((res as any).data) ? (res as any).data : [];
+      if (roles.includes('admin')) {
         indexStyle.value = 0;
         showIndexStyle.value = true;
       } else {
         indexStyle.value = 1;
       }
+    })
+    .catch(() => {
+      indexStyle.value = 1;
     })
     .finally(() => {
       loading.value = false;

@@ -221,7 +221,23 @@ jeecg:
     #webapp文件路径
     webapp: /opt/jeecg-boot/webapp
   shiro:
-    excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/jmreport/bigscreen2/**,/api/getUserInfo
+    # C-003 / VULN-017：不得将 /jmreport/** 或子路径放入 excludeUrls（anon 会优先匹配，绕过 ShiroConfig 中 /jmreport/** → jwt,roles[admin]）
+    excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/api/getUserInfo
+  security:
+    # GET 重置密码易泄露；生产必须为 false（POST /sys/user/passwordChange）
+    allow-password-change-get: false
+    # 禁止从 URL 读取 token 时设为 false（对应环境变量 JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY）
+    allow-token-in-query: ${JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY:false}
+    # 浏览器访问域名（逗号分隔），如 https://hr.example.com,https://www.example.com；为空则保持旧行为（反射 Origin，不推荐生产）
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+    token:
+      # 生产环境建议 2～8 小时（毫秒）；渗透建议缩短长期会话（VULN-028）
+      expireTime: ${JWT_EXPIRE_TIME:28800000}
+      # 必须通过环境变量 JWT_SECRET 注入高强度随机密钥（至少32字符）；禁止留空或使用默认占位符（见 ProdSecurityBindingValidator）
+      jwtSecret: ${JWT_SECRET:}
+    redis:
+      # VULN-028：为 true 时启动校验要求 REDIS_PASSWORD；仅经评估的内网可设 JEECG_SECURITY_REDIS_REQUIRE_PASSWORD=false
+      require-password: ${JEECG_SECURITY_REDIS_REQUIRE_PASSWORD:true}
   #阿里云oss存储和大鱼短信秘钥配置
   oss:
     accessKey: ??

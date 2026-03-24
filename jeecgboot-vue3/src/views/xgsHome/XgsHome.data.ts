@@ -35,18 +35,6 @@ export const newsColumns: BasicColumn[] = [
     width: 200,
   },
   {
-    title: '新闻内容',
-    align: 'center',
-    dataIndex: 'news',
-    width: 300,
-  },
-  {
-    title: '新闻图片',
-    align: 'center',
-    dataIndex: 'localImagePath',
-    width: 150,
-  },
-  {
     title: '创建时间',
     align: 'center',
     dataIndex: 'createTime',

@@ -108,10 +108,14 @@
   const fetchCarouselImages = async () => {
     isLoadingCarousel.value = true; // 开始加载
     try {
-      const response = await defHttp.get({
-        url: imgListUrl, // 替换为你的轮播图数据接口
-        params: { newsType: 'homeImages', pageNo: 1, pageSize: 10 },
-      });
+      const res = await defHttp.get(
+        {
+          url: imgListUrl,
+          params: { newsType: 'homeImages', pageNo: 1, pageSize: 10 },
+        },
+        { isTransformResponse: false }
+      );
+      const response = res && res.success ? res.result : res;
 
       if (response && response.records) {
         carouselImages.value = response.records

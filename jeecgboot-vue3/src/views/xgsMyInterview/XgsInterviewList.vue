@@ -1,7 +1,7 @@
 <template>
   <div>
     <!--引用表格-->
-    <BasicTable @register="registerTable" :rowSelection="rowSelection">
+    <BasicTable @register="registerTable">
       <!--     <&lt;!&ndash;!&#45;&#45;插槽:table标题&ndash;&gt;
     <template #tableTitle>
       <a-button type="primary" v-auth="'xgsInterview:xgs_interview:add'" @click="handleAdd" preIcon="ant-design:plus-outlined"> 新增</a-button>
@@ -26,8 +26,6 @@
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" />
       </template>
-      <!--字段回显插槽-->
-      <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
     <XgsInterviewModal @register="registerModal" @success="handleSuccess" />
@@ -35,50 +33,42 @@
 </template>
 
 <script lang="ts" name="xgsInterview-xgsInterview" setup>
-  import { ref, reactive, computed, unref, onMounted } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/src/components/Table';
-  import { useModal } from '/src/components/Modal';
-  import { useListPage } from '/src/hooks/system/useListPage';
+  import { reactive } from 'vue';
+  import { BasicTable, TableAction } from '/@/components/Table';
+  import { useModal } from '/@/components/Modal';
+  import { useListPage } from '/@/hooks/system/useListPage';
   import XgsInterviewModal from './components/XgsInterviewModal.vue';
-  import { columns, searchFormSchema, superQuerySchema } from './XgsInterview.data';
-  import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsInterview.api';
-  import { useUserStore } from '/src/store/modules/user';
+  import { columns, searchFormSchema } from './XgsInterview.data';
+  import { list, deleteOne, getImportUrl, getExportUrl } from './XgsInterview.api';
+  import { useUserStore } from '/@/store/modules/user';
   import {defHttp} from "@/utils/http/axios";
 
-  const queryParam = reactive<any>({
-    candidateId: useUserStore().getUserInfo?.id || '',
-  });
-  // 定义 realname 响应式变量用于装载用户名
-  const realname = ref(null);
-  const isRealnameLoaded = ref(false);
-  // 在组件挂载时获取 realname
-  onMounted(async () => {
-  });
-  const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
+  const queryParam = reactive<any>({
+    candidateId: userStore.getUserInfo?.id || '',
+  });
   //注册model
   const [registerModal, { openModal }] = useModal();
   //注册table数据
-  const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
+  const { tableContext } = useListPage({
     tableProps: {
       title: '我的面试',
       api: list,
       columns,
       canResize: false,
-      // formConfig: {
-      //   //labelWidth: 120,
-      //   schemas: searchFormSchema,
-      //   autoSubmitOnEnter: true,
-      //   showAdvancedButton: true,
-      //   fieldMapToNumber: [],
-      //   fieldMapToTime: [['interviewDate', ['interviewDate_begin', 'interviewDate_end'], 'YYYY-MM-DD HH:mm:ss']],
-      // },
+      formConfig: {
+        schemas: searchFormSchema,
+        autoSubmitOnEnter: true,
+        showAdvancedButton: true,
+        showResetButton: false,
+        fieldMapToNumber: [],
+        fieldMapToTime: [['interviewDate', ['interviewDate_begin', 'interviewDate_end'], 'YYYY-MM-DD HH:mm:ss']],
+      },
       actionColumn: {
         width: 250,
         fixed: 'right',
       },
-      beforeFetch: (params) => {
-      },
+      beforeFetch: (params) => Object.assign(params, queryParam),
     },
     exportConfig: {
       name: '面试管理',
@@ -91,19 +81,8 @@
     },
   });
 
-  const [registerTable, { reload }, { rowSelection, selectedRowKeys }] = tableContext;
-  // 高级查询配置
-  const superQueryConfig = reactive(superQuerySchema);
+  const [registerTable, { reload }] = tableContext;
 
-  /**
-   * 高级查询事件
-   */
-  function handleSuperQuery(params) {
-    Object.keys(params).map((k) => {
-      queryParam[k] = params[k];
-    });
-    reload();
-  }
   /**
    * 新增事件
    */
@@ -140,16 +119,10 @@
     await deleteOne({ id: record.id }, handleSuccess);
   }
   /**
-   * 批量删除事件
-   */
-  async function batchHandleDelete() {
-    await batchDelete({ ids: selectedRowKeys.value }, handleSuccess);
-  }
-  /**
    * 成功回调
    */
   function handleSuccess() {
-    (selectedRowKeys.value = []) && reload();
+    reload();
   }
   function invitePass(record) {
     defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/invitePass', data: record }).then(() => {
@@ -161,49 +134,55 @@
       reload();
     });
   }
+
+  /** 「是否接受邀请」inviteResult 非空 */
+  function inviteResultNonEmpty(record: Recordable): boolean {
+    const v = record.inviteResult;
+    return v != null && String(v).trim() !== '';
+  }
+
   /**
-   * 操作栏
+   * 操作栏：「是否接受邀请」非空时禁用「接受邀请」「拒绝邀请」
    */
   function getTableAction(record) {
-    if (record.inviteStatus === '接受邀请' || record.inviteStatus === '拒绝邀请') {
-      // 如果已经接受或拒绝，只显示状态信息
+    const result = record.inviteResult;
+    const decided = result === '接受邀请' || result === '拒绝邀请';
+    const disableAcceptRefuse = inviteResultNonEmpty(record);
+
+    if (decided) {
       return [
         {
           label: '详情',
           onClick: handleDetail.bind(null, record),
         },
         {
-          label: record.inviteStatus,
-          disabled: true, // 禁用操作
+          label: result,
+          disabled: true,
         },
-      ];
-    } else {
-      return [
-        {
-          label: '详情',
-          onClick: handleDetail.bind(null, record),
-        },
-        {
-          label: '接受邀请',
-          popConfirm: {
-            title: '是否接受邀请',
-            confirm: invitePass.bind(null, record),
-          },
-        },
-        {
-          label: '拒绝邀请',
-          popConfirm: {
-            title: '是否拒绝邀请',
-            confirm: inviteRefuse.bind(null, record),
-          },
-        },
-        // {
-        //   label: '回复',
-        //   onClick: handleEdit.bind(null, record),
-        //   auth: 'positions:xgs_position_apply:edit',
-        // },
       ];
     }
+    return [
+      {
+        label: '详情',
+        onClick: handleDetail.bind(null, record),
+      },
+      {
+        label: '接受邀请',
+        disabled: disableAcceptRefuse,
+        popConfirm: {
+          title: '是否接受邀请',
+          confirm: invitePass.bind(null, record),
+        },
+      },
+      {
+        label: '拒绝邀请',
+        disabled: disableAcceptRefuse,
+        popConfirm: {
+          title: '是否拒绝邀请',
+          confirm: inviteRefuse.bind(null, record),
+        },
+      },
+    ];
   }
   /**
    * 下拉操作栏

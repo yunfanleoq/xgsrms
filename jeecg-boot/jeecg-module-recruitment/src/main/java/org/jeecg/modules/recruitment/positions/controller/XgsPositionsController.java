@@ -6,11 +6,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.SecurityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.util.oConvertUtils;
+import org.jeecg.common.system.vo.DictModel;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysDepartModel;
+
+import com.alibaba.fastjson.JSONObject;
 import org.jeecg.modules.recruitment.positions.entity.XgsFirstHtml;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
@@ -134,10 +140,11 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 		// 查询有招聘岗位的部门ID列表
 		List<XgsPositions> list = xgsPositionsService.list(queryWrapper);
 		
-		// 提取所有部门ID并去重
+		// 提取所有部门ID并去重（trim 避免与部门表主键不一致导致匹配失败）
 		List<String> deptIds = list.stream()
 			.map(XgsPositions::getDept)
 			.filter(deptId -> deptId != null && !deptId.trim().isEmpty())
+			.map(String::trim)
 			.distinct()
 			.collect(Collectors.toList());
 
@@ -146,31 +153,73 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 			return Result.OK(new ArrayList<>());
 		}
 
-		// 获取所有部门信息
-		List<SysDepartModel> sysDeparts = sysBaseAPI.getAllSysDepart();
-		
-		// 创建部门ID到部门对象的映射，便于快速查找
-		Map<String, SysDepartModel> departMap = sysDeparts.stream()
-			.collect(Collectors.toMap(SysDepartModel::getId, dept -> dept, (d1, d2) -> d1));
-		
-		// 遍历部门ID列表，结合sysDeparts获取部门名称
-		List<Map<String, Object>> deptList = deptIds.stream()
-			.map(deptId -> {
-				Map<String, Object> map = new HashMap<>();
-				SysDepartModel depart = departMap.get(deptId);
-				if (depart != null) {
-					// 在系统部门表中找到了对应的部门信息
-					map.put("id", depart.getId());
-					map.put("departName", depart.getDepartName());
-				} else {
-					// 找不到部门信息，使用dept作为id和departName
-					map.put("id", deptId);
-					map.put("departName", deptId);
+		// 岗位表 dept 字段可能混存：① 部门主键(id) ② 直接存的部门名称（见接口中纯中文 id）
+		// 数字 id：优先走与列表「招聘部门」@Dict 相同的批量表字典；表字典白名单等异常时降级为仅 id，避免 500 导致前端 transform 报错
+		Map<String, String> idToDepartName = new HashMap<>(16);
+		String numericIdsCsv = deptIds.stream().filter(this::isNumericDepartKey).collect(Collectors.joining(","));
+		if (oConvertUtils.isNotEmpty(numericIdsCsv)) {
+			try {
+				List<DictModel> dictRows = sysBaseAPI.translateDictFromTableByKeys(
+						"sys_depart", "depart_name", "id", numericIdsCsv, null);
+				if (dictRows != null) {
+					for (DictModel dm : dictRows) {
+						if (dm != null && oConvertUtils.isNotEmpty(dm.getValue()) && oConvertUtils.isNotEmpty(dm.getText())) {
+							idToDepartName.put(dm.getValue(), dm.getText());
+						}
+					}
 				}
-				return map;
-			})
-			.collect(Collectors.toList());
-		
+				List<String> stillMissing = deptIds.stream()
+						.filter(this::isNumericDepartKey)
+						.filter(id -> !idToDepartName.containsKey(id))
+						.collect(Collectors.toList());
+				if (!stillMissing.isEmpty()) {
+					List<JSONObject> departs = sysBaseAPI.queryDepartsByIds(String.join(",", stillMissing));
+					if (departs != null) {
+						for (JSONObject j : departs) {
+							if (j == null) {
+								continue;
+							}
+							String id = j.getString("id");
+							if (oConvertUtils.isEmpty(id)) {
+								continue;
+							}
+							String name = j.getString("departName");
+							if (oConvertUtils.isEmpty(name)) {
+								name = j.getString("depart_name");
+							}
+							if (oConvertUtils.isNotEmpty(name)) {
+								idToDepartName.put(id, name);
+							}
+						}
+					}
+				}
+			} catch (Exception ex) {
+				log.warn("getDeptList: 部门名称解析失败，将降级为原始 dept 值。numericIdsCsv={}", numericIdsCsv, ex);
+			}
+		}
+
+		List<Map<String, Object>> deptList = new ArrayList<>(deptIds.size());
+		for (String deptKey : deptIds) {
+			Map<String, Object> map = new HashMap<>(4);
+			String departName = null;
+			if (isNumericDepartKey(deptKey)) {
+				departName = idToDepartName.get(deptKey);
+				if (oConvertUtils.isEmpty(departName)) {
+					try {
+						departName = sysBaseAPI.translateDictFromTable("sys_depart", "depart_name", "id", deptKey);
+					} catch (Exception ex) {
+						log.debug("getDeptList: 单条字典翻译失败 deptKey={}", deptKey);
+					}
+				}
+			}
+			if (oConvertUtils.isEmpty(departName)) {
+				departName = deptKey;
+			}
+			map.put("id", deptKey);
+			map.put("departName", departName);
+			deptList.add(map);
+		}
+
 		return Result.OK(deptList);
 	}
 	
@@ -469,4 +518,35 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 			 return Result.OK(xgsFirstHtml);
 		 }
 	 }
+
+	/** 招聘岗位 dept 存部门主键(id)时为纯数字；否则多为直接写入的部门名称 */
+	private boolean isNumericDepartKey(String s) {
+		return s != null && s.matches("\\d+");
+	}
+
+	private void sanitizePositionInput(XgsPositions xgsPositions) {
+		if (xgsPositions == null) {
+			return;
+		}
+		xgsPositions.setResearchDirection(cleanPlain(xgsPositions.getResearchDirection()));
+		xgsPositions.setXlxw(cleanPlain(xgsPositions.getXlxw()));
+		xgsPositions.setProfessional(cleanPlain(xgsPositions.getProfessional()));
+		xgsPositions.setWorkYears(cleanPlain(xgsPositions.getWorkYears()));
+		xgsPositions.setDuty(cleanRichText(xgsPositions.getDuty()));
+		xgsPositions.setMemo(cleanRichText(xgsPositions.getMemo()));
+	}
+
+	private String cleanPlain(String value) {
+		if (value == null) {
+			return null;
+		}
+		return Jsoup.clean(value, Whitelist.none());
+	}
+
+	private String cleanRichText(String value) {
+		if (value == null) {
+			return null;
+		}
+		return Jsoup.clean(value, Whitelist.basic());
+	}
 }

@@ -50,10 +50,6 @@
           <!--富文本件字段回显插槽-->
           <div v-html="text"></div>
         </template>
-        <template v-if="column.dataIndex === 'localImagePath'">
-          <!--图片字段回显插槽-->
-          <img v-if="text" :src="getImageUrl(text)" style="max-width: 100px; max-height: 100px" />
-        </template>
       </template>
     </BasicTable>
     <!-- 表单区域 -->
@@ -72,7 +68,7 @@
   import { downloadFile } from '/@/utils/common/renderUtils';
   import { useUserStore } from '/@/store/modules/user';
   import { defHttp } from '@/utils/http/axios';
-  
+
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);
   const userStore = useUserStore();
@@ -158,30 +154,17 @@
   }
   
   /**
-   * 获取图片URL
-   */
-  function getImageUrl(path: string) {
-    if (!path) return '';
-    // 如果是完整路径，使用后端接口获取
-    if (path.startsWith('/') || path.startsWith('D:') || path.startsWith('C:')) {
-      return `/jeecg-boot/xgsHome/xgsHome/getCarouselImage?imagePath=${encodeURIComponent(path)}`;
-    }
-    return path;
-  }
-
-  /**
    * 自动同步首页数据
    */
   function syncHomeContent() {
     defHttp
-      .post({ url: '/xgsHome/xgsHome/syncHomeContent' })
-      .then(() => {
-        // 成功同步后提示
-        console.log('同步成功');
-        reload(); // 重新加载表格数据
+      .post({ url: '/xgsHome/xgsHome/syncHomeContent' }, { isTransformResponse: false })
+      .then((res: any) => {
+        if (res && res.success) {
+          reload();
+        }
       })
       .catch((error) => {
-        // 同步失败后提示
         console.error('同步失败', error);
       });
   }

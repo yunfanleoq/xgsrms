@@ -497,13 +497,11 @@
 					return;
 				}
 				
-				this.$http.get("/sys/user/passwordChange", {
-					params: {
-						username: this.username,
-						email: this.forgetEmail,
-						emailCode: this.forgetCode,
-						password: this.newPassword
-					}
+				this.$http.post("/sys/user/passwordChange", {
+					username: this.username,
+					email: this.forgetEmail,
+					emailCode: this.forgetCode,
+					password: this.newPassword
 				}).then(res => {
 					if(res.data.success){
 						this.forgetStep = 3;

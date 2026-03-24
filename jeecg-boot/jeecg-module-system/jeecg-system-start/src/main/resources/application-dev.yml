@@ -317,6 +317,10 @@ jeecg:
     # Session策略
     session:
       timeout: 1800  # Session超时时间（秒），默认30分钟
+    # 安全加固：GET 重置密码默认关闭（请使用 POST）；URL 传 token 仅开发/兼容旧客户端时开启；生产 CORS 白名单见 cors-allowed-origins
+    allow-password-change-get: false
+    allow-token-in-query: true
+    cors-allowed-origins: ""
 #cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas

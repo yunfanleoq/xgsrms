@@ -55,7 +55,7 @@ export const updateMobile = (params) => {
  * @param params
  */
 export const updateUserPassword = (params) => {
-  return defHttp.get({ url: Api.updateUserPassword, params },{isTransformResponse:false});
+  return defHttp.post({ url: Api.updateUserPassword, params }, { isTransformResponse: false });
 }
 
 /**

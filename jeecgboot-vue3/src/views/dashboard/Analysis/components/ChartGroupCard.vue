@@ -37,19 +37,21 @@
   const dataList = computed(() => (props.type === 'bdc' ? bdcCardList : chartCardList));
 
   function initLogInfo() {
-    headerText(null).then((res) => {
-      if (res.success) {
-        chartCardList[0].total = res.result.positionsNumber;
-        chartCardList[1].total = res.result.personCountNumber;
-        chartCardList[2].total = res.result.contactNumber;
-        chartCardList[3].total = res.result.resumeNumber;
+    headerText(null)
+      .then((res) => {
+        if (res.success) {
+          chartCardList[0].total = res.result.positionsNumber;
+          chartCardList[1].total = res.result.personCountNumber;
+          chartCardList[2].total = res.result.contactNumber;
+          chartCardList[3].total = res.result.resumeNumber;
 
-        bdcCardList[0].total = res.result.positionsNumber;
-        bdcCardList[1].total = res.result.personCountNumber;
-        bdcCardList[2].total = res.result.contactNumber;
-        bdcCardList[3].total = res.result.resumeNumber;
-      }
-    });
+          bdcCardList[0].total = res.result.positionsNumber;
+          bdcCardList[1].total = res.result.personCountNumber;
+          bdcCardList[2].total = res.result.contactNumber;
+          bdcCardList[3].total = res.result.resumeNumber;
+        }
+      })
+      .catch(() => {});
   }
   initLogInfo();
 

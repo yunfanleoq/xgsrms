@@ -1,14 +1,12 @@
 <template>
   <div>
     <!--引用表格-->
-    <BasicTable @register="registerTable" :rowSelection="rowSelection">
+    <BasicTable @register="registerTable">
       <!--插槽:table标题-->
       <!--操作栏-->
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" />
       </template>
-      <!--字段回显插槽-->
-      <template #bodyCell="{ column, record, index, text }"> </template>
     </BasicTable>
     <!-- 表单区域 -->
     <XgsUserPositionApplyModal ref="modalRef" @success="handleSuccess" />
@@ -16,33 +14,32 @@
 </template>
 
 <script lang="ts" name="xgsUserResume-xgsUserPositionApply" setup>
-  import { ref, reactive, computed, unref } from 'vue';
-  import { BasicTable, useTable, TableAction } from '/@/components/Table';
+  import { ref, reactive } from 'vue';
+  import { BasicTable, TableAction } from '/@/components/Table';
   import { useListPage } from '/@/hooks/system/useListPage';
   import XgsUserPositionApplyModal from './components/XgsUserPositionApplyModal.vue';
-  import { columns, searchFormSchema, superQuerySchema } from './XgsUserPositionApply.data';
-  import { listMine, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
-  import { useUserStore } from '/@/store/modules/user';
+  import { columns, searchFormSchema } from './XgsUserPositionApply.data';
+  import { listMine, deleteOne, getImportUrl, getExportUrl } from './XgsUserPositionApply.api';
   import {defHttp} from "@/utils/http/axios";
   import {useMessage} from "@/hooks/web/useMessage";
   const queryParam = reactive<any>({});
-  const checkedKeys = ref<Array<string | number>>([]);
-  const userStore = useUserStore();
   // Modal引用
   const modalRef = ref();
   //注册table数据
-  const { prefixCls, tableContext, onExportXls, onImportXls } = useListPage({
+  const { tableContext } = useListPage({
     tableProps: {
       title: '我的申请',
       api: listMine,
       columns,
       canResize: false,
       maxColumnWidth: 120,
+      useSearchForm: searchFormSchema.length > 0,
       formConfig: {
         //labelWidth: 120,
         schemas: searchFormSchema,
         autoSubmitOnEnter: true,
         showAdvancedButton: true,
+        showResetButton: false,
         fieldMapToNumber: [],
         fieldMapToTime: [],
       },
@@ -65,20 +62,8 @@
     },
   });
 
-  const [registerTable, { reload }, { rowSelection, selectedRowKeys }] = tableContext;
+  const [registerTable, { reload }] = tableContext;
 
-  // 高级查询配置
-  const superQueryConfig = reactive(superQuerySchema);
-
-  /**
-   * 高级查询事件
-   */
-  function handleSuperQuery(params) {
-    Object.keys(params).map((k) => {
-      queryParam[k] = params[k];
-    });
-    reload();
-  }
   /**
    * 新增事件
    */
@@ -115,23 +100,17 @@
     await deleteOne({ id: record.id }, handleSuccess);
   }
   /**
-   * 批量删除事件
-   */
-  async function batchHandleDelete() {
-    await batchDelete({ ids: selectedRowKeys.value }, handleSuccess);
-  }
-  /**
    * 成功回调
    */
   function handleSuccess() {
-    (selectedRowKeys.value = []) && reload();
+    reload();
   }
 
-  const creqateMessage = useMessage();
+  const { createMessage } = useMessage();
   function handleSubmit(record) {
     defHttp.get({ url: '/resume/xgsFlowOpinions/submitByApplyId', params: { applyId: record.id } }).then((data) => {
       if (data) {
-        creqateMessage.success('提交成功');
+        createMessage.success('提交成功');
         reload();
       }
     });

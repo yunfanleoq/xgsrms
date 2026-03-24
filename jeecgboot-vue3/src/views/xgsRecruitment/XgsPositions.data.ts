@@ -1,8 +1,5 @@
 import {BasicColumn} from '/@/components/Table';
 import {FormSchema} from '/@/components/Table';
-import { rules} from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
    {
@@ -14,16 +11,6 @@ export const columns: BasicColumn[] = [
     title: '课题组',
     align:"center",
     dataIndex: 'ktz_dictText'
-   },
-   {
-    title: '咨询电话',
-    align:"center",
-    dataIndex: 'telphone'
-   },
-   {
-    title: '邮箱',
-    align:"center",
-    dataIndex: 'email'
    },
    {
     title: '岗位名称',
@@ -41,11 +28,6 @@ export const columns: BasicColumn[] = [
     dataIndex: 'personCount'
    },
    {
-    title: '岗位职责',
-    align:"center",
-    dataIndex: 'duty',
-   },
-   {
     title: '学历学位',
     align:"center",
     dataIndex: 'xlxw'
@@ -54,16 +36,6 @@ export const columns: BasicColumn[] = [
     title: '专业',
     align:"center",
     dataIndex: 'professional'
-   },
-   {
-    title: '工作年限',
-    align:"center",
-    dataIndex: 'workYears'
-   },
-   {
-    title: '备注',
-    align:"center",
-    dataIndex: 'memo',
    },
   //  {
   //   title: '岗位状态',

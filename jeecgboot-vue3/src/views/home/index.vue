@@ -64,7 +64,9 @@
   const loggedInUser = computed(() => userStore.userInfo);
 
   onMounted(() => {
-    userStore.getUserInfoAction();
+    userStore.getUserInfoAction().catch((e) => {
+      console.warn('首页获取用户信息失败（可忽略：未登录或 token 失效）', e);
+    });
   });
 
   const currentYear = computed(() => new Date().getFullYear());

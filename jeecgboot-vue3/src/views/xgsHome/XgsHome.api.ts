@@ -23,10 +23,17 @@ export const getExportUrl = Api.exportXls;
 export const getImportUrl = Api.importExcel;
 /**
  * 列表接口
- * @param params
+ * 使用 isTransformResponse: false 自行解包，避免接口返回非 200 时 transform 抛错导致控制台 Uncaught
  */
 export const list = (params) =>
-  defHttp.get({url: Api.list, params});
+  defHttp
+    .get({ url: Api.list, params }, { isTransformResponse: false })
+    .then((res: any) => {
+      if (res && res.success && res.result != null) {
+        return res.result;
+      }
+      return { records: [], total: 0 };
+    });
 
 /**
  * 删除单个

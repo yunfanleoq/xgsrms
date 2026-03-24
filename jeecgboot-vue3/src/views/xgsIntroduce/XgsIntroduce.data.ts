@@ -1,25 +1,11 @@
 import { BasicColumn } from '/@/components/Table';
 import { FormSchema } from '/@/components/Table';
-import { rules } from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
-import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
   {
     title: '概况类型',
     align: 'center',
     dataIndex: 'type_dictText',
-  },
-  {
-    title: '概况内容',
-    align: 'center',
-    dataIndex: 'text',
-  },
-  {
-    title: '图片',
-    align: 'center',
-    dataIndex: 'picture',
-    customRender: render.renderImage,
   },
   {
     title: '图片附文',

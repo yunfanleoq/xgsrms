@@ -69,7 +69,6 @@
   import { Progress } from 'ant-design-vue';
   import ChartGroupCard from '../components/ChartGroupCard.vue';
   import { table, table1, myResume, myInterView, myApply } from '../data';
-  import { list } from '@';
   import { defHttp } from '@/utils/http/axios';
   import { useUserStore } from '@/store/modules/user';
   const loading = ref(true);

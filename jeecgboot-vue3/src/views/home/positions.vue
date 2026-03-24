@@ -472,13 +472,17 @@
       params.keyword = searchQuery.value;
     }
 
-    getPositionList(params).then((res) => {
-      if (res.success) {
-        let list = res.result;
-        positions.value = list.records;
-        totalCount.value = list.total; // 设置总记录数
-      }
-    });
+    getPositionList(params)
+      .then((res) => {
+        if (res && res.success) {
+          let list = res.result;
+          positions.value = list.records;
+          totalCount.value = list.total;
+        }
+      })
+      .catch((e) => {
+        console.error('getPositionList failed', e);
+      });
   };
 
   // 监听查询条件变化，重置到第一页并重新获取数据
@@ -508,26 +512,32 @@
   };
 
   const fetchDepts = () => {
-    
-    getDeptList({}).then((res) => {
-      if (res.success) {
-        depts.value = res.result;
-      }
-    });
+    getDeptList({})
+      .then((res) => {
+        if (res && res.success) {
+          depts.value = res.result;
+        }
+      })
+      .catch((e) => {
+        console.error('getDeptList failed', e);
+      });
   };
 
   const fetchCategorys = () => {
     const params = {
       dictCode: '岗位分类', // 只获取一级部门
     };
-    getDictItems(params).then((res) => {
-      if (res.success) {
-        let list = res.result;
-        // 提取 list 中的 dept 字段形成数组，并赋值给 depts.value
-        list = list.map((item) => item.title);
-        jobCategories.value = list;
-      }
-    });
+    getDictItems(params)
+      .then((res) => {
+        if (res && res.success) {
+          let list = res.result;
+          list = list.map((item) => item.title);
+          jobCategories.value = list;
+        }
+      })
+      .catch((e) => {
+        console.error('getDictItems(岗位分类) failed', e);
+      });
   };
 
   onMounted(() => {

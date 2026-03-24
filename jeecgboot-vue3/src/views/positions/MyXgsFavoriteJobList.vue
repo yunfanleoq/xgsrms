@@ -2,11 +2,6 @@
 <div>
     <!--引用表格-->
    <BasicTable @register="registerTable">
-     <!--插槽:table标题-->
-      <template #tableTitle>
-          <!-- 高级查询 -->
-          <super-query :config="superQueryConfig" @search="handleSuperQuery" />
-      </template>
        <!--操作栏-->
       <template #action="{ record }">
           <TableAction :actions="getTableAction(record)"/>
@@ -26,7 +21,7 @@
   import { useListPage } from '/@/hooks/system/useListPage'
   import XgsFavoriteJobModal from './components/PositionFavoriteDetail.vue'
   import XgsPositionApplyModalNew from './components/XgsPositionApplyModalNew.vue'
-  import {columns, searchFormSchema, superQuerySchema} from './XgsFavoriteJob.data';
+  import {columns, searchFormSchema} from './XgsFavoriteJob.data';
   import {list, deleteOne} from './XgsFavoriteJob.api';
   import { getJobById } from '@/api/xgsrms/home';
   import { useUserStore } from '/@/store/modules/user';
@@ -45,11 +40,13 @@
            api: list,
            columns,
            canResize:false,
+           useSearchForm: searchFormSchema.length > 0,
            formConfig: {
               //labelWidth: 120,
               schemas: searchFormSchema,
               autoSubmitOnEnter:true,
               showAdvancedButton:true,
+              showResetButton: false,
               fieldMapToNumber: [
               ],
               fieldMapToTime: [
@@ -67,18 +64,6 @@
 
  const [registerTable, {reload}] = tableContext
 
-  // 高级查询配置
-  const superQueryConfig = reactive(superQuerySchema);
-
-  /**
-   * 高级查询事件
-   */
-  function handleSuperQuery(params) {
-    Object.keys(params).map((k) => {
-      queryParam[k] = params[k];
-    });
-   reload();
- }
   /**
    * 详情
   */

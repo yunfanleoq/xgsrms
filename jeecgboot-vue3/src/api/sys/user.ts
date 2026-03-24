@@ -100,6 +100,8 @@ export function getUserInfo() {
       // update-end-author:sunjianlei date:20230306 for: 修复登录成功后，没有正确重定向的问题
     }
     // update-end--author:zyf---date:20220425---for:【VUEN-76】捕获接口超时异常,跳转到登录界面
+    // 避免调用方 await 解构 undefined 产生二次异常；首页等场景 token 失效/签名校验失败时仍会进入 catch
+    return { userInfo: null, sysAllDictItems: null } as unknown as GetUserInfoModel;
   });
 }
 
@@ -169,7 +171,9 @@ export const emailVerify = (params) => defHttp.post({ url: Api.emailVerify, para
  *密码修改
  * @param params
  */
-export const passwordChange = (params) => defHttp.get({ url: Api.passwordChange, params }, { isTransformResponse: false });
+/** 忘记密码重置（POST，body 传参，避免敏感信息出现在 URL） */
+export const passwordChange = (params) =>
+  defHttp.post({ url: Api.passwordChange, params }, { isTransformResponse: false });
 /**
  * @description: 第三方登录
  */

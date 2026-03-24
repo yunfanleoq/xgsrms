@@ -33,13 +33,6 @@
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)" />
       </template>
-      <!--字段回显插槽-->
-      <template #bodyCell="{ column, record, index, text }">
-        <template v-if="column.dataIndex === 'text'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
-        </template>
-      </template>
     </BasicTable>
     <!-- 表单区域 -->
     <XgsIntroduceModal @register="registerModal" @success="handleSuccess" />

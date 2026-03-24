@@ -151,11 +151,6 @@
   function handleSuccess() {
     (selectedRowKeys.value = []) && reload();
   }
-  function cancelInvite(record) {
-    defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/cancelInvite', data: record }).then(() => {
-      reload();
-    });
-  }
   function interviewPass(record) {
     defHttp.post({ url: '/xgsInviteToInterview/xgsInviteToInterview/interviewPass', data: record }).then(() => {
       reload();
@@ -180,31 +175,41 @@
       },
     });
   }
+
+  function strNonEmpty(v: unknown): boolean {
+    return v != null && String(v).trim() !== '';
+  }
+
   /**
-   * 操作栏
+   * 操作栏（无「编辑」）
+   * 邀请：邀请状态为「已发送邀请」或「是否接受邀请」非空 → 禁用
+   * 撤回：仅「已发送邀请」且候选人尚未在「是否接受邀请」中回应（为空）时可撤回；已接受/已拒绝后不可撤回
+   * 通过/未通过：仅「接受邀请」且「面试结果」尚未录入（为空）时可操作；已有面试结果则不可再点
    */
-  function getTableAction(record) {
+  function getTableAction(record: Recordable) {
+    const inviteStatus = record.inviteStatus;
+    const inviteResult = record.inviteResult;
+    const interviewResult = record.interviewResult;
+
+    const inviteDisabled = inviteStatus === '已发送邀请' || strNonEmpty(inviteResult);
+    const withdrawEnabled = inviteStatus === '已发送邀请' && !strNonEmpty(inviteResult);
+    const passFailEnabled = inviteResult === '接受邀请' && !strNonEmpty(interviewResult);
+
     return [
       {
         label: '查看',
         onClick: handleDetail.bind(null, record),
       },
       {
-        label: '编辑',
-        onClick: handleEdit.bind(null, record),
-        auth: 'positions:xgs_position_apply:edit',
-      },
-      {
         label: '邀请',
         onClick: handleEdit.bind(null, record),
         auth: 'positions:xgs_position_apply:edit',
+        disabled: inviteDisabled,
       },
       {
         label: '撤回',
-        popConfirm: {
-          title: '是否撤回邀请',
-          confirm: cancelInvite.bind(null, record),
-        },
+        onClick: () => cancelInviteV2(record),
+        disabled: !withdrawEnabled,
       },
       {
         label: '通过',
@@ -213,6 +218,7 @@
           confirm: interviewPass.bind(null, record),
         },
         auth: 'positions:xgs_position_apply:edit',
+        disabled: !passFailEnabled,
       },
       {
         label: '未通过',
@@ -220,6 +226,7 @@
           title: '面试未通过',
           confirm: interviewFail.bind(null, record),
         },
+        disabled: !passFailEnabled,
       },
     ];
   }
