@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
@@ -16,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.UnavailableSecurityManagerException;
 import org.jeecg.common.api.dto.message.MessageDTO;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.config.TenantContext;
@@ -23,27 +25,27 @@ import org.jeecg.common.constant.CacheConstant;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.FillRuleConstant;
 import org.jeecg.common.constant.SymbolConstant;
-import org.jeecg.common.constant.enums.DySmsEnum;
-import org.jeecg.common.constant.enums.MessageTypeEnum;
-import org.jeecg.common.constant.enums.RoleIndexConfigEnum;
-import org.jeecg.common.constant.enums.SysAnnmentTypeEnum;
+import org.jeecg.common.constant.PasswordConstant;
+import org.jeecg.common.constant.enums.*;
 import org.jeecg.common.desensitization.annotation.SensitiveEncode;
+import org.jeecg.common.exception.JeecgBootBizTipException;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.system.vo.SysUserCacheInfo;
 import org.jeecg.common.util.*;
+import org.jeecg.common.util.encryption.AesEncryptUtil;
+import org.jeecg.config.JeecgBaseConfig;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.message.handle.impl.SystemSendMsgHandle;
 import org.jeecg.modules.system.entity.*;
 import org.jeecg.modules.system.mapper.*;
+import org.jeecg.modules.system.model.SysLoginModel;
+import org.jeecg.modules.system.model.SysUserSysDepPostModel;
 import org.jeecg.modules.system.model.SysUserSysDepartModel;
-import org.jeecg.modules.system.service.ISysRoleIndexService;
-import org.jeecg.modules.system.service.ISysThirdAccountService;
-import org.jeecg.modules.system.service.ISysUserService;
-import org.jeecg.modules.system.vo.SysUserDepVo;
-import org.jeecg.modules.system.vo.SysUserPositionVo;
-import org.jeecg.modules.system.vo.UserAvatar;
+import org.jeecg.modules.system.service.*;
+import org.jeecg.modules.system.util.ImportSysUserCache;
+import org.jeecg.modules.system.vo.*;
 import org.jeecg.modules.system.vo.lowapp.AppExportUserVo;
 import org.jeecg.modules.system.vo.lowapp.DepartAndUserInfo;
 import org.jeecg.modules.system.vo.lowapp.DepartInfo;
@@ -55,17 +57,20 @@ import org.jeecgframework.poi.excel.entity.ImportParams;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -120,29 +125,48 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	private SysPositionMapper sysPositionMapper;
 	@Autowired
 	private SystemSendMsgHandle systemSendMsgHandle;
+	
 	@Autowired
 	private ISysThirdAccountService sysThirdAccountService;
 	@Autowired
 	private RedisUtil redisUtil;
-	
+    
+    @Autowired
+    private SysTenantPackUserMapper packUserMapper;
+    
+    @Autowired
+    private SysUserDepPostMapper depPostMapper;
+
+	@Autowired
+	private JeecgBaseConfig jeecgBaseConfig;
+
+	/**
+	 * 管理员账号
+	 */
+	public static final String[] ADMIN_ACCOUNT = new String[]{"admin"};
+
 	@Override
 	public Result<IPage<SysUser>> queryPageList(HttpServletRequest req, QueryWrapper<SysUser> queryWrapper, Integer pageSize, Integer pageNo) {
 		Result<IPage<SysUser>> result = new Result<IPage<SysUser>>();
-		//update-begin-Author:wangshuai--Date:20211119--for:【vue3】通过部门id查询用户，通过code查询id
 		//部门ID
 		String departId = req.getParameter("departId");
 		if (oConvertUtils.isNotEmpty(departId)) {
-			LambdaQueryWrapper<SysUserDepart> query = new LambdaQueryWrapper<>();
-			query.eq(SysUserDepart::getDepId, departId);
-			List<SysUserDepart> list = sysUserDepartMapper.selectList(query);
+            //代码逻辑说明:【JHHB-762】用户管理需要支持按组织架构查询用户（支持多选）---
+            //兼容多个部门id
+            LambdaQueryWrapper<SysUserDepart> query = new LambdaQueryWrapper<>();
+            if(departId.contains(SymbolConstant.COMMA)) {
+                query.in(SysUserDepart::getDepId, Arrays.asList(departId.split(SymbolConstant.COMMA)));
+            } else {
+                query.eq(SysUserDepart::getDepId, departId);
+            }
+            List<SysUserDepart> list = sysUserDepartMapper.selectList(query);
 			List<String> userIds = list.stream().map(SysUserDepart::getUserId).collect(Collectors.toList());
-			//update-begin---author:wangshuai ---date:20220322  for：[issues/I4XTYB]查询用户时，当部门id 下没有分配用户时接口报错------------
+			// 代码逻辑说明: [issues/I4XTYB]查询用户时，当部门id 下没有分配用户时接口报错------------
 			if (oConvertUtils.listIsNotEmpty(userIds)) {
 				queryWrapper.in("id", userIds);
 			} else {
 				return Result.OK();
 			}
-			//update-end---author:wangshuai ---date:20220322  for：[issues/I4XTYB]查询用户时，当部门id 下没有分配用户时接口报错------------
 		}
 		//用户ID
 		String code = req.getParameter("code");
@@ -150,16 +174,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			queryWrapper.in("id", Arrays.asList(code.split(",")));
 			pageSize = code.split(",").length;
 		}
-		//update-end-Author:wangshuai--Date:20211119--for:【vue3】通过部门id查询用户，通过code查询id
 
-		//update-begin-author:taoyan--date:20220104--for: JTC-372 【用户冻结问题】 online授权、用户组件，选择用户都能看到被冻结的用户
+		// 代码逻辑说明: JTC-372 【用户冻结问题】 online授权、用户组件，选择用户都能看到被冻结的用户
 		String status = req.getParameter("status");
 		if (oConvertUtils.isNotEmpty(status)) {
 			queryWrapper.eq("status", Integer.parseInt(status));
 		}
-		//update-end-author:taoyan--date:20220104--for: JTC-372 【用户冻结问题】 online授权、用户组件，选择用户都能看到被冻结的用户
 
-		//update-begin---author:wangshuai---date:2024-03-08---for:【QQYUN-8110】在线通讯录支持设置权限(只能看分配的技术支持)---
+		// 代码逻辑说明: 【QQYUN-8110】在线通讯录支持设置权限(只能看分配的技术支持)---
 		String tenantId = TokenUtils.getTenantIdByRequest(req);
 		String lowAppId = TokenUtils.getLowAppIdByRequest(req);
 //		Object bean = ResourceUtil.getImplementationClass(DataEnhanceEnum.getClassPath(tenantId,lowAppId));
@@ -171,10 +193,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 //				queryWrapper.in("id", userIds);
 //			}
 //		}
-		//update-end---author:wangshuai---date:2024-03-08---for:【QQYUN-8110】在线通讯录支持设置权限(只能看分配的技术支持)---
 		
 		//TODO 外部模拟登陆临时账号，列表不显示
 		queryWrapper.ne("username", "_reserve_user_external");
+        // 代码逻辑说明: 【JHHB-765】需要能设置排序---
+        queryWrapper.orderByAsc("sort");
+        queryWrapper.orderByDesc("create_time");
 		Page<SysUser> page = new Page<SysUser>(pageNo, pageSize);
 		IPage<SysUser> pageList = this.page(page, queryWrapper);
 
@@ -186,6 +210,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			Map<String, String> useDepNames = this.getDepNamesByUserIds(userIds);
 			pageList.getRecords().forEach(item -> {
 				item.setOrgCodeTxt(useDepNames.get(item.getId()));
+				//增加所属部门id,前台需要展示
+                List<String> departs = sysDepartMapper.queryDepartsByUserId(item.getId());
+                if(oConvertUtils.isNotEmpty(departs)){
+                    item.setBelongDepIds(String.join(SymbolConstant.COMMA, departs));
+                }
 				//查询用户的租户ids
 				List<Integer> list = userTenantMapper.getTenantIdsByUserId(item.getId());
 				if (oConvertUtils.isNotEmpty(list)) {
@@ -198,13 +227,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 					posTenantId = oConvertUtils.getInt(TenantContext.getTenant(), 0);;		
 				}
 				//查询用户职位关系表(获取租户下面的)
-				//update-begin---author:wangshuai---date:2023-11-15---for:【QQYUN-7028】用户职务保存后未回显---
+				// 代码逻辑说明: 【QQYUN-7028】用户职务保存后未回显---
 				List<String> positionList =  sysUserPositionMapper.getPositionIdByUserTenantId(item.getId(),posTenantId);
-				//update-end---author:wangshuai---date:2023-11-15---for:【QQYUN-7028】用户职务保存后未回显---
-				//update-end---author:wangshuai ---date:20230228  for：[QQYUN-4354]加入更多字段：当前加入时间应该取当前租户的/职位也是当前租户下的------------
 				item.setPost(CommonUtils.getSplitText(positionList,SymbolConstant.COMMA));
 				
-				//update-begin---author:wangshuai---date:2023-10-08---for:【QQYUN-6668】钉钉部门和用户同步，我怎么知道哪些用户是双向绑定成功的---
 				//是否根据租户隔离(敲敲云用户列表专用，用于展示是否同步钉钉)
 				if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
 					//查询账号表是否已同步钉钉
@@ -219,8 +245,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 						item.setIzBindThird(true);
 					}
 				}
-				//update-end---author:wangshuai---date:2023-10-08---for:【QQYUN-6668】钉钉部门和用户同步，我怎么知道哪些用户是双向绑定成功的---
-			});
+                //查询部门的兼职岗位
+                List<String> depPostList = depPostMapper.getDepPostByUserId(item.getId());
+                if(CollectionUtil.isNotEmpty(depPostList)){
+                    item.setOtherDepPostId(StringUtils.join(depPostList.toArray(), SymbolConstant.COMMA));
+                }
+            });
 		}
 
 		result.setSuccess(true);
@@ -245,11 +275,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             return Result.error("两次输入密码不一致!");
         }
         String password = PasswordUtil.encrypt(username, newpassword, user.getSalt());
-        // 更新密码修改时间
-        this.userMapper.update(new SysUser().setPassword(password).setPasswordUpdateTime(new Date()), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
+        this.userMapper.update(new SysUser().setPassword(password), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
         return Result.ok("密码重置成功!");
     }
-    
+
     @Override
     @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
     public Result<?> changePassword(SysUser sysUser) {
@@ -258,15 +287,20 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         String password = sysUser.getPassword();
         String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
         sysUser.setPassword(passwordEncode);
-        // 更新密码修改时间
-        sysUser.setPasswordUpdateTime(new Date());
+        sysUser.setLastPwdUpdateTime(new Date());
         this.userMapper.updateById(sysUser);
         return Result.ok("密码修改成功!");
-    }    @Override
+    }
+
+    @Override
     @CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
 	@Transactional(rollbackFor = Exception.class)
 	public boolean deleteUser(String userId) {
-		//1.删除用户
+		//1.验证当前用户是管理员账号 admin
+		//验证用户是否为管理员
+		this.checkUserAdminRejectDel(userId);
+		
+		//2.删除用户
 		this.removeById(userId);
 		return false;
 	}
@@ -275,7 +309,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @CacheEvict(value={CacheConstant.SYS_USERS_CACHE}, allEntries=true)
 	@Transactional(rollbackFor = Exception.class)
 	public boolean deleteBatchUsers(String userIds) {
-		//1.删除用户
+		//1.验证当前用户是管理员账号 admin
+		this.checkUserAdminRejectDel(userIds);
+		//2.删除用户
 		this.removeByIds(Arrays.asList(userIds.split(",")));
 		return false;
 	}
@@ -340,22 +376,45 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 */
 	@Override
 	public SysRoleIndex getDynamicIndexByUserRole(String username, String version) {
-		List<String> roles = sysUserRoleMapper.getRoleByUserName(username);
-		String componentUrl = RoleIndexConfigEnum.getIndexByRoles(roles);
-		SysRoleIndex roleIndex = new SysRoleIndex(componentUrl);
-		boolean isV3 = CommonConstant.VERSION_V3.equals(version);
+		SysRoleIndex roleIndex = new SysRoleIndex();
 		//只有 X-Version=v3 的时候，才读取sys_role_index表获取角色首页配置
-		if (isV3 && CollectionUtils.isNotEmpty(roles)) {
-			LambdaQueryWrapper<SysRoleIndex> routeIndexQuery = new LambdaQueryWrapper<>();
-			//用户所有角色
-			routeIndexQuery.in(SysRoleIndex::getRoleCode, roles);
-			//角色首页状态0：未开启  1：开启
-			routeIndexQuery.eq(SysRoleIndex::getStatus, CommonConstant.STATUS_1);
-			//优先级正序排序
-			routeIndexQuery.orderByAsc(SysRoleIndex::getPriority);
-			List<SysRoleIndex> list = sysRoleIndexService.list(routeIndexQuery);
-			if (CollectionUtils.isNotEmpty(list)) {
-				roleIndex = list.get(0);
+		boolean isV3 = CommonConstant.VERSION_V3.equals(version);
+		if (isV3) {
+			//1.先查询 用户USER级别 的所有首页配置
+			if(oConvertUtils.isNotEmpty(username)){
+				LambdaQueryWrapper<SysRoleIndex> routeIndexUserQuery = new LambdaQueryWrapper<>();
+				//角色首页状态0：未开启  1：开启
+				routeIndexUserQuery.eq(SysRoleIndex::getStatus, CommonConstant.STATUS_1);
+				routeIndexUserQuery.eq(SysRoleIndex::getRelationType, CommonConstant.HOME_RELATION_USER);
+				routeIndexUserQuery.eq(SysRoleIndex::getRoleCode, username);
+				//优先级正序排序
+				routeIndexUserQuery.orderByAsc(SysRoleIndex::getPriority);
+				List<SysRoleIndex> list = sysRoleIndexService.list(routeIndexUserQuery);
+				if (CollectionUtils.isNotEmpty(list)) {
+					roleIndex = list.get(0);
+				}else{
+				   //2.用户没有配置，再查询 角色ROLE级别 的所有首页配置
+					LambdaQueryWrapper<SysRoleIndex> routeIndexQuery = new LambdaQueryWrapper<>();
+					//角色首页状态0：未开启  1：开启
+					routeIndexQuery.eq(SysRoleIndex::getStatus, CommonConstant.STATUS_1);
+					//角色所有首页配置
+					routeIndexQuery.eq(SysRoleIndex::getRelationType, CommonConstant.HOME_RELATION_ROLE);
+					//当前用户角色
+					List<String> roles = sysUserRoleMapper.getRoleByUserName(username);
+					String componentUrl = RoleIndexConfigEnum.getIndexByRoles(roles);
+					roleIndex = new SysRoleIndex(componentUrl);
+					//用户所有角色
+					// 代码逻辑说明: [QQYUN-13187]【新用户登录报错】没有添加角色时 报错
+					if(CollectionUtil.isNotEmpty(roles)){
+						routeIndexQuery.in(SysRoleIndex::getRoleCode, roles);
+					}
+					//优先级正序排序
+					routeIndexQuery.orderByAsc(SysRoleIndex::getPriority);
+					list = sysRoleIndexService.list(routeIndexQuery);
+					if (CollectionUtils.isNotEmpty(list)) {
+						roleIndex = list.get(0);
+					}
+				}
 			}
 		}
 
@@ -504,7 +563,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return res;
 	}
 
-	//update-begin-author:taoyan date:2022-9-13 for: VUEN-2245【漏洞】发现新漏洞待处理20220906 ----sql注入  方法没有使用，注掉
 /*	@Override
 	public IPage<SysUser> getUserByDepartIdAndQueryWrapper(Page<SysUser> page, String departId, QueryWrapper<SysUser> queryWrapper) {
 		LambdaQueryWrapper<SysUser> lambdaQueryWrapper = queryWrapper.lambda();
@@ -514,7 +572,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         return userMapper.selectPage(page, lambdaQueryWrapper);
 	}*/
-	//update-end-author:taoyan date:2022-9-13 for: VUEN-2245【漏洞】发现新漏洞待处理20220906 ----sql注入 方法没有使用，注掉
 
 	@Override
 	public IPage<SysUserSysDepartModel> queryUserByOrgCode(String orgCode, SysUser userParams, IPage page) {
@@ -537,12 +594,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
      * @param page
      * @param roleId 角色id
      * @param username 用户账户名称
+     * @param realname 用户姓名
      * @return
      */
 	@Override
-	public IPage<SysUser> getUserByRoleId(Page<SysUser> page, String roleId, String username) {
-		//update-begin---author:wangshuai ---date:20230220  for：[QQYUN-3980]组织管理中 职位功能 职位表加租户id 加职位-用户关联表------------
-		IPage<SysUser> userRoleList = userMapper.getUserByRoleId(page, roleId, username);
+	public IPage<SysUser> getUserByRoleId(Page<SysUser> page, String roleId, String username, String realname) {
+		// 代码逻辑说明: [QQYUN-3980]组织管理中 职位功能 职位表加租户id 加职位-用户关联表------------
+		IPage<SysUser> userRoleList = userMapper.getUserByRoleId(page, roleId, username,realname);
 		List<SysUser> records = userRoleList.getRecords();
 		if (null != records && records.size() > 0) {
 			List<String> userIds = records.stream().map(SysUser::getId).collect(Collectors.toList());
@@ -555,79 +613,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			}
 		}
 		return userRoleList;
-		//update-end---author:wangshuai ---date:20230220  for：[QQYUN-3980]组织管理中 职位功能 职位表加租户 id 加职位 - 用户关联表------------
-	}
-	
-	/**
-	 * 获取指定角色下的用户列表（支持 register 角色的特殊权限控制）
-	 * register 角色只能查看 hr_position_manager 和 depart_position_manager 角色下的用户
-	 * 
-	 * @param pageNo 页码
-	 * @param pageSize 每页大小
-	 * @param username 用户名过滤条件
-	 * @param realname 真实姓名过滤条件
-	 * @param loginUser 当前登录用户
-	 * @param hasRoles 当前登录用户的角色集合
-	 * @return IPage<SysUser> 分页用户列表
-	 */
-	@Override
-	public IPage<SysUser> getUsersBySpecialRoles(Integer pageNo, Integer pageSize, String username, String realname, LoginUser loginUser, Set<String> hasRoles) {
-		IPage<SysUser> pageList = new Page<>(pageNo, pageSize);
-			
-		// 如果是超级管理员，不做限制
-		if (loginUser != null && "admin".equals(loginUser.getUsername())) {
-			// 管理员返回空页面，由调用方自行处理
-			return pageList;
-		}
-			
-		// 检查当前用户是否有 register 角色
-		boolean hasRegisterRole = hasRoles != null && hasRoles.contains("register");
-			
-		if (hasRegisterRole) {
-			// register 角色只能看到 hr_position_manager 和 depart_position_manager 角色下的人员
-			// 先查询具有 hr_position_manager 角色的用户
-			IPage<SysUser> hrManagerPage = this.getUserByRoleId(new Page<>(pageNo, pageSize), "hr_position_manager", null);
-			// 查询具有 depart_position_manager 角色的用户
-			IPage<SysUser> departManagerPage = this.getUserByRoleId(new Page<>(pageNo, pageSize), "depart_position_manager", null);
-				
-			// 合并两个结果集
-			List<SysUser> allRecords = new ArrayList<>();
-			if (hrManagerPage != null && hrManagerPage.getRecords() != null) {
-				allRecords.addAll(hrManagerPage.getRecords());
-			}
-			if (departManagerPage != null && departManagerPage.getRecords() != null) {
-				allRecords.addAll(departManagerPage.getRecords());
-			}
-				
-			// 在内存中过滤 username 和 realname
-			List<SysUser> filteredRecords = allRecords;
-			if (oConvertUtils.isNotEmpty(username)) {
-				final String searchUsername = username;
-				filteredRecords = filteredRecords.stream()
-					.filter(user -> user.getUsername() != null && user.getUsername().contains(searchUsername))
-					.collect(Collectors.toList());
-			}
-			if (oConvertUtils.isNotEmpty(realname)) {
-				final String searchRealname = realname;
-				filteredRecords = filteredRecords.stream()
-					.filter(user -> user.getRealname() != null && user.getRealname().contains(searchRealname))
-					.collect(Collectors.toList());
-			}
-				
-			// 分页处理
-			int total = filteredRecords.size();
-			int fromIndex = Math.min((pageNo - 1) * pageSize, total);
-			int toIndex = Math.min(fromIndex + pageSize, total);
-			List<SysUser> pageRecords = (total > 0) ? filteredRecords.subList(fromIndex, toIndex) : new ArrayList<>();
-				
-			pageList = new Page<>(pageNo, pageSize, total);
-			pageList.setRecords(pageRecords);
-		} else {
-			// 其他角色正常返回空页面，由调用方自行处理
-			// 如果需要默认查询所有用户，可以在这里添加逻辑
-		}
-			
-		return pageList;
 	}
 
 
@@ -715,9 +700,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			return result;
 		}
 		//情况2：根据用户信息查询，该用户已注销
-		//update-begin---author:王帅   Date:20200601  for：if条件永远为falsebug------------
+		// 代码逻辑说明: if条件永远为falsebug------------
 		if (CommonConstant.DEL_FLAG_1.equals(sysUser.getDelFlag())) {
-		//update-end---author:王帅   Date:20200601  for：if条件永远为falsebug------------
 			baseCommonService.addLog("用户登录失败，用户名:" + sysUser.getUsername() + "已注销！", CommonConstant.LOG_TYPE_1, null);
 			result.error500("该用户已注销");
 			return result;
@@ -733,11 +717,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	public List<SysUser> queryLogicDeleted() {
-        //update-begin---author:wangshuai ---date:20221116  for：回收站查询未离职的------------
+        // 代码逻辑说明: 回收站查询未离职的------------
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.ne(SysUser::getStatus, CommonConstant.USER_QUIT);
         return this.queryLogicDeleted(wrapper);
-        //update-end---author:wangshuai ---date:20221116  for：回收站查询未离职的--------------
     }
 
 	@Override
@@ -810,11 +793,14 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public void saveUser(SysUser user, String selectedRoles, String selectedDeparts, String relTenantIds) {
-		//step.1 保存用户
+	public void saveUser(SysUser user, String selectedRoles, String selectedDeparts, String relTenantIds, boolean izSyncPack) {
+        if(null == user.getSort()){
+            user.setSort(CommonConstant.DEFAULT_USER_SORT);
+        }
+        //step.1 保存用户
 		this.save(user);
 		//获取用户保存前台传过来的租户id并添加到租户
-        this.saveUserTenant(user.getId(),relTenantIds);
+        this.saveUserTenant(user.getId(),relTenantIds, izSyncPack);
 		//step.2 保存角色
 		if(oConvertUtils.isNotEmpty(selectedRoles)) {
 			String[] arr = selectedRoles.split(",");
@@ -835,6 +821,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 		//step.4 保存职位
 		this.saveUserPosition(user.getId(),user.getPost());
+        //step5 保存兼职岗位
+        this.saveUserOtherDepPost(user.getId(),user.getOtherDepPostId());
 	}
 
 	@Override
@@ -843,6 +831,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	public void editUser(SysUser user, String roles, String departs, String relTenantIds, String updateFromPage) {
 		//获取用户编辑前台传过来的租户id
         this.editUserTenants(user.getId(),relTenantIds);
+        if(null == user.getSort()){
+            user.setSort(CommonConstant.DEFAULT_USER_SORT);
+        }
 		//step.1 修改用户基础信息
 		this.updateById(user);
 		//step.2 修改角色
@@ -894,7 +885,30 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 		//step.5 修改职位
 		this.editUserPosition(user.getId(),user.getPost());
+
+        //代码逻辑说明: 兼职岗位改造成中间表的方式---
+        //step6 修改兼职岗位
+        //先删后加
+        depPostMapper.delete(new QueryWrapper<SysUserDepPost>().lambda().eq(SysUserDepPost::getUserId, user.getId()));
+        this.saveUserOtherDepPost(user.getId(),user.getOtherDepPostId());
 	}
+
+
+    /**
+     * 保存兼职岗位
+     *
+     * @param userId
+     * @param otherDepPostId
+     */
+    private void saveUserOtherDepPost(String userId, String otherDepPostId) {
+        if (oConvertUtils.isNotEmpty(otherDepPostId)) {
+            String[] depPostId = otherDepPostId.split(SymbolConstant.COMMA);
+            for (String postId : depPostId) {
+                SysUserDepPost userPosition = new SysUserDepPost(userId, postId);
+                depPostMapper.insert(userPosition);
+            }
+        }
+    }
 
 	@Override
 	public List<String> userIdToUsername(Collection<String> userIdList) {
@@ -936,7 +950,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if(null == sysUser){
             throw new JeecgBootException("离职失败，该用户已不存在");
         }
-		//update-begin---author:wangshuai ---date:20230111  for：[QQYUN-3951]租户用户离职重构------------
+		// 代码逻辑说明: [QQYUN-3951]租户用户离职重构------------
 		int tenantId = oConvertUtils.getInt(TenantContext.getTenant(), 0);
 		//更新用户租户表的状态为离职状态
 		if(tenantId==0){
@@ -948,7 +962,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		SysUserTenant userTenant = new SysUserTenant();
 		userTenant.setStatus(CommonConstant.USER_TENANT_QUIT);
 		userTenantMapper.update(userTenant,query);
-		//update-end---author:wangshuai ---date:20230111  for：[QQYUN-3951]租户用户离职重构------------
     }
 
     @Override
@@ -968,16 +981,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 	 */
 	@Override
 	public Result<JSONObject>  setLoginTenant(SysUser sysUser, JSONObject obj, String username, Result<JSONObject> result){
-		// update-begin--Author:sunjianlei Date:20210802 for：获取用户租户信息
 		//用户有哪些租户
 //		List<SysTenant> tenantList = null;
-        //update-begin---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表------------
-		//update-begin---author:wangshuai ---date:20230427  for：【QQYUN-5270】名下租户全部退出后，再次登录出现租户冻结------------
+		// 代码逻辑说明: [QQYUN-3371]租户逻辑改造，改成关系表
 		List<SysTenant> tenantList = relationMapper.getTenantNoCancel(sysUser.getId());
 		obj.put("tenantList", tenantList);
-		//update-end---author:wangshuai ---date:20230427  for：【QQYUN-5270】名下租户全部退出后，再次登录出现租户冻结------------
 //		if (null!=tenantIdList && tenantIdList.size()>0) {
-//			//update-end---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表--------------
 //			//-------------------------------------------------------------------------------------
 //			//查询有效的租户集合
 //			LambdaQueryWrapper<SysTenant> queryWrapper = new LambdaQueryWrapper<>();
@@ -992,8 +1001,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 //				obj.put("tenantList", tenantList);
 //			}
 //		}
-        //update-end---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表--------------
-		// update-end--Author:sunjianlei Date:20210802 for：获取用户租户信息
 
 
 		//登录会话租户ID，有效性重置
@@ -1013,7 +1020,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		}
 		//设置用户登录缓存租户
 		this.updateUserDepart(username, null,sysUser.getLoginTenantId());
-		log.info(" 登录接口用户的租户ID = {}", sysUser.getLoginTenantId());
+		log.debug(" 登录接口用户的租户ID = {}", sysUser.getLoginTenantId());
 		if(sysUser.getLoginTenantId()!=null){
 			//登录的时候需要手工设置下会话中的租户ID,不然登录接口无法通过租户隔离查询到数据
 			TenantContext.setTenant(sysUser.getLoginTenantId()+"");
@@ -1039,10 +1046,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     /**
      * 保存租户
+     *
      * @param userId
      * @param relTenantIds
+     * @param izSyncPack 是否需要将用户同步当前产品包下
      */
-    private void saveUserTenant(String userId, String relTenantIds) {
+    private void saveUserTenant(String userId, String relTenantIds, boolean izSyncPack) {
         if (oConvertUtils.isNotEmpty(relTenantIds)) {
             String[] tenantIds = relTenantIds.split(SymbolConstant.COMMA);
             for (String tenantId : tenantIds) {
@@ -1060,12 +1069,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 					relationMapper.updateById(tenantPresent);
 				}else{
 					relationMapper.insert(relation);
+                    ISysTenantService currentService = SpringContextUtils.getApplicationContext().getBean(ISysTenantService.class);
+                    //默认添加当前用户到租户套餐中
+                    currentService.addPackUser(userId,tenantId);
 				}
             }
         }else{
 			//是否开启系统管理模块的多租户数据隔离【SAAS多租户模式】
 			if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
-				//update-begin---author:wangshuai ---date:20230220  for：判断当前用户是否在当前租户里面，如果不存在在新增------------
+				// 代码逻辑说明: 判断当前用户是否在当前租户里面，如果不存在在新增------------
 				String tenantId = TenantContext.getTenant();
 				if(oConvertUtils.isNotEmpty(tenantId)){
 					Integer count = relationMapper.userTenantIzExist(userId, Integer.parseInt(tenantId));
@@ -1075,9 +1087,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 						relation.setTenantId(Integer.parseInt(tenantId));
 						relation.setStatus(CommonConstant.STATUS_1);
 						relationMapper.insert(relation);
+                        if(izSyncPack){
+                            ISysTenantService currentService = SpringContextUtils.getApplicationContext().getBean(ISysTenantService.class);
+                            //自动为用户，添加租户下所有套餐
+                            currentService.addPackUser(userId,tenantId);
+                        }
 					}
 				}
-				//update-end---author:wangshuai ---date:20230220  for：判断当前用户是否在当前租户里面，如果不存在在新增------------
 			}
 		}
     }
@@ -1097,7 +1113,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             this.deleteTenantByUserId(userId, null);
         } else if (oConvertUtils.isNotEmpty(relTenantIds) && CollectionUtils.isEmpty(oldTenantIds)) {
             //如果传过来的租户id不为空但是数据库的租户id为空，那么就新增
-            this.saveUserTenant(userId, relTenantIds);
+            this.saveUserTenant(userId, relTenantIds, false);
         } else {
 			//都不为空，需要比较，进行添加或删除
 			if(oConvertUtils.isNotEmpty(relTenantIds) && CollectionUtils.isNotEmpty(oldTenantIds)){
@@ -1111,7 +1127,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 				}
 				//找到原来租户的用户id与新的租户id不同之处，进行新增
 				String tenantIds = relTenantIdList.stream().filter(item -> !oldTenantIds.contains(Integer.valueOf(item))).collect(Collectors.joining(","));
-				this.saveUserTenant(userId, tenantIds);
+				this.saveUserTenant(userId, tenantIds, false);
 			}
         }
     }
@@ -1128,6 +1144,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             query.eq(SysUserTenant::getTenantId, tenantId);
         }
         relationMapper.delete(query);
+        //删除产品包用户关联
+        LambdaQueryWrapper<SysTenantPackUser> packUserQuery = new LambdaQueryWrapper<>();
+        packUserQuery.eq(SysTenantPackUser::getUserId, userId);
+        if(oConvertUtils.isNotEmpty(tenantId)){
+            packUserQuery.eq(SysTenantPackUser::getTenantId, tenantId);
+        }
+        packUserMapper.delete(packUserQuery);
     }
 
 
@@ -1144,12 +1167,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		String workAddress = json.getString("workAddress");
 		//批量修改用户职位
 		if(oConvertUtils.isNotEmpty(post)) {
-			//update-begin---author:wangshuai ---date:20230220  for：[QQYUN-3980]组织管理中 职位功能 职位表加租户id 加职位-用户关联表------------
 			//修改职位用户关系表
 			for (String userId:idList) {
 				this.editUserPosition(userId,post);
 			}
-			//update-end---author:wangshuai ---date:20230220  for：[QQYUN-3980]组织管理中 职位功能 职位表加租户id 加职位-用户关联表------------
 		}
 		if(oConvertUtils.isNotEmpty(selecteddeparts)) {
 			//查询当前租户的部门列表
@@ -1301,14 +1322,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 						this.baseMapper.updateById(user);
 					}
 				}
-			//update-begin---author:wangshuai ---date:20230303  for：部门负责人不能被删除------------
+			// 代码逻辑说明: 部门负责人不能被删除------------
 				this.removeDepartmentManager(departChargeUserIdList,departChargeUsers,departId);
 			}else{
 				if(CollectionUtil.isNotEmpty(departChargeUsers)){
 					//前端传过来用户列表id为空，说明数据库的负责部门人员均需要删除
 					this.removeDepartmentManager(departChargeUserIdList,departChargeUsers,departId);
 				}
-			//update-end---author:wangshuai ---date:20230303  for：部门负责人不能被删除------------
 				
 			}
 		}
@@ -1316,7 +1336,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
 	private List<SysUser> queryDepartChargePersons(String departId){
     	List<SysUser> result = new ArrayList<>();
-		//update-begin---author:wangshuai ---date:20230303  for：部门负责人不能被删除------------
+		// 代码逻辑说明: 部门负责人不能被删除------------
 		LambdaQueryWrapper<SysUser> userQuery = new LambdaQueryWrapper<>();
 		userQuery.like(SysUser::getDepartIds,departId);
 		List<SysUser> userList = userMapper.selectList(userQuery);
@@ -1329,7 +1349,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 						if(deps.indexOf(departId)>=0){
 							result.add(user);
 						}
-		//update-end---author:wangshuai ---date:20230303  for：部门负责人不能被删除------------
 					}
 				}
 			}
@@ -1425,7 +1444,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		user.setWorkNo(sysUser.getWorkNo());
 		user.setId(sysUser.getId());
 		this.updateById(user);
-		//update-begin---author:wangshuai ---date:20230424  for：【QQYUN-5251】人员与部门：部门删除不掉------------
+		// 代码逻辑说明: 【QQYUN-5251】人员与部门：部门删除不掉------------
 		if(oConvertUtils.isEmpty(departs)){
 			//直接删除用户下的的租户部门
 			sysUserDepartMapper.deleteUserDepart(user.getId(),tenantId);
@@ -1433,7 +1452,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			//修改租户用户下的部门
 			this.updateTenantDepart(user, tenantId, departs);
 		}
-		//update-end---author:wangshuai ---date:20230424  for：【QQYUN-5251】人员与部门：部门删除不掉------------
 		//修改用户下的职位
 		this.editUserPosition(sysUser.getId(),sysUser.getPost());
 	}
@@ -1615,8 +1633,11 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		}
 		//查询用户数据
 		List<SysUser> userList = userMapper.getUserByDepartsTenantId(list, tenantId);
-		//获取部门名称
-		List<SysUserDepVo> userDepVos = sysDepartMapper.getUserDepartByTenantUserId(userList, tenantId);
+        //获取部门名称
+        List<SysUserDepVo> userDepVos = new ArrayList<>();
+        if(CollectionUtil.isNotEmpty(userList)){
+            userDepVos = sysDepartMapper.getUserDepartByTenantUserId(userList, tenantId);
+        }
 		//获取职位
 		List<SysUserPositionVo> positionVos = sysUserPositionMapper.getPositionIdByUsersTenantId(userList, tenantId);
 		// step2 根据用户id进行分类
@@ -1625,9 +1646,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		for (SysUser sysUser : userList) {
 			AppExportUserVo exportUserVo = new AppExportUserVo();
 			BeanUtils.copyProperties(sysUser, exportUserVo);
-			String departNames = userDepVos.stream().filter(item -> item.getUserId().equals(sysUser.getId()))
-					.map(SysUserDepVo::getDepartName).collect(Collectors.joining(SymbolConstant.SEMICOLON));
-			exportUserVo.setDepart(departNames);
+            // 代码逻辑说明: 【QQYUN-10926】组织管理——用户导出时，部门没有导出上下级关系---
+            Map<String, String> departMap = this.getDepartNamesAndCategory(userDepVos, sysUser);
+            String departNames = departMap.get("departNames");
+            exportUserVo.setDepart(departNames.toString());
 			String posNames = positionVos.stream().filter(item -> item.getUserId().equals(sysUser.getId())).map(SysUserPositionVo::getName).collect(Collectors.joining(SymbolConstant.SEMICOLON));
 			exportUserVo.setPosition(posNames);
 			exportUserVoList.add(exportUserVo);
@@ -1647,7 +1669,82 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		return mv;
 	}
 
-	//======================================= end 用户与部门 用户列表导出 =========================================
+    /**
+     * 获取部门名称和部门类型
+     * for：【QQYUN-10926】组织管理——用户导出时，部门没有导出上下级关系
+     *
+     * @param userDepVos
+     * @param sysUser
+     * @return
+     */
+    private Map<String,String> getDepartNamesAndCategory(List<SysUserDepVo> userDepVos, SysUser sysUser) {
+        List<SysUserDepVo> SysUserDepVoList = userDepVos.stream().filter(item -> item.getUserId().equals(sysUser.getId()))
+                .map(item -> {
+                    SysUserDepVo userDepVo = new SysUserDepVo();
+                    userDepVo.setUserId(item.getUserId());
+                    userDepVo.setDeptId(item.getDeptId());
+                    userDepVo.setDepartName(item.getDepartName());
+                    userDepVo.setParentId(item.getParentId());
+                    userDepVo.setOrgCategory(DepartCategoryEnum.getNameByValue(item.getOrgCategory()));
+                    return userDepVo;
+                }).collect(Collectors.toList());
+        //循环SysUserDepVoList,如果存在父级id的情况下，需要将父级id的部门名称查询出来
+        StringBuilder departNames = new StringBuilder();
+        StringBuilder departOrgCategorys = new StringBuilder();
+        for (SysUserDepVo sysUserDepVo : SysUserDepVoList) {
+            if(oConvertUtils.isEmpty(sysUserDepVo.getDepartName())){
+                continue;
+            }
+            //用于查询父级的部门名称
+            List<String> departNameList = new LinkedList<>();
+            //用于查询父级的部门类型
+            List<String> departOrgCategoryList = new LinkedList<>();
+            departNameList.add(sysUserDepVo.getDepartName());
+            departOrgCategoryList.add(sysUserDepVo.getOrgCategory());
+            if (StringUtils.isNotEmpty(sysUserDepVo.getParentId())) {
+                //递归查询部门名称
+                this.getDepartNameByParentId(sysUserDepVo.getParentId(), departNameList, departOrgCategoryList);
+            }
+            Collections.reverse(departNameList);
+            Collections.reverse(departOrgCategoryList);
+            String departName = departNameList.stream().collect(Collectors.joining(SymbolConstant.SINGLE_SLASH));
+            if (StringUtils.isNotEmpty(departNames.toString())) {
+                departNames.append(SymbolConstant.SEMICOLON);
+            }
+            departNames.append(departName);
+            String orgCatrgory = departOrgCategoryList.stream().collect(Collectors.joining(SymbolConstant.SINGLE_SLASH));
+            if (StringUtils.isNotEmpty(departOrgCategorys.toString())) {
+                departOrgCategorys.append(SymbolConstant.SEMICOLON);
+            }
+            departOrgCategorys.append(orgCatrgory);
+        }
+        // 代码逻辑说明: 【QQYUN-13617】导入时 部门添加层级不对了---
+        Map<String,String> map = new HashMap<>();
+        map.put("departNames", departNames.toString());
+        map.put("departOrgCategorys",departOrgCategorys.toString());
+        return map;
+    }
+
+    /**
+     * 根据父级id查询父级的部门名称和部门类型
+     * for：【QQYUN-10926】组织管理——用户导出时，部门没有导出上下级关系
+     *
+     * @param parentId
+     * @param departNameList
+     * @param departOrgCategoryList
+     */
+    private void getDepartNameByParentId(String parentId, List<String> departNameList, List<String> departOrgCategoryList) {
+        SysDepart parentDepartId = sysDepartMapper.getDepartById(parentId);
+        if (null != parentDepartId) {
+            departNameList.add(parentDepartId.getDepartName());
+            departOrgCategoryList.add(DepartCategoryEnum.getNameByValue(parentDepartId.getOrgCategory()));
+            if (StringUtils.isNotEmpty(parentDepartId.getParentId())) {
+                this.getDepartNameByParentId(parentDepartId.getParentId(), departNameList, departOrgCategoryList);
+            }
+        }
+    }
+
+    //======================================= end 用户与部门 用户列表导出 =========================================
 
 	//======================================= begin 用户与部门 用户列表导入 =========================================
 	@Override
@@ -1869,9 +1966,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			String[] departNames = depart.split(SymbolConstant.SEMICOLON);
 			List<String> departNameList = Arrays.asList(departNames);
 			departNameList = departNameList.stream().distinct().collect(Collectors.toList());
-			//部门id
-			String parentId = "";
 			for (String departName : departNameList) {
+                //部门id
+                String parentId = "";
 				String[] names = departName.split(SymbolConstant.SINGLE_SLASH);
 				//部门名称拼接
 				String nameStr = "";
@@ -1943,22 +2040,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		userTenant.setUserId(userId);
 		userTenant.setStatus(CommonConstant.USER_TENANT_INVITE);
 		userTenantMapper.insert(userTenant);
-		//update-begin---author:wangshuai ---date:20230710  for：【QQYUN-5731】导入用户时，没有提醒------------
 		//发送系统消息通知
 		LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		MessageDTO messageDTO = new MessageDTO();
 		String title = sysUser.getRealname() + " 邀请您加入 " + tenantName + "。";
 		messageDTO.setTitle(title);
 		Map<String, Object> data = new HashMap<>();
-		//update-begin---author:wangshuai---date:2024-03-11---for:【QQYUN-8425】用户导入成功后 消息提醒 跳转至同意页面---
-		data.put(CommonConstant.NOTICE_MSG_BUS_TYPE, SysAnnmentTypeEnum.TENANT_INVITE.getType());
-		//update-end---author:wangshuai---date:2024-03-11---for:【QQYUN-8425】用户导入成功后 消息提醒 跳转至同意页面---
+		// 代码逻辑说明: 【QQYUN-8425】用户导入成功后 消息提醒 跳转至同意页面---
+		data.put(CommonConstant.NOTICE_MSG_BUS_TYPE,SysAnnmentTypeEnum.TENANT_INVITE.getType());
 		messageDTO.setData(data);
 		messageDTO.setContent(title);
 		messageDTO.setToUser(invitedUsername);
 		messageDTO.setFromUser("system");
 		systemSendMsgHandle.sendMessage(messageDTO);
-		//update-end---author:wangshuai ---date:20230710  for：【QQYUN-5731】导入用户时，没有提醒------------
 	}
 	//======================================= end 用户与部门 用户列表导入 =========================================
 	
@@ -1973,7 +2067,6 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			throw new JeecgBootException("admin用户，不允许删除！");
 		}
 	}
-
 
 	@Override
 	public void changePhone(JSONObject json, String username) {
@@ -2008,7 +2101,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			userMapper.updateById(sysUser);
 		}
 	}
-
+	
 	/**
 	 * 验证手机号
 	 *
@@ -2028,7 +2121,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 		//验证完成之后清空手机验证码
 		redisUtil.removeAll(phoneKey);
 	}
-
+	
 	@Override
 	public void sendChangePhoneSms(JSONObject jsonObject, String username, String ipAddress) {
 		String type = jsonObject.getString("type");
@@ -2106,7 +2199,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			log.warn("--------[警告] IP地址:{}, 短信接口请求太多-------", clientIp);
 			throw new JeecgBootException("短信接口请求太多，请稍后再试！", CommonConstant.PHONE_SMS_FAIL_CODE);
 		}
-
+		
 		//随机数
 		String captcha = RandomUtil.randomNumbers(6);
 		JSONObject obj = new JSONObject();
@@ -2123,4 +2216,894 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			throw new JeecgBootException("短信接口未配置，请联系管理员！");
 		}
 	}
+
+    //================================================= begin 低代码部门导入导出 ================================================================
+    @Override
+    public List<SysUserExportVo> getDepartAndRoleExportMsg(List<SysUser> userList) {
+        List<SysUserExportVo> list = new ArrayList<>();
+        if (CollectionUtil.isNotEmpty(userList)) {
+            //获取部门
+            List<SysUserDepVo> userDepVos = sysDepartMapper.getUserDepartByUserId(userList);
+            //获取角色
+            List<SysUserPositionVo> sysRoles = sysRoleMapper.getUserRoleByUserId(userList);
+            //存放职位名称的map，key：主岗位的id value: 职级的名称
+            Map<String, String> postNameMap = new HashMap<>();
+            //组装数据并返回
+            for (SysUser sysUser : userList) {
+                SysUserExportVo userExportVo = new SysUserExportVo();
+                BeanUtils.copyProperties(sysUser, userExportVo);
+                // 代码逻辑说明: 【QQYUN-13617】导入时 部门添加层级不对了---
+                Map<String, String> departMap = this.getDepartNamesAndCategory(userDepVos, sysUser);
+                String departNames = departMap.get("departNames");
+                userExportVo.setDepartNames(departNames);
+                userExportVo.setOrgCategorys(departMap.get("departOrgCategorys"));
+                String departIds = sysUser.getDepartIds();
+                if (oConvertUtils.isNotEmpty(departIds)) {
+                    List<SysUserDepVo> depVoList = sysDepartMapper.getDepartByIds(Arrays.asList(departIds.split(",")));
+                    Map<String, String> departMaps = this.getDepartNamesAndCategory(userDepVos, sysUser);
+                    userExportVo.setDepartIds(departMaps.get("departNames"));
+                }
+                String posNames = sysRoles.stream().filter(item -> item.getUserId().equals(sysUser.getId())).map(SysUserPositionVo::getName).collect(Collectors.joining(SymbolConstant.SEMICOLON));
+                userExportVo.setRoleNames(posNames);
+                if (null != sysUser.getMainDepPostId()) {
+                    String postName = "";
+                    if (null != postNameMap && postNameMap.containsKey(sysUser.getMainDepPostId())) {
+                        postName = postNameMap.get(sysUser.getMainDepPostId());
+                    } else {
+                        postName = sysDepartMapper.getPostNameByPostId(sysUser.getMainDepPostId());
+                    }
+                    userExportVo.setPostName(postName);
+                    postNameMap.put(sysUser.getMainDepPostId(), postName);
+                }
+                // 代码逻辑说明: 兼职岗位改造成中间表的方式---
+                List<String> depPost = depPostMapper.getDepPostByUserId(sysUser.getId());
+                if(CollectionUtil.isNotEmpty(depPost)){
+                    userExportVo.setOtherDepPostId(String.join(SymbolConstant.COMMA, depPost));
+                }
+                list.add(userExportVo);
+            }
+        }
+        return list;
+    }
+
+    @Override
+    public Result<?> importSysUser(HttpServletRequest request) {
+        MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+        String fileKey = multipartRequest.getParameter("fileKey");
+        Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();
+        // 错误信息
+        List<String> errorMessage = new ArrayList<>();
+        int successLines = 0, errorLines = 0;
+        //存放部门的map;key为名称 value为SysDepart对象。避免多次导入和查询
+        Map<String, SysDepart> departMap = new HashMap<>();
+        //职级map key: 职级名称 value: 职级id
+        Map<String, String> positionMap = new HashMap<>();
+        //岗位map key：岗位名称 + 部门id value：岗位（部门id）
+        Map<String,String> postMap = new HashMap<>();
+        String tenantId = TokenUtils.getTenantIdByRequest(request);
+        for (Map.Entry<String, MultipartFile> entity : fileMap.entrySet()) {
+            MultipartFile file = entity.getValue();// 获取上传文件对象
+            ImportParams params = new ImportParams();
+            params.setTitleRows(2);
+            params.setHeadRows(1);
+            params.setNeedSave(true);
+            try {
+                List<SysUserImportVo> listSysUsers = ExcelImportUtil.importExcel(file.getInputStream(), SysUserImportVo.class, params);
+                ImportSysUserCache.setImportSysUserMap(fileKey,0,listSysUsers.size(),"user");
+                for (int i = 0; i < listSysUsers.size(); i++) {
+                    SysUserImportVo sysUserExcel = listSysUsers.get(i);
+                    SysUser sysUser = new SysUser();
+                    BeanUtils.copyProperties(sysUserExcel, sysUser);
+                    if (oConvertUtils.isEmpty(sysUser.getUsername())) {
+                        errorLines += 1;
+                        int lineNumber = i + 1;
+                        errorMessage.add("第 " + lineNumber + " 行：用户账号为空，忽略导入。");
+                        continue;
+                    }
+                    try {
+                        String username = sysUser.getUsername();
+                        //根据用户名程序，为空则添加用户
+                        SysUser userByName = userMapper.getUserByName(username);
+                        if (null != userByName) {
+                            errorLines += 1;
+                            int lineNumber = i + 1;
+                            errorMessage.add("第 " + lineNumber + " 行：用户名已经存在，忽略导入。");
+                            continue;
+                        } else {
+                            // 密码默认为 “123456”
+                            sysUser.setPassword(PasswordConstant.DEFAULT_PASSWORD);
+                            // 密码加密加盐
+                            String salt = oConvertUtils.randomGen(8);
+                            sysUser.setSalt(salt);
+                            String passwordEncode = PasswordUtil.encrypt(sysUserExcel.getUsername(), sysUser.getPassword(), salt);
+                            sysUser.setPassword(passwordEncode);
+                            sysUser.setActivitiSync(CommonConstant.ACT_SYNC_1);
+                            if(null == sysUser.getDelFlag()){
+                                sysUser.setDelFlag(CommonConstant.DEL_FLAG_0);
+                            }
+                            if(null == sysUser.getStatus()){
+                                sysUser.setStatus(CommonConstant.STATUS_1_INT);
+                            }
+                            this.save(sysUser);
+                        }
+                        //添加部门
+                        String departNames = sysUserExcel.getDepartNames();
+                        String orgCategorys = sysUserExcel.getOrgCategorys();
+                        //新增或编辑部门
+                        Integer tenantIdInt = 0;
+                        if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
+                            tenantIdInt = oConvertUtils.getInt(tenantId, 0);
+                        }
+                        this.lowAddOrEditDepart(sysUser.getId(), departNames, tenantIdInt, departMap, orgCategorys, sysUserExcel.getPostName(), sysUserExcel.getMainDepPostId(),postMap,positionMap, sysUserExcel.getOtherDepPostId());
+                        //新增或编辑角色
+                        String roleNames = sysUserExcel.getRoleNames();
+                        this.saveOrEditRole(sysUser.getId(), roleNames, tenantIdInt);
+                        //新增或编辑职位
+                       /* String position = sysUserExcel.getPost();
+                        if (oConvertUtils.isNotEmpty(position)) {
+                            this.addOrEditPosition(sysUser.getId(), position, false, tenantIdInt, positionMap);
+                        }*/
+                        //添加负责部门
+                        this.saveChargeDepart(sysUser, sysUserExcel.getDepartIds(), departMap);
+                        successLines++;
+                    } catch (Exception e) {
+                        errorLines++;
+                        String message = e.getMessage().toLowerCase();
+                        int lineNumber = i + 1;
+                        // 通过索引名判断出错信息
+                        if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_USERNAME)) {
+                            errorMessage.add("第 " + lineNumber + " 行：用户名已经存在，忽略导入。");
+                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_WORK_NO)) {
+                            errorMessage.add("第 " + lineNumber + " 行：工号已经存在，忽略导入。");
+                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_PHONE)) {
+                            errorMessage.add("第 " + lineNumber + " 行：手机号已经存在，忽略导入。");
+                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER_EMAIL)) {
+                            errorMessage.add("第 " + lineNumber + " 行：电子邮件已经存在，忽略导入。");
+                        } else if (message.contains(CommonConstant.SQL_INDEX_UNIQ_SYS_USER)) {
+                            errorMessage.add("第 " + lineNumber + " 行：违反表唯一性约束。");
+                        } else {
+                            errorMessage.add("第 " + lineNumber + " 行：未知错误，忽略导入");
+                            log.error(e.getMessage(), e);
+                        }
+                    }
+                    ImportSysUserCache.setImportSysUserMap(fileKey,i,listSysUsers.size(),"user");
+                }
+            } catch (Exception e) {
+                ImportSysUserCache.removeImportLowAppMap(fileKey);
+                errorMessage.add("发生异常：" + e.getMessage());
+                log.error(e.getMessage(), e);
+            } finally {
+                try {
+                    file.getInputStream().close();
+                } catch (IOException e) {
+                    ImportSysUserCache.removeImportLowAppMap(fileKey);
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+        try {
+            departMap.clear();
+            departMap = null;
+            //最终导入完成
+            ImportSysUserCache.setImportSysUserMap(fileKey,1,1,"user");
+            return ImportExcelUtil.imporReturnRes(errorLines, successLines, errorMessage);
+        } catch (IOException e) {
+            ImportSysUserCache.removeImportLowAppMap(fileKey);
+            throw new RuntimeException(e);
+        }
+    }
+
+    //================================================================ begin 【用户导入】导入时 部门添加层级不对了======================================================================
+    /**
+     * 低代码下添加部门和用户
+     *
+     * @param userId          用户id
+     * @param depart          部门名称
+     * @param tenantId        租户id
+     * @param departMap       存放部门的map;key为名称 value为SysDepart对象。
+     * @param orgCategorys    部门类型
+     * @param postName        职级名称
+     * @param mainDepPostName 主岗位名称
+     * @param postMap         key: 岗位名称 + 部门id value：岗位（部门id）
+     * @param positionMap     key: 职级名称  value: 职级id
+     * @param otherDepPostName 兼职岗位名称
+     * @Description 和敲敲云分割处理，原因：因低代码岗位等改造，有级别，故添加部门分开处理
+     */
+    private void lowAddOrEditDepart(String userId, String depart, Integer tenantId, Map<String, SysDepart> departMap, String orgCategorys, String postName, String mainDepPostName, Map<String, String> postMap, Map<String, String> positionMap, String otherDepPostName) {
+        //批量将部门和用户信息建立关联关系
+        if (StringUtils.isNotEmpty(depart)) {
+            Page<SysDepart> page = new Page<>(1, 1);
+            //多个部门分离开
+            String[] departNames = depart.split(SymbolConstant.SEMICOLON);
+            List<String> departNameList = Arrays.asList(departNames);
+            //部门类型
+            List<String> categoryList = new ArrayList<>();
+            if (oConvertUtils.isNotEmpty(orgCategorys)) {
+                categoryList = Arrays.asList(orgCategorys.split(SymbolConstant.SEMICOLON));
+            }
+            departNameList = departNameList.stream().distinct().collect(Collectors.toList());
+            //当下部门循环下标
+            int index = 0;
+            //是否已导入岗位，岗位只导入第一个部门下
+            boolean izImportPost = false;
+            for (String departName : departNameList) {
+                //部门id
+                String parentId = "";
+                String[] names = departName.split(SymbolConstant.SINGLE_SLASH);
+                //部门名称拼接
+                String nameStr = "";
+                //部门类型
+                String[] orgCategory = null;
+                if (categoryList != null && categoryList.size() > index) {
+                    orgCategory = categoryList.get(index).split(SymbolConstant.SINGLE_SLASH);
+                }
+                for (int i = 0; i < names.length; i++) {
+                    String name = names[i];
+                    //拼接name
+                    if (oConvertUtils.isNotEmpty(nameStr)) {
+                        nameStr = nameStr + SymbolConstant.SINGLE_SLASH + name;
+                    } else {
+                        nameStr = name;
+                    }
+                    SysDepart sysDepart = null;
+                    //默认部门
+                    String category = DepartCategoryEnum.DEPART_CATEGORY_DEPART.getValue();
+                    if (null != orgCategory && orgCategory.length > i) {
+                        category = orgCategory[i];
+                    }
+                    //判断map中是否存在该部门名称
+                    if (departMap.containsKey(nameStr)) {
+                        sysDepart = departMap.get(nameStr);
+                        parentId = sysDepart.getId();
+                    } else {
+                        //不存在需要去查询
+                        List<SysDepart> departPageByName = sysDepartMapper.getDepartPageByName(page, name, tenantId, parentId);
+                        //部门为空需要新增部门
+                        if (CollectionUtil.isEmpty(departPageByName)) {
+                            JSONObject formData = new JSONObject();
+                            formData.put("parentId", parentId);
+                            String[] codeArray = (String[]) FillRuleUtil.executeRule(FillRuleConstant.DEPART, formData);
+                            sysDepart = new SysDepart();
+                            sysDepart.setParentId(parentId);
+                            sysDepart.setOrgCode(codeArray[0]);
+                            sysDepart.setOrgType(codeArray[1]);
+                            sysDepart.setTenantId(tenantId);
+                            sysDepart.setDepartName(name);
+                            sysDepart.setIzLeaf(CommonConstant.IS_LEAF);
+                            sysDepart.setDelFlag(String.valueOf(CommonConstant.DEL_FLAG_0));
+                            sysDepart.setStatus(CommonConstant.STATUS_1);
+                            sysDepart.setOrgCategory(DepartCategoryEnum.getValueByName(category));
+                            sysDepartMapper.insert(sysDepart);
+                        } else {
+                            sysDepart = departPageByName.get(0);
+                        }
+                        //父级id不为空那么就将父级部门改成不是叶子节点
+                        if (oConvertUtils.isNotEmpty(parentId)) {
+                            sysDepartMapper.setMainLeaf(parentId, CommonConstant.NOT_LEAF);
+                        }
+                        parentId = sysDepart.getId();
+                        departMap.put(nameStr, sysDepart);
+                    }
+                    //最后一位新增部门用户关系表
+                    if (i == names.length - 1 && !izImportPost) {
+                        Long count = sysUserDepartMapper.getCountByDepartIdAndUserId(userId, sysDepart.getId());
+                        if (count == 0) {
+                            SysUserDepart userDepart = new SysUserDepart(userId, sysDepart.getId());
+                            sysUserDepartMapper.insert(userDepart);
+                        }
+                        //添加岗位
+                        if (oConvertUtils.isNotEmpty(mainDepPostName)) {
+                            this.insertDepartPost(userId, parentId ,postName, mainDepPostName, postMap, tenantId, positionMap);
+                        }
+                        //添加兼职岗位
+                        if(oConvertUtils.isNotEmpty(otherDepPostName)){
+                            this.insertOtherDepartPost(userId,parentId,postName, otherDepPostName, postMap, tenantId, positionMap);
+                        }
+                        izImportPost = true;
+                    }
+                }
+                index++;
+            }
+        }
+    }
+
+    /**
+     * 添加部门岗位
+     *
+     * @param mainDepPost 岗位名称
+     * @param userId      用户id
+     * @param departId    部门id【上级部门id】
+     * @param postName    职级名称
+     * @param mainDepPostName    岗位名称
+     * @param postMap     岗位map key：岗位名称 + 部门id value：岗位（部门id）
+     * @param tenantId    租户id
+     * @param postionMap  职级map key: 职级名称 value: 职级id
+     */
+    private void insertDepartPost(String userId, String depId, String postName, String mainDepPostName, Map<String, String> postMap, Integer tenantId, Map<String, String> postionMap) {
+        if(mainDepPostName.contains(SymbolConstant.COMMA)){
+            mainDepPostName = mainDepPostName.split(SymbolConstant.COMMA)[0];
+        }
+        //当前部门下已经存在岗位就不需要再次添加岗位了
+        if (null == postMap || !postMap.containsKey(mainDepPostName + depId)) {
+            //根据父级部门id和职务名称查找岗位id
+            String departId = sysDepartMapper.getDepIdByDepIdAndPostName(depId, postName);
+            //不存在新增岗位
+            if (oConvertUtils.isEmpty(departId) ) {
+                //添加部门岗位信息
+                departId = this.addCommontDepartPost(depId, tenantId, mainDepPostName, postionMap, postName, postMap);
+            }
+            if(oConvertUtils.isNotEmpty(departId)){
+                //更新用户主岗位
+                SysUser user = new SysUser();
+                user.setId(userId);
+                user.setMainDepPostId(departId);
+                userMapper.updateById(user); 
+            }
+        }
+    }
+
+    /**
+     * 导入通用添加部门岗位方法
+     *
+     * @param depId
+     * @param tenantId
+     * @param mainDepPostName
+     * @param postionMap
+     * @param postName
+     * @param map
+     * @param postMap
+     * @return
+     */
+    private String addCommontDepartPost(String depId, Integer tenantId, String mainDepPostName, Map<String, String> postionMap, String postName, Map<String, String> postMap) {
+        //新增岗位
+        SysDepart sysDepart = new SysDepart();
+        JSONObject formData = new JSONObject();
+        formData.put("parentId", depId);
+        String[] codeArray = (String[]) FillRuleUtil.executeRule(FillRuleConstant.DEPART, formData);
+        sysDepart.setParentId(depId);
+        sysDepart.setOrgCode(codeArray[0]);
+        sysDepart.setOrgType(codeArray[1]);
+        sysDepart.setTenantId(tenantId);
+        sysDepart.setDepartName(mainDepPostName);
+        sysDepart.setIzLeaf(CommonConstant.IS_LEAF);
+        sysDepart.setDelFlag(String.valueOf(CommonConstant.DEL_FLAG_0));
+        sysDepart.setStatus(CommonConstant.STATUS_1);
+        sysDepart.setOrgCategory(DepartCategoryEnum.DEPART_CATEGORY_POST.getValue());
+        //获取职级id
+        String positionId = "";
+        if (postionMap.containsKey(postName)) {
+            positionId = postionMap.get(postName);
+        } else {
+            //根据租户id和职级名称获取职级id
+            positionId = this.getSysPosition(tenantId, postName);
+        }
+        sysDepart.setPositionId(positionId);
+        postionMap.put(postName, positionId);
+        sysDepartMapper.insert(sysDepart);
+        sysDepartMapper.setMainLeaf(depId, CommonConstant.NOT_LEAF);
+        postMap.put(mainDepPostName + depId, sysDepart.getId());
+        //需要将用户表的主岗位进行关联
+        return sysDepart.getId();
+    }
+
+    /**
+     * 添加兼职岗位
+     *
+     * @param userId           用户id
+     * @param departId         部门id【上级部门id】
+     * @param postName         职级名称
+     * @param otherDepPostName 兼职岗位名称
+     * @param postMap          岗位map key：岗位名称 + 部门id value：岗位（部门id）
+     * @param tenantId         租户id
+     * @param postionMap       职级map key: 职级名称 value: 职级id
+     */
+    private void insertOtherDepartPost(String userId, String depId, String postName, String otherDepPostName, Map<String, String> postMap, Integer tenantId, Map<String, String> positionMap) {
+        String[] otherDepPostNames = otherDepPostName.split(SymbolConstant.SEMICOLON);
+        for (int i = 0; i < otherDepPostNames.length; i++) {
+            //当前部门下已经存在岗位就不需要再次添加岗位了
+            String departId = "";
+            if (null == postMap || !postMap.containsKey(otherDepPostNames[i] + depId)) {
+                //不存在时新增部门岗位
+                departId = this.addCommontDepartPost(depId, tenantId, otherDepPostNames[i], positionMap, postName, postMap);
+            } else {
+                departId = postMap.get(otherDepPostNames[i] + depId);
+            }
+            //插入用岗位第三方中间表
+            if (oConvertUtils.isNotEmpty(departId)) {
+                try {
+                    SysUserDepPost depPost = new SysUserDepPost(userId, departId);
+                    depPostMapper.insert(depPost);
+                } catch (Exception e) {
+                    log.error("当前岗位插入失败：" + e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取职务信息
+     *
+     * @param tenantId
+     * @param postName
+     * @return
+     */
+    private String getSysPosition(Integer tenantId, String postName) {
+        tenantId = oConvertUtils.getInt(tenantId,0);
+        Page<SysPosition> page = new Page<>(1, 1);
+        List<String> namePage = sysPositionMapper.getPositionIdByName(postName, tenantId, page);
+        if (CollectionUtil.isNotEmpty(namePage)) {
+            return namePage.get(0);
+        }
+        return "";
+    }
+    //================================================================ end 【用户导入】导入时 部门添加层级不对了======================================================================
+    
+    private void saveChargeDepart(SysUser sysUser, String departIds, Map<String, SysDepart> departMap) {
+        //判断那些部门没有，即没有加入到部门，则不能成为负责部门人员
+        if (oConvertUtils.isEmpty(departIds)) {
+            return;
+        }
+        //多个部门用;分隔开
+        String[] split = departIds.split(SymbolConstant.SEMICOLON);
+        //负责部门id
+        StringBuilder departIdBulider = new StringBuilder();
+        for (String name : split) {
+            if (departMap.containsKey(name)) {
+                SysDepart sysDepart = departMap.get(name);
+                departIdBulider.append(sysDepart.getId()).append(",");
+            }
+        }
+        // 检查并删除最后一个逗号
+        if (departIdBulider.length() > 0 && departIdBulider.charAt(departIdBulider.length() - 1) == ',') {
+            departIdBulider.deleteCharAt(departIdBulider.length() - 1);
+        }
+        SysUser user = new SysUser();
+        user.setId(sysUser.getId());
+        user.setDepartIds(departIdBulider.toString());
+        this.updateById(user);
+    }
+
+    /**
+     * 保存或编辑角色
+     *
+     * @param userId
+     * @param roleNames
+     * @param tenantIdInt
+     */
+    private void saveOrEditRole(String userId, String roleNames, Integer tenantIdInt) {
+        if (oConvertUtils.isEmpty(roleNames)) {
+            return;
+        }
+        String[] roleNameArray = roleNames.split(SymbolConstant.SEMICOLON);
+        //删除用户下的角色
+        LambdaQueryWrapper<SysUserRole> deleteQuery = new LambdaQueryWrapper<>();
+        deleteQuery.eq(SysUserRole::getUserId, userId);
+        sysUserRoleMapper.delete(deleteQuery);
+        //通过名字获取角色
+        LambdaQueryWrapper<SysRole> roleQuery = new LambdaQueryWrapper<>();
+        roleQuery.orderByDesc(SysRole::getCreateTime);
+        if (MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL) {
+            roleQuery.eq(SysRole::getTenantId, tenantIdInt);
+        }
+        for (String roleName : roleNameArray) {
+            roleQuery.eq(SysRole::getRoleName, roleName);
+            List<SysRole> sysRoles = sysRoleMapper.selectList(roleQuery);
+            String roleId = "";
+            if (CollectionUtil.isNotEmpty(sysRoles)) {
+                roleId = sysRoles.get(0).getId();
+            } else {
+                SysRole sysRole = new SysRole();
+                sysRole.setRoleName(roleName);
+                sysRole.setRoleCode(RandomUtil.randomString(10));
+                sysRoleMapper.insert(sysRole);
+                roleId = sysRole.getId();
+            }
+            SysUserRole sysUserRole = new SysUserRole();
+            sysUserRole.setUserId(userId);
+            sysUserRole.setRoleId(roleId);
+            sysUserRoleMapper.insert(sysUserRole);
+        }
+    }
+    //================================================= end 低代码部门导入导出 ================================================================
+
+    @Override
+    public void updatePasswordNotBindPhone(String oldPassword, String password, String username) {
+        LoginUser sysUser = (LoginUser)SecurityUtils.getSubject().getPrincipal();
+        //step1 只能修改自己的密码
+        if(!sysUser.getUsername().equals(username)){
+            throw new JeecgBootBizTipException("只允许修改自己的密码！");
+        }
+        //step2 用户不存在禁止修改密码
+        SysUser user = this.getUserByName(username);
+        if(null == user){
+            throw new JeecgBootBizTipException("用户不存在，无法修改密码！");
+        }
+        //setp3 如果手机号存在需要用手机号修改密码的方式
+        if(oConvertUtils.isNotEmpty(user.getPhone())){
+            throw new JeecgBootBizTipException("手机号不为空，请根据手机号进行修改密码操作！");
+        }
+        //step4 判断旧密码是否正确
+        String passwordEncode = PasswordUtil.encrypt(username, oldPassword, user.getSalt());
+        if (!user.getPassword().equals(passwordEncode)) {
+            throw new JeecgBootBizTipException("旧密码输入错误!");
+        }
+        if (oConvertUtils.isEmpty(password)) {
+            throw new JeecgBootBizTipException("新密码不允许为空!");
+        }
+        //step5 修改密码
+        String newPassWord = PasswordUtil.encrypt(username, password, user.getSalt());
+        this.userMapper.update(new SysUser().setPassword(newPassWord).setLastPwdUpdateTime(new Date()), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
+    }
+
+	/**
+	 *
+	 * @param userName
+	 * @return
+	 */
+	@Override
+	public Map<String, String> queryUserAndDeptByName(String userName) {
+		// 返回用户和部门信息（根据需求调整）
+		Map<String, String> result = new HashMap<>();
+		SysUser user = this.getUserByName(userName);
+		result.put("userId", user.getId());
+		result.put("username", user.getUsername());
+		//用户的部门信息
+		String orgCode = user.getOrgCode();
+		if (oConvertUtils.isEmpty(orgCode)) {
+			return result;
+		}
+
+		// 查询公司部门
+		String companyName  = Optional.ofNullable(sysDepartMapper.queryCompByOrgCode(orgCode))
+				.map(SysDepart::getDepartName)
+				.orElse("");
+
+		// 查询用户部门并匹配
+		String userDeptName = sysDepartMapper.queryDepartsByUsername(userName).stream()
+				.filter(depart -> orgCode.equals(depart.getOrgCode()))
+				.findFirst()
+				.map(SysDepart::getDepartName)
+				.orElse("");
+
+		// 设置部门显示文本
+		String compDepart;
+		if (StringUtils.isNotEmpty(companyName) && StringUtils.isNotEmpty(userDeptName)) {
+			compDepart = companyName.equals(userDeptName)
+					? companyName
+					: companyName + "-" + userDeptName;
+		} else {
+			compDepart = StringUtils.isNotEmpty(companyName) ? companyName : userDeptName;
+		}
+		result.put("compDepart", compDepart);
+		return result;
+	}
+
+    /**
+     * 查询部门、岗位下的用户 包括子部门下的用户
+     * 
+     * @param orgCode
+     * @param userParams
+     * @param page
+     * @return
+     */
+    @Override
+    public IPage<SysUserSysDepPostModel> queryDepartPostUserByOrgCode(String orgCode, SysUser userParams, IPage page) {
+        List<SysUserSysDepPostModel> sysDepartModels = baseMapper.queryDepartPostUserByOrgCode(page, orgCode, userParams);
+        if(CollectionUtil.isNotEmpty(sysDepartModels)){
+            List<String> userIds = sysDepartModels.stream().map(SysUserSysDepPostModel::getId).toList();
+            //获取部门名称
+            Map<String, String> useDepNames = this.getDepNamesByUserIds(userIds);
+            sysDepartModels.forEach(item -> {
+                List<String> positionList = sysUserPositionMapper.getPositionIdByUserId(item.getId());
+                item.setPost(CommonUtils.getSplitText(positionList,SymbolConstant.COMMA));
+                item.setOrgCodeTxt(useDepNames.get(item.getId()));
+                //查询用户的租户ids
+                List<Integer> list = userTenantMapper.getTenantIdsByUserId(item.getId());
+                if (oConvertUtils.isNotEmpty(list)) {
+                    item.setRelTenantIds(StringUtils.join(list.toArray(), SymbolConstant.COMMA));
+                } else {
+                    item.setRelTenantIds("");
+                }
+                //兼职岗位
+                List<String> depPostList = depPostMapper.getDepPostByUserId(item.getId());
+                if(CollectionUtil.isNotEmpty(depPostList)){
+                    item.setOtherDepPostId(StringUtils.join(depPostList.toArray(), SymbolConstant.COMMA));
+                }
+            });
+        }
+        return page.setRecords(sysDepartModels);
+    }
+
+    /**
+     * 据 orgCode 查询用户信息（部门全路径，主岗位和兼职岗位的信息），包括公司、子公司、部门
+     *
+     * @param orgCode
+     * @param userParams
+     * @param page
+     * @return
+     */
+    @Override
+    public IPage<SysUserSysDepPostModel> queryDepartUserByOrgCode(String orgCode, SysUser userParams, IPage page) {
+        List<SysUserSysDepPostModel> sysDepartModels = baseMapper.queryDepartUserByOrgCode(page, orgCode, userParams);
+        //用户id
+        List<String> userIdList = sysDepartModels.stream().map(SysUserSysDepPostModel::getId).toList();
+        if (CollectionUtil.isNotEmpty(userIdList)) {
+            //根据用户ids获取部门名称 key 用户id value 部门名称
+            Map<String, String> departNameMap = this.getDepartNamesByUserIds(userIdList, SymbolConstant.COMMA);
+            //获取兼职岗位
+            Map<String, String> departPostMap = this.getDepartOtherPostByUserIds(userIdList, SymbolConstant.COMMA);
+            ISysDepartService service = SpringContextUtils.getBean(SysDepartServiceImpl.class);
+            sysDepartModels.forEach(item -> {
+                item.setDepartName(departNameMap.get(item.getId()));
+                item.setOtherPostName(departPostMap.get(item.getId()));
+                //获取主岗位全路径
+                if (oConvertUtils.isNotEmpty(item.getMainDepPostId())) {
+                    SysDepart departById = sysDepartMapper.getDepartById(item.getMainDepPostId());
+                    if (null != departById) {
+                        String departPathName = service.getDepartPathNameByOrgCode(departById.getOrgCode(), "");
+                        item.setPostName(departPathName);
+                    }
+                }
+            });
+        }
+        return page.setRecords(sysDepartModels);
+    }
+
+    /**
+     * 通讯录点击用户获取用户详情（包含用户基本信息、部门全路径、主岗位兼职岗位全路径）
+     *
+     * @param userId
+     * @return
+     */
+    @Override
+    public SysUserSysDepPostModel getUserDetailByUserId(String userId) {
+        SysUser sysUser = baseMapper.selectById(userId);
+        if (null != sysUser) {
+            SysUserSysDepPostModel userModel = new SysUserSysDepPostModel();
+            BeanUtils.copyProperties(sysUser, userModel);
+            //获取部门名称
+            List<String> userIds = new ArrayList<>();
+            userIds.add(userId);
+            Map<String, String> departNameMap = this.getDepartNamesByUserIds(userIds, "__");
+            userModel.setDepartName(departNameMap.get(userId));
+            ISysDepartService service = SpringContextUtils.getBean(SysDepartServiceImpl.class);
+            //获取主岗位全路径
+            if (oConvertUtils.isNotEmpty(sysUser.getMainDepPostId())) {
+                SysDepart departById = sysDepartMapper.getDepartById(sysUser.getMainDepPostId());
+                if (null != departById) {
+                    String departPathName = service.getDepartPathNameByOrgCode(departById.getOrgCode(), "");
+                    userModel.setPostName(departPathName);
+                }
+            }
+            //获取兼职岗位全路径
+            Map<String, String> departPostMap = this.getDepartOtherPostByUserIds(userIds, "__");
+            userModel.setOtherPostName(departPostMap.get(userId));
+            return userModel;
+        }
+        return null;
+    }
+
+	/**
+	 * 登录获取用户部门信息
+	 * @param jsonObject
+	 * @return
+	 */
+	@Override
+	public Result loginGetUserDeparts(JSONObject jsonObject) {
+		Result result = new Result<>();
+		//返回内容
+		JSONObject obj = new JSONObject(new LinkedHashMap<>());
+		// 登录方式 phone:手机 account:账号密码
+		String loginType = jsonObject.getString("loginType");
+		String username = jsonObject.getString("username");
+		String source = oConvertUtils.getString(jsonObject.getString("source"),"PC");
+		// 手机号登录校验
+		if("phone".equalsIgnoreCase(loginType)){
+			String phone = jsonObject.getString("mobile");
+			//1.校验用户有效性
+			SysUser sysUser = baseMapper.getUserByPhone(phone);
+			result = this.checkUserIsEffective(sysUser);
+			if(!result.isSuccess()) {
+				return result;
+			}
+			//2.校验验证码
+			String smscode = jsonObject.getString("smscode");
+			String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+phone;
+			Object code = redisUtil.get(redisKey);
+			if (!smscode.equals(code)) {
+				return Result.error("手机验证码错误");
+			}
+			//3.当前登录账号
+			username = sysUser.getUsername();
+			String orgCode = sysUser.getOrgCode();
+			obj.put("currentOrgCode", orgCode);
+		}else{
+			String password  = AesEncryptUtil.resolvePassword(jsonObject.getString("password"));
+			log.debug("登录密码，原始密码:{}，解密密码:{}" , jsonObject.getString("password"), password);
+            // 手机端没有验证码，不做校验
+			if(!"APP".equalsIgnoreCase(source)){
+				// step.1 验证码check
+				SysLoginModel sysLoginModel = new SysLoginModel();
+				String inputCode = jsonObject.getString("inputCode");
+				String checkKey = jsonObject.getString("checkKey");
+				sysLoginModel.setCaptcha(inputCode);
+				sysLoginModel.setCheckKey(checkKey);
+				if (inputCode == null) {
+					result.error500("验证码无效");
+					return result;
+				}
+				String lowerCaseCaptcha = inputCode.toLowerCase();
+				String keyPrefix = Md5Util.md5Encode(sysLoginModel.getCheckKey() + jeecgBaseConfig.getSignatureSecret(), "utf-8");
+				String realKey = keyPrefix + lowerCaseCaptcha;
+				Object checkCode = redisUtil.get(realKey);
+				if (checkCode == null || !checkCode.toString().equals(lowerCaseCaptcha)) {
+					log.warn("验证码错误，key= {} , Ui checkCode= {}, Redis checkCode = {}", sysLoginModel.getCheckKey(), lowerCaseCaptcha, checkCode);
+					result.error500("验证码错误");
+					result.setCode(HttpStatus.PRECONDITION_FAILED.value());
+					return result;
+				}
+			}
+
+			// step.2 校验用户是否存在且有效
+			SysUser sysUser = baseMapper.getUserByName(username);
+			result = this.checkUserIsEffective(sysUser);
+			if(!result.isSuccess()) {
+				return result;
+			}
+
+			// step.3 校验用户名或密码是否正确
+			String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
+			String syspassword = sysUser.getPassword();
+			if (!syspassword.equals(userpassword)) {
+				result.error500("用户名或密码错误");
+				return result;
+			}
+			String orgCode = sysUser.getOrgCode();
+			obj.put("currentOrgCode", orgCode);
+		}
+		//  step.4 获取用户部门信息，仅限部门
+		List<SysDepart> departList = sysDepartMapper.queryDeptByUserAndCategory(username,DepartCategoryEnum.DEPART_CATEGORY_DEPART.getValue());
+		if (CollectionUtil.isNotEmpty(departList)) {
+			ISysDepartService service = SpringContextUtils.getBean(SysDepartServiceImpl.class);
+			List<Map<String, String>> departs = departList.stream()
+				.filter(depart -> oConvertUtils.isNotEmpty(depart) &&
+						oConvertUtils.isNotEmpty(depart.getOrgCode()))
+				.map(depart -> {
+					String departName = depart.getDepartNameAbbr();
+					//简称是空的情况下，查询全路径名称
+					if(oConvertUtils.isEmpty(departName)){
+						departName = service.getDepartPathNameByOrgCode(depart.getOrgCode(), "");
+					}
+					Map<String, String> map = new HashMap<>();
+					map.put("orgCode", depart.getOrgCode());
+					map.put("departName", departName);
+					return map;
+				})
+				.collect(Collectors.toList());
+			obj.put("departs", departs);
+		}
+		result.setResult(obj);
+		return result;
+	}
+
+	/**
+	 * 批量重置密码为系统密码
+	 * @param usernames
+	 */
+	@Override
+	public void resetToSysPassword(String usernames) {
+		//1.判断是否存在admin账户
+		if(hasAdminIntersection(usernames)){
+			throw new JeecgBootException("所选用户中包含管理员，管理员账号不允许重置密码！！");
+		}
+		List<String> userArr = Arrays.asList(usernames.split(","));
+		userArr.stream().forEach(username -> {
+			if(oConvertUtils.isNotEmpty(username)){
+				String salt = oConvertUtils.randomGen(8);
+				String passwordEncode = PasswordUtil.encrypt(username, PasswordConstant.DEFAULT_PASSWORD, salt);
+				//重置密码
+				UpdateWrapper<SysUser> updateWrapper = new UpdateWrapper<>();
+				updateWrapper
+						.eq("username", username)
+						.set("last_pwd_update_time", new Date())
+						.set("password", passwordEncode)
+						.set("salt", salt);
+				this.baseMapper.update(null, updateWrapper);
+			}
+		});
+	}
+
+	/**
+	 * 更新设备信息
+	 * @param clientId
+	 * @param userId
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public void updateClientId(String clientId,String userId) {
+		//解绑之前的设备账户
+		if(oConvertUtils.isNotEmpty(clientId)){
+			UpdateWrapper<SysUser> updateWrapper = new UpdateWrapper<>();
+			updateWrapper
+					.eq("client_id", clientId)
+					.set("client_id", null);
+			this.baseMapper.update(null, updateWrapper);
+		}
+		//设置新的绑定
+		SysUser sysUser = new SysUser();
+		sysUser.setClientId(clientId);
+		sysUser.setId(userId);
+		this.baseMapper.updateById(sysUser);
+	}
+
+	/**
+	 * 是否有交集
+	 */
+	public static boolean hasAdminIntersection(String usernames) {
+		if (oConvertUtils.isEmpty(usernames)) {
+			return false;
+		}
+		// 使用HashSet提高查找效率
+		Set<String> adminSet = Arrays.stream(ADMIN_ACCOUNT)
+				.map(String::toLowerCase)
+				.collect(Collectors.toSet());
+
+		return Arrays.stream(usernames.split(SymbolConstant.COMMA))
+				.map(String::trim)
+				.map(String::toLowerCase)
+				.anyMatch(adminSet::contains);
+	}
+	/**
+     * 根据用户ids获取部门名称
+     *
+     * @param userIdList
+     * @param symbol
+     * @return
+     */
+    private Map<String, String> getDepartOtherPostByUserIds(List<String> userIdList, String symbol) {
+        Map<String, String> departPostMap = new HashMap<>();
+        List<SysUserSysDepPostModel> departPost = sysDepartMapper.getDepartOtherPostByUserIds(userIdList);
+        if (CollectionUtil.isNotEmpty(departPost)) {
+            ISysDepartService service = SpringContextUtils.getBean(SysDepartServiceImpl.class);
+            departPost.forEach(item -> {
+                if (oConvertUtils.isNotEmpty(item.getId()) && oConvertUtils.isNotEmpty(item.getOtherDepPostId())) {
+                    String postName = service.getDepartPathNameByOrgCode(item.getOrgCode(), "");
+                    if (departPostMap.containsKey(item.getId())) {
+                        departPostMap.put(item.getId(), departPostMap.get(item.getId()) + symbol + postName);
+                    } else {
+                        departPostMap.put(item.getId(), postName);
+                    }
+                }
+            });
+        }
+        return departPostMap;
+    }
+
+    /**
+     * 根据用户ids获取部门名称
+     *
+     * @param userIdList
+     * @param symbol
+     * @return
+     */
+    private Map<String, String> getDepartNamesByUserIds(List<String> userIdList, String symbol) {
+        Map<String, String> userOrgCodeMap = new HashMap<>();
+        if (CollectionUtil.isNotEmpty(userIdList)) {
+            List<SysUserSysDepPostModel> userDepPosts = sysUserDepartMapper.getUserDepPostByUserIds(userIdList);
+            if (CollectionUtil.isNotEmpty(userDepPosts)) {
+                ISysDepartService service = SpringContextUtils.getBean(SysDepartServiceImpl.class);
+                userDepPosts.forEach(item -> {
+                    if (oConvertUtils.isNotEmpty(item.getId()) && oConvertUtils.isNotEmpty(item.getOrgCode())) {
+                        String departNamePath = service.getDepartPathNameByOrgCode(item.getOrgCode(), "");
+                        if (userOrgCodeMap.containsKey(item.getId())) {
+                            userOrgCodeMap.put(item.getId(), userOrgCodeMap.get(item.getId()) + symbol + departNamePath);
+                        } else {
+                            userOrgCodeMap.put(item.getId(), departNamePath);
+                        }
+                    }
+                });
+            }
+        }
+        return userOrgCodeMap;
+    }
 }

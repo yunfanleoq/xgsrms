@@ -20,3 +20,17 @@ derby.log
 /.qoder
 /.history
 /jeecgboot-vue3/xgszp
+
+## Jeecg 升级缓存与备份（upgrade-to-jeecg391.ps1）
+/.upgrade-cache/
+/jeecg-boot.backup-*/
+/backup/
+# 离线 JDK 等大文件（本机下载后拷至服务器，勿提交）
+/offline-packages/
+# 本地签名密钥（与 JEECG_SIGNATURE_SECRET 一致，勿提交）
+/local-signature.env
+
+# 根目录或脚本旁误装的依赖与缓存（勿提交）
+/node_modules/
+**/__pycache__/
+*.pyc

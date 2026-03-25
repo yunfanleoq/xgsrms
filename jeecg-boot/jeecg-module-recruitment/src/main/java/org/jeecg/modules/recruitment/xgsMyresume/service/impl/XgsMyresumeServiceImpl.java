@@ -7,6 +7,7 @@ import com.zhipu.oapi.service.v4.file.UploadFileRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
 import com.zhipu.oapi.service.v4.model.ModelData;
+import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.recruitment.xgsMyresume.entity.XgsMyresume;
@@ -37,8 +38,9 @@ import java.util.regex.Pattern;
 @Service
 public class XgsMyresumeServiceImpl extends ServiceImpl<XgsMyresumeMapper, XgsMyresume> implements IXgsMyresumeService {
 
-    @Autowired
-    ClientV4 clientV4;
+    /** 智谱 ClientV4；未配置 Bean 时不影响系统启动，简历 AI 解析将不可用 */
+    @Autowired(required = false)
+    private ClientV4 clientV4;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -51,6 +53,9 @@ public class XgsMyresumeServiceImpl extends ServiceImpl<XgsMyresumeMapper, XgsMy
 
     @Override
     public void analysisResume(XgsMyresume xgsMyresume) {
+        if (clientV4 == null) {
+            throw new JeecgBootException("智谱 AI 未配置（未注册 ClientV4 Bean），简历智能解析功能暂不可用。");
+        }
         String filePath = upLoadPath + File.separator + xgsMyresume.getResumeFile();
         try {
             File file = new File(filePath);

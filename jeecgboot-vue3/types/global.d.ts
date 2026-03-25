@@ -63,6 +63,8 @@ declare global {
     VITE_GLOB_QIANKUN_MICRO_APP_NAME?: string;
     // 【JEECG作为乾坤子应用】非必填，需与qiankun主应用注册子应用时填写的 entry 保持一致
     VITE_GLOB_QIANKUN_MICRO_APP_ENTRY?: string;
+    /** 接口签名密钥，须与后端 JEECG_SIGNATURE_SECRET 一致 */
+    VITE_GLOB_SIGNATURE_SECRET?: string;
   }
 
   declare function parseInt(s: string | number, radix?: number): number;

@@ -1,13 +1,19 @@
+# 生产运维（VULN-030）：宝塔面板 SQLite、MySQL root 等属主机侧凭据；须轮换强密码、开启面板双因素、防火墙仅开放必要端口、禁止 root 运行 Java 进程；Web 站点勿将宝塔数据目录或 .sql 置于可下载路径。应用层任意读已收敛（VULN-026 getCarouselImage）。
+# 生产运维（VULN-031）：宝塔「API 接口」密钥须在面板内重新生成并轮换；防火墙/安全组将面板与 API 端口限制为仅管理网段；勿将密钥写入代码仓库或 Web 可下载目录。
+# 生产运维（VULN-033）：前端为纯静态，Nginx 站点勿 include enable-php-*.conf、勿对 .php 走 php-fpm；示例见仓库 deploy/nginx-frontend-static.example.conf。
+#
+# Spring Boot 3：druid 使用 boot3 排除类；Redis 使用 spring.data.redis；Quartz 使用 spring.quartz.jdbc.initialize-schema。
 server:
   port: 8080
   tomcat:
     max-swallow-size: -1
   error:
-    include-exception: true
-    include-stacktrace: ALWAYS
-    include-message: ALWAYS
+    include-exception: false
+    include-stacktrace: NEVER
+    include-message: NEVER
   servlet:
-    context-path: /jeecg-boot
+    # 与前端 VITE_GLOB_API_URL=/xgszp-boot 一致；生产 context-path 固定为 /xgszp-boot
+    context-path: /xgszp-boot
   compression:
     enabled: true
     min-response-size: 1024
@@ -15,60 +21,61 @@ server:
 
 management:
   endpoints:
+    # Spring Boot 3.5：用 access 替代 enabled-by-default（见 EndpointAccess：none / read-only / unrestricted）
+    access:
+      default: none
     web:
       exposure:
-        include: metrics,jeecghttptrace
+        include: health
+  endpoint:
+    health:
+      access: read-only
+  # HTTP 交换记录（替代已废弃的 management.trace.http），供 Jeecg CustomActuatorConfig 注册 traceRepository
+  httpexchanges:
+    recording:
+      enabled: true
+  # 勿再使用 management.trace.http.enabled，否则会触发 PropertiesMigrationListener ERROR
 
 spring:
-  # flyway配置
   flyway:
-    # 是否启用flyway
     enabled: false
-    # 编码格式，默认UTF-8
     encoding: UTF-8
-    # 迁移sql脚本文件存放路径，官方默认db/migration
     locations: classpath:flyway/sql/mysql
-    # 迁移sql脚本文件名称的前缀，默认V
     sql-migration-prefix: V
-    # 迁移sql脚本文件名称的分隔符，默认2个下划线__
     sql-migration-separator: __
-    # 避免带${}sql执行失败
     placeholder-prefix: '#('
     placeholder-suffix: )
-    # 迁移sql脚本文件名称的后缀
     sql-migration-suffixes: .sql
-    # 迁移时是否进行校验，默认true
     validate-on-migrate: true
-    # 当迁移发现数据库非空且存在没有元数据的表时，自动执行基准迁移，新建schema_version表
     baseline-on-migrate: true
-    # 是否关闭要清除已有库下的表功能,生产环境必须为true,否则会删库，非常重要！！！
     clean-disabled: true
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    # 定时任务发送邮件
+    # VULN-027：账号口令由环境变量注入，禁止在仓库写明文
     timeJobSend: false
     host: ${MAIL_HOST:mail.cstnet.cn}
     port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
           auth: true
           ssl:
             enable: true
-  ## quartz定时任务,采用数据库方式
   quartz:
     job-store-type: jdbc
-    initialize-schema: embedded
-    #定时任务开关，true-开  false-关
+    jdbc:
+      # embedded 仅对 H2 等嵌入式库建表；MySQL 不会执行，导致 QRTZ_* 不存在。
+      # 勿改为 always：Quartz 自带脚本含 DROP，每次启动会删表重建、清空定时任务。
+      # 首次/缺表时在库 xgsrms 执行：mysql ... < backend/sql/quartz_tables_mysql_innodb_nofk.sql
+      # （官方带外键的脚本在部分 MySQL 5.7 上会 ERROR 1022，已提供无 FK 版本，Quartz JDBC 可正常工作）
+      initialize-schema: never
     auto-startup: true
-    #延迟1秒启动定时任务
     startup-delay: 1s
-    #启动时更新己存在的Job
     overwrite-existing-jobs: true
     properties:
       org:
@@ -88,7 +95,6 @@ spring:
             threadCount: 10
             threadPriority: 5
             threadsInheritContextClassLoaderOfInitializingThread: true
-  #json 时间戳统一转换
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -96,191 +102,140 @@ spring:
     open-in-view: false
   aop:
     proxy-target-class: true
-  #配置freemarker
   freemarker:
-    # 设置模板后缀名
     suffix: .ftl
-    # 设置文档类型
     content-type: text/html
-    # 设置页面编码格式
     charset: UTF-8
-    # 设置页面缓存
     cache: false
     prefer-file-system-access: false
-    # 设置ftl文件路径
     template-loader-path:
       - classpath:/templates
     template_update_delay: 0
-  # 设置静态文件路径，js,css等
   mvc:
     static-path-pattern: /**
-    #Spring Boot 2.6+后映射匹配的默认策略已从AntPathMatcher更改为PathPatternParser,需要手动指定为ant-path-matcher
     pathmatch:
       matching-strategy: ant_path_matcher
   resource:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
   datasource:
     druid:
       stat-view-servlet:
-        enabled: true
-        loginUsername: admin
-        loginPassword: 123456
+        enabled: false
+        loginUsername: ${DRUID_LOGIN_USERNAME:}
+        loginPassword: ${DRUID_LOGIN_PASSWORD:}
         allow:
       web-stat-filter:
         enabled: true
     dynamic:
-      druid: # 全局druid参数，绝大部分值和默认保持一致。(现已支持的参数如下,不清楚含义不要乱设置)
-        # 连接池的配置信息
-        # 初始化大小，最小，最大
+      druid:
         initial-size: 5
         min-idle: 5
         maxActive: 1000
-        # 配置获取连接等待超时的时间
         maxWait: 60000
-        # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
         timeBetweenEvictionRunsMillis: 60000
-        # 配置一个连接在池中最小生存的时间，单位是毫秒
         minEvictableIdleTimeMillis: 300000
         validationQuery: SELECT 1 FROM DUAL
         testWhileIdle: true
         testOnBorrow: false
         testOnReturn: false
-        # 打开PSCache，并且指定每个连接上PSCache的大小
         poolPreparedStatements: true
         maxPoolPreparedStatementPerConnectionSize: 20
-        # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
         filters: stat,wall,slf4j
-        # 允许SELECT语句的WHERE子句是一个永真条件
         wall:
           selectWhereAlwayTrueCheck: false
-        # 打开mergeSql功能；慢SQL记录
         stat:
           merge-sql: true
           slow-sql-millis: 5000
       datasource:
         master:
-          url: jdbc:mysql://127.0.0.1:3306/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-          username: xgsrms
-          password: xgsrms@zktw
+          # VULN-027：数据库连接串与账号口令禁止写入仓库；生产通过 MYSQL_JDBC_URL / MYSQL_USERNAME / MYSQL_PASSWORD 注入（部署文档须列明）
+          url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3306/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+          username: ${MYSQL_USERNAME:}
+          password: ${MYSQL_PASSWORD:}
           driver-class-name: com.mysql.cj.jdbc.Driver
-          # 多数据源配置
-          #multi-datasource1:
-          #url: jdbc:mysql://localhost:3306/jeecg-boot2?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&transformedBitIsBoolean=true&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-          #username: root
-          #password: root
-          #driver-class-name: com.mysql.cj.jdbc.Driver
-  #redis 配置
-  redis:
-    database: 0
-    host: 127.0.0.1
-    port: 6379
-    password: ''
-#mybatis plus 设置
+          # VULN-032（运维）：MySQL 监听与防火墙须限制为仅本机或应用子网；禁止公网直连 3306；使用最小权限业务账号并轮换已泄露口令；与 VULN-027 环境变量注入配合。
+  data:
+    redis:
+      database: 0
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
   global-config:
-    # 关闭MP3.0自带的banner
     banner: false
     db-config:
-      #主键类型  0:"数据库ID自增",1:"该类型为未设置主键类型", 2:"用户输入ID",3:"全局唯一ID (数字类型唯一ID)", 4:"全局唯一ID UUID",5:"字符串全局唯一ID (idWorker 的字符串表示)";
       id-type: ASSIGN_ID
-      # 默认数据库表下划线命名
       table-underline: true
   configuration:
-    # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
     #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    # 返回类型为Map,显示null对应的字段
     call-setters-on-nulls: true
-#jeecg专用配置
+
 minidao:
   base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
 jeecg:
-  # 平台上线安全配置
   firewall:
-    # 数据源安全 (开启后，Online报表和图表的数据源为必填)
     dataSourceSafe: true
-    # 低代码模式（dev:开发模式，prod:发布模式——关闭所有在线开发配置能力）
     lowCodeMode: prod
-  # 签名密钥串(前后端要一致，正式发布请自行修改)
-  signatureSecret: dd05f1c54d63749eda95f9fa6d49v442a
-  #签名拦截接口
+  # 签名密钥：须与前端构建时 VITE_GLOB_SIGNATURE_SECRET 一致；通过环境变量注入，禁止在仓库填明文
+  signatureSecret: ${JEECG_SIGNATURE_SECRET:}
   signUrls: /sys/dict/getDictItems/*,/sys/dict/loadDict/*,/sys/dict/loadDictOrderByValue/*,/sys/dict/loadDictItem/*,/sys/dict/loadTreeData,/sys/api/queryTableDictItemsByCode,/sys/api/queryFilterTableDictInfo,/sys/api/queryTableDictByKeys,/sys/api/translateDictFromTable,/sys/api/translateDictFromTableByKeys,/sys/sendChangePwdSms,/sys/user/sendChangePhoneSms,/sys/sms,/desform/api/sendVerifyCode
-  # local\minio\alioss
   uploadType: alioss
-  # 前端访问地址
   domainUrl:
     pc: http://localhost:3100
     app: http://localhost:8051
   path:
-    #文件上传根目录 设置
     upload: /opt/jeecg-boot/upload
-    #webapp文件路径
     webapp: /opt/jeecg-boot/webapp
   shiro:
     # C-003 / VULN-017：不得将 /jmreport/** 或子路径放入 excludeUrls（anon 会优先匹配，绕过 ShiroConfig 中 /jmreport/** → jwt,roles[admin]）
     excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/api/getUserInfo
   security:
-    # GET 重置密码易泄露；生产必须为 false（POST /sys/user/passwordChange）
+    password:
+      expire-days: -1
     allow-password-change-get: false
-    # 禁止从 URL 读取 token 时设为 false（对应环境变量 JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY）
     allow-token-in-query: ${JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY:false}
-    # 浏览器访问域名（逗号分隔），如 https://hr.example.com,https://www.example.com；为空则保持旧行为（反射 Origin，不推荐生产）
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
     token:
-      # 生产环境建议 2～8 小时（毫秒）；渗透建议缩短长期会话（VULN-028）
       expireTime: ${JWT_EXPIRE_TIME:28800000}
-      # 必须通过环境变量 JWT_SECRET 注入高强度随机密钥（至少32字符）；禁止留空或使用默认占位符（见 ProdSecurityBindingValidator）
       jwtSecret: ${JWT_SECRET:}
     redis:
-      # VULN-028：为 true 时启动校验要求 REDIS_PASSWORD；仅经评估的内网可设 JEECG_SECURITY_REDIS_REQUIRE_PASSWORD=false
       require-password: ${JEECG_SECURITY_REDIS_REQUIRE_PASSWORD:true}
-  #阿里云oss存储和大鱼短信秘钥配置
   oss:
     accessKey: ??
     secretKey: ??
     endpoint: oss-cn-beijing.aliyuncs.com
     bucketName: jeecgdev
     staticDomain: https://static.jeecg.com
-    # 短信模板
     sms-template:
-      # 签名
       signature:
-      # 模板code
       templateCode:
-        # 登录短信、忘记密码模板编码
         SMS_175435174:
-        # 修改密码短信模板编码
         SMS_465391221:
-        # 注册账号短信模板编码
         SMS_175430166:
-  # ElasticSearch 设置
   elasticsearch:
     cluster-name: jeecg-ES
     cluster-nodes: 127.0.0.1:9200
     check-enabled: false
-  # 在线预览文件服务器地址配置
   file-view-domain: http://fileview.jeecg.com
-  # minio文件上传
   minio:
     minio_url: http://minio.jeecg.com
     minio_name: ??
     minio_pass: ??
     bucketName: otatest
-  #大屏报表参数设置
   jmreport:
-    #多租户模式，默认值为空(created:按照创建人隔离、tenant:按照租户隔离) (v1.6.2+ 新增)
+    block-jdbc-test-connection: true
     saasMode:
-    # 平台上线安全配置(v1.6.2+ 新增)
     firewall:
-      # 数据源安全 (开启后，不允许使用平台数据源、SQL解析加签并且不允许查询数据库)
       dataSourceSafe: true
-      # 低代码开发模式（dev:开发模式，prod:发布模式—关闭在线报表设计功能，分配角色admin、lowdeveloper可以放开限制）
       lowCodeMode: prod
-  #xxl-job配置
+      api-http-host-allowlist: ${JMREPORT_API_HTTP_ALLOWLIST:}
+      api-ssrf-guard-enabled: ${JMREPORT_API_SSRF_GUARD_ENABLED:true}
   xxljob:
     enabled: false
     adminAddresses: http://127.0.0.1:9080/xxl-job-admin
@@ -291,57 +246,54 @@ jeecg:
     port: 30007
     logPath: logs/jeecg/job/jobhandler/
     logRetentionDays: 30
-  #分布式锁配置
   redisson:
     address: 127.0.0.1:6379
-    password:
+    password: ${REDIS_PASSWORD:}
     type: STANDALONE
     enabled: true
-  # 百度开放API配置
+  ai-chat:
+    enabled: ${AI_CHAT_ENABLED:false}
+    apiKey: ${AI_API_KEY:}
+    apiHost: ${AI_API_HOST:https://open.bigmodel.cn/api/paas/v4/}
+    timeout: ${AI_API_TIMEOUT:60}
   baidu-api:
     app-id: ??
     api-key: ??
     secret-key: ??
 
-#cas单点登录
 cas:
   prefixUrl: http://cas.example.org:8443/cas
-#Mybatis输出sql日志
 logging:
   level:
     org.flywaydb: debug
     org.jeecg.modules.system.mapper: info
-#swagger
 knife4j:
-  #开启增强配置
-  enable: true
-  #开启生产环境屏蔽
+  enable: false
   production: true
   basic:
-    enable: true
-    username: jeecg
-    password: jeecg1314
-#第三方登录
+    enable: false
+    username: ${KNIFE4J_BASIC_USERNAME:}
+    password: ${KNIFE4J_BASIC_PASSWORD:}
 justauth:
   enabled: true
   type:
     GITHUB:
       client-id: ??
       client-secret: ??
-      redirect-uri: http://sso.test.com:8080/jeecg-boot/sys/thirdLogin/github/callback
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/github/callback
     WECHAT_ENTERPRISE:
       client-id: ??
       client-secret: ??
-      redirect-uri: http://sso.test.com:8080/jeecg-boot/sys/thirdLogin/wechat_enterprise/callback
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/wechat_enterprise/callback
       agent-id: ??
     DINGTALK:
       client-id: ??
       client-secret: ??
-      redirect-uri: http://sso.test.com:8080/jeecg-boot/sys/thirdLogin/dingtalk/callback
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/dingtalk/callback
     WECHAT_OPEN:
       client-id: ??
       client-secret: ??
-      redirect-uri: http://sso.test.com:8080/jeecg-boot/sys/thirdLogin/wechat_open/callback
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/wechat_open/callback
   cache:
     type: default
     prefix: 'demo::'

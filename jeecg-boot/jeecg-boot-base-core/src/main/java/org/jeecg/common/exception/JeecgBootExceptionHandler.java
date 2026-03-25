@@ -1,6 +1,8 @@
 package org.jeecg.common.exception;
 
 import cn.hutool.core.util.ObjectUtil;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.shiro.SecurityUtils;
@@ -23,16 +25,18 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.connection.PoolException;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 异常处理器
@@ -47,6 +51,13 @@ public class JeecgBootExceptionHandler {
 	@Resource
 	BaseCommonService baseCommonService;
 
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public Result<?> handleValidationExceptions(MethodArgumentNotValidException e) {
+		log.error(e.getMessage(), e);
+		addSysLog(e);
+		return Result.error("校验失败！" + e.getBindingResult().getAllErrors().stream().map(ObjectError::getDefaultMessage).collect(Collectors.joining(",")));
+	}
+	
 	/**
 	 * 处理自定义异常
 	 */
@@ -110,13 +121,12 @@ public class JeecgBootExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public Result<?> handleException(Exception e){
 		log.error(e.getMessage(), e);
-		//update-begin---author:zyf ---date:20220411  for：处理Sentinel限流自定义异常
+		// 代码逻辑说明: 处理Sentinel限流自定义异常
 		Throwable throwable = e.getCause();
 		SentinelErrorInfoEnum errorInfoEnum = SentinelErrorInfoEnum.getErrorByException(throwable);
 		if (ObjectUtil.isNotEmpty(errorInfoEnum)) {
 			return Result.error(errorInfoEnum.getError());
 		}
-		//update-end---author:zyf ---date:20220411  for：处理Sentinel限流自定义异常
 		addSysLog(e);
 		return Result.error("操作失败，"+e.getMessage());
 	}
@@ -156,6 +166,27 @@ public class JeecgBootExceptionHandler {
         return Result.error("文件大小超出10MB限制, 请压缩或降低文件质量! ");
     }
 
+	/**
+	 * 处理文件过大异常.
+	 * jdk17中的MultipartException异常类已经被拆分成了MultipartException和MaxUploadSizeExceededException
+	 * for [QQYUN-11716]上传大图片失败没有精确提示
+	 * @param e
+	 * @return
+	 * @author chenrui
+	 * @date 2025/4/8 16:13
+	 */
+	@ExceptionHandler(MultipartException.class)
+	public Result<?> handleMaxUploadSizeExceededException(MultipartException e) {
+		Throwable cause = e.getCause();
+		if (cause instanceof IllegalStateException) {
+			log.error("文件大小超出限制: {}", cause.getMessage(), e);
+			addSysLog(e);
+			return Result.error("文件大小超出限制, 请压缩或降低文件质量!");
+		} else {
+			return handleException(e);
+		}
+	}
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public Result<?> handleDataIntegrityViolationException(DataIntegrityViolationException e) {
     	log.error(e.getMessage(), e);
@@ -192,7 +223,6 @@ public class JeecgBootExceptionHandler {
 		return Result.error("校验失败，存在SQL注入风险！" + msg);
 	}
 
-	//update-begin---author:chenrui ---date:20240423  for：[QQYUN-8732]把错误的日志都抓取了 方便后续处理，单独弄个日志类型------------
 	/**
 	 * 添加异常新系统日志
 	 * @param e 异常
@@ -212,9 +242,12 @@ public class JeecgBootExceptionHandler {
         }
         if (null != request) {
 			//请求的参数
-			Map<String, String[]> parameterMap = request.getParameterMap();
-			if(!CollectionUtils.isEmpty(parameterMap)){
-				log.setMethod(oConvertUtils.mapToString(request.getParameterMap()));
+			if (!isTooBigException(e)) {
+				// 文件上传过大异常时不能获取参数,否则会报错
+				Map<String, String[]> parameterMap = request.getParameterMap();
+				if(!CollectionUtils.isEmpty(parameterMap)) {
+					log.setMethod(oConvertUtils.mapToString(request.getParameterMap()));
+				}
 			}
             // 请求地址
             log.setRequestUrl(request.getRequestURI());
@@ -239,6 +272,27 @@ public class JeecgBootExceptionHandler {
 
         baseCommonService.addLog(log);
     }
-	//update-end---author:chenrui ---date:20240423  for：[QQYUN-8732]把错误的日志都抓取了 方便后续处理，单独弄个日志类型------------
+
+	/**
+	 * 是否文件过大异常
+	 * for [QQYUN-11716]上传大图片失败没有精确提示
+	 * @param e
+	 * @return
+	 * @author chenrui
+	 * @date 2025/4/8 20:21
+	 */
+	private static boolean isTooBigException(Throwable e) {
+		boolean isTooBigException = false;
+		if(e instanceof MultipartException){
+			Throwable cause = e.getCause();
+			if (cause instanceof IllegalStateException){
+				isTooBigException = true;
+			}
+		}
+		if(e instanceof MaxUploadSizeExceededException){
+			isTooBigException = true;
+		}
+		return isTooBigException;
+	}
 
 }

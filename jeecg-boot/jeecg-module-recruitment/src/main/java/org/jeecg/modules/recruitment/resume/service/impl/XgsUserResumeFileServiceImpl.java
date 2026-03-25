@@ -16,11 +16,11 @@ import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
 import com.zhipu.oapi.service.v4.model.ModelData;
-import io.reactivex.Single;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.jeecg.chatgpt.service.AiChatService;
+import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.util.Md5Util;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -51,8 +51,9 @@ import java.util.regex.Pattern;
 @Service
 public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileMapper, XgsUserResumeFile> implements IXgsUserResumeFileService {
 
-    @Autowired
-    ClientV4 clientV4;
+    /** 智谱 ClientV4；未配置 Bean 时不影响系统启动，简历 AI 解析将不可用 */
+    @Autowired(required = false)
+    private ClientV4 clientV4;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -70,6 +71,9 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
      */
     @Override
     public XgsUserResumeFile analysisResume(XgsUserResumeFile xgsUserResumeFile) {
+        if (clientV4 == null) {
+            throw new JeecgBootException("智谱 AI 未配置（未注册 ClientV4 Bean），简历智能解析功能暂不可用。");
+        }
         String filePath = upLoadPath + File.separator + xgsUserResumeFile.getFilePath();
         try {
             File file = new File(filePath);

@@ -3,15 +3,19 @@ package org.jeecg.modules.system.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.jeecg.common.api.CommonAPI;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.base.BaseMap;
 import org.jeecg.common.config.TenantContext;
@@ -19,8 +23,6 @@ import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.SymbolConstant;
 import org.jeecg.common.modules.redis.client.JeecgRedisClient;
 import org.jeecg.common.system.query.QueryGenerator;
-import org.jeecg.common.system.util.JwtUtil;
-import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -31,6 +33,7 @@ import org.jeecg.modules.system.vo.SysUserRoleCountVo;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,8 +88,6 @@ public class SysRoleController {
 	private BaseCommonService baseCommonService;
 	@Autowired
 	private JeecgRedisClient jeecgRedisClient;
-	@Autowired
-	private CommonAPI commonAPI;
 	
 	/**
 	  * 分页列表查询 【系统角色，不做租户隔离】
@@ -101,7 +102,12 @@ public class SysRoleController {
 	public Result<IPage<SysRole>> queryPageList(SysRole role,
 									  @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 									  @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
+									  @RequestParam(name="isMultiTranslate", required = false) Boolean isMultiTranslate,
 									  HttpServletRequest req) {
+        // 代码逻辑说明: 【issues/7948】角色解决根据id查询回显不对---
+        if(null != isMultiTranslate && isMultiTranslate){
+            pageSize = 100;
+        }
 		Result<IPage<SysRole>> result = new Result<IPage<SysRole>>();
 		//QueryWrapper<SysRole> queryWrapper = QueryGenerator.initQueryWrapper(role, req.getParameterMap());
 		//IPage<SysRole> pageList = sysRoleService.page(page, queryWrapper);
@@ -151,9 +157,8 @@ public class SysRoleController {
 		Result<SysRole> result = new Result<SysRole>();
 		try {
 			//开启多租户隔离,角色id自动生成10位
-			//update-begin---author:wangshuai---date:2024-05-23---for:【TV360X-42】角色新增时设置的编码，保存后不一致---
+			// 代码逻辑说明: 【TV360X-42】角色新增时设置的编码，保存后不一致---
 			if(MybatisPlusSaasConfig.OPEN_SYSTEM_TENANT_CONTROL && oConvertUtils.isEmpty(role.getRoleCode())){
-			//update-end---author:wangshuai---date:2024-05-23---for:【TV360X-42】角色新增时设置的编码，保存后不一致---
 				role.setRoleCode(RandomUtil.randomString(10));
 			}
 			role.setCreateTime(new Date());
@@ -188,7 +193,7 @@ public class SysRoleController {
 				LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 				Integer tenantId = oConvertUtils.getInt(TenantContext.getTenant(), 0);
 				String username = "admin";
-				if (!tenantId.equals(role.getTenantId()) && !username.equals(sysUser.getUsername())) {
+				if (!tenantId.equals(sysrole.getTenantId()) && !username.equals(sysUser.getUsername())) {
 					baseCommonService.addLog("未经授权，修改非本租户下的角色ID：" + role.getId() + "，操作人：" + sysUser.getUsername(), CommonConstant.LOG_TYPE_2, CommonConstant.OPERATE_TYPE_3);
 					return Result.error("修改角色失败,当前角色不在此租户中。");
 				}
@@ -224,10 +229,8 @@ public class SysRoleController {
 			}
 		}
     	
-		//update-begin---author:wangshuai---date:2024-01-16---for:【QQYUN-7974】禁止删除 admin 角色---
 		//是否存在admin角色
 		sysRoleService.checkAdminRoleRejectDel(id);
-		//update-end---author:wangshuai---date:2024-01-16---for:【QQYUN-7974】禁止删除 admin 角色---
     	
 		sysRoleService.deleteRole(id);
 
@@ -395,8 +398,14 @@ public class SysRoleController {
 		mv.addObject(NormalExcelConstants.FILE_NAME,"角色列表");
 		mv.addObject(NormalExcelConstants.CLASS,SysRole.class);
 		LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-		mv.addObject(NormalExcelConstants.PARAMS,new ExportParams("角色列表数据","导出人:"+user.getRealname(),"导出信息"));
+        //导出支持xlsx
+		mv.addObject(NormalExcelConstants.PARAMS,new ExportParams("角色列表数据","导出人:"+user.getRealname(),"导出信息", ExcelType.XSSF));
 		mv.addObject(NormalExcelConstants.DATA_LIST,pageList);
+        //角色支持指定字段导出
+        String exportFields = request.getParameter(NormalExcelConstants.EXPORT_FIELDS);
+        if(oConvertUtils.isNotEmpty(exportFields)){
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportFields);
+        }
 		return mv;
 	}
 
@@ -501,28 +510,9 @@ public class SysRoleController {
 		//全部权限ids
 		List<String> ids = new ArrayList<>();
 		try {
-			LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-			Set<String> hasRoles = null;
-			if (loginUser == null) {
-				loginUser = commonAPI.getUserByName(JwtUtil.getUserNameByToken(SpringContextUtils.getHttpServletRequest()));
-
-			}
-			//当前登录人拥有的角色
-			hasRoles = commonAPI.queryUserRolesById(loginUser.getId());
-
-			log.info("get loginUser info: {}", loginUser);
-			log.info("get loginRoles info: {}", hasRoles != null ? hasRoles.toArray() : "空");
-
 			LambdaQueryWrapper<SysPermission> query = new LambdaQueryWrapper<SysPermission>();
-
-			//如果是超级管理员 或者 允许开发的角色，则不做限制
-			if ("hr_position_manager,depart_position_manager,admin".contains(loginUser.getUsername())) {
-				query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
-			} else {
-				query.eq(SysPermission::getDelFlag, "-1"); // not found
-			}
+			query.eq(SysPermission::getDelFlag, CommonConstant.DEL_FLAG_0);
 			query.orderByAsc(SysPermission::getSortNo);
-
 			List<SysPermission> list = sysPermissionService.list(query);
 			for(SysPermission sysPer : list) {
 				ids.add(sysPer.getId());

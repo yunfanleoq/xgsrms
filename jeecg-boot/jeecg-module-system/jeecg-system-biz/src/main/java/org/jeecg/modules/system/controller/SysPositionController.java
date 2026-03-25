@@ -5,8 +5,8 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
@@ -27,6 +27,7 @@ import org.jeecgframework.poi.excel.ExcelImportUtil;
 import org.jeecgframework.poi.excel.def.NormalExcelConstants;
 import org.jeecgframework.poi.excel.entity.ExportParams;
 import org.jeecgframework.poi.excel.entity.ImportParams;
+import org.jeecgframework.poi.excel.entity.enmus.ExcelType;
 import org.jeecgframework.poi.excel.view.JeecgEntityExcelView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +35,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -52,7 +53,7 @@ import java.util.stream.Collectors;
  * @Version: V1.0
  */
 @Slf4j
-@Api(tags = "职务表")
+@Tag(name = "职务表")
 @RestController
 @RequestMapping("/sys/position")
 public class SysPositionController {
@@ -76,7 +77,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-分页列表查询")
-    @ApiOperation(value = "职务表-分页列表查询", notes = "职务表-分页列表查询")
+    @Operation(summary = "职务表-分页列表查询")
     @GetMapping(value = "/list")
     public Result<IPage<SysPosition>> queryPageList(SysPosition sysPosition,
                                                     @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
@@ -90,6 +91,8 @@ public class SysPositionController {
         }
         //------------------------------------------------------------------------------------------------
         QueryWrapper<SysPosition> queryWrapper = QueryGenerator.initQueryWrapper(sysPosition, req.getParameterMap());
+        queryWrapper.orderByAsc("post_level");
+        queryWrapper.orderByDesc("create_time");
         Page<SysPosition> page = new Page<SysPosition>(pageNo, pageSize);
         IPage<SysPosition> pageList = sysPositionService.page(page, queryWrapper);
         result.setSuccess(true);
@@ -104,18 +107,16 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-添加")
-    @ApiOperation(value = "职务表-添加", notes = "职务表-添加")
+    @Operation(summary = "职务表-添加")
     @PostMapping(value = "/add")
     public Result<SysPosition> add(@RequestBody SysPosition sysPosition) {
         Result<SysPosition> result = new Result<SysPosition>();
         try {
-            //update-begin---author:wangshuai ---date:20230313  for：【QQYUN-4558】vue3职位功能调整，去掉编码和级别，可以先隐藏------------
             //编号是空的，不需要判断多租户隔离了
             if(oConvertUtils.isEmpty(sysPosition.getCode())){
                 //生成职位编码10位
                 sysPosition.setCode(RandomUtil.randomString(10));
             }
-            //update-end---author:wangshuai ---date:20230313  for：【QQYUN-4558】vue3职位功能调整，去掉编码和级别，可以先隐藏-------------
             sysPositionService.save(sysPosition);
             result.success("添加成功！");
         } catch (Exception e) {
@@ -132,7 +133,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-编辑")
-    @ApiOperation(value = "职务表-编辑", notes = "职务表-编辑")
+    @Operation(summary = "职务表-编辑")
     @RequestMapping(value = "/edit", method ={RequestMethod.PUT, RequestMethod.POST})
     public Result<SysPosition> edit(@RequestBody SysPosition sysPosition) {
         Result<SysPosition> result = new Result<SysPosition>();
@@ -157,7 +158,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-通过id删除")
-    @ApiOperation(value = "职务表-通过id删除", notes = "职务表-通过id删除")
+    @Operation(summary = "职务表-通过id删除")
     @DeleteMapping(value = "/delete")
     public Result<?> delete(@RequestParam(name = "id", required = true) String id) {
         try {
@@ -178,7 +179,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-批量删除")
-    @ApiOperation(value = "职务表-批量删除", notes = "职务表-批量删除")
+    @Operation(summary = "职务表-批量删除")
     @DeleteMapping(value = "/deleteBatch")
     public Result<SysPosition> deleteBatch(@RequestParam(name = "ids", required = true) String ids) {
         Result<SysPosition> result = new Result<SysPosition>();
@@ -198,7 +199,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-通过id查询")
-    @ApiOperation(value = "职务表-通过id查询", notes = "职务表-通过id查询")
+    @Operation(summary = "职务表-通过id查询")
     @GetMapping(value = "/queryById")
     public Result<SysPosition> queryById(@RequestParam(name = "id", required = true) String id) {
         Result<SysPosition> result = new Result<SysPosition>();
@@ -238,12 +239,11 @@ public class SysPositionController {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        //update-begin--Author:liusq  Date:20240715 for：[03]职务导出，如果选择数据则只导出相关数据--------------------
+        // 代码逻辑说明: [03]职务导出，如果选择数据则只导出相关数据--------------------
         String selections = request.getParameter("selections");
         if(!oConvertUtils.isEmpty(selections)){
             queryWrapper.in("id",selections.split(","));
         }
-        //update-end--Author:liusq  Date:20240715 for：[03]职务导出，如果选择数据则只导出相关数据----------------------
         //Step.2 AutoPoi 导出Excel
         ModelAndView mv = new ModelAndView(new JeecgEntityExcelView());
         List<SysPosition> pageList = sysPositionService.list(queryWrapper);
@@ -251,8 +251,14 @@ public class SysPositionController {
         //导出文件名称
         mv.addObject(NormalExcelConstants.FILE_NAME, "职务表列表");
         mv.addObject(NormalExcelConstants.CLASS, SysPosition.class);
-        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("职务表列表数据", "导出人:"+user.getRealname(),"导出信息"));
+        //支持导出xlsx格式
+        mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("职务表列表数据", "导出人:"+user.getRealname(),"导出信息", ExcelType.XSSF));
         mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
+        //职级导出支持导出字段
+        String exportFields = request.getParameter(NormalExcelConstants.EXPORT_FIELDS);
+        if(oConvertUtils.isNotEmpty(exportFields)){
+            mv.addObject(NormalExcelConstants.EXPORT_FIELDS, exportFields);
+        }
         return mv;
     }
 
@@ -303,7 +309,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-通过code查询")
-    @ApiOperation(value = "职务表-通过code查询", notes = "职务表-通过code查询")
+    @Operation(summary = "职务表-通过code查询")
     @GetMapping(value = "/queryByCode")
     public Result<SysPosition> queryByCode(@RequestParam(name = "code", required = true) String code) {
         Result<SysPosition> result = new Result<SysPosition>();
@@ -327,7 +333,7 @@ public class SysPositionController {
      * @return
      */
     @AutoLog(value = "职务表-通过多个查询")
-    @ApiOperation(value = "职务表-通过多个id查询", notes = "职务表-通过多个id查询")
+    @Operation(summary = "职务表-通过多个id查询")
     @GetMapping(value = "/queryByIds")
     public Result<List<SysPosition>> queryByIds(@RequestParam(name = "ids") String ids) {
         Result<List<SysPosition>> result = new Result<>();

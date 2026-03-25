@@ -1,0 +1,8 @@
+# 一次性数据库增量（Flyway）：在已备份目标库后，启动应用时附加 profile「dbupgrade」即可开启迁移。
+# 示例：--spring.profiles.active=dev,dbupgrade 或 prod,dbupgrade（生产务必先全量备份并在维护窗口执行）
+spring:
+  config:
+    activate:
+      on-profile: dbupgrade
+  flyway:
+    enabled: true

@@ -1,7 +1,12 @@
 package org.jeecg.config;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.jeecg.config.tencent.JeecgTencent;
 import org.jeecg.config.vo.*;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Role;
 import org.springframework.stereotype.Component;
 
 
@@ -11,12 +16,17 @@ import org.springframework.stereotype.Component;
  */
 @Component("jeecgBaseConfig")
 @ConfigurationProperties(prefix = "jeecg")
+@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 public class JeecgBaseConfig {
     /**
      * 签名密钥串(字典等敏感接口)
      * @TODO 降低使用成本加的默认值,实际以 yml配置 为准
      */
     private String signatureSecret = "dd05f1c54d63749eda95f9fa6d49v442a";
+    /**
+     * 自定义后台资源前缀，解决表单设计器无法通过前端nginx转发访问
+     */
+    private String customResourcePrefixPath;
     /**
      * 需要加强校验的接口清单
      */
@@ -67,6 +77,42 @@ public class JeecgBaseConfig {
      * 百度开放API配置
      */
     private BaiduApi baiduApi;
+
+    /**
+     * minio配置
+     */
+    @Getter
+    @Setter
+    private JeecgMinio minio;
+
+    /**
+     * oss配置
+     */
+    @Getter
+    @Setter
+    private JeecgOSS oss;
+
+    /**
+     * 短信发送方式 aliyun阿里云短信 tencent腾讯云短信
+     */
+    @Getter
+    @Setter
+    private String smsSendType = "aliyun";
+    
+    /**
+     * 腾讯配置
+     */
+    @Getter
+    @Setter
+    private JeecgTencent tencent;
+
+    public String getCustomResourcePrefixPath() {
+        return customResourcePrefixPath;
+    }
+
+    public void setCustomResourcePrefixPath(String customResourcePrefixPath) {
+        this.customResourcePrefixPath = customResourcePrefixPath;
+    }
 
     public Elasticsearch getElasticsearch() {
         return elasticsearch;

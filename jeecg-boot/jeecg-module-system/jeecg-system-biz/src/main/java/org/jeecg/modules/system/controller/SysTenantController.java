@@ -21,6 +21,7 @@ import org.jeecg.common.util.PasswordUtil;
 import org.jeecg.common.util.TokenUtils;
 import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
+import org.jeecg.config.sign.annotation.SignatureCheck;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.system.entity.*;
 import org.jeecg.modules.system.service.ISysTenantPackService;
@@ -36,7 +37,7 @@ import org.jeecg.modules.system.vo.tenant.TenantPackUserCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -133,7 +134,7 @@ public class SysTenantController {
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public Result<SysTenant> add(@RequestBody SysTenant sysTenant) {
         Result<SysTenant> result = new Result();
-        if(sysTenantService.getById(sysTenant.getId())!=null){
+        if(sysTenant!=null && oConvertUtils.isNotEmpty(sysTenant.getId()) && sysTenantService.getById(sysTenant.getId())!=null){
             return result.error500("该编号已存在!");
         }
         try {
@@ -146,6 +147,21 @@ public class SysTenantController {
             result.error500("操作失败");
         }
         return result;
+    }
+
+    /**
+     * [QQYUN-11032]【jeecg】租户套餐管理增加初始化套餐包按钮
+     * @param tenantId
+     * @return
+     * @author chenrui
+     * @date 2025/2/6 18:24
+     */
+    @RequiresPermissions("system:tenant:syncDefaultPack")
+    @PostMapping(value = "/syncDefaultPack")
+    public Result<?> syncDefaultPack(@RequestParam(name="tenantId",required=true) Integer tenantId) {
+        //同步默认产品包
+        sysTenantPackService.syncDefaultPack(tenantId);
+        return Result.OK("操作成功");
     }
 
     /**
@@ -233,10 +249,9 @@ public class SysTenantController {
                 
                 idList.add(Integer.parseInt(id));
             }
-            //update-begin---author:wangshuai ---date:20230710  for：【QQYUN-5723】3、租户删除直接删除，不删除中间表------------
+            // 代码逻辑说明: 【QQYUN-5723】3、租户删除直接删除，不删除中间表------------
             sysTenantService.removeByIds(idList);
             result.success("删除成功！");
-            //update-end---author:wangshuai ---date:20220523  for：【QQYUN-5723】3、租户删除直接删除，不删除中间表------------
         }
         return result;
     }
@@ -246,8 +261,11 @@ public class SysTenantController {
      * @param id
      * @return
      */
+    @SignatureCheck
     @RequestMapping(value = "/queryById", method = RequestMethod.GET)
     public Result<SysTenant> queryById(@RequestParam(name="id",required=true) String id) {
+        log.info("【敏感接口】查询租户信息，租户ID：{}", id);
+        
         Result<SysTenant> result = new Result<SysTenant>();
         if(oConvertUtils.isEmpty(id)){
             result.error500("参数为空！");
@@ -371,11 +389,10 @@ public class SysTenantController {
         Result<Map<String,Object>> result = new Result<Map<String,Object>>();
         try {
             LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
-            //update-begin---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表------------
+            // 代码逻辑说明: [QQYUN-3371]租户逻辑改造，改成关系表------------
             List<Integer> tenantIdList = relationService.getTenantIdsByUserId(sysUser.getId());
             Map<String,Object> map = new HashMap(5);
             if (null!=tenantIdList && tenantIdList.size()>0) {
-            //update-end---author:wangshuai ---date:20221223  for：[QQYUN-3371]租户逻辑改造，改成关系表------------
                 // 该方法仅查询有效的租户，如果返回0个就说明所有的租户均无效。
                 List<SysTenant> tenantList = sysTenantService.queryEffectiveTenant(tenantIdList);
                 map.put("list", tenantList);
@@ -395,10 +412,14 @@ public class SysTenantController {
      * @param phone
      * @return
      */
+    @SignatureCheck
     @PutMapping("/invitationUserJoin")
     @RequiresPermissions("system:tenant:invitation:user")
-    public Result<String> invitationUserJoin(@RequestParam("ids") String ids,@RequestParam("phone") String phone){
-        sysTenantService.invitationUserJoin(ids,phone);
+    public Result<String> invitationUserJoin(@RequestParam("ids") String ids,@RequestParam(value = "phone", required = false) String phone, @RequestParam(value = "username", required = false) String username){
+        if(oConvertUtils.isEmpty(phone) && oConvertUtils.isEmpty(username)){
+            return Result.error("手机号和用户账号不能同时为空！");
+        }
+        sysTenantService.invitationUserJoin(ids,phone,username);
         return Result.ok("邀请用户成功");
     }
 
@@ -492,9 +513,10 @@ public class SysTenantController {
     }
 
     /**
-     * 加入租户通过门牌号【低代码应用专用接口】
+     * 申请加入租户通过门牌号【低代码应用专用接口】
      * @param sysTenant
      */
+    @SignatureCheck
     @PostMapping("/joinTenantByHouseNumber")
     public Result<Integer> joinTenantByHouseNumber(@RequestBody SysTenant sysTenant){
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
@@ -512,7 +534,6 @@ public class SysTenantController {
         }
     }
     
-    //update-begin---author:wangshuai ---date:20230107  for：[QQYUN-3725]申请加入租户，审核中状态增加接口------------
     /**
      * 分页获取租户用户数据(vue3用户租户页面)【低代码应用专用接口】
      *
@@ -558,15 +579,33 @@ public class SysTenantController {
     }
 
     /**
+     * 【敲敲云管理员】 同意申请者加入租户
+     * 
      * 更新用户租户关系状态【低代码应用专用接口】
      */
     @PutMapping("/updateUserTenantStatus")
-    //@RequiresPermissions("system:tenant:updateUserTenantStatus")
+    @RequiresPermissions("system:tenant:updateUserTenantStatus")
     public Result<String> updateUserTenantStatus(@RequestBody SysUserTenant userTenant) {
         String tenantId = TenantContext.getTenant();
         if (oConvertUtils.isEmpty(tenantId)) {
             return Result.error("未找到当前租户信息"); 
         }
+        relationService.updateUserTenantStatus(userTenant.getUserId(), tenantId, userTenant.getStatus());
+        return Result.ok("更新用户租户状态成功");
+    }
+
+    /**
+     * 同意或者拒绝用户加入（敲敲云专用）
+     * @param userTenant
+     * @return
+     */
+    @PutMapping("/agreeOrRejectUserJoin")
+    public Result<String> agreeOrRejectUserJoin(@RequestBody SysUserTenant userTenant) {
+        String tenantId = TenantContext.getTenant();
+        if (oConvertUtils.isEmpty(tenantId)) {
+            return Result.error("未找到当前租户信息");
+        }
+        sysTenantPackService.izHaveManageUserAuth(tenantId);
         relationService.updateUserTenantStatus(userTenant.getUserId(), tenantId, userTenant.getStatus());
         return Result.ok("更新用户租户状态成功");
     }
@@ -597,7 +636,6 @@ public class SysTenantController {
         sysTenantService.removeById(sysTenant.getId());
         return Result.ok("注销成功");
     }
-    //update-end---author:wangshuai ---date:20230107  for：[QQYUN-3725]申请加入租户，审核中状态增加接口------------
 
     /**
      * 获取租户用户不同状态下的数量【低代码应用专用接口】
@@ -698,6 +736,8 @@ public class SysTenantController {
      * @param departId
      * @return
      */
+    @SignatureCheck
+    @RequiresPermissions("system:tenant:invitation:user")
     @PostMapping("/invitationUser")
     public Result<String> invitationUser(@RequestParam(name="phone") String phone,
                                          @RequestParam(name="departId",defaultValue = "") String departId){
@@ -859,13 +899,12 @@ public class SysTenantController {
     @GetMapping("/getTenantCount")
     public Result<Map<String,Long>> getTenantCount(HttpServletRequest request){
         Map<String,Long> map = new HashMap<>();
-        //update-begin---author:wangshuai---date:2023-11-24---for:【QQYUN-7177】用户数量显示不正确---
+        // 代码逻辑说明: 【QQYUN-7177】用户数量显示不正确---
         if(oConvertUtils.isEmpty(TokenUtils.getTenantIdByRequest(request))){
             return Result.error("当前租户为空，禁止访问！");
         }
         Integer tenantId = oConvertUtils.getInt(TokenUtils.getTenantIdByRequest(request));
         Long userCount = relationService.getUserCount(tenantId,CommonConstant.USER_TENANT_NORMAL);
-        //update-end---author:wangshuai---date:2023-11-24---for:【QQYUN-7177】用户数量显示不正确---
         map.put("userCount",userCount);
         LambdaQueryWrapper<SysDepart> departQuery = new LambdaQueryWrapper<>();
         departQuery.eq(SysDepart::getDelFlag,String.valueOf(CommonConstant.DEL_FLAG_0));
@@ -898,9 +937,10 @@ public class SysTenantController {
         return Result.ok(pageList);
     }
 
-    /**
+    /** 【被邀请人使用】
      * 同意或拒绝加入租户
      */
+    @SignatureCheck
     @PutMapping("/agreeOrRefuseJoinTenant")
     public Result<String> agreeOrRefuseJoinTenant(@RequestParam("tenantId") Integer tenantId, 
                                                   @RequestParam("status") String status){
@@ -970,5 +1010,39 @@ public class SysTenantController {
             result.error500("查询失败！");
         }
         return result;
+    }
+
+    /**
+     * 目前只给敲敲云人员与部门下的用户删除使用
+     *
+     * 删除用户
+     */
+    @DeleteMapping("/deleteUser")
+    public Result<String> deleteUser(@RequestBody SysUser sysUser,HttpServletRequest request){
+        Integer tenantId = oConvertUtils.getInteger(TokenUtils.getTenantIdByRequest(request), null);
+        sysTenantService.deleteUser(sysUser, tenantId);
+        return Result.ok("删除用户成功");
+    }
+
+    /**
+     * 根据租户id和用户id获取用户的产品包列表和当前用户下的产品包id
+     *
+     * @param tenantId
+     * @param request
+     * @return
+     */
+    @GetMapping("/listPackByTenantUserId")
+    public Result<Map<String, Object>> listPackByTenantUserId(@RequestParam("tenantId") String tenantId,
+                                                              @RequestParam("userId") String userId,
+                                                              HttpServletRequest request) {
+        if (null == tenantId) {
+            return null;
+        }
+        List<SysTenantPack> list = sysTenantPackService.getPackListByTenantId(tenantId);
+        List<String> userPackIdList = sysTenantPackService.getPackIdByUserIdAndTenantId(userId, oConvertUtils.getInt(tenantId));
+        Map<String, Object> map = new HashMap<>(5);
+        map.put("packList", list);
+        map.put("userPackIdList", userPackIdList);
+        return Result.ok(map);
     }
 }

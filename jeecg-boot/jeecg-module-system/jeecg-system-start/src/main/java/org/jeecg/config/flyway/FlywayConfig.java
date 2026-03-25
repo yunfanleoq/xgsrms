@@ -1,6 +1,7 @@
 package org.jeecg.config.flyway;
 
 import com.baomidou.dynamic.datasource.DynamicRoutingDataSource;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.FlywayException;
@@ -15,11 +16,11 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 /**
-* @Description: 初始化flyway配置 修改之后支持多数据源，当出现异常时打印日志，不影响项目启动
-*
-* @author: wangshuai
-* @date: 2024/3/12 10:03
-*/
+ * @Description: 初始化flyway配置 修改之后支持多数据源，当出现异常时打印日志，不影响项目启动
+ *
+ * @author: wangshuai
+ * @date: 2024/3/12 10:03
+ */
 @Slf4j
 @Configuration
 public class FlywayConfig {
@@ -95,13 +96,13 @@ public class FlywayConfig {
      */
     @Value("${spring.flyway.clean-disabled:true}")
     private Boolean cleanDisabled;
-    
-    @Bean
+
+    @PostConstruct
     public void migrate() {
         if(!enabled){
             return;
         }
-        
+
         DynamicRoutingDataSource ds = (DynamicRoutingDataSource) dataSource;
         Map<String, DataSource> dataSources = ds.getDataSources();
         dataSources.forEach((k, v) -> {
@@ -109,21 +110,21 @@ public class FlywayConfig {
                 String databaseType = environment.getProperty("spring.datasource.dynamic.datasource." + k + ".url");
                 if (databaseType != null && databaseType.contains("mysql")) {
                     try {
-                            Flyway flyway = Flyway.configure()
-                                    .dataSource(v)
-                                    .locations(locations)
-                                    .encoding(encoding)
-                                    .sqlMigrationPrefix(sqlMigrationPrefix)
-                                    .sqlMigrationSeparator(sqlMigrationSeparator)
-                                    .placeholderPrefix(placeholderPrefix)
-                                    .placeholderSuffix(placeholderSuffix)
-                                    .sqlMigrationSuffixes(sqlMigrationSuffixes)
-                                    .validateOnMigrate(validateOnMigrate)
-                                    .baselineOnMigrate(baselineOnMigrate)
-                                    .cleanDisabled(cleanDisabled)
-                                    .load();
-                            flyway.migrate();
-                            log.info("【数据库升级】平台集成了MySQL库的Flyway，数据库版本自动升级! ");
+                        Flyway flyway = Flyway.configure()
+                                .dataSource(v)
+                                .locations(locations)
+                                .encoding(encoding)
+                                .sqlMigrationPrefix(sqlMigrationPrefix)
+                                .sqlMigrationSeparator(sqlMigrationSeparator)
+                                .placeholderPrefix(placeholderPrefix)
+                                .placeholderSuffix(placeholderSuffix)
+                                .sqlMigrationSuffixes(sqlMigrationSuffixes)
+                                .validateOnMigrate(validateOnMigrate)
+                                .baselineOnMigrate(baselineOnMigrate)
+                                .cleanDisabled(cleanDisabled)
+                                .load();
+                        flyway.migrate();
+                        log.info("【数据库升级】平台集成了MySQL库的Flyway，数据库版本自动升级! ");
                     } catch (FlywayException e) {
                         log.error("【数据库升级】flyway执行sql脚本失败", e);
                     }

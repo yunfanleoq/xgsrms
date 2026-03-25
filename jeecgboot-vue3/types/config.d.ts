@@ -192,4 +192,6 @@ export interface GlobEnvConfig {
   VITE_GLOB_QIANKUN_MICRO_APP_NAME?: string;
   // 【JEECG作为乾坤子应用】作为乾坤子应用启动时必填，需与qiankun主应用注册子应用时填写的 entry 保持一致
   VITE_GLOB_QIANKUN_MICRO_APP_ENTRY?: string;
+  /** 与后端 JEECG_SIGNATURE_SECRET 一致 */
+  VITE_GLOB_SIGNATURE_SECRET?: string;
 }

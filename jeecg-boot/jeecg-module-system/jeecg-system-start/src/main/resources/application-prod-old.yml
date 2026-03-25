@@ -1,0 +1,293 @@
+# 生产运维（VULN-030）：宝塔面板 SQLite、MySQL root 等属主机侧凭据；须轮换强密码、开启面板双因素、防火墙仅开放必要端口、禁止 root 运行 Java 进程；Web 站点勿将宝塔数据目录或 .sql 置于可下载路径。应用层任意读已收敛（VULN-026 getCarouselImage）。
+# 生产运维（VULN-031）：宝塔「API 接口」密钥须在面板内重新生成并轮换；防火墙/安全组将面板与 API 端口限制为仅管理网段；勿将密钥写入代码仓库或 Web 可下载目录。
+# 生产运维（VULN-033）：前端为纯静态，Nginx 站点勿 include enable-php-*.conf、勿对 .php 走 php-fpm；示例见仓库 deploy/nginx-frontend-static.example.conf。
+#
+# Spring Boot 3：druid 使用 boot3 排除类；Redis 使用 spring.data.redis；Quartz 使用 spring.quartz.jdbc.initialize-schema。
+server:
+  port: 8080
+  tomcat:
+    max-swallow-size: -1
+  error:
+    include-exception: false
+    include-stacktrace: NEVER
+    include-message: NEVER
+  servlet:
+    # 与前端 VITE_GLOB_API_URL=/xgszp-boot 一致；生产 context-path 固定为 /xgszp-boot
+    context-path: /xgszp-boot
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types: application/javascript,application/json,application/xml,text/html,text/xml,text/plain,text/css,image/*
+
+management:
+  endpoints:
+    # VULN-010：生产默认关闭全部 Actuator 端点，仅显式开启 health
+    enabled-by-default: false
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      enabled: true
+  trace:
+    http:
+      enabled: false
+
+spring:
+  flyway:
+    enabled: false
+    encoding: UTF-8
+    locations: classpath:flyway/sql/mysql
+    sql-migration-prefix: V
+    sql-migration-separator: __
+    placeholder-prefix: '#('
+    placeholder-suffix: )
+    sql-migration-suffixes: .sql
+    validate-on-migrate: true
+    baseline-on-migrate: true
+    clean-disabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  mail:
+    # VULN-027：账号口令由环境变量注入，禁止在仓库写明文
+    timeJobSend: false
+    host: ${MAIL_HOST:mail.cstnet.cn}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: embedded
+    auto-startup: true
+    startup-delay: 1s
+    overwrite-existing-jobs: true
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: MyScheduler
+            instanceId: AUTO
+          jobStore:
+            class: org.springframework.scheduling.quartz.LocalDataSourceJobStore
+            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+            tablePrefix: QRTZ_
+            isClustered: true
+            misfireThreshold: 12000
+            clusterCheckinInterval: 15000
+          threadPool:
+            class: org.quartz.simpl.SimpleThreadPool
+            threadCount: 10
+            threadPriority: 5
+            threadsInheritContextClassLoaderOfInitializingThread: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  jpa:
+    open-in-view: false
+  aop:
+    proxy-target-class: true
+  freemarker:
+    suffix: .ftl
+    content-type: text/html
+    charset: UTF-8
+    cache: false
+    prefer-file-system-access: false
+    template-loader-path:
+      - classpath:/templates
+    template_update_delay: 0
+  mvc:
+    static-path-pattern: /**
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  resource:
+    static-locations: classpath:/static/,classpath:/public/
+  autoconfigure:
+    exclude:
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+  datasource:
+    druid:
+      stat-view-servlet:
+        enabled: false
+        loginUsername: ${DRUID_LOGIN_USERNAME:}
+        loginPassword: ${DRUID_LOGIN_PASSWORD:}
+        allow:
+      web-stat-filter:
+        enabled: true
+    dynamic:
+      druid:
+        initial-size: 5
+        min-idle: 5
+        maxActive: 1000
+        maxWait: 60000
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: SELECT 1 FROM DUAL
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxPoolPreparedStatementPerConnectionSize: 20
+        filters: stat,wall,slf4j
+        wall:
+          selectWhereAlwayTrueCheck: false
+        stat:
+          merge-sql: true
+          slow-sql-millis: 5000
+      datasource:
+        master:
+          # VULN-027：数据库连接串与账号口令禁止写入仓库；生产通过 MYSQL_JDBC_URL / MYSQL_USERNAME / MYSQL_PASSWORD 注入（部署文档须列明）
+          url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3306/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+          username: ${MYSQL_USERNAME:}
+          password: ${MYSQL_PASSWORD:}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          # VULN-032（运维）：MySQL 监听与防火墙须限制为仅本机或应用子网；禁止公网直连 3306；使用最小权限业务账号并轮换已泄露口令；与 VULN-027 环境变量注入配合。
+  data:
+    redis:
+      database: 0
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+
+mybatis-plus:
+  mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
+  global-config:
+    banner: false
+    db-config:
+      id-type: ASSIGN_ID
+      table-underline: true
+  configuration:
+    #log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    call-setters-on-nulls: true
+
+minidao:
+  base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
+jeecg:
+  firewall:
+    dataSourceSafe: true
+    lowCodeMode: prod
+  # 签名密钥：须与前端构建时 VITE_GLOB_SIGNATURE_SECRET 一致；通过环境变量注入，禁止在仓库填明文
+  signatureSecret: ${JEECG_SIGNATURE_SECRET:}
+  signUrls: /sys/dict/getDictItems/*,/sys/dict/loadDict/*,/sys/dict/loadDictOrderByValue/*,/sys/dict/loadDictItem/*,/sys/dict/loadTreeData,/sys/api/queryTableDictItemsByCode,/sys/api/queryFilterTableDictInfo,/sys/api/queryTableDictByKeys,/sys/api/translateDictFromTable,/sys/api/translateDictFromTableByKeys,/sys/sendChangePwdSms,/sys/user/sendChangePhoneSms,/sys/sms,/desform/api/sendVerifyCode
+  uploadType: alioss
+  domainUrl:
+    pc: http://localhost:3100
+    app: http://localhost:8051
+  path:
+    upload: /opt/jeecg-boot/upload
+    webapp: /opt/jeecg-boot/webapp
+  shiro:
+    # C-003 / VULN-017：不得将 /jmreport/** 或子路径放入 excludeUrls（anon 会优先匹配，绕过 ShiroConfig 中 /jmreport/** → jwt,roles[admin]）
+    excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/api/getUserInfo
+  security:
+    password:
+      expire-days: -1
+    allow-password-change-get: false
+    allow-token-in-query: ${JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY:false}
+    cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+    token:
+      expireTime: ${JWT_EXPIRE_TIME:28800000}
+      jwtSecret: ${JWT_SECRET:}
+    redis:
+      require-password: ${JEECG_SECURITY_REDIS_REQUIRE_PASSWORD:true}
+  oss:
+    accessKey: ??
+    secretKey: ??
+    endpoint: oss-cn-beijing.aliyuncs.com
+    bucketName: jeecgdev
+    staticDomain: https://static.jeecg.com
+    sms-template:
+      signature:
+      templateCode:
+        SMS_175435174:
+        SMS_465391221:
+        SMS_175430166:
+  elasticsearch:
+    cluster-name: jeecg-ES
+    cluster-nodes: 127.0.0.1:9200
+    check-enabled: false
+  file-view-domain: http://fileview.jeecg.com
+  minio:
+    minio_url: http://minio.jeecg.com
+    minio_name: ??
+    minio_pass: ??
+    bucketName: otatest
+  jmreport:
+    block-jdbc-test-connection: true
+    saasMode:
+    firewall:
+      dataSourceSafe: true
+      lowCodeMode: prod
+      api-http-host-allowlist: ${JMREPORT_API_HTTP_ALLOWLIST:}
+      api-ssrf-guard-enabled: ${JMREPORT_API_SSRF_GUARD_ENABLED:true}
+  xxljob:
+    enabled: false
+    adminAddresses: http://127.0.0.1:9080/xxl-job-admin
+    appname: ${spring.application.name}
+    accessToken: ''
+    address: 127.0.0.1:30007
+    ip: 127.0.0.1
+    port: 30007
+    logPath: logs/jeecg/job/jobhandler/
+    logRetentionDays: 30
+  redisson:
+    address: 127.0.0.1:6379
+    password: ${REDIS_PASSWORD:}
+    type: STANDALONE
+    enabled: true
+  ai-chat:
+    enabled: ${AI_CHAT_ENABLED:false}
+    apiKey: ${AI_API_KEY:}
+    apiHost: ${AI_API_HOST:https://open.bigmodel.cn/api/paas/v4/}
+    timeout: ${AI_API_TIMEOUT:60}
+  baidu-api:
+    app-id: ??
+    api-key: ??
+    secret-key: ??
+
+cas:
+  prefixUrl: http://cas.example.org:8443/cas
+logging:
+  level:
+    org.flywaydb: debug
+    org.jeecg.modules.system.mapper: info
+knife4j:
+  enable: false
+  production: true
+  basic:
+    enable: false
+    username: ${KNIFE4J_BASIC_USERNAME:}
+    password: ${KNIFE4J_BASIC_PASSWORD:}
+justauth:
+  enabled: true
+  type:
+    GITHUB:
+      client-id: ??
+      client-secret: ??
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/github/callback
+    WECHAT_ENTERPRISE:
+      client-id: ??
+      client-secret: ??
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/wechat_enterprise/callback
+      agent-id: ??
+    DINGTALK:
+      client-id: ??
+      client-secret: ??
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/dingtalk/callback
+    WECHAT_OPEN:
+      client-id: ??
+      client-secret: ??
+      redirect-uri: http://sso.test.com:8080/xgszp-boot/sys/thirdLogin/wechat_open/callback
+  cache:
+    type: default
+    prefix: 'demo::'
+    timeout: 1h

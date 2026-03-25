@@ -11,13 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
-
 import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
 import java.util.*;
 
-/**
+/** 已使用knife4j-gateway支持该功能
  * 聚合各个服务的swagger接口
  * @author zyf
  * @date: 2022/4/21 10:55
@@ -29,7 +28,7 @@ public class MySwaggerResourceProvider implements SwaggerResourcesProvider {
     /**
      * swagger2默认的url后缀
      */
-    private static final String SWAGGER2URL = "/v2/api-docs";
+    private static final String SWAGGER2URL = "/v3/api-docs";
 
     /**
      * 网关路由
@@ -50,13 +49,13 @@ public class MySwaggerResourceProvider implements SwaggerResourcesProvider {
      */
     @Value("${spring.cloud.nacos.discovery.namespace:#{null}}")
     private String namespace;
-    
+
     /**
      * nacos groupName
      */
     @Value("${spring.cloud.nacos.config.group:DEFAULT_GROUP:#{null}}")
     private String group;
-    
+
     /**
      * nacos username
      */
@@ -67,7 +66,7 @@ public class MySwaggerResourceProvider implements SwaggerResourcesProvider {
      */
     @Value("${spring.cloud.nacos.discovery.password:#{null}}")
     private String password;
-    
+
     /**
      * Swagger中需要排除的服务
      */
@@ -93,12 +92,11 @@ public class MySwaggerResourceProvider implements SwaggerResourcesProvider {
         routeLocator.getRoutes().filter(route -> route.getUri().getHost() != null)
                 .filter(route -> !self.equals(route.getUri().getHost()))
                 .subscribe(route ->{
-                    //update-begin---author:zyf ---date:20220413 for：过滤掉无效路由,避免接口文档报错无法打开
+                    // 代码逻辑说明: 过滤掉无效路由,避免接口文档报错无法打开
                     boolean hasRoute=checkRoute(route.getId());
                     if(hasRoute){
                         routeHosts.add(route.getUri().getHost());
                     }
-                    //update-end---author:zyf ---date:20220413 for：过滤掉无效路由,避免接口文档报错无法打开
                 });
 
         // 记录已经添加过的server，存在同一个应用注册了多个服务在nacos上

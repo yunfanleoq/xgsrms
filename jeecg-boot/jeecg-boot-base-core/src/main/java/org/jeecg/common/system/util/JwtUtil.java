@@ -11,10 +11,13 @@ import com.google.common.base.Joiner;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
@@ -29,9 +32,6 @@ import org.jeecg.common.system.vo.SysUserCacheInfo;
 import org.jeecg.common.util.DateUtils;
 import org.jeecg.common.util.SpringContextUtils;
 import org.jeecg.common.util.oConvertUtils;
-import org.jeecg.config.JeecgSecurityConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * @Author Scott
@@ -39,20 +39,12 @@ import org.springframework.stereotype.Component;
  * @Desc JWT工具类
  **/
 @Slf4j
-@Component
 public class JwtUtil {
 
-	/**Token有效期为7天（Token在reids中缓存时间为两倍）*/
-	public static long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000;
-	
-	private static JeecgSecurityConfig jeecgSecurityConfig;
-	
-	@Autowired
-	public void setJeecgSecurityConfig(JeecgSecurityConfig config) {
-		jeecgSecurityConfig = config;
-		// 更新过期时间
-		EXPIRE_TIME = config.getToken().getExpireTime();
-	}
+	/**PC端，Token有效期为7天（Token在reids中缓存时间为两倍）*/
+	public static final long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000L;
+	/**APP端，Token有效期为30天（Token在reids中缓存时间为两倍）*/
+	public static final long APP_EXPIRE_TIME = (30 * 12) * 60 * 60 * 1000L;
 	static final String WELL_NUMBER = SymbolConstant.WELL_NUMBER + SymbolConstant.LEFT_CURLY_BRACKET;
 
     /**
@@ -61,24 +53,24 @@ public class JwtUtil {
      * @param code
      * @param errorMsg
      */
-    public static void responseError(ServletResponse response, Integer code, String errorMsg) {
-		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-		// issues/I4YH95浏览器显示乱码问题
-		httpServletResponse.setHeader("Content-type", "text/html;charset=UTF-8");
-        Result jsonResult = new Result(code, errorMsg);
-		jsonResult.setSuccess(false);
-        OutputStream os = null;
-        try {
-            os = httpServletResponse.getOutputStream();
-			httpServletResponse.setCharacterEncoding("UTF-8");
-			httpServletResponse.setStatus(code);
-            os.write(new ObjectMapper().writeValueAsString(jsonResult).getBytes("UTF-8"));
-            os.flush();
-            os.close();
-        } catch (IOException e) {
+	public static void responseError(HttpServletResponse response, Integer code, String errorMsg) {
+		try {
+			Result jsonResult = new Result(code, errorMsg);
+			jsonResult.setSuccess(false);
+			
+			// 设置响应头和内容类型
+			response.setStatus(code);
+			response.setHeader("Content-type", "text/html;charset=UTF-8");
+			response.setContentType("application/json;charset=UTF-8");
+			// 使用 ObjectMapper 序列化为 JSON 字符串
+			ObjectMapper objectMapper = new ObjectMapper();
+			String json = objectMapper.writeValueAsString(jsonResult);
+			response.getWriter().write(json);
+			response.getWriter().flush();
+		} catch (IOException e) {
 			log.error(e.getMessage(), e);
-        }
-    }
+		}
+	}
 
 	/**
 	 * 校验token是否正确
@@ -96,7 +88,7 @@ public class JwtUtil {
 			DecodedJWT jwt = verifier.verify(token);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.warn("Token验证失败：" + e.getMessage(),e);
 			return false;
 		}
 	}
@@ -111,7 +103,7 @@ public class JwtUtil {
 			DecodedJWT jwt = JWT.decode(token);
 			return jwt.getClaim("username").asString();
 		} catch (JWTDecodeException e) {
-			log.warn(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 			return null;
 		}
 	}
@@ -122,16 +114,77 @@ public class JwtUtil {
 	 * @param username 用户名
 	 * @param secret   用户的密码
 	 * @return 加密的token
+	 * @deprecated 请使用sign(String username, String secret, String clientType)方法代替
 	 */
+	@Deprecated
 	public static String sign(String username, String secret) {
-		// 使用配置的过期时间
-		long expireTime = jeecgSecurityConfig != null ? 
-			jeecgSecurityConfig.getToken().getExpireTime() : EXPIRE_TIME;
+		Date date = new Date(System.currentTimeMillis() + EXPIRE_TIME);
+		Algorithm algorithm = Algorithm.HMAC256(secret);
+		// 附带username信息
+		return JWT.create().withClaim("username", username).withExpiresAt(date).sign(algorithm);
+
+	}
+
+
+	/**
+	 * 生成签名,5min后过期
+	 *
+	 * @param username 用户名
+	 * @param secret   用户的密码
+	 * @param expireTime 过期时间
+	 * @return 加密的token
+	 * @deprecated 请使用sign(String username, String secret, String clientType)方法代替
+	 */
+	@Deprecated
+	public static String sign(String username, String secret, Long expireTime) {
 		Date date = new Date(System.currentTimeMillis() + expireTime);
 		Algorithm algorithm = Algorithm.HMAC256(secret);
 		// 附带username信息
 		return JWT.create().withClaim("username", username).withExpiresAt(date).sign(algorithm);
 
+	}
+
+	/**
+	 * 生成签名，根据客户端类型自动选择过期时间
+	 * for [JHHB-1030]【鉴权】移动端用户token到期后续期时间变成pc端时长
+	 *
+	 * @param username 用户名
+	 * @param secret   用户的密码
+	 * @param clientType 客户端类型（PC或APP）
+	 * @return 加密的token
+	 */
+	public static String sign(String username, String secret, String clientType) {
+		// 根据客户端类型选择对应的过期时间
+		long expireTime = CommonConstant.CLIENT_TYPE_APP.equalsIgnoreCase(clientType) 
+			? APP_EXPIRE_TIME 
+			: EXPIRE_TIME;
+		Date date = new Date(System.currentTimeMillis() + expireTime);
+		Algorithm algorithm = Algorithm.HMAC256(secret);
+		// 附带username和clientType信息
+		return JWT.create()
+			.withClaim("username", username)
+			.withClaim("clientType", clientType)
+			.withExpiresAt(date)
+			.sign(algorithm);
+	}
+
+	/**
+	 * 从token中获取客户端类型
+	 * for [JHHB-1030]【鉴权】移动端用户token到期后续期时间变成pc端时长
+	 *
+	 * @param token JWT token
+	 * @return 客户端类型，如果不存在则返回PC（兼容旧token）
+	 */
+	public static String getClientType(String token) {
+		try {
+			DecodedJWT jwt = JWT.decode(token);
+			String clientType = jwt.getClaim("clientType").asString();
+			// 如果clientType为空，返回默认值PC（兼容旧token）
+			return oConvertUtils.isNotEmpty(clientType) ? clientType : CommonConstant.CLIENT_TYPE_PC;
+		} catch (JWTDecodeException e) {
+			log.warn("解析token中的clientType失败，使用默认值PC：" + e.getMessage());
+			return CommonConstant.CLIENT_TYPE_PC;
+		}
 	}
 
 	/**
@@ -213,6 +266,14 @@ public class JwtUtil {
 		} else {
 			key = key;
 		}
+		// 是否存在字符串标志
+		boolean multiStr;
+		if(oConvertUtils.isNotEmpty(key) && key.trim().matches("^\\[\\w+]$")){
+			key = key.substring(1,key.length()-1);
+			multiStr = true;
+		} else {
+            multiStr = false;
+        }
 		//替换为当前系统时间(年月日)
 		if (key.equals(DataBaseConstant.SYS_DATE)|| key.toLowerCase().equals(DataBaseConstant.SYS_DATE_TABLE)) {
 			returnValue = DateUtils.formatDate();
@@ -281,11 +342,25 @@ public class JwtUtil {
 			if(user==null){
 				//TODO 暂时使用用户登录部门，存在逻辑缺陷，不是用户所拥有的部门
 				returnValue = sysUser.getOrgCode();
+				// 代码逻辑说明: [QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+				returnValue = multiStr ? "'" + returnValue + "'" : returnValue;
 			}else{
 				if(user.isOneDepart()) {
 					returnValue = user.getSysMultiOrgCode().get(0);
+					// 代码逻辑说明: [QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+					returnValue = multiStr ? "'" + returnValue + "'" : returnValue;
 				}else {
-					returnValue = Joiner.on(",").join(user.getSysMultiOrgCode());
+					// 代码逻辑说明: [QQYUN-10785]数据权限，查看自己拥有部门的权限中存在问题 #7288------------
+					returnValue = user.getSysMultiOrgCode().stream()
+							.filter(Objects::nonNull)
+							.map(orgCode -> {
+								if (multiStr) {
+									return "'" + orgCode + "'";
+								} else {
+									return orgCode;
+								}
+							})
+							.collect(Collectors.joining(", "));
 				}
 			}
 		}
@@ -299,7 +374,7 @@ public class JwtUtil {
 			}
 		}
 
-		//update-begin-author:taoyan date:20210330 for:多租户ID作为系统变量
+		// 代码逻辑说明: 多租户ID作为系统变量
 		else if (key.equals(TenantConstant.TENANT_ID) || key.toLowerCase().equals(TenantConstant.TENANT_ID_TABLE)){
 			try {
 				returnValue = SpringContextUtils.getHttpServletRequest().getHeader(CommonConstant.TENANT_ID);
@@ -307,7 +382,6 @@ public class JwtUtil {
 				log.warn("获取系统租户异常：" + e.getMessage());
 			}
 		}
-		//update-end-author:taoyan date:20210330 for:多租户ID作为系统变量
 		if(returnValue!=null){returnValue = returnValue + moshi;}
 		return returnValue;
 	}

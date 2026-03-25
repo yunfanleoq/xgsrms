@@ -4,14 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.jeecg.common.constant.SymbolConstant;
 import org.jeecg.common.exception.JeecgSqlInjectionException;
 import org.jeecg.common.util.oConvertUtils;
-import org.jeecg.common.util.sqlparse.JSqlParserUtils;
-import org.jeecg.common.util.sqlparse.vo.SelectSqlInfo;
 import org.jeecg.config.JeecgBaseConfig;
 import org.jeecg.config.firewall.SqlInjection.IDictTableWhiteListHandler;
 import org.jeecg.config.firewall.interceptor.LowCodeModeInterceptor;
 import org.jeecg.modules.system.entity.SysTableWhiteList;
 import org.jeecg.modules.system.security.DictQueryBlackListHandler;
 import org.jeecg.modules.system.service.ISysTableWhiteListService;
+import org.jeecgframework.minidao.sqlparser.impl.vo.SelectSqlInfo;
+import org.jeecgframework.minidao.util.MiniDaoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -56,7 +56,7 @@ public class DictTableWhiteListHandlerImpl implements IDictTableWhiteListHandler
         // 如果map为空，则从数据库中查询
         if (DictTableWhiteListHandlerImpl.whiteTablesRuleMap.isEmpty()) {
             Map<String, String> ruleMap = sysTableWhiteListService.getAllConfigMap();
-            log.info("表字典白名单初始化完成：{}", ruleMap);
+            log.debug("表字典白名单初始化完成：{}", ruleMap);
             DictTableWhiteListHandlerImpl.whiteTablesRuleMap.putAll(ruleMap);
         }
     }
@@ -65,7 +65,7 @@ public class DictTableWhiteListHandlerImpl implements IDictTableWhiteListHandler
     public boolean isPassBySql(String sql) {
         Map<String, SelectSqlInfo> parsedMap = null;
         try {
-            parsedMap = JSqlParserUtils.parseAllSelectTable(sql);
+            parsedMap = MiniDaoUtil.parseAllSelectTable(sql);
         } catch (Exception e) {
             log.warn("校验sql语句，解析报错：{}", e.getMessage());
         }
@@ -73,7 +73,7 @@ public class DictTableWhiteListHandlerImpl implements IDictTableWhiteListHandler
         if (parsedMap == null) {
             return true;
         }
-        log.info("获取select sql信息 ：{} ", parsedMap);
+        log.debug("获取select sql信息 ：{} ", parsedMap);
         // 遍历当前sql中的所有表名，如果有其中一个表或表的字段不在白名单中，则不通过
         for (Map.Entry<String, SelectSqlInfo> entry : parsedMap.entrySet()) {
             SelectSqlInfo sqlInfo = entry.getValue();
@@ -124,10 +124,10 @@ public class DictTableWhiteListHandlerImpl implements IDictTableWhiteListHandler
             fields = new String[]{"*"};
         }
         String sql = "select " + String.join(",", fields) + " from " + tableName;
-        log.info("字典拼接的查询SQL：{}", sql);
+        log.debug("字典拼接的查询SQL：{}", sql);
         try {
             // 进行SQL解析
-            JSqlParserUtils.parseSelectSqlInfo(sql);
+            MiniDaoUtil.parseSelectSqlInfo(sql);
         } catch (Exception e) {
             // 如果SQL解析失败，则通过字段名和表名进行校验
             return checkWhiteList(tableName, new HashSet<>(Arrays.asList(fields)));
@@ -153,7 +153,7 @@ public class DictTableWhiteListHandlerImpl implements IDictTableWhiteListHandler
         // 统一转成小写
         tableName = tableName.toLowerCase();
         String allowFieldStr = DictTableWhiteListHandlerImpl.whiteTablesRuleMap.get(tableName);
-        log.info("checkWhiteList tableName: {}", tableName);
+        log.debug("checkWhiteList tableName: {}", tableName);
         if (oConvertUtils.isEmpty(allowFieldStr)) {
             // 如果是dev模式，自动向数据库里添加数据
             if (this.isDev()) {
@@ -192,7 +192,7 @@ public class DictTableWhiteListHandlerImpl implements IDictTableWhiteListHandler
         if (!waitMergerFields.isEmpty()) {
             this.autoAddWhiteList(tableName, String.join(",", waitMergerFields));
         }
-        log.info("白名单校验：查询表\"{}\"，查询字段 {} 通过校验", tableName, queryFields);
+        log.debug("白名单校验：查询表\"{}\"，查询字段 {} 通过校验", tableName, queryFields);
         return true;
     }
 

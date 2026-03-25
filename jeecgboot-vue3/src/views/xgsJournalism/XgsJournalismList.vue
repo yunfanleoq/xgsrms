@@ -27,12 +27,15 @@
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
       </template>
-      <!--字段回显插槽-->
-      <template v-slot:bodyCell="{ column, record, index, text }">
-        <template v-if="column.dataIndex==='journalismText'">
-          <!--富文本件字段回显插槽-->
+      <!-- 字段回显：仅对指定列定制；其余列必须 v-else 回显 text，否则 BasicTable 的 bodyCell 会覆盖整格导致空白（见 issues：仅 journalismText 分支时其它列全空） -->
+      <template v-slot:bodyCell="{ column, text, record }">
+        <template v-if="column.dataIndex === 'journalismText'">
           <div v-html="text"></div>
         </template>
+        <template v-else-if="column.dataIndex === 'type'">
+          {{ filterDictText(getDictItemsByCode('jour_type') || [], text) }}
+        </template>
+        <template v-else>{{ text }}</template>
       </template>
     </BasicTable>
     <!-- 表单区域 -->
@@ -49,6 +52,8 @@
   import {columns, searchFormSchema, superQuerySchema} from './XgsJournalism.data';
   import {list, deleteOne, batchDelete, getImportUrl,getExportUrl} from './XgsJournalism.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
+  import { getDictItemsByCode } from '/@/utils/dict';
+  import { filterDictText } from '/@/utils/dict/JDictSelectUtil';
   import { useUserStore } from '/@/store/modules/user';
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);

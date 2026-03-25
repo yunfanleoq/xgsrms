@@ -1,6 +1,10 @@
 import md5 from 'md5';
-//签名密钥串(前后端要一致，正式发布请自行修改)
-const signatureSecret = 'dd05f1c54d63749eda95f9fa6d49v442a';
+// 与后端 jeecg.signatureSecret / JEECG_SIGNATURE_SECRET 须一致；生产在 .env.production 或构建环境变量中设置 VITE_GLOB_SIGNATURE_SECRET
+const signatureSecret =
+  (import.meta.env.VITE_GLOB_SIGNATURE_SECRET != null &&
+    String(import.meta.env.VITE_GLOB_SIGNATURE_SECRET).trim() !== '')
+    ? String(import.meta.env.VITE_GLOB_SIGNATURE_SECRET).trim()
+    : 'dd05f1c54d63749eda95f9fa6d49v442a';
 
 export default class signMd5Utils {
   /**

@@ -3,8 +3,8 @@ package org.jeecg.modules.quartz.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -31,8 +31,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +48,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/sys/quartzJob")
 @Slf4j
-@Api(tags = "定时任务接口")
+@Tag(name = "定时任务接口")
 public class QuartzJobController {
 	@Autowired
 	private IQuartzJobService quartzJobService;
@@ -155,7 +155,7 @@ public class QuartzJobController {
 	//@RequiresRoles("admin")
     @RequiresPermissions("system:quartzJob:pause")
 	@GetMapping(value = "/pause")
-	@ApiOperation(value = "停止定时任务")
+	@Operation(summary = "停止定时任务")
 	public Result<Object> pauseJob(@RequestParam(name = "id") String id) {
 		QuartzJob job = quartzJobService.getById(id);
 		if (job == null) {
@@ -174,7 +174,7 @@ public class QuartzJobController {
 	//@RequiresRoles("admin")
     @RequiresPermissions("system:quartzJob:resume")
 	@GetMapping(value = "/resume")
-	@ApiOperation(value = "启动定时任务")
+	@Operation(summary = "启动定时任务")
 	public Result<Object> resumeJob(@RequestParam(name = "id") String id) {
 		QuartzJob job = quartzJobService.getById(id);
 		if (job == null) {
@@ -220,10 +220,8 @@ public class QuartzJobController {
 		mv.addObject(NormalExcelConstants.FILE_NAME, "定时任务列表");
 		mv.addObject(NormalExcelConstants.CLASS, QuartzJob.class);
         //获取当前登录用户
-        //update-begin---author:wangshuai ---date:20211227  for：[JTC-116]导出人写死了------------
         LoginUser user = (LoginUser) SecurityUtils.getSubject().getPrincipal();
 		mv.addObject(NormalExcelConstants.PARAMS, new ExportParams("定时任务列表数据", "导出人:"+user.getRealname(), "导出信息"));
-        //update-end---author:wangshuai ---date:20211227  for：[JTC-116]导出人写死了------------
         mv.addObject(NormalExcelConstants.DATA_LIST, pageList);
 		return mv;
 	}

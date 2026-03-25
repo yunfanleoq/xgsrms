@@ -449,16 +449,16 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    host: ${MAIL_HOST:mail.cstnet.cn}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    host: smtp.163.com
+    username: jeecgos@163.com
+    password: ??
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
   ## quartz定时任务,采用数据库方式
   quartz:
     job-store-type: jdbc
@@ -521,7 +521,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 #mybatis plus 设置
 mybatis-plus:
@@ -917,16 +917,16 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    host: ${MAIL_HOST:mail.cstnet.ac.cn}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    host: smtp.163.com
+    username: jeecgos@163.com
+    password: ??
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
   quartz:
     job-store-type: jdbc
     initialize-schema: embedded
@@ -978,7 +978,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
@@ -1439,16 +1439,16 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    host: ${MAIL_HOST:mail.cstnet.ac.cn}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    host: smtp.163.com
+    username: jeecgos@163.com
+    password: ??
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
   ## quartz定时任务,采用数据库方式
   quartz:
     job-store-type: jdbc
@@ -1511,7 +1511,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 #mybatis plus 设置
 mybatis-plus:
@@ -1902,16 +1902,16 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    host: ${MAIL_HOST:mail.cstnet.ac.cn}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    host: smtp.163.com
+    username: jeecgos@163.com
+    password: ??
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
   quartz:
     job-store-type: jdbc
     initialize-schema: embedded
@@ -1963,7 +1963,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
@@ -2335,16 +2335,16 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    host: ${MAIL_HOST:mail.cstnet.ac.cn}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    host: smtp.163.com
+    username: jeecgos@163.com
+    password: ??
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
   quartz:
     job-store-type: jdbc
     initialize-schema: embedded
@@ -2396,7 +2396,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml
@@ -2773,16 +2773,16 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
   mail:
-    host: ${MAIL_HOST:mail.cstnet.ac.cn}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:liuyanliang@iie.ac.cn}
-    password: ${MAIL_PASSWORD:??}
+    host: smtp.163.com
+    username: jeecgos@163.com
+    password: ??
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
   quartz:
     job-store-type: jdbc
     initialize-schema: embedded
@@ -2834,7 +2834,7 @@ spring:
     static-locations: classpath:/static/,classpath:/public/
   autoconfigure:
     exclude:
-      - com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure
+      - com.alibaba.druid.spring.boot3.autoconfigure.DruidDataSourceAutoConfigure
       - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 mybatis-plus:
   mapper-locations: classpath*:org/jeecg/**/xml/*Mapper.xml

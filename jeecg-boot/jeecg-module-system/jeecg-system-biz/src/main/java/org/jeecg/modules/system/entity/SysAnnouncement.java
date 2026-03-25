@@ -55,6 +55,7 @@ public class SysAnnouncement implements Serializable {
      * 发布人
      */
     @Excel(name = "发布人", width = 15)
+    @Dict(dictTable = "sys_user",dicCode = "username",dicText = "realname")
     private java.lang.String sender;
     /**
      * 优先级（L低，M中，H高）
@@ -171,4 +172,22 @@ public class SysAnnouncement implements Serializable {
 
     /**租户ID*/
     private java.lang.Integer tenantId;
+    
+    /** 
+     * 枚举：org.jeecg.common.constant.enums.NoticeTypeEnum
+     * 通知类型(system:系统消息、file:知识库、flow:流程、plan:日程计划、meeting:会议)
+     */
+    private String noticeType;
+    /**附件字段*/
+    private java.lang.String files;
+    /**访问次数*/
+    private java.lang.Integer visitsNum;
+    /**是否置顶（0否 1是）*/
+    private java.lang.Integer izTop;
+    /**是否审批（0否 1是）*/
+    private java.lang.String izApproval;
+    /**流程状态*/
+    private java.lang.String bpmStatus;
+    /**消息归类*/
+    private java.lang.String msgClassify;
 }

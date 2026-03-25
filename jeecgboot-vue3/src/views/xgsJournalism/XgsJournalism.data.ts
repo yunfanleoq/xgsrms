@@ -1,7 +1,6 @@
 import {BasicColumn} from '/@/components/Table';
 import {FormSchema} from '/@/components/Table';
 import { rules} from '/@/utils/helper/validator';
-import { render } from '/@/utils/common/renderUtils';
 import { getWeekMonthQuarterYear } from '/@/utils';
 //列表数据
 export const columns: BasicColumn[] = [
@@ -17,8 +16,8 @@ export const columns: BasicColumn[] = [
    // },
    {
     title: '新闻类型',
-    align:"center",
-    dataIndex: 'type_dictText'
+    align: 'center',
+    dataIndex: 'type',
    },
    {
     title: '新闻状态',

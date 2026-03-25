@@ -21,16 +21,20 @@ spring:
       connection-test-query: SELECT 1
   #邮箱配置
   mail:
-    host: mail.cstnet.cn
-    port: 465
-    username: liuyanliang@iie.ac.cn
-    password: K9WW48aP!R69qBfj
+    host: smtphz.qiye.163.com
+    port: 994
+    username: zhuwei@aboatedu.com
+    from: zhuwei@aboatedu.com
+    password: zwass1314
     properties:
       mail:
         smtp:
           auth: true
-          ssl:
+          starttls:
             enable: true
+            required: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
   #MVC配置
   mvc:
     servlet:

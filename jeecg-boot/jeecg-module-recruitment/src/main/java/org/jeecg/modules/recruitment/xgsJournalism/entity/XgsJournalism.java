@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import org.jeecg.common.constant.ProvinceCityArea;
 import org.jeecg.common.util.SpringContextUtils;
@@ -73,7 +74,8 @@ public class XgsJournalism implements Serializable {
 	@Excel(name = "简述2", width = 15)
     @ApiModelProperty(value = "简述2")
     private String shortText2;
-	/**新闻类型*/
+	/**新闻类型（数据库列名为 MySQL 保留字 type，须显式转义）*/
+	@TableField("`type`")
 	@Excel(name = "新闻类型", width = 15, dicCode = "jour_type")
 	@Dict(dicCode = "jour_type")
     @ApiModelProperty(value = "新闻类型")
