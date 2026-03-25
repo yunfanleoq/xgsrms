@@ -1,6 +1,7 @@
 package org.jeecg.modules.recruitment.xgsHome.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.util.filter.SsrfFileTypeFilter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -21,7 +23,7 @@ import java.util.UUID;
 @Component
 public class ImageDownloadUtil {
 
-    /** 相对 jeecg.path.upload 的子目录，与 getCarouselImage 中 resolveSafeImagePath 一致 */
+    /** 相对 jeecg.path.upload 的子目录，与 {@link #resolveSafeCarouselImageFile(String)} 一致 */
     private static final String CAROUSEL_REL = "upload/carousel";
 
     @Value("${jeecg.path.upload}")
@@ -220,5 +222,57 @@ public class ImageDownloadUtil {
 
     private Path carouselDir() {
         return Paths.get(jeecgUploadPath).resolve("upload").resolve("carousel").normalize();
+    }
+
+    /**
+     * 将接口传入的路径解析为 {@code jeecg.path.upload/upload/carousel} 下的真实文件，防止路径遍历与任意文件读取。
+     * <p>允许形态：仅文件名（如 {@code uuid.png}），或相对上传根目录的完整路径（如 {@code upload/carousel/uuid.png}）。</p>
+     *
+     * @param imagePathParam 请求参数 imagePath
+     * @return 存在且为普通文件时返回该文件，否则 empty
+     */
+    public Optional<File> resolveSafeCarouselImageFile(String imagePathParam) {
+        if (imagePathParam == null || imagePathParam.trim().isEmpty()) {
+            return Optional.empty();
+        }
+        String normalized = imagePathParam.replace("\\", "/").trim();
+        try {
+            SsrfFileTypeFilter.checkPathTraversal(normalized);
+        } catch (Exception e) {
+            log.warn("轮播图路径非法: {}", imagePathParam);
+            return Optional.empty();
+        }
+
+        Path uploadRoot = Paths.get(jeecgUploadPath).toAbsolutePath().normalize();
+        Path carouselRoot = uploadRoot.resolve("upload").resolve("carousel").normalize();
+
+        Path candidate;
+        if (normalized.startsWith(CAROUSEL_REL + "/")) {
+            candidate = uploadRoot.resolve(normalized).normalize();
+        } else if (!normalized.contains("/")) {
+            candidate = carouselRoot.resolve(normalized).normalize();
+        } else {
+            log.warn("轮播图路径格式不支持: {}", imagePathParam);
+            return Optional.empty();
+        }
+
+        if (!candidate.startsWith(carouselRoot)) {
+            log.warn("轮播图路径越界: {}", imagePathParam);
+            return Optional.empty();
+        }
+
+        String nameForTypeCheck = candidate.getFileName().toString();
+        try {
+            SsrfFileTypeFilter.checkDownloadFileType(nameForTypeCheck);
+        } catch (Exception e) {
+            log.warn("轮播图文件类型不允许: {}", imagePathParam);
+            return Optional.empty();
+        }
+
+        File file = candidate.toFile();
+        if (!file.exists() || !file.isFile()) {
+            return Optional.empty();
+        }
+        return Optional.of(file);
     }
 }
