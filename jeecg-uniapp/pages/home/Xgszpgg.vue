@@ -33,7 +33,7 @@ export default {
             // 这里可以先初始化为 null 或默认值
             CustomBar: null,
             NavBarColor: null,
-            url: "/xgsHome/xgsHome/list",
+            url: "/xgsHome/xgsHome/listForHome",
             // list: []
         };
     },

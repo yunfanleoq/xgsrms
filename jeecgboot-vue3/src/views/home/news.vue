@@ -206,7 +206,7 @@
     selectY();
   };
 
-  const listUrl = '/xgsJournalism/xgsJournalism/list';
+  const listUrl = '/xgsJournalism/xgsJournalism/listForHomeNews';
   const listTypeUrl = (dictCode: string) => `/sys/dict/getDictItems/${dictCode}`;
 
   const selectTypeList = () => {

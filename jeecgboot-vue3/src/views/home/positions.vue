@@ -229,16 +229,16 @@
   const fetchAnnouncements = async () => {
     try {
       const response = await defHttp.get({
-        url: "/xgsHome/xgsHome/list",
+        url: "/xgsHome/xgsHome/listForHome",
       });
 
       if (response && response.records) {
+        // 顺序与后端 listForHome（按 create_time 降序）一致；门户接口已脱敏不返回 createTime
         announcements.value = response.records.map((item: any) => ({
             id: item.id, // 映射招聘公告的主键 ID
             title: item.recruitAnnouncementTitle,
             createTime: item.createTime,
           }))
-          .sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime())  // 按时间降序排序
       }
     } catch (error) {
       console.error("请求招聘公告数据失败:", error);

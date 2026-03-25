@@ -4,12 +4,19 @@ import java.util.Arrays;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.RedisUtil;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.modules.recruitment.xgsHome.entity.XgsHome;
+import org.jeecg.modules.recruitment.security.RecruitmentPortalAuthUtil;
+import org.jeecg.modules.recruitment.security.RecruitmentPublicDataSanitizer;
 import org.jeecg.modules.recruitment.xgsHome.service.IXgsHomeService;
+import org.jeecg.modules.recruitment.xgsHome.util.ImageDownloadUtil;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -38,6 +45,15 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService> {
 	@Autowired
 	private IXgsHomeService xgsHomeService;
+
+	@Autowired
+	private ImageDownloadUtil imageDownloadUtil;
+
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
+
+	@Autowired
+	private RedisUtil redisUtil;
 	
 	/**
 	 * 分页列表查询
@@ -70,6 +86,7 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 	  * @return
 	  */
 	 @ApiOperation(value="首页-轮播图查询", notes="首页-轮播图查询")
+	 @IgnoreAuth
 	 @GetMapping(value = "/listForHome")
 	 public Result<IPage<XgsHome>> listForHome(XgsHome xgsHome,
 												 @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
@@ -80,6 +97,7 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 		 queryWrapper.orderByDesc("create_time");
 		 queryWrapper.orderByAsc("img_num");
 		 IPage<XgsHome> pageList = xgsHomeService.page(page, queryWrapper);
+		 RecruitmentPublicDataSanitizer.stripXgsHomeList(pageList.getRecords());
 		 return Result.OK(pageList);
 	 }
 	
@@ -170,11 +188,16 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
 	 */
 	//@AutoLog(value = "首页-通过id查询")
 	@ApiOperation(value="首页-通过id查询", notes="首页-通过id查询")
+	@IgnoreAuth
 	@GetMapping(value = "/queryById")
-	public Result<XgsHome> queryById(@RequestParam(name="id",required=true) String id) {
+	public Result<XgsHome> queryById(@RequestParam(name="id",required=true) String id, HttpServletRequest req) {
 		XgsHome xgsHome = xgsHomeService.getById(id);
 		if(xgsHome==null) {
 			return Result.error("未找到对应数据");
+		}
+		LoginUser portalUser = RecruitmentPortalAuthUtil.tryGetLoginUser(req, sysBaseAPI, redisUtil);
+		if (!RecruitmentPortalAuthUtil.isRecruitmentPrivileged(portalUser)) {
+			RecruitmentPublicDataSanitizer.stripXgsHome(xgsHome);
 		}
 		return Result.OK(xgsHome);
 	}
@@ -211,6 +234,7 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
      * @param response HTTP响应
      */
     @ApiOperation(value="获取本地轮播图片", notes="获取本地轮播图片")
+    @IgnoreAuth
     @GetMapping(value = "/getCarouselImage")
     public void getCarouselImage(@RequestParam(name="imagePath", required=true) String imagePath,
                                   HttpServletResponse response) {
@@ -219,10 +243,9 @@ public class XgsHomeController extends JeecgController<XgsHome, IXgsHomeService>
         
         try {
 
-            File imageFile = new File(imagePath);
-            
-            if (!imageFile.exists() || !imageFile.isFile()) {
-                log.error("图片文件不存在: {}", imagePath);
+            File imageFile = imageDownloadUtil.resolveSafeCarouselImageFile(imagePath).orElse(null);
+            if (imageFile == null) {
+                log.warn("轮播图不可访问或不存在: {}", imagePath);
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }

@@ -33,7 +33,7 @@ export default {
             // 这里可以先初始化为 null 或默认值
             CustomBar: null,
             NavBarColor: null,
-            url: "/xgsJournalism/xgsJournalism/list",
+            url: "/xgsJournalism/xgsJournalism/listForHomeNews",
             // list: []
         };
     },

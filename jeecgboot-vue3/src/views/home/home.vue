@@ -92,7 +92,7 @@
     createTime: string;
   }
 
-  const listUrl = '/xgsJournalism/xgsJournalism/list';
+  const listUrl = '/xgsJournalism/xgsJournalism/listForHomeNews';
   const imgListUrl = '/xgsHome/xgsHome/listForHome';
 
   const carouselImages = ref<CarouselImage[]>([]);

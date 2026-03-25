@@ -2,13 +2,15 @@ package org.jeecg.modules.recruitment.positions.controller;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.SecurityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Whitelist;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.util.RedisUtil;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.util.oConvertUtils;
@@ -20,6 +22,8 @@ import com.alibaba.fastjson.JSONObject;
 import org.jeecg.modules.recruitment.positions.entity.XgsFirstHtml;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
+import org.jeecg.modules.recruitment.security.RecruitmentPortalAuthUtil;
+import org.jeecg.modules.recruitment.security.RecruitmentPublicDataSanitizer;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionsService;
 
@@ -71,6 +75,9 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	 
 	 @Autowired
 	 private ISysBaseAPI sysBaseAPI;
+
+	@Autowired
+	private RedisUtil redisUtil;
 	
 	/**
 	 * 分页列表查询
@@ -83,12 +90,22 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	 */
 	//@AutoLog(value = "招聘岗位列表-分页列表查询")
 	@ApiOperation(value="招聘岗位列表-分页列表查询", notes="招聘岗位列表-分页列表查询")
+	@IgnoreAuth
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsPositions>> queryPageList(XgsPositions xgsPositions,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
-        QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, req.getParameterMap());
+		LoginUser portalUser = RecruitmentPortalAuthUtil.tryGetLoginUser(req, sysBaseAPI, redisUtil);
+		boolean privileged = RecruitmentPortalAuthUtil.isRecruitmentPrivileged(portalUser);
+		Map<String, String[]> paramMap = new HashMap<>(req.getParameterMap());
+		if (!privileged) {
+			paramMap.remove("status");
+		}
+        QueryWrapper<XgsPositions> queryWrapper = QueryGenerator.initQueryWrapper(xgsPositions, paramMap);
+		if (!privileged) {
+			queryWrapper.eq("status", "招聘中");
+		}
         
         // 添加关键词搜索：同时搜索职位名称和部门名称
         String keyword = req.getParameter("keyword");
@@ -113,6 +130,9 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
         queryWrapper.isNull("deleted");
 		Page<XgsPositions> page = new Page<XgsPositions>(pageNo, pageSize);
 		IPage<XgsPositions> pageList = xgsPositionsService.page(page, queryWrapper);
+		if (!privileged) {
+			RecruitmentPublicDataSanitizer.stripXgsPositionsList(pageList.getRecords());
+		}
 		return Result.OK(pageList);
 	}
 	
@@ -123,6 +143,7 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	 * @return
 	 */
 	@ApiOperation(value="获取有招聘岗位的部门列表", notes="获取有招聘岗位的部门列表")
+	@IgnoreAuth
 	@GetMapping(value = "/getDeptList")
 	public Result<List<Map<String, Object>>> getDeptList(HttpServletRequest req) {
 		QueryWrapper<XgsPositions> queryWrapper = new QueryWrapper<>();
@@ -365,22 +386,40 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	 */
 	//@AutoLog(value = "招聘岗位列表-通过id查询")
 	@ApiOperation(value="招聘岗位列表-通过id查询", notes="招聘岗位列表-通过id查询")
+	@IgnoreAuth
 	@GetMapping(value = "/queryById")
-	public Result<XgsPositions> queryById(@RequestParam(name="id",required=true) String id) {
+	public Result<XgsPositions> queryById(@RequestParam(name="id",required=true) String id, HttpServletRequest req) {
+		LoginUser portalUser = RecruitmentPortalAuthUtil.tryGetLoginUser(req, sysBaseAPI, redisUtil);
+		boolean privileged = RecruitmentPortalAuthUtil.isRecruitmentPrivileged(portalUser);
 		XgsPositions xgsPositions = xgsPositionsService.getById(id);
 		if(xgsPositions==null || "Y".equals(xgsPositions.getDeleted())) {
 			return Result.error("未找到对应数据");
+		}
+		if (!privileged && !"招聘中".equals(xgsPositions.getStatus())) {
+			return Result.error("未找到对应数据");
+		}
+		if (!privileged) {
+			RecruitmentPublicDataSanitizer.stripXgsPositions(xgsPositions);
 		}
 		return Result.OK(xgsPositions);
 	}
 
 	 @ApiOperation(value="招聘岗位列表-通过id查询", notes="招聘岗位列表-通过id查询")
+	 @IgnoreAuth
 	 @GetMapping(value = "/getPageById")
-	 public Result<IPage<XgsPositions>> getPageById(@RequestParam(name="id",required=true) String id) {
+	 public Result<IPage<XgsPositions>> getPageById(@RequestParam(name="id",required=true) String id, HttpServletRequest req) {
+		 LoginUser portalUser = RecruitmentPortalAuthUtil.tryGetLoginUser(req, sysBaseAPI, redisUtil);
+		 boolean privileged = RecruitmentPortalAuthUtil.isRecruitmentPrivileged(portalUser);
 		 IPage<XgsPositions> page =  new Page<>(1,1);
 		 XgsPositions xgsPositions = xgsPositionsService.getById(id);
 		 if(xgsPositions==null || "Y".equals(xgsPositions.getDeleted())) {
 			 return Result.error("未找到对应数据");
+		 }
+		 if (!privileged && !"招聘中".equals(xgsPositions.getStatus())) {
+			 return Result.error("未找到对应数据");
+		 }
+		 if (!privileged) {
+			 RecruitmentPublicDataSanitizer.stripXgsPositions(xgsPositions);
 		 }
 		 page.setRecords(Collections.singletonList(xgsPositions));
 		 return Result.OK(page);

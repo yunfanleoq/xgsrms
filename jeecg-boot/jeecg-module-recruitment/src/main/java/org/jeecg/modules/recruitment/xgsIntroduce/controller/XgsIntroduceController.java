@@ -1,12 +1,17 @@
 package org.jeecg.modules.recruitment.xgsIntroduce.controller;
 
 import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.RedisUtil;
 import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.recruitment.xgsIntroduce.entity.XgsIntroduce;
+import org.jeecg.modules.recruitment.security.RecruitmentPortalAuthUtil;
+import org.jeecg.modules.recruitment.security.RecruitmentPublicDataSanitizer;
 import org.jeecg.modules.recruitment.xgsIntroduce.service.IXgsIntroduceService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,6 +41,12 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsIntroduceController extends JeecgController<XgsIntroduce, IXgsIntroduceService> {
 	@Autowired
 	private IXgsIntroduceService xgsIntroduceService;
+
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
+
+	@Autowired
+	private RedisUtil redisUtil;
 	
 	/**
 	 * 分页列表查询
@@ -54,9 +65,14 @@ public class XgsIntroduceController extends JeecgController<XgsIntroduce, IXgsIn
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		LoginUser portalUser = RecruitmentPortalAuthUtil.tryGetLoginUser(req, sysBaseAPI, redisUtil);
+		boolean privileged = RecruitmentPortalAuthUtil.isRecruitmentPrivileged(portalUser);
         QueryWrapper<XgsIntroduce> queryWrapper = QueryGenerator.initQueryWrapper(xgsIntroduce, req.getParameterMap());
 		Page<XgsIntroduce> page = new Page<XgsIntroduce>(pageNo, pageSize);
 		IPage<XgsIntroduce> pageList = xgsIntroduceService.page(page, queryWrapper);
+		if (!privileged) {
+			RecruitmentPublicDataSanitizer.stripXgsIntroduceList(pageList.getRecords());
+		}
 		return Result.OK(pageList);
 	}
 	

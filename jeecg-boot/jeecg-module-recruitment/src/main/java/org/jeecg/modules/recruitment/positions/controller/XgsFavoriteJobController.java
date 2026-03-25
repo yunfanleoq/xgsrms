@@ -1,15 +1,16 @@
 package org.jeecg.modules.recruitment.positions.controller;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Set;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
-import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.recruitment.positions.entity.XgsFavoriteJob;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.service.IXgsFavoriteJobService;
@@ -98,12 +99,24 @@ public class XgsFavoriteJobController extends JeecgController<XgsFavoriteJob, IX
 	//@AutoLog(value = "职位收藏-分页列表查询")
 	@ApiOperation(value="职位收藏-分页列表查询", notes="职位收藏-分页列表查询")
 	@GetMapping(value = "/list")
-	@IgnoreAuth
 	public Result<IPage<XgsFavoriteJob>> queryPageList(XgsFavoriteJob xgsFavoriteJob,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
+		LoginUser loginUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         QueryWrapper<XgsFavoriteJob> queryWrapper = QueryGenerator.initQueryWrapper(xgsFavoriteJob, req.getParameterMap());
+		// 非管理员/部门岗位管理员：仅能查本人收藏，防止未授权遍历或越权查看他人数据
+		Set<String> roleSet = new HashSet<>();
+		if (loginUser.getRoleCode() != null) {
+			for (String r : loginUser.getRoleCode().split(",")) {
+				roleSet.add(r.trim());
+			}
+		}
+		boolean canListAll = roleSet.contains("admin") || roleSet.contains("depart_position_manager");
+		if (!canListAll) {
+			String me = loginUser.getUsername();
+			queryWrapper.and(w -> w.eq("user_id", me).or().eq("create_by", me));
+		}
 		Page<XgsFavoriteJob> page = new Page<XgsFavoriteJob>(pageNo, pageSize);
 		IPage<XgsFavoriteJob> pageList = xgsFavoriteJobService.page(page, queryWrapper);
 		return Result.OK(pageList);

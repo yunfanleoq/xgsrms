@@ -140,7 +140,7 @@
 				// 获取轮播图数据的函数					
 				console.log("处理前的 carouselImages",this.swiperList)
 				console.log("loadswiperList::begin")
-				let url = '/xgsHome/xgsHome/list';
+				let url = '/xgsHome/xgsHome/listForHome';
 				this.$http.get( url).then(res=>{
 					console.log("loadswiperList res::",res)
 					if(res.data.success){
@@ -163,8 +163,7 @@
 							url: imgUrl,
 						  };
 						})
-						.sort((a, b) => new Date(b.createTime).getTime() - new Date(a.createTime).getTime()) // 按时间降序排序
-						.slice(0, 5); // 截取前5张轮播图
+						.slice(0, 5); // 截取前5张；顺序与后端 listForHome 一致（已脱敏无 createTime）
 					  console.log("处理后的 carouselImages",this.swiperList)
 				  }
 				})

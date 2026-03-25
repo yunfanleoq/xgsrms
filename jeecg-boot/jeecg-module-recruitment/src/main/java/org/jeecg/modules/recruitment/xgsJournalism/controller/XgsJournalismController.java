@@ -1,12 +1,19 @@
 package org.jeecg.modules.recruitment.xgsJournalism.controller;
 
 import java.util.Arrays;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.query.QueryGenerator;
+import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.RedisUtil;
 import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.recruitment.xgsJournalism.entity.XgsJournalism;
+import org.jeecg.modules.recruitment.security.RecruitmentPortalAuthUtil;
+import org.jeecg.modules.recruitment.security.RecruitmentPublicDataSanitizer;
 import org.jeecg.modules.recruitment.xgsJournalism.service.IXgsJournalismService;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -36,6 +43,15 @@ import org.apache.shiro.authz.annotation.RequiresPermissions;
 public class XgsJournalismController extends JeecgController<XgsJournalism, IXgsJournalismService> {
 	@Autowired
 	private IXgsJournalismService xgsJournalismService;
+
+	@Autowired
+	private ISysBaseAPI sysBaseAPI;
+
+	@Autowired
+	private RedisUtil redisUtil;
+
+	/** 与前端门户、同步任务中「已发布」状态一致 */
+	private static final String JOURNALISM_STATE_PUBLISHED = "已发布";
 	
 	/**
 	 * 分页列表查询
@@ -49,7 +65,6 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 	//@AutoLog(value = "新闻内容-分页列表查询")
 	@ApiOperation(value="新闻内容-分页列表查询", notes="新闻内容-分页列表查询")
 	@GetMapping(value = "/list")
-	@IgnoreAuth
 	public Result<IPage<XgsJournalism>> queryPageList(XgsJournalism xgsJournalism,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
@@ -61,17 +76,21 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 	}
 
 	 @ApiOperation(value="新闻内容-分页列表查询2", notes="新闻内容-分页列表查询2")
-	 @GetMapping(value = "/listForHomeNews")
 	 @IgnoreAuth
+	 @GetMapping(value = "/listForHomeNews")
 	 public Result<IPage<XgsJournalism>> listForHome(XgsJournalism xgsJournalism,
 													   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
 													   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 													   HttpServletRequest req) {
-		 QueryWrapper<XgsJournalism> queryWrapper = QueryGenerator.initQueryWrapper(xgsJournalism, req.getParameterMap());
+		 Map<String, String[]> safeParams = new HashMap<>(req.getParameterMap());
+		 safeParams.remove("state");
+		 QueryWrapper<XgsJournalism> queryWrapper = QueryGenerator.initQueryWrapper(xgsJournalism, safeParams);
+		 queryWrapper.eq("state", JOURNALISM_STATE_PUBLISHED);
 		 Page<XgsJournalism> page = new Page<XgsJournalism>(pageNo, pageSize);
 		 queryWrapper.orderByDesc("create_time");
 		 queryWrapper.orderByAsc("news_sort");
 		 IPage<XgsJournalism> pageList = xgsJournalismService.page(page, queryWrapper);
+		 RecruitmentPublicDataSanitizer.stripXgsJournalismList(pageList.getRecords());
 		 return Result.OK(pageList);
 	 }
 	
@@ -143,11 +162,20 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 	 */
 	//@AutoLog(value = "新闻内容-通过id查询")
 	@ApiOperation(value="新闻内容-通过id查询", notes="新闻内容-通过id查询")
+	@IgnoreAuth
 	@GetMapping(value = "/queryById")
-	public Result<XgsJournalism> queryById(@RequestParam(name="id",required=true) String id) {
+	public Result<XgsJournalism> queryById(@RequestParam(name="id",required=true) String id, HttpServletRequest req) {
 		XgsJournalism xgsJournalism = xgsJournalismService.getById(id);
 		if(xgsJournalism==null) {
 			return Result.error("未找到对应数据");
+		}
+		LoginUser portalUser = RecruitmentPortalAuthUtil.tryGetLoginUser(req, sysBaseAPI, redisUtil);
+		boolean privileged = RecruitmentPortalAuthUtil.isRecruitmentPrivileged(portalUser);
+		if (!privileged && !JOURNALISM_STATE_PUBLISHED.equals(xgsJournalism.getState())) {
+			return Result.error("未找到对应数据");
+		}
+		if (!privileged) {
+			RecruitmentPublicDataSanitizer.stripXgsJournalism(xgsJournalism);
 		}
 		return Result.OK(xgsJournalism);
 	}
