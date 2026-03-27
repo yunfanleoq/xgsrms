@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-auth="'xgsInviteToInterview:xgs_invite_to_interview:list'">
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--插槽:table标题-->

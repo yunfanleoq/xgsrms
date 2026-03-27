@@ -58,6 +58,7 @@ public class XgsFlowOpinionsController extends JeecgController<XgsFlowOpinions, 
 	 */
 	//@AutoLog(value = "审批办理过程表-分页列表查询")
 	@ApiOperation(value="审批办理过程表-分页列表查询", notes="审批办理过程表-分页列表查询")
+	@RequiresPermissions("resume:xgs_flow_opinions:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsFlowOpinions>> queryPageList(XgsFlowOpinions xgsFlowOpinions,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

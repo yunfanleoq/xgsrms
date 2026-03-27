@@ -56,6 +56,7 @@ public class XgsTalentpoolController extends JeecgController<XgsTalentpool, IXgs
 	 */
 	//@AutoLog(value = "人才库-分页列表查询")
 	@ApiOperation(value="人才库-分页列表查询", notes="人才库-分页列表查询")
+	@RequiresPermissions("xgsTalentpool:xgs_talentpool:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsTalentpool>> queryPageList(XgsTalentpool xgsTalentpool,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

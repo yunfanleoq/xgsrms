@@ -74,6 +74,7 @@ public class XgsResumeBSHController {
 	 */
 	//@AutoLog(value = "基本信息-博士后-分页列表查询")
 	@ApiOperation(value="基本信息-博士后-分页列表查询", notes="基本信息-博士后-分页列表查询")
+	@RequiresPermissions("xgsResume:xgs_resume_base:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsResumeBSH>> queryPageList(XgsResumeBSH xgsResumeBSH,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

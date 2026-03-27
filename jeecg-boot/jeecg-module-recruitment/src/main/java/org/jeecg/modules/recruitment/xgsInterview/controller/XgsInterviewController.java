@@ -50,6 +50,7 @@ public class XgsInterviewController extends JeecgController<XgsInterview, IXgsIn
 	 */
 	//@AutoLog(value = "面试管理-分页列表查询")
 	@ApiOperation(value="面试管理-分页列表查询", notes="面试管理-分页列表查询")
+	@RequiresPermissions("xgsInterview:xgs_interview:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsInterview>> queryPageList(XgsInterview xgsInterview,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

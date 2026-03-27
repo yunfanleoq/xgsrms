@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-auth="'resume:xgs_flow_opinions:list'">
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection">
       <!--字段回显插槽-->

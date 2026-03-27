@@ -68,6 +68,7 @@ public class XgsInviteToInterviewController extends JeecgController<XgsInviteToI
 	 */
 	//@AutoLog(value = "面试邀请-分页列表查询")
 	@ApiOperation(value="面试邀请-分页列表查询", notes="面试邀请-分页列表查询")
+	@RequiresPermissions("xgsInviteToInterview:xgs_invite_to_interview:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsInviteToInterview>> queryPageList(XgsInviteToInterview xgsInviteToInterview,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

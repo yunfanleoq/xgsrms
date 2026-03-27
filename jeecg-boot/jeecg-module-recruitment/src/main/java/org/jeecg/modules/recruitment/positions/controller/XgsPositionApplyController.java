@@ -81,6 +81,7 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
 	 */
 	//@AutoLog(value = "岗位申请-分页列表查询")
 	@ApiOperation(value="岗位申请-分页列表查询", notes="岗位申请-分页列表查询")
+	@RequiresPermissions("positions:xgs_position_apply:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsPositionApply>> queryPageList(XgsPositionApply xgsPositionApply,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

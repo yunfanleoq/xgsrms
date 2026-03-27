@@ -27,7 +27,7 @@
       <template #action="{ record }">
         <TableAction :actions="getTableAction(record)" :dropDownActions="getDropDownAction(record)"/>
       </template>
-      <!-- 字段回显：仅对指定列定制；其余列必须 v-else 回显 text，否则 BasicTable 的 bodyCell 会覆盖整格导致空白（见 issues：仅 journalismText 分支时其它列全空） -->
+      <!-- 字段回显：勿对「无 dataIndex」的列（如勾选列）输出 text —— ant-design-vue 在 dataIndex 为空时 text 为整行 record，会显示为整段 JSON（见 vc-table/utils/valueUtil getPathValue） -->
       <template v-slot:bodyCell="{ column, text, record }">
         <template v-if="column.dataIndex === 'journalismText'">
           <div v-html="text"></div>
@@ -35,7 +35,7 @@
         <template v-else-if="column.dataIndex === 'type'">
           {{ filterDictText(getDictItemsByCode('jour_type') || [], text) }}
         </template>
-        <template v-else>{{ text }}</template>
+        <template v-else-if="column.dataIndex">{{ text }}</template>
       </template>
     </BasicTable>
     <!-- 表单区域 -->

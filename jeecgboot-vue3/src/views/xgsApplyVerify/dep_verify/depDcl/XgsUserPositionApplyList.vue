@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-auth="'positions:xgs_position_apply:list'">
     <!--引用表格-->
     <BasicTable @register="registerTable" :rowSelection="rowSelection"
                 :scroll="{ x: 1200 }">

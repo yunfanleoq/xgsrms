@@ -64,6 +64,7 @@ public class XgsUserResumeFileController extends JeecgController<XgsUserResumeFi
 	 */
 	//@AutoLog(value = "用户简历文件分析-分页列表查询")
 	@ApiOperation(value="用户简历文件分析-分页列表查询", notes="用户简历文件分析-分页列表查询")
+	@RequiresPermissions("resume:xgs_user_resume_file:list")
 	@GetMapping(value = "/list")
 	public Result<IPage<XgsUserResumeFile>> queryPageList(XgsUserResumeFile xgsUserResumeFile,
 								   @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,

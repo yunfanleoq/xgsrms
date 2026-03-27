@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-auth="'xgsResume:xgs_resume_base:list'">
     <!--引用表格-->
    <BasicTable @register="registerTable" :rowSelection="rowSelection">
      <!--插槽:table标题-->

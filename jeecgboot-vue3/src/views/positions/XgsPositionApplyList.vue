@@ -1,5 +1,5 @@
 <template>
-  <div class="p-2">
+  <div class="p-2" v-auth="'positions:xgs_position_apply:list'">
     <!--查询区域-->
     <div class="jeecg-basic-table-form-container">
       <a-form ref="formRef" @keyup.enter.native="searchQuery" :model="queryParam" :label-col="labelCol" :wrapper-col="wrapperCol">
