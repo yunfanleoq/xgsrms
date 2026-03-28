@@ -99,13 +99,18 @@ public class LoginController {
             return result;
         }
 		
-		// step.3 校验用户是否存在且有效
+		// step.3 校验用户是否存在且有效（与密码错误统一文案，防止用户名枚举）
 		LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
 		queryWrapper.eq(SysUser::getUsername,username);
 		SysUser sysUser = sysUserService.getOne(queryWrapper);
+		if (sysUser == null) {
+			addLoginFailOvertimes(username);
+			return result.error500("用户名或密码错误");
+		}
 		result = sysUserService.checkUserIsEffective(sysUser);
-		if(!result.isSuccess()) {
-			return result;
+		if (!result.isSuccess()) {
+			addLoginFailOvertimes(username);
+			return result.error500("用户名或密码错误");
 		}
 
 		// step.4 校验用户名或密码是否正确
@@ -349,21 +354,26 @@ public class LoginController {
 			if (CommonConstant.SMS_TPL_TYPE_1.equals(smsmode)) {
 				SysUser sysUser = sysUserService.getUserByPhone(mobile);
 				if(sysUser!=null) {
-					result.error500(" 手机号已经注册，请直接登录！");
-					baseCommonService.addLog("手机号已经注册，请直接登录！", CommonConstant.LOG_TYPE_1, null);
+					baseCommonService.addLog("注册短信：手机号已注册（对外统一提示，防止枚举）", CommonConstant.LOG_TYPE_1, null);
+					result.setSuccess(true);
+					result.setMessage("若该号码可接收短信，将发送验证码，请注意查收");
 					return result;
 				}
 				b = DySmsHelper.sendSms(mobile, obj, DySmsEnum.REGISTER_TEMPLATE_CODE);
 			}else {
-				//登录模式，校验用户有效性
+				//登录/忘记密码：不泄露「未注册」「未绑定」等，未发送验证码时仍返回统一提示
 				SysUser sysUser = sysUserService.getUserByPhone(mobile);
-				result = sysUserService.checkUserIsEffective(sysUser);
-				if(!result.isSuccess()) {
-					String message = result.getMessage();
-					String userNotExist="该用户不存在，请注册";
-					if(userNotExist.equals(message)){
-						result.error500("该用户不存在或未绑定手机号");
-					}
+				if (sysUser == null) {
+					baseCommonService.addLog("短信请求：手机号未注册或未绑定（未发码，防枚举）", CommonConstant.LOG_TYPE_1, null);
+					result.setSuccess(true);
+					result.setMessage("若该号码可接收短信，将发送验证码，请注意查收");
+					return result;
+				}
+				Result<?> eff = sysUserService.checkUserIsEffective(sysUser);
+				if (!eff.isSuccess()) {
+					baseCommonService.addLog("短信请求：用户不可用（未发码，防枚举）", CommonConstant.LOG_TYPE_1, null);
+					result.setSuccess(true);
+					result.setMessage("若该号码可接收短信，将发送验证码，请注意查收");
 					return result;
 				}
 				
@@ -422,11 +432,16 @@ public class LoginController {
 			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
 		}
 		
-		//校验用户有效性
+		//校验用户有效性（与验证码错误区分场景下仍避免泄露「用户不存在」）
 		SysUser sysUser = sysUserService.getUserByPhone(phone);
+		if (sysUser == null) {
+			addLoginFailOvertimes(phone);
+			return result.error500("登录失败，请检查手机号或验证码");
+		}
 		result = sysUserService.checkUserIsEffective(sysUser);
-		if(!result.isSuccess()) {
-			return result;
+		if (!result.isSuccess()) {
+			addLoginFailOvertimes(phone);
+			return result.error500("登录失败，请检查手机号或验证码");
 		}
 		
 		String smscode = jsonObject.getString("captcha");
@@ -652,11 +667,16 @@ public class LoginController {
 		if(isLoginFailOvertimes(username)){
 			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
 		}
-		// 2.校验用户是否有效
+		// 2.校验用户是否有效（与密码错误统一文案，防止用户名枚举）
 		SysUser sysUser = sysUserService.getUserByName(username);
+		if (sysUser == null) {
+			addLoginFailOvertimes(username);
+			return result.error500("用户名或密码错误");
+		}
 		result = sysUserService.checkUserIsEffective(sysUser);
-		if(!result.isSuccess()) {
-			return result;
+		if (!result.isSuccess()) {
+			addLoginFailOvertimes(username);
+			return result.error500("用户名或密码错误");
 		}
 		
 		// 3.校验用户名或密码是否正确

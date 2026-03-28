@@ -35,12 +35,12 @@
       <!--字段回显插槽-->
       <template v-slot:bodyCell="{ column, record, index, text }">
         <template v-if="column.dataIndex === 'duty'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
+          <!--富文本件字段回显插槽（xss 净化）-->
+          <div v-html="sanitizeRichTextHtml(text)"></div>
         </template>
         <template v-if="column.dataIndex === 'memo'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
+          <!--富文本件字段回显插槽（xss 净化）-->
+          <div v-html="sanitizeRichTextHtml(text)"></div>
         </template>
       </template>
     </BasicTable>
@@ -61,6 +61,7 @@
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositions.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
   import { downloadFile } from '/@/utils/common/renderUtils';
+  import { sanitizeRichTextHtml } from '/@/utils/security/sanitizeRichTextHtml';
   import { useUserStore } from '/@/store/modules/user';
   const queryParam = reactive<any>({});
   const checkedKeys = ref<Array<string | number>>([]);

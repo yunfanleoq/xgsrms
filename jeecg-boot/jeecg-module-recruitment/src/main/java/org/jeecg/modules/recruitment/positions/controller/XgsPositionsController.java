@@ -6,8 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.shiro.SecurityUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Whitelist;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.config.shiro.IgnoreAuth;
@@ -561,31 +559,5 @@ public class XgsPositionsController extends JeecgController<XgsPositions, IXgsPo
 	/** 招聘岗位 dept 存部门主键(id)时为纯数字；否则多为直接写入的部门名称 */
 	private boolean isNumericDepartKey(String s) {
 		return s != null && s.matches("\\d+");
-	}
-
-	private void sanitizePositionInput(XgsPositions xgsPositions) {
-		if (xgsPositions == null) {
-			return;
-		}
-		xgsPositions.setResearchDirection(cleanPlain(xgsPositions.getResearchDirection()));
-		xgsPositions.setXlxw(cleanPlain(xgsPositions.getXlxw()));
-		xgsPositions.setProfessional(cleanPlain(xgsPositions.getProfessional()));
-		xgsPositions.setWorkYears(cleanPlain(xgsPositions.getWorkYears()));
-		xgsPositions.setDuty(cleanRichText(xgsPositions.getDuty()));
-		xgsPositions.setMemo(cleanRichText(xgsPositions.getMemo()));
-	}
-
-	private String cleanPlain(String value) {
-		if (value == null) {
-			return null;
-		}
-		return Jsoup.clean(value, Whitelist.none());
-	}
-
-	private String cleanRichText(String value) {
-		if (value == null) {
-			return null;
-		}
-		return Jsoup.clean(value, Whitelist.basic());
 	}
 }

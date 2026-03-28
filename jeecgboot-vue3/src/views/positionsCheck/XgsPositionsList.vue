@@ -14,12 +14,12 @@
       <!--字段回显插槽-->
       <template #bodyCell="{ column, record, index, text }">
         <template v-if="column.dataIndex === 'duty'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
+          <!--富文本件字段回显插槽（xss 净化）-->
+          <div v-html="sanitizeRichTextHtml(text)"></div>
         </template>
         <template v-if="column.dataIndex === 'memo'">
-          <!--富文本件字段回显插槽-->
-          <div v-html="text"></div>
+          <!--富文本件字段回显插槽（xss 净化）-->
+          <div v-html="sanitizeRichTextHtml(text)"></div>
         </template>
       </template>
     </BasicTable>
@@ -41,6 +41,7 @@
   import { columns, searchFormSchema, superQuerySchema } from './XgsPositions.data';
   import { list, deleteOne, batchDelete, getImportUrl, getExportUrl } from './XgsPositions.api';
   import { downloadFile } from '/src/utils/common/renderUtils';
+  import { sanitizeRichTextHtml } from '/@/utils/security/sanitizeRichTextHtml';
   import { useUserStore } from '/src/store/modules/user';
   import { defHttp } from '@/utils/http/axios';
   import {saveOrUpdate} from "@/views/xgsIntroduce/XgsIntroduce.api";

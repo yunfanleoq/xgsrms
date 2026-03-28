@@ -385,7 +385,12 @@ public class SysUserController {
      * @return
      */
     @RequestMapping(value = "/checkOnlyUser", method = RequestMethod.GET)
-    public Result<Boolean> checkOnlyUser(SysUser sysUser) {
+    public Result<Boolean> checkOnlyUser(SysUser sysUser, HttpServletRequest request) {
+        String clientIp = IpUtils.getIpAddr(request);
+        if (!CheckOnlyUserIpLimit.allow(clientIp)) {
+            log.warn("-------- IP地址:{}, checkOnlyUser 请求过于频繁", clientIp);
+            return Result.error("请求过于频繁，请稍后再试");
+        }
         Result<Boolean> result = new Result<>();
         //如果此参数为false则程序发生异常
         result.setResult(true);
@@ -1219,8 +1224,7 @@ public class SysUserController {
         Map<String,String> map = new HashMap(5);
         map.put("smscode",smscode);
         if(null == user){
-            //前端根据文字做判断用户是否存在判断，不能修改
-            result.setMessage("用户信息不存在");
+            result.setMessage("验证失败");
             result.setSuccess(false);
             return result;
         }
