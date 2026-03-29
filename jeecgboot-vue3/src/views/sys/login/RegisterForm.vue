@@ -2,6 +2,35 @@
   <template v-if="getShow">
     <LoginFormTitle class="enter-x" />
     <Form class="p-4 enter-x" :model="formData" :rules="getFormRules" ref="formRef">
+      <!-- 图形验证码：checkOnlyUser 须带 captcha/checkKey，防止匿名枚举用户名/手机号 -->
+      <ARow class="enter-x">
+        <ACol :span="12">
+          <FormItem name="inputCode" class="enter-x">
+            <Input
+              size="large"
+              v-model:value="formData.inputCode"
+              :placeholder="t('sys.login.inputCodePlaceholder')"
+              class="fix-auto-fill"
+            />
+          </FormItem>
+        </ACol>
+        <ACol :span="8">
+          <FormItem :style="{ 'text-align': 'right', 'margin-left': '20px' }" class="enter-x">
+            <img
+              v-if="randCodeData.requestCodeSuccess"
+              style="margin-top: 2px; max-width: initial; cursor: pointer"
+              :src="randCodeData.randCodeImage"
+              @click="handleChangeCheckCode"
+            />
+            <img
+              v-else
+              style="margin-top: 2px; max-width: initial; cursor: pointer"
+              src="../../../assets/images/checkcode.png"
+              @click="handleChangeCheckCode"
+            />
+          </FormItem>
+        </ACol>
+      </ARow>
       <FormItem name="account" class="enter-x">
         <Input class="fix-auto-fill" size="large" v-model:value="formData.account" :placeholder="t('sys.login.userName')" />
       </FormItem>
@@ -41,16 +70,18 @@
   </template>
 </template>
 <script lang="ts" setup>
-  import { reactive, ref, unref, computed, toRaw } from 'vue';
+  import { reactive, ref, unref, computed, toRaw, onMounted } from 'vue';
   import LoginFormTitle from './LoginFormTitle.vue';
-  import { Form, Input, Button, Checkbox } from 'ant-design-vue';
+  import { Form, Input, Button, Checkbox, Row, Col } from 'ant-design-vue';
   import { StrengthMeter } from '/@/components/StrengthMeter';
   import { CountdownInput } from '/@/components/CountDown';
   import { useI18n } from '/@/hooks/web/useI18n';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { useLoginState, useFormRules, useFormValid, LoginStateEnum, SmsEnum } from './useLogin';
-  import { register, getCaptcha } from '/@/api/sys/user';
+  import { register, getCaptcha, getCodeInfo } from '/@/api/sys/user';
   const FormItem = Form.Item;
+  const ARow = Row;
+  const ACol = Col;
   const InputPassword = Input.Password;
   const { t } = useI18n();
   const { handleBackLogin, getLoginState } = useLoginState();
@@ -58,6 +89,8 @@
   const formRef = ref();
   const loading = ref(false);
   const formData = reactive({
+    inputCode: '',
+    checkKey: null as number | null,
     account: '',
     password: '',
     confirmPassword: '',
@@ -65,7 +98,20 @@
     sms: '',
     policy: false,
   });
+  const randCodeData = reactive({
+    randCodeImage: '',
+    requestCodeSuccess: false,
+  });
   const { getFormRules } = useFormRules(formData);
+
+  function handleChangeCheckCode() {
+    formData.inputCode = '';
+    formData.checkKey = new Date().getTime();
+    getCodeInfo(formData.checkKey).then((res) => {
+      randCodeData.randCodeImage = res;
+      randCodeData.requestCodeSuccess = true;
+    });
+  }
   const { validForm } = useFormValid(formRef);
   const getShow = computed(() => unref(getLoginState) === LoginStateEnum.REGISTER);
   /**
@@ -111,4 +157,8 @@
   function sendCodeApi() {
     return getCaptcha({ mobile: formData.mobile, smsmode: SmsEnum.REGISTER });
   }
+
+  onMounted(() => {
+    handleChangeCheckCode();
+  });
 </script>

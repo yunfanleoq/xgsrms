@@ -55,8 +55,8 @@ export function useFormRules(formData?: Recordable) {
   const getSmsFormRule = computed(() => createRule(t('sys.login.smsPlaceholder')));
   const getMobileFormRule = computed(() => createRule(t('sys.login.mobilePlaceholder')));
 
-  const getRegisterAccountRule = computed(() => createRegisterAccountRule('account'));
-  const getRegisterMobileRule = computed(() => createRegisterAccountRule('mobile'));
+  const getRegisterAccountRule = computed(() => createRegisterAccountRule('account', formData));
+  const getRegisterMobileRule = computed(() => createRegisterAccountRule('mobile', formData));
 
   const validatePolicy = async (_: RuleObject, value: boolean) => {
     return !value ? Promise.reject(t('sys.login.policyPlaceholder')) : Promise.resolve();
@@ -91,6 +91,7 @@ export function useFormRules(formData?: Recordable) {
       // register form rules
       case LoginStateEnum.REGISTER:
         return {
+          inputCode: createRule(t('sys.login.inputCodePlaceholder')),
           account: registerAccountRule,
           password: passwordFormRule,
           mobile: registerMobileRule,
@@ -131,39 +132,51 @@ function createRule(message: string) {
     },
   ];
 }
-function createRegisterAccountRule(type) {
+function createRegisterAccountRule(type, formData?: Recordable) {
   return [
     {
-      validator: type == 'account' ? checkUsername : checkPhone,
+      validator: (_rule, value) => (type === 'account' ? checkUsername(value, formData) : checkPhone(value, formData)),
       trigger: 'change',
     },
   ];
 }
 
-function checkUsername(rule, value, callback) {
+function checkUsername(value: string, formData?: Recordable) {
   const { t } = useI18n();
   if (!value) {
     return Promise.reject(t('sys.login.accountPlaceholder'));
-  } else {
-    return new Promise((resolve, reject) => {
-      checkOnlyUser({ username: value }).then((res) => {
-        res.success ? resolve() : reject('用户名已存在!');
-      });
-    });
   }
+  if (!formData?.inputCode || formData?.checkKey == null || formData?.checkKey === '') {
+    return Promise.reject('请先输入图形验证码');
+  }
+  return new Promise((resolve, reject) => {
+    checkOnlyUser({
+      username: value,
+      captcha: formData!.inputCode,
+      checkKey: formData!.checkKey,
+    }).then((res) => {
+      res.success ? resolve() : reject('用户名已存在!');
+    });
+  });
 }
-async function checkPhone(rule, value, callback) {
+async function checkPhone(value: string, formData?: Recordable) {
   const { t } = useI18n();
   var reg = /^1[3456789]\d{9}$/;
   if (!reg.test(value)) {
     return Promise.reject(new Error('请输入正确手机号'));
-  } else {
-    return new Promise((resolve, reject) => {
-      checkOnlyUser({ phone: value }).then((res) => {
-        res.success ? resolve() : reject('手机号已存在!');
-      });
-    });
   }
+  if (!formData?.inputCode || formData?.checkKey == null || formData?.checkKey === '') {
+    return Promise.reject('请先输入图形验证码');
+  }
+  return new Promise((resolve, reject) => {
+    checkOnlyUser({
+      phone: value,
+      captcha: formData!.inputCode,
+      checkKey: formData!.checkKey,
+    }).then((res) => {
+      res.success ? resolve() : reject('手机号已存在!');
+    });
+  });
 }
 
 //update-begin---author:wangshuai ---date:20220629  for：[issues/I5BG1I]vue3不支持auth2登录------------

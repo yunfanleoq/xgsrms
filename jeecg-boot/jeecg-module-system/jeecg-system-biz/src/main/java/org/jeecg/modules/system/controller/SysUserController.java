@@ -385,11 +385,17 @@ public class SysUserController {
      * @return
      */
     @RequestMapping(value = "/checkOnlyUser", method = RequestMethod.GET)
-    public Result<Boolean> checkOnlyUser(SysUser sysUser, HttpServletRequest request) {
+    public Result<Boolean> checkOnlyUser(SysUser sysUser, HttpServletRequest request,
+            @RequestParam(value = "captcha", required = false) String captcha,
+            @RequestParam(value = "checkKey", required = false) String checkKey) {
         String clientIp = IpUtils.getIpAddr(request);
         if (!CheckOnlyUserIpLimit.allow(clientIp)) {
             log.warn("-------- IP地址:{}, checkOnlyUser 请求过于频繁", clientIp);
             return Result.error("请求过于频繁，请稍后再试");
+        }
+        // 必须先通过图形验证码再查库，防止匿名枚举用户名/手机号
+        if (!validateCheckOnlyUserCaptcha(captcha, checkKey)) {
+            return Result.error("图形验证码错误或已过期，请刷新后重试");
         }
         Result<Boolean> result = new Result<>();
         //如果此参数为false则程序发生异常
@@ -411,6 +417,20 @@ public class SysUserController {
         }
         result.setSuccess(true);
         return result;
+    }
+
+    /**
+     * 与登录页 /sys/randomImage/{key} 存证方式一致，校验通过后才允许 checkOnlyUser 查库。
+     */
+    private boolean validateCheckOnlyUserCaptcha(String captcha, String checkKey) {
+        if (oConvertUtils.isEmpty(captcha) || oConvertUtils.isEmpty(checkKey)) {
+            return false;
+        }
+        String lowerCaseCaptcha = captcha.toLowerCase();
+        String keyPrefix = Md5Util.md5Encode(checkKey + jeecgBaseConfig.getSignatureSecret(), "utf-8");
+        String realKey = keyPrefix + lowerCaseCaptcha;
+        Object checkCode = redisUtil.get(realKey);
+        return checkCode != null && checkCode.toString().equals(lowerCaseCaptcha);
     }
 
     /**
