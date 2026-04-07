@@ -12,32 +12,31 @@
   </a-spin>
 </template>
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import IndexChart from './homePage/IndexChart.vue';
   import IndexBdc from './homePage/IndexBdc.vue';
-  import { defHttp } from '/@/utils/http/axios';
+  import { useUserStore } from '/@/store/modules/user';
 
   const indexStyle = ref(1);
   const loading = ref(true);
   const showIndexStyle = ref(false);
-  defHttp
-    .get({ url: '/sys/api/queryLoginUserRoles' }, { errorMessageMode: 'none' })
-    .then((res) => {
-      // 接口经 transform 后返回 result（角色编码数组），不是 axios 的 res.data
-      const roles = Array.isArray(res) ? res : res && typeof res === 'object' && Array.isArray((res as any).data) ? (res as any).data : [];
-      if (roles.includes('admin')) {
-        indexStyle.value = 0;
-        showIndexStyle.value = true;
-      } else {
-        indexStyle.value = 1;
-      }
-    })
-    .catch(() => {
+  const userStore = useUserStore();
+
+  /** 登录后角色已在 getUserInfoAction 中写入 Pinia，勿请求不存在的 /sys/api/queryLoginUserRoles（否则会 404 静态资源） */
+  function applyHomeStyleByRole() {
+    const roles = (userStore.getRoleList || []) as unknown as string[];
+    if (roles.includes('admin')) {
+      indexStyle.value = 0;
+      showIndexStyle.value = true;
+    } else {
       indexStyle.value = 1;
-    })
-    .finally(() => {
-      loading.value = false;
-    });
+    }
+  }
+
+  onMounted(() => {
+    applyHomeStyleByRole();
+    loading.value = false;
+  });
 
   const formData = ref({
     gwsl: 5,

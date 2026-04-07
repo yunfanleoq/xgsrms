@@ -181,8 +181,8 @@
   }
 
   function loadMyInterViewData() {
-    // let MyresumeUrl = '/xgsMyresume/xgsMyresume/list'
-    let MyresumeUrl = '/xgsInviteToInterview/xgsInviteToInterview/list';
+    // 候选人「我的面试」必须用 myInterviewList（按当前登录人过滤）；/list 为管理端全量列表且需 xgs_invite_to_interview:list 权限
+    let MyresumeUrl = '/xgsInviteToInterview/xgsInviteToInterview/myInterviewList';
     let params = {
       pageNo: 1,
       pageSize: 10,
