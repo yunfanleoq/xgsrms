@@ -15,6 +15,9 @@ public class SysLoginModel {
     private String username;
 	@Schema(description = "密码")
     private String password;
+	/** 与 password 同时为 RSA 密文时使用：{@linkplain org.jeecg.modules.system.controller.LoginController#getLoginRsaPublicKey()} 下发的临时标识 */
+	@Schema(description = "RSA 密钥 id（前端加密密码时必填）")
+    private String rsaKeyId;
 	@Schema(description = "登录部门")
     private String loginOrgCode;
 	@Schema(description = "验证码")
@@ -60,5 +63,13 @@ public class SysLoginModel {
 
     public void setLoginOrgCode(String loginOrgCode) {
         this.loginOrgCode = loginOrgCode;
+    }
+
+    public String getRsaKeyId() {
+        return rsaKeyId;
+    }
+
+    public void setRsaKeyId(String rsaKeyId) {
+        this.rsaKeyId = rsaKeyId;
     }
 }

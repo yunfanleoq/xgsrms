@@ -4,6 +4,11 @@
 export interface LoginParams {
   username: string;
   password: string;
+  /** 与 password 同时为 RSA 密文时必填，来自 /sys/loginRsaPublicKey */
+  rsaKeyId?: string;
+  captcha?: string;
+  checkKey?: string | number | null;
+  loginOrgCode?: string;
 }
 
 export interface ThirdLoginParams {

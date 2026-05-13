@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.constant.CommonConstant;
 import org.jeecg.common.constant.SymbolConstant;
@@ -65,6 +64,7 @@ public class QuartzJobController {
 	 * @return
 	 */
 	@RequestMapping(value = "/list", method = RequestMethod.GET)
+	@RequiresPermissions("system:quartzJob:list")
 	public Result<?> queryPageList(QuartzJob quartzJob, @RequestParam(name = "pageNo", defaultValue = "1") Integer pageNo,
 			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize, HttpServletRequest req) {
 		QueryWrapper<QuartzJob> queryWrapper = QueryGenerator.initQueryWrapper(quartzJob, req.getParameterMap());
@@ -192,6 +192,7 @@ public class QuartzJobController {
 	 * @return
 	 */
 	@RequestMapping(value = "/queryById", method = RequestMethod.GET)
+	@RequiresPermissions("system:quartzJob:queryById")
 	public Result<?> queryById(@RequestParam(name = "id", required = true) String id) {
 		QuartzJob quartzJob = quartzJobService.getById(id);
         return Result.ok(quartzJob);
@@ -204,6 +205,7 @@ public class QuartzJobController {
 	 * @param quartzJob
 	 */
 	@RequestMapping(value = "/exportXls")
+	@RequiresPermissions("system:quartzJob:exportXls")
 	public ModelAndView exportXls(HttpServletRequest request, QuartzJob quartzJob) {
 		// Step.1 组装查询条件
 		QueryWrapper<QuartzJob> queryWrapper = QueryGenerator.initQueryWrapper(quartzJob, request.getParameterMap());
@@ -234,6 +236,7 @@ public class QuartzJobController {
 	 * @return
 	 */
 	@RequestMapping(value = "/importExcel", method = RequestMethod.POST)
+	@RequiresPermissions("system:quartzJob:importExcel")
 	public Result<?> importExcel(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
 		Map<String, MultipartFile> fileMap = multipartRequest.getFileMap();

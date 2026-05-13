@@ -4,5 +4,8 @@
     "postcss-scss": "^4.0.9",
     "postcss-styl": "^0.12.3",
     "sugarss": "^5.0.0"
+  },
+  "dependencies": {
+    "jsencrypt": "^3.5.4"
   }
 }

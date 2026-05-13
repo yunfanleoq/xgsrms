@@ -33,7 +33,6 @@ public class SsrfFileTypeFilter {
         FILE_TYPE_WHITE_LIST.add("png");
         FILE_TYPE_WHITE_LIST.add("gif");
         FILE_TYPE_WHITE_LIST.add("bmp");
-        FILE_TYPE_WHITE_LIST.add("svg");
         FILE_TYPE_WHITE_LIST.add("ico");
         FILE_TYPE_WHITE_LIST.add("heic");
 

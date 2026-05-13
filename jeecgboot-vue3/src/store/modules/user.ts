@@ -20,6 +20,7 @@ import { JDragConfigEnum } from '/@/enums/jeecgEnum';
 import { useSso } from '/@/hooks/web/useSso';
 import { isOAuth2AppEnv } from '/@/views/sys/login/useLogin';
 import { getUrlParam } from '@/utils';
+import { encryptPasswordWithLoginRsa } from '/@/utils/encryption/loginRsa';
 interface dictType {
   [key: string]: any;
 }
@@ -167,7 +168,11 @@ export const useUserStore = defineStore({
     ): Promise<GetUserInfoModel | null> {
       try {
         const { goHome = true, mode, ...loginParams } = params;
-        const data = await loginApi(loginParams, mode);
+        const rsa = await encryptPasswordWithLoginRsa(loginParams.password);
+        const data = await loginApi(
+          { ...loginParams, password: rsa.password, rsaKeyId: rsa.rsaKeyId },
+          mode,
+        );
         const { token, userInfo } = data;
         // save token
         this.setToken(token);

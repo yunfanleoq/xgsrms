@@ -117,6 +117,9 @@ public interface CommonConstant {
     /** 登录二维码token */
     String  LOGIN_QRCODE_TOKEN  = "LQT:";
 
+    /** 登录前 RSA：Redis 中临时私钥（PKCS#8 Base64），后缀为 rsaKeyId */
+    String LOGIN_RSA_PRIVATE_CACHE = "LOGIN_RSA:PRIV:";
+
 
     /**
      *  0：一级菜单

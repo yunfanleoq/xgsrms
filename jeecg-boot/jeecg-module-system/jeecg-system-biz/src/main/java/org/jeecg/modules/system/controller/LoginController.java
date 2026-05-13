@@ -32,6 +32,7 @@ import org.jeecg.modules.system.entity.SysUser;
 import org.jeecg.modules.system.model.SysLoginModel;
 import org.jeecg.modules.system.service.*;
 import org.jeecg.modules.system.service.impl.SysBaseApiImpl;
+import org.jeecg.modules.system.util.LoginRsaCryptoUtil;
 import org.jeecg.modules.system.util.RandImageUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,8 +85,7 @@ public class LoginController {
 	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel, HttpServletRequest request){
 		Result<JSONObject> result = new Result<>();
 		String username = sysLoginModel.getUsername();
-		// 密码加密传输(尝试 AES解密，失败视为明文)
-		String password  = AesEncryptUtil.resolvePassword(sysLoginModel.getPassword());
+		String password = resolveLoginPassword(sysLoginModel);
 		log.debug("登录密码，原始密码:{}，解密密码:{}" , sysLoginModel.getPassword(), password);
 
 		//step.1 登录失败超出次数5次锁定用户10分钟
@@ -594,9 +594,37 @@ public class LoginController {
 	}
 
 	/**
-	 * 获取加密字符串
-	 * @return
+	 * 解析登录密码：优先 RSA（携带 rsaKeyId）；否则沿用 AES（历史）或明文。
 	 */
+	private String resolveLoginPassword(SysLoginModel sysLoginModel) {
+		if (oConvertUtils.isNotEmpty(sysLoginModel.getRsaKeyId())) {
+			String plain = LoginRsaCryptoUtil.decryptPassword(sysLoginModel.getPassword(), sysLoginModel.getRsaKeyId(), redisUtil);
+			if (plain != null) {
+				return plain;
+			}
+			return "\u0000__LOGIN_RSA_FAILED__\u0000";
+		}
+		return AesEncryptUtil.resolvePassword(sysLoginModel.getPassword());
+	}
+
+	/**
+	 * 下发一次性 RSA 公钥（前端用其加密密码，私钥仅存 Redis、解密后即删）。
+	 */
+	@Operation(summary = "获取登录RSA公钥")
+	@GetMapping(value = "/loginRsaPublicKey")
+	public Result<Map<String, String>> getLoginRsaPublicKey() {
+		Result<Map<String, String>> result = Result.ok();
+		result.setResult(LoginRsaCryptoUtil.issuePublicKeyBundle(redisUtil));
+		return result;
+	}
+
+	/**
+	 * 获取加密字符串（历史 AES：登录密码传输；建议改用 {@link #getLoginRsaPublicKey}）
+	 *
+	 * @return key/iv（框架默认值，匿名可读取；新前端不应依赖）
+	 * @deprecated 使用 RSA 一次性公钥链路
+	 */
+	@Deprecated
 	@GetMapping(value = "/getEncryptedString")
 	public Result<Map<String,String>> getEncryptedString(){
 		Result<Map<String,String>> result = new Result<Map<String,String>>();
@@ -657,8 +685,7 @@ public class LoginController {
 	public Result<JSONObject> mLogin(@RequestBody SysLoginModel sysLoginModel, HttpServletRequest request) throws Exception {
 		Result<JSONObject> result = new Result<JSONObject>();
 		String username = sysLoginModel.getUsername();
-		// 密码加密传输(尝试 AES解密，失败视为明文)
-		String password  = AesEncryptUtil.resolvePassword(sysLoginModel.getPassword());
+		String password = resolveLoginPassword(sysLoginModel);
 		log.debug("登录密码，原始密码:{}，解密密码:{}" , sysLoginModel.getPassword(), password);
 
 		JSONObject obj = new JSONObject();
