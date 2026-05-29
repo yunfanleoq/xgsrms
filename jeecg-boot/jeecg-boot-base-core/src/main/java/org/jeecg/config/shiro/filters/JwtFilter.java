@@ -18,6 +18,11 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * @Description: 鉴权登录拦截器
  * @Author: Scott
@@ -31,6 +36,21 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      * 微服务情况下，此属性设置为false
      */
     private boolean allowOrigin = true;
+
+    private static volatile boolean allowTokenInQuery = true;
+    private static volatile List<String> corsAllowedOrigins = Collections.emptyList();
+
+    public static void configure(boolean allowTokenInQueryParam, String corsAllowedOriginsCsv) {
+        allowTokenInQuery = allowTokenInQueryParam;
+        if (oConvertUtils.isEmpty(corsAllowedOriginsCsv)) {
+            corsAllowedOrigins = Collections.emptyList();
+        } else {
+            corsAllowedOrigins = Arrays.stream(corsAllowedOriginsCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+        }
+    }
 
     public JwtFilter(){}
     public JwtFilter(boolean allowOrigin){
@@ -73,8 +93,8 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     protected boolean executeLogin(ServletRequest request, ServletResponse response) throws Exception {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         String token = httpServletRequest.getHeader(CommonConstant.X_ACCESS_TOKEN);
-        // 代码逻辑说明: JT-355 OA聊天添加token验证，获取token参数
-        if (oConvertUtils.isEmpty(token)) {
+        // 代码逻辑说明: JT-355 OA聊天添加 token 参数；生产建议 jeecg.security.allow-token-in-query=false
+        if (oConvertUtils.isEmpty(token) && allowTokenInQuery) {
             token = httpServletRequest.getParameter("token");
         }
 
@@ -93,7 +113,14 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
         if(allowOrigin){
-            httpServletResponse.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, httpServletRequest.getHeader(HttpHeaders.ORIGIN));
+            String requestOrigin = httpServletRequest.getHeader(HttpHeaders.ORIGIN);
+            if (!corsAllowedOrigins.isEmpty()) {
+                if (requestOrigin != null && corsAllowedOrigins.contains(requestOrigin)) {
+                    httpServletResponse.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, requestOrigin);
+                }
+            } else if (requestOrigin != null) {
+                httpServletResponse.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, requestOrigin);
+            }
             // 允许客户端请求方法
             httpServletResponse.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,POST,OPTIONS,PUT,DELETE");
             // 允许客户端提交的Header

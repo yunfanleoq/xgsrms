@@ -653,7 +653,7 @@
         <profile>
             <id>dev</id>
             <activation>
-                <!--默认激活配置-->
+                <!-- C-001：本地默认 dev；生产打包须显式 -Pprod，勿依赖 activeByDefault -->
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>

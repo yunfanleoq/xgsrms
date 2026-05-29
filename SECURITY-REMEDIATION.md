@@ -41,6 +41,12 @@ jeecg:
 powershell -ExecutionPolicy Bypass -File .\scripts\security-remediation-verify.ps1
 ```
 
+开发环境可使用仓库根目录的 `local-dev.env`（已加入 `.gitignore`，不要提交真实密钥）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\security-remediation-verify.ps1 -EnvFile .\local-dev.env
+```
+
 严格模式（未设置或长度过短即失败）：
 
 ```powershell
@@ -49,11 +55,15 @@ powershell -ExecutionPolicy Bypass -File .\scripts\security-remediation-verify.p
 
 脚本仅检查本机/进程可见的环境变量，**不**替代渗透测试与 WAF/网关策略。
 
-## 4. 仍需规划但未在本分支自动修复的项
+## 4. 本分支已补充的项（2025-05 续）
 
-- **富文本与 `v-html`**：对后台录入内容做统一消毒（如 Jsoup Whitelist），并考虑 CSP。
-- **用户枚举**：`checkOnlyUser`、`phoneVerification` 等接口可统一文案、加图形验证码与限流。
-- **SSRF**：对“根据 URL 拉取图片”类功能做白名单或禁止访问内网段（如 `ImageDownloadUtil` 的调用链审计）。
+- **富文本**：`XgsPositionInputSanitizer`（Jsoup relaxed）在岗位 `save/update` 入库前执行；前端列表仍用 `sanitizeRichTextHtml`。
+- **用户枚举**：`checkOnlyUser` 统一返回「校验完成」+ 布尔 `result`；`phoneVerification` 统一「验证失败」文案并加 IP 限流。
+- **SSRF**：`SsrfUrlGuard` 用于 `ImageDownloadUtil`、`JsoupHtmlContent` 出站 URL。
+- **JWT / 安全开关**：`JeecgSecurityProperties` 绑定 `jeecg.security.*`（token 过期、allow-token-in-query、passwordChange GET、CORS 白名单）。
+- **Actuator**：`CustomHttpTraceEndpoint` 仅当 `jeecg.actuator.jeecg-http-trace-enabled=true` 时注册（生产默认 false）。
+
+仍建议黑盒验证：CSP、JimuReport `testConnection`、生产 `CORS_ALLOWED_ORIGINS` 环境变量是否已配置。
 
 ## 5. 升级与回滚注意
 

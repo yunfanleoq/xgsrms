@@ -28,6 +28,7 @@ import org.jeecg.common.system.util.JwtUtil;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.*;
 import org.jeecg.config.JeecgBaseConfig;
+import org.jeecg.config.JeecgSecurityProperties;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.system.entity.*;
@@ -109,6 +110,9 @@ public class SysUserController {
     private JeecgRedisClient jeecgRedisClient;
     @Autowired
     private JeecgBaseConfig jeecgBaseConfig;
+
+    @Autowired
+    private JeecgSecurityProperties jeecgSecurityProperties;
     
     /**
      * 获取租户下用户数据（支持租户隔离）
@@ -398,24 +402,17 @@ public class SysUserController {
             return Result.error("图形验证码错误或已过期，请刷新后重试");
         }
         Result<Boolean> result = new Result<>();
-        //如果此参数为false则程序发生异常
-        result.setResult(true);
+        result.setSuccess(true);
+        result.setMessage("校验完成");
         try {
-            //通过传入信息查询新的用户信息
             sysUser.setPassword(null);
             SysUser user = sysUserService.getOne(new QueryWrapper<SysUser>(sysUser));
-            if (user != null) {
-                result.setSuccess(false);
-                result.setMessage("用户账号已存在");
-                return result;
-            }
-
+            // 补充-03/04：统一文案，仅用 result 布尔值区分是否占用，避免枚举用户名/手机号
+            result.setResult(user == null);
         } catch (Exception e) {
-            result.setSuccess(false);
-            result.setMessage(e.getMessage());
-            return result;
+            log.warn("checkOnlyUser 异常", e);
+            result.setResult(false);
         }
-        result.setSuccess(true);
         return result;
     }
 
@@ -1210,16 +1207,19 @@ public class SysUserController {
 	 * 用户手机号验证
 	 */
 	@PostMapping("/phoneVerification")
-	public Result<Map<String,String>> phoneVerification(@RequestBody JSONObject jsonObject) {
+	public Result<Map<String,String>> phoneVerification(@RequestBody JSONObject jsonObject, HttpServletRequest request) {
 		Result<Map<String,String>> result = new Result<Map<String,String>>();
+		String clientIp = IpUtils.getIpAddr(request);
+		if (!PhoneVerificationIpLimit.allow(clientIp)) {
+			log.warn("-------- IP地址:{}, phoneVerification 请求过于频繁", clientIp);
+			return Result.error("请求过于频繁，请稍后再试");
+		}
 		String phone = jsonObject.getString("phone");
 		String smscode = jsonObject.getString("smscode");
-        // 代码逻辑说明: VUEN-2245 【漏洞】发现新漏洞待处理20220906
         String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE+phone;
 		Object code = redisUtil.get(redisKey);
-        // 代码逻辑说明: 【issues/8567】严重：修改密码存在水平越权问题。---
         if (null == code) {
-            result.setMessage("短信验证码失效！");
+            result.setMessage("验证失败");
             result.setSuccess(false);
             return result;
         }
@@ -1230,14 +1230,12 @@ public class SysUserController {
             smsCode = code.toString();
         }
 		if (!smscode.equals(smsCode)) {
-			result.setMessage("手机验证码错误");
+			result.setMessage("验证失败");
 			result.setSuccess(false);
 			return result;
 		}
-		//设置有效时间
 		redisUtil.set(redisKey, code,600);
 
-		//新增查询用户名
 		LambdaQueryWrapper<SysUser> query = new LambdaQueryWrapper<>();
         query.eq(SysUser::getPhone,phone);
         SysUser user = sysUserService.getOne(query);
@@ -1262,6 +1260,9 @@ public class SysUserController {
 										  @RequestParam(name="password")String password,
 			                              @RequestParam(name="smscode")String smscode,
 			                              @RequestParam(name="phone") String phone) {
+        if (!jeecgSecurityProperties.isAllowPasswordChangeGet()) {
+            return Result.error("请使用 POST /sys/user/passwordChange 重置密码");
+        }
         Result<SysUser> result = new Result<SysUser>();
         if(oConvertUtils.isEmpty(username) || oConvertUtils.isEmpty(password) || oConvertUtils.isEmpty(smscode)  || oConvertUtils.isEmpty(phone) ) {
             result.setMessage("重置密码失败！");

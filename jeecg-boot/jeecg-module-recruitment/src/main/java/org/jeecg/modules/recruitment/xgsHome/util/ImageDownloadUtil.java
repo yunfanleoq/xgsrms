@@ -1,7 +1,9 @@
 package org.jeecg.modules.recruitment.xgsHome.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.util.filter.SsrfFileTypeFilter;
+import org.jeecg.common.util.filter.SsrfUrlGuard;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -46,6 +48,8 @@ public class ImageDownloadUtil {
         FileOutputStream outputStream = null;
 
         try {
+            SsrfUrlGuard.validateHttpUrl(imageUrl);
+
             Path carouselDir = carouselDir();
             Files.createDirectories(carouselDir);
 
@@ -80,6 +84,9 @@ public class ImageDownloadUtil {
                 return null;
             }
 
+        } catch (JeecgBootException e) {
+            log.warn("图片 URL 被拒绝: {} — {}", imageUrl, e.getMessage());
+            return null;
         } catch (Exception e) {
             log.error("下载图片时发生异常: {}", imageUrl, e);
             return null;

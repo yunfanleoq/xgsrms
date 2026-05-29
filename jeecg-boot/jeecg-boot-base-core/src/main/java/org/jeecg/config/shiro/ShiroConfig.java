@@ -116,7 +116,13 @@ public class ShiroConfig {
 
         // 代码逻辑说明: 排除静态资源后缀
         filterChainDefinitionMap.put("/", "anon");
-        filterChainDefinitionMap.put("/doc.html", "anon");
+        // C-003：管理端点须在 /**/*.html 等静态 anon 之前注册，避免被通配覆盖
+        filterChainDefinitionMap.put("/druid/**", "roles[admin]");
+        filterChainDefinitionMap.put("/doc.html", "roles[admin]");
+        filterChainDefinitionMap.put("/swagger-ui.html", "roles[admin]");
+        filterChainDefinitionMap.put("/swagger**/**", "roles[admin]");
+        filterChainDefinitionMap.put("/v3/**", "roles[admin]");
+        filterChainDefinitionMap.put("/actuator/**", "roles[admin]");
         filterChainDefinitionMap.put("/**/*.js", "anon");
         filterChainDefinitionMap.put("/**/*.css", "anon");
         filterChainDefinitionMap.put("/**/*.html", "anon");
@@ -133,16 +139,13 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/**/*.glb", "anon");
         filterChainDefinitionMap.put("/**/*.wasm", "anon");
 
-        filterChainDefinitionMap.put("/druid/**", "anon");
-        filterChainDefinitionMap.put("/swagger-ui.html", "anon");
-        filterChainDefinitionMap.put("/swagger**/**", "anon");
         filterChainDefinitionMap.put("/webjars/**", "anon");
-        filterChainDefinitionMap.put("/v3/**", "anon");
 
         filterChainDefinitionMap.put("/sys/annountCement/show/**", "anon");
 
-        //积木报表排除
-        filterChainDefinitionMap.put("/jmreport/**", "anon");
+        // C-003：积木报表 — 公开分享链保留 anon，其余需 JWT + admin（须在 /** 之前、且 share 规则优先于 /jmreport/**）
+        filterChainDefinitionMap.put("/jmreport/share/view/**", "anon");
+        filterChainDefinitionMap.put("/jmreport/**", "jwt,roles[admin]");
         filterChainDefinitionMap.put("/**/*.js.map", "anon");
         filterChainDefinitionMap.put("/**/*.css.map", "anon");
         
@@ -159,6 +162,8 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/drag/mock/json/**", "anon");
         filterChainDefinitionMap.put("/drag/onlDragDatasetHead/getDictByCodes", "anon");
         filterChainDefinitionMap.put("/drag/onlDragDatasetHead/queryAllById", "anon");
+        // C-003：drag 其余路径需 JWT + admin（公开 view/share 已在上方单独 anon）
+        filterChainDefinitionMap.put("/drag/**", "jwt,roles[admin]");
         filterChainDefinitionMap.put("/jimubi/view", "anon");
         filterChainDefinitionMap.put("/jimubi/share/view/**", "anon");
 
@@ -181,8 +186,7 @@ public class ShiroConfig {
         //App vue3版本查询版本接口
         filterChainDefinitionMap.put("/sys/version/app3version", "anon");
 
-        //性能监控——安全隐患泄露TOEKN（durid连接池也有）
-        //filterChainDefinitionMap.put("/actuator/**", "anon");
+        // 性能监控见上方 /actuator/** → roles[admin]
         //测试模块排除
         filterChainDefinitionMap.put("/test/seata/**", "anon");
 

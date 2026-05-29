@@ -22,6 +22,7 @@ import org.jeecg.modules.recruitment.xgsResume.vo.XgsResumeBasePage;
 import org.jeecg.modules.recruitment.position.entity.XgsFlowOpinions;
 import org.jeecg.modules.recruitment.position.mapper.XgsFlowOpinionsMapper;
 import org.jeecg.modules.recruitment.position.service.IXgsFlowOpinionsService;
+import org.jeecg.modules.recruitment.security.XgsRecruitmentAuthUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -183,6 +184,11 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
             return null;
         }
         XgsPositionApply positionApply = getById(xgsPositionApply.getId());
+        if (positionApply == null) {
+            return null;
+        }
+        // PROJ-001：获取岗位申请详情须校验所有权或审核权限
+        XgsRecruitmentAuthUtil.assertCanReadApply(positionApply);
         String resumeId = positionApply.getResumeId();
         XgsResumeBase xgsResumeBase = xgsResumeBaseMapper.selectById(positionApply.getResumeId());
         List<XgsResumeWorks> xgsResumeWorksList = xgsResumeWorksMapper.selectByMainId(resumeId);

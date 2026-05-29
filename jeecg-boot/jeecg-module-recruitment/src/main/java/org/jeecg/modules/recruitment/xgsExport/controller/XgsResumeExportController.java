@@ -4,10 +4,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.modules.recruitment.xgsExport.service.IXgsResumeExportService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -45,6 +46,14 @@ public class XgsResumeExportController {
             HttpServletResponse response) {
         try {
             exportService.exportResumeToWord(applyId, response);
+        } catch (UnauthorizedException e) {
+            log.warn("导出Word文档无权限: applyId={}", applyId);
+            try {
+                response.reset();
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, e.getMessage());
+            } catch (Exception ex) {
+                log.error("写入403响应失败", ex);
+            }
         } catch (Exception e) {
             log.error("导出Word文档失败: applyId={}", applyId, e);
             try {
@@ -60,7 +69,8 @@ public class XgsResumeExportController {
     /**
      * 测试模板文件是否可用
      */
-    @ApiOperation(value = "测试Word模板文件", notes = "测试所有Word模板文件是否可用")
+    @ApiOperation(value = "测试Word模板文件", notes = "测试所有Word模板文件是否可用（仅 dev）")
+    @Profile("dev")
     @GetMapping("/testTemplates")
     public Result<?> testTemplates() {
         Map<String, Object> result = new HashMap<>();

@@ -5,6 +5,7 @@ import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.actuate.endpoint.annotation.ReadOperation;
 import org.springframework.boot.actuate.endpoint.annotation.Selector;
 import org.springframework.boot.actuate.web.exchanges.HttpExchange;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -18,6 +19,7 @@ import static org.springframework.boot.actuate.endpoint.annotation.Selector.Matc
  * @Date: 2024/5/13 17:02
  */
 @Component
+@ConditionalOnProperty(name = "jeecg.actuator.jeecg-http-trace-enabled", havingValue = "true")
 @Endpoint(id = "jeecghttptrace")
 public class CustomHttpTraceEndpoint{
     private final CustomInMemoryHttpTraceRepository repository;

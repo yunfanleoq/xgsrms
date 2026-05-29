@@ -964,10 +964,13 @@ public class LoginController {
      * 校验验证码工具方法，校验失败直接返回Result，校验通过返回realKey
      */
     private String validateCaptcha(SysLoginModel sysLoginModel, Result<JSONObject> result) {
-		// 判断是否启用登录验证码校验
+		// 判断是否启用登录验证码校验（生产须在 yml 中 enableLoginCaptcha: true）
 		if (jeecgBaseConfig.getFirewall() != null && Boolean.FALSE.equals(jeecgBaseConfig.getFirewall().getEnableLoginCaptcha())) {
 			log.warn("关闭了登录验证码校验，跳过验证码校验！");
 			return "LoginWithoutVerifyCode";
+		}
+		if (jeecgBaseConfig.getFirewall() == null) {
+			log.debug("未配置 jeecg.firewall，按默认启用登录验证码");
 		}
 		
         String captcha = sysLoginModel.getCaptcha();

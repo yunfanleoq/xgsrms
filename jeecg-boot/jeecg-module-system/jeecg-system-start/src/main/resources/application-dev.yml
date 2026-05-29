@@ -38,10 +38,10 @@ spring:
   mail:
     # 定时任务发送邮件（自备份 application-dev.yml 合并）
     timeJobSend: false
-    host: mail.cstnet.cn
-    port: 465
-    username: liuyanliang@iie.ac.cn
-    password: K9WW48aP!R69qBfj
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -117,7 +117,7 @@ spring:
       stat-view-servlet:
         enabled: true
         loginUsername: admin
-        loginPassword: 123456
+        loginPassword: ${DRUID_PASSWORD:}
         allow:
       web-stat-filter:
         enabled: true
@@ -152,9 +152,9 @@ spring:
           slow-sql-millis: 5000
       datasource:
         master:
-          url: jdbc:mysql://111.198.53.163:18333/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
-          username: xgsrms
-          password: xgsrms@zktw
+          url: ${DB_URL:jdbc:mysql://127.0.0.1:3306/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai}
+          username: ${DB_USERNAME:root}
+          password: ${DB_PASSWORD:}
           driver-class-name: com.mysql.cj.jdbc.Driver
 #        # shardingjdbc数据源
 #        sharding-db:
@@ -187,14 +187,16 @@ mybatis-plus:
 minidao:
   base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
 jeecg:
+  actuator:
+    jeecg-http-trace-enabled: true
   # 自定义资源请求前缀（js、css等解决nginx转发问题）
   custom-resource-prefix-path:
   # AI集成（智谱 GLM，自备份合并；与招聘简历解析等一致）
   ai-chat:
-    enabled: true
-    apiKey: "4798e1e67ba5db9cfaf2fc3b71d86a85.ZtdhfttbcTRLsPop"
-    apiHost: "https://open.bigmodel.cn/api/paas/v4/"
-    timeout: 60
+    enabled: ${AI_CHAT_ENABLED:false}
+    apiKey: ${AI_API_KEY:}
+    apiHost: ${AI_API_HOST:https://open.bigmodel.cn/api/paas/v4/}
+    timeout: ${AI_API_TIMEOUT:60}
   # AIRag向量库
   ai-rag:
     # AI流程敏感节点(stdio=命令行节点, sql=SQL节点)
@@ -217,8 +219,8 @@ jeecg:
     lowCodeMode: dev
     # 是否允许同一账号多地同时登录 （为 true 时允许一起登录, 为 false 时新登录挤掉旧登录）
     is-concurrent: true
-  # 签名密钥串(前后端要一致，正式发布请自行修改)
-  signatureSecret: dd05f1c54d63749eda95f9fa6d49v442a
+  # 开发签名密钥串（前后端一致）；生产必须使用 JEECG_SIGNATURE_SECRET 注入
+  signatureSecret: ${JEECG_SIGNATURE_SECRET:xgs-dev-signature-secret-change-me-2026}
   #签名拦截接口
   signUrls: /sys/dict/getDictItems/*,/sys/dict/loadDict/*,/sys/dict/loadDictOrderByValue/*,/sys/dict/loadDictItem/*,/sys/dict/loadTreeData,/sys/api/queryTableDictItemsByCode,/sys/api/queryFilterTableDictInfo,/sys/api/queryTableDictByKeys,/sys/api/translateDictFromTable,/sys/api/translateDictFromTableByKeys,/sys/sendChangePwdSms,/sys/user/sendChangePhoneSms,/sys/sms,/desform/api/sendVerifyCode
   # 本地：local、Minio：minio、阿里云：alioss
@@ -233,7 +235,8 @@ jeecg:
     #webapp文件路径
     webapp: D:/opt/webapp
   shiro:
-    excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/jmreport/bigscreen2/**
+    # C-003：不得将 /jmreport/** 子路径放入 excludeUrls（会优先 anon，绕过 ShiroConfig）
+    excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**
   # 短信发送方式 aliyun阿里云短信 tencent腾讯云短信
   smsSendType: aliyun
   #阿里云oss存储和大鱼短信秘钥配置
@@ -323,7 +326,8 @@ jeecg:
       max-fail-times: 5
       lock-duration: 300
     token:
-      expire-time: 604800000
+      # C-004：开发环境 JWT 8 小时（与生产默认一致，勿使用 7 天）
+      expire-time: 28800000
     session:
       timeout: 1800
     allow-password-change-get: false

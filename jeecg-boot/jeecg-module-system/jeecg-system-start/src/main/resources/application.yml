@@ -4,4 +4,5 @@ spring:
   config:
     import: optional:classpath:config/application-liteflow.yml
   profiles:
+    # C-001：Maven 打包生产环境请使用 -Pprod（jeecg-boot/pom.xml 默认 dev profile 仅用于本地）
     active: '@profile.name@'

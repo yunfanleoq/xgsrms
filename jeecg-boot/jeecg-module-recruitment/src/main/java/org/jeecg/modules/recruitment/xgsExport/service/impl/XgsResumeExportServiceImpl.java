@@ -5,6 +5,7 @@ import org.apache.poi.xwpf.usermodel.*;
 import org.openxmlformats.schemas.wordprocessingml.x2006.main.*;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
+import org.jeecg.modules.recruitment.security.XgsRecruitmentAuthUtil;
 import org.jeecg.modules.recruitment.xgsExport.service.IXgsResumeExportService;
 import org.jeecg.modules.recruitment.xgsExport.vo.XgsResumeExportVO;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
@@ -50,6 +51,8 @@ public class XgsResumeExportServiceImpl implements IXgsResumeExportService {
             if (positionApply == null) {
                 throw new RuntimeException("未找到对应的岗位申请记录");
             }
+            // B-003：仅本人或具备审核/导出权限者可导出
+            XgsRecruitmentAuthUtil.assertCanExportApply(positionApply);
 
             String resumeId = positionApply.getResumeId();
             String positionType = positionApply.getPositionType();

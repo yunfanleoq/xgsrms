@@ -41,10 +41,22 @@ import org.jeecg.common.util.oConvertUtils;
 @Slf4j
 public class JwtUtil {
 
-	/**PC端，Token有效期为7天（Token在reids中缓存时间为两倍）*/
-	public static final long EXPIRE_TIME = (7 * 12) * 60 * 60 * 1000L;
-	/**APP端，Token有效期为30天（Token在reids中缓存时间为两倍）*/
-	public static final long APP_EXPIRE_TIME = (30 * 12) * 60 * 60 * 1000L;
+	/** PC 端 JWT 有效期（毫秒），可由 jeecg.security.token.expire-time 覆盖 */
+	public static long EXPIRE_TIME = 8 * 60 * 60 * 1000L;
+	/** APP 端 JWT 有效期（毫秒），可由 jeecg.security.token.app-expire-time 覆盖 */
+	public static long APP_EXPIRE_TIME = 30L * 24 * 60 * 60 * 1000L;
+
+	/**
+	 * 由 {@link org.jeecg.config.JeecgSecurityConfiguration} 在启动时注入 yml 配置。
+	 */
+	public static void configureTokenExpire(long pcExpireMs, long appExpireMs) {
+		if (pcExpireMs > 0) {
+			EXPIRE_TIME = pcExpireMs;
+		}
+		if (appExpireMs > 0) {
+			APP_EXPIRE_TIME = appExpireMs;
+		}
+	}
 	static final String WELL_NUMBER = SymbolConstant.WELL_NUMBER + SymbolConstant.LEFT_CURLY_BRACKET;
 
     /**

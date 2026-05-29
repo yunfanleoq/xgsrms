@@ -53,7 +53,7 @@ spring:
     host: mail.cstnet.cn
     port: 465
     username: liuyanliang@iie.ac.cn
-    password: K9WW48aP!R69qBfj
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -128,7 +128,7 @@ spring:
       stat-view-servlet:
         enabled: true
         loginUsername: admin
-        loginPassword: 123456
+        loginPassword: ${DRUID_PASSWORD:}
         allow:
       web-stat-filter:
         enabled: true
@@ -168,12 +168,12 @@ spring:
           # password: 20030102
           url: jdbc:mysql://111.198.53.163:18333/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
           username: xgsrms
-          password: xgsrms@zktw
+          password: ${DB_PASSWORD:}
           driver-class-name: com.mysql.cj.jdbc.Driver
 #        master:
 #          url: jdbc:mysql://127.0.0.1:3307/xgsrms?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai
 #          username: xgsrms
-#          password: xgsrms@zktw
+#          password: ${DB_PASSWORD:}
 #          driver-class-name: com.mysql.cj.jdbc.Driver
           # 多数据源配置
           #multi-datasource1:
@@ -291,12 +291,12 @@ jeecg:
   # ai-chat
   ai-chat:
     # 是否开启；必须。
-    enabled: true
+    enabled: ${AI_CHAT_ENABLED:false}
     # openAi接口秘钥，填写自己的apiKey；必须。
-    apiKey: "4798e1e67ba5db9cfaf2fc3b71d86a85.ZtdhfttbcTRLsPop"
-    apiHost: "https://open.bigmodel.cn/api/paas/v4/"
+    apiKey: ${AI_API_KEY:}
+    apiHost: ${AI_API_HOST:https://open.bigmodel.cn/api/paas/v4/}
     # 超时时间单位:s。默认 60s
-    timeout: 60
+    timeout: ${AI_API_TIMEOUT:60}
     # 本地代理地址
 #    proxy:
 #      host: "http://127.0.0.1"
@@ -323,7 +323,7 @@ knife4j:
   basic:
     enable: false
     username: jeecg
-    password: jeecg1314
+    password: ${KNIFE4J_BASIC_PASSWORD:}
 #第三方登录
 justauth:
   enabled: true

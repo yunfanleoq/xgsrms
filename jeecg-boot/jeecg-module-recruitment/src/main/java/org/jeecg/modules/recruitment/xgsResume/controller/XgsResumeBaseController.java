@@ -28,6 +28,7 @@ import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeBaseService;
 import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeWorksService;
 import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeEdusService;
 import org.jeecg.modules.recruitment.xgsResume.service.IXgsResumeHomeService;
+import org.jeecg.modules.recruitment.security.XgsRecruitmentAuthUtil;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +62,15 @@ public class XgsResumeBaseController {
 	private IXgsResumeEdusService xgsResumeEdusService;
 	@Autowired
 	private IXgsResumeHomeService xgsResumeHomeService;
+
+	/** PROJ-001：子表/扩展字段按主表 ID 查询前校验简历访问权限 */
+	private void assertResumeAccessByMainId(String id) {
+		XgsResumeBase existing = xgsResumeBaseService.getById(id);
+		if (existing == null) {
+			return;
+		}
+		XgsRecruitmentAuthUtil.assertCanReadResume(existing);
+	}
 
 	 /**
 	  * 分页列表查询 我的申请列表
@@ -132,6 +142,11 @@ public class XgsResumeBaseController {
 								   @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
 								   HttpServletRequest req) {
         QueryWrapper<XgsResumeBase> queryWrapper = QueryGenerator.initQueryWrapper(xgsResumeBase, req.getParameterMap());
+		// B-001 / VULN-002：无简历管理权限时强制仅查本人数据（与 listMine 一致，防御权限误配）
+		if (!XgsRecruitmentAuthUtil.canManageResumes()) {
+			LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+			queryWrapper.eq("create_by", sysUser.getUsername());
+		}
 		Page<XgsResumeBase> page = new Page<XgsResumeBase>(pageNo, pageSize);
 		IPage<XgsResumeBase> pageList = xgsResumeBaseService.page(page, queryWrapper);
 		return Result.OK(pageList);
@@ -171,6 +186,8 @@ public class XgsResumeBaseController {
 		if(xgsResumeBaseEntity==null) {
 			return Result.error("未找到对应数据");
 		}
+		// B-002 / VULN-020：编辑前校验所有权或管理权限
+		XgsRecruitmentAuthUtil.assertCanWriteResume(xgsResumeBaseEntity);
 		xgsResumeBaseService.updateMain(xgsResumeBase, xgsResumeBasePage.getXgsResumeWorksList(),xgsResumeBasePage.getXgsResumeEdusList(),xgsResumeBasePage.getXgsResumeHomeList());
 		return Result.OK("编辑成功!", xgsResumeBase.getId());
 	}
@@ -186,6 +203,11 @@ public class XgsResumeBaseController {
 //    @RequiresPermissions("xgsResume:xgs_resume_base:delete")
 	@DeleteMapping(value = "/delete")
 	public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+		XgsResumeBase existing = xgsResumeBaseService.getById(id);
+		if (existing == null) {
+			return Result.error("未找到对应数据");
+		}
+		XgsRecruitmentAuthUtil.assertCanWriteResume(existing);
 		xgsResumeBaseService.delMain(id);
 		return Result.OK("删除成功!");
 	}
@@ -201,6 +223,12 @@ public class XgsResumeBaseController {
 //    @RequiresPermissions("xgsResume:xgs_resume_base:deleteBatch")
 	@DeleteMapping(value = "/deleteBatch")
 	public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+		for (String id : ids.split(",")) {
+			XgsResumeBase existing = xgsResumeBaseService.getById(id);
+			if (existing != null) {
+				XgsRecruitmentAuthUtil.assertCanWriteResume(existing);
+			}
+		}
 		this.xgsResumeBaseService.delBatchMain(Arrays.asList(ids.split(",")));
 		return Result.OK("批量删除成功！");
 	}
@@ -219,6 +247,8 @@ public class XgsResumeBaseController {
 		if(xgsResumeBase==null) {
 			return Result.error("未找到对应数据");
 		}
+		// PROJ-001：按 ID 查询须校验所有权或管理权限
+		XgsRecruitmentAuthUtil.assertCanReadResume(xgsResumeBase);
 		return Result.OK(xgsResumeBase);
 
 	}
@@ -233,6 +263,7 @@ public class XgsResumeBaseController {
 	@ApiOperation(value="工作经历主表ID查询", notes="工作经历-通主表ID查询")
 	@GetMapping(value = "/queryXgsResumeWorksByMainId")
 	public Result<List<XgsResumeWorks>> queryXgsResumeWorksListByMainId(@RequestParam(name="id",required=true) String id) {
+		assertResumeAccessByMainId(id);
 		List<XgsResumeWorks> xgsResumeWorksList = xgsResumeWorksService.selectByMainId(id);
 		return Result.OK(xgsResumeWorksList);
 	}
@@ -246,6 +277,7 @@ public class XgsResumeBaseController {
 	@ApiOperation(value="教育经历主表ID查询", notes="教育经历-通主表ID查询")
 	@GetMapping(value = "/queryXgsResumeEdusByMainId")
 	public Result<List<XgsResumeEdus>> queryXgsResumeEdusListByMainId(@RequestParam(name="id",required=true) String id) {
+		assertResumeAccessByMainId(id);
 		List<XgsResumeEdus> xgsResumeEdusList = xgsResumeEdusService.selectByMainId(id);
 		return Result.OK(xgsResumeEdusList);
 	}
@@ -259,6 +291,7 @@ public class XgsResumeBaseController {
 	@ApiOperation(value="家庭状况主表ID查询", notes="家庭状况-通主表ID查询")
 	@GetMapping(value = "/queryXgsResumeHomeByMainId")
 	public Result<List<XgsResumeHome>> queryXgsResumeHomeListByMainId(@RequestParam(name="id",required=true) String id) {
+		assertResumeAccessByMainId(id);
 		List<XgsResumeHome> xgsResumeHomeList = xgsResumeHomeService.selectByMainId(id);
 		return Result.OK(xgsResumeHomeList);
 	}
@@ -273,6 +306,9 @@ public class XgsResumeBaseController {
 	@GetMapping(value = "/queryXgsResumeResearchResultByMainId")
 	public Result<List<Object>> queryXgsResumeResearchResultByMainId(@RequestParam(name="id",required=true) String id) {
 		XgsResumeBase xgsResumeBase = xgsResumeBaseService.getById(id);
+		if (xgsResumeBase != null) {
+			XgsRecruitmentAuthUtil.assertCanReadResume(xgsResumeBase);
+		}
 		if(xgsResumeBase != null && xgsResumeBase.getResearchResult() != null) {
 			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBase.getResearchResult(), Object.class);
 			return Result.OK(list);
@@ -290,6 +326,9 @@ public class XgsResumeBaseController {
 	@GetMapping(value = "/queryXgsResumePositionDescriptionByMainId")
 	public Result<List<Object>> queryXgsResumePositionDescriptionByMainId(@RequestParam(name="id",required=true) String id) {
 		XgsResumeBase xgsResumeBase = xgsResumeBaseService.getById(id);
+		if (xgsResumeBase != null) {
+			XgsRecruitmentAuthUtil.assertCanReadResume(xgsResumeBase);
+		}
 		if(xgsResumeBase != null && xgsResumeBase.getPositionDescription() != null) {
 			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBase.getPositionDescription(), Object.class);
 			return Result.OK(list);
@@ -307,6 +346,9 @@ public class XgsResumeBaseController {
 	@GetMapping(value = "/queryXgsResumeResearchDirectionByMainId")
 	public Result<List<Object>> queryXgsResumeResearchDirectionByMainId(@RequestParam(name="id",required=true) String id) {
 		XgsResumeBase xgsResumeBase = xgsResumeBaseService.getById(id);
+		if (xgsResumeBase != null) {
+			XgsRecruitmentAuthUtil.assertCanReadResume(xgsResumeBase);
+		}
 		if(xgsResumeBase != null && xgsResumeBase.getResearchDirection() != null) {
 			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBase.getResearchDirection(), Object.class);
 			return Result.OK(list);
@@ -324,6 +366,9 @@ public class XgsResumeBaseController {
 	@GetMapping(value = "/queryXgsResumeResearchPaperByMainId")
 	public Result<List<Object>> queryXgsResumeResearchPaperByMainId(@RequestParam(name="id",required=true) String id) {
 		XgsResumeBase xgsResumeBase = xgsResumeBaseService.getById(id);
+		if (xgsResumeBase != null) {
+			XgsRecruitmentAuthUtil.assertCanReadResume(xgsResumeBase);
+		}
 		if(xgsResumeBase != null && xgsResumeBase.getResearchPaper() != null) {
 			List<Object> list = com.alibaba.fastjson.JSON.parseArray(xgsResumeBase.getResearchPaper(), Object.class);
 			return Result.OK(list);

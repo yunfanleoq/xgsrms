@@ -15,6 +15,7 @@ import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
+import org.jeecg.modules.recruitment.security.XgsRecruitmentAuthUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -53,8 +54,6 @@ public class XgsPositionApply2Controller extends JeecgController<XgsPositionAppl
                                                          @RequestParam(name="pageNo", defaultValue="1") Integer pageNo,
                                                          @RequestParam(name="pageSize", defaultValue="10") Integer pageSize,
                                                          HttpServletRequest req) {
-        String approvalNode = req.getParameter("approvalNode");
-        String approvalStatus = req.getParameter("approvalStatusValue");
         //获取当前用户
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         xgsPositionApply.setApprovalNode(null);
@@ -116,6 +115,11 @@ public class XgsPositionApply2Controller extends JeecgController<XgsPositionAppl
    @RequiresPermissions("positions:xgs_position_apply:edit")
    @RequestMapping(value = "/edit", method = {RequestMethod.PUT,RequestMethod.POST})
    public Result<String> edit(@RequestBody XgsPositionApply xgsPositionApply) {
+       XgsPositionApply existing = xgsPositionApplyService.getById(xgsPositionApply.getId());
+       if (existing == null) {
+           return Result.error("未找到对应数据");
+       }
+       XgsRecruitmentAuthUtil.assertCanReadApply(existing);
        xgsPositionApplyService.updateById(xgsPositionApply);
        return Result.OK("编辑成功!");
    }
@@ -132,6 +136,11 @@ public class XgsPositionApply2Controller extends JeecgController<XgsPositionAppl
    @RequiresPermissions("positions:xgs_position_apply:delete")
    @DeleteMapping(value = "/delete")
    public Result<String> delete(@RequestParam(name="id",required=true) String id) {
+       XgsPositionApply existing = xgsPositionApplyService.getById(id);
+       if (existing == null) {
+           return Result.error("未找到对应数据");
+       }
+       XgsRecruitmentAuthUtil.assertCanReadApply(existing);
        xgsPositionApplyService.removeById(id);
        return Result.OK("删除成功!");
    }
@@ -147,6 +156,12 @@ public class XgsPositionApply2Controller extends JeecgController<XgsPositionAppl
    @RequiresPermissions("positions:xgs_position_apply:deleteBatch")
    @DeleteMapping(value = "/deleteBatch")
    public Result<String> deleteBatch(@RequestParam(name="ids",required=true) String ids) {
+       for (String id : ids.split(",")) {
+           XgsPositionApply existing = xgsPositionApplyService.getById(id);
+           if (existing != null) {
+               XgsRecruitmentAuthUtil.assertCanReadApply(existing);
+           }
+       }
        this.xgsPositionApplyService.removeByIds(Arrays.asList(ids.split(",")));
        return Result.OK("批量删除成功!");
    }
@@ -165,6 +180,7 @@ public class XgsPositionApply2Controller extends JeecgController<XgsPositionAppl
        if(xgsPositionApply==null) {
            return Result.error("未找到对应数据");
        }
+       XgsRecruitmentAuthUtil.assertCanReadApply(xgsPositionApply);
        return Result.OK(xgsPositionApply);
    }
 

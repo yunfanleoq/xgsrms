@@ -33,12 +33,16 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import org.jeecg.common.util.oConvertUtils;
+
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,6 +57,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
     @Resource
     JeecgBaseConfig jeecgBaseConfig;
+    @Resource
+    JeecgSecurityProperties jeecgSecurityProperties;
     @Value("${spring.resource.static-locations:}")
     private String staticLocations;
 
@@ -97,10 +103,17 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     public CorsFilter corsFilter() {
         final UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration corsConfiguration = new CorsConfiguration();
-        //是否允许请求带有验证信息
         corsConfiguration.setAllowCredentials(true);
-        // 允许访问的客户端域名
-        corsConfiguration.addAllowedOriginPattern("*");
+        String originsCsv = jeecgSecurityProperties != null ? jeecgSecurityProperties.getCorsAllowedOrigins() : null;
+        if (oConvertUtils.isNotEmpty(originsCsv)) {
+            List<String> origins = Arrays.stream(originsCsv.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .collect(Collectors.toList());
+            origins.forEach(corsConfiguration::addAllowedOrigin);
+        } else {
+            corsConfiguration.addAllowedOriginPattern("*");
+        }
         // 允许服务端访问的客户端请求头
         corsConfiguration.addAllowedHeader("*");
         // 允许访问的方法名,GET POST等
