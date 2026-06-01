@@ -147,6 +147,9 @@ export default {
     basic: 'Basic list',
     listBasic: 'Basic list',
     listSearch: 'Search list',
+
+    schedule: 'Schedule',
+    scheduleCalendar: 'Schedule calendar',
   },
   permission: {
     permission: 'Permission',

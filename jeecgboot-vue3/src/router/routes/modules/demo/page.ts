@@ -249,6 +249,27 @@ const page: AppRouteModule = {
       ],
     },
     // =============================list end=============================
+    // =============================schedule (排课日历示例) start=============================
+    {
+      path: 'schedule',
+      name: 'SchedulePage',
+      component: getParentLayout('SchedulePage'),
+      redirect: '/page-demo/schedule/calendar',
+      meta: {
+        title: t('routes.demo.page.schedule'),
+      },
+      children: [
+        {
+          path: 'calendar',
+          name: 'ScheduleCalendarPage',
+          component: () => import('/@/views/demo/page/schedule/ScheduleCalendarPage.vue'),
+          meta: {
+            title: t('routes.demo.page.scheduleCalendar'),
+          },
+        },
+      ],
+    },
+    // =============================schedule end=============================
   ],
 };
 

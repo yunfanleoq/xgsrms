@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp",
+        "--path",
+        "I:\\cursorProjects\\xgsrms"
+      ]
+    },
+    "obsidian-vault": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "I:\\cursorProjects\\xgsrms\\docs\\obsidian"
+      ]
+    }
+  }
+}

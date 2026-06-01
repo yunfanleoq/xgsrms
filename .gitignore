@@ -52,3 +52,12 @@ scripts/java/*.class
 # Playwright 登录态（含 Token）
 jeecgboot-vue3/.auth/
 jeecgboot-vue3/.env.e2e
+# Playwright / E2E 产物（可重建）
+jeecgboot-vue3/test-results/
+docs/e2e-runs/
+# 本地构建包与 JVM 崩溃日志
+jeecgboot-vue3/dist*.zip
+hs_err_pid*.log
+replay_pid*.log
+# 大体积录屏（勿提交，用网盘/附件分发）
+/*.webm

@@ -1,0 +1,18 @@
+---
+description: 更新 xgsrms 架构/模块文档时，先用 CodeGraph 分析再写入 docs/obsidian
+globs:
+  - docs/obsidian/**
+  - docs/cursor-skill-codegraph-obsidian.md
+---
+
+# CodeGraph → Obsidian 文档规范
+
+编写或更新 `docs/obsidian/` 内笔记时：
+
+1. 先 `codegraph status`；有 pending 则 `codegraph sync`
+2. 用 `codegraph_context` / `query` / `impact` 获取结构事实，勿仅凭目录猜测调用链
+3. 笔记中写清：**类名、方法名、相对路径**；用 `[[wikilink]]` 链到 [[00-Index]]、[[05-后端API清单]] 等
+4. 详述流程见 `docs/cursor-skill-codegraph-obsidian.md` 与 Obsidian 笔记 `11-代码图谱与CodeGraph.md`
+
+- 写 `docs/obsidian/` 时用本项目 MCP **`obsidian-vault`**，禁止写入全局 MCP 绑定的其他项目 docs
+- 读代码用 `codegraph_*` 或 CLI `codegraph query`

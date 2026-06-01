@@ -1,0 +1,62 @@
+---
+description: 推送时同步推送到腾讯工蜂 origin 与 GitHub github 两个远端
+alwaysApply: true
+---
+
+# Git 双远端同步推送
+
+本仓库配置了两个 push 远端，**用户要求推送时必须同步推送到两者**，不要只推其中一个。
+
+## 远端对照
+
+| 远端名 | 地址 | 用途 |
+|--------|------|------|
+| `origin` | `https://git.code.tencent.com/recruiting/xgsrms.git` | 腾讯工蜂（主协作） |
+| `github` | `https://github.com/yunfanleoq/xgsrms.git` | GitHub 镜像 |
+
+查看远端：`git remote -v`
+
+## 何时执行
+
+- 用户说「推送」「推远端」「push」「同步仓库」等，且意图是把本地提交推到远端时 → **推两个远端**。
+- **仅在用户明确要求时**才 commit / push（勿主动推送）。
+- **禁止** `git push --force` 到 `master`，除非用户明确授权。
+
+## 标准流程（PowerShell）
+
+当前分支一般为 `master`。Windows 下命令用 `;` 分隔，不要用 `&&`。
+
+```powershell
+Set-Location "I:\cursorProjects\xgsrms"
+git status
+git push origin master
+git push github master
+```
+
+若当前分支不是 `master`，将上述命令中的 `master` 换成实际分支名，**两个远端都要推同一分支**。
+
+## 执行要求
+
+1. 推送前先 `git status`，确认有已提交内容待推；若本地领先远端，再执行双 push。
+2. **两个远端都要推**；若第一个成功、第二个失败，报告第一个已成功并说明第二个失败原因，不要隐瞒。
+3. 推送完成后简要汇报：`origin` 与 `github` 各自结果（分支、commit 范围）。
+4. **不要**修改全局或本仓库 `git config`（含 `user.*`、默认 upstream），除非用户单独要求。
+5. GitHub 可能对历史大文件（如 >50MB 的 sql zip）告警；推送失败时提示检查文件体积或 LFS，勿擅自改历史。
+
+## 仅推单一远端
+
+只有用户**明确**说「只推腾讯 / 只推 GitHub / 只推 origin / 只推 github」时，才推指定远端。
+
+## 示例
+
+用户：「推送到远端」
+
+```powershell
+git push origin master; git push github master
+```
+
+用户：「只推 GitHub」
+
+```powershell
+git push github master
+```

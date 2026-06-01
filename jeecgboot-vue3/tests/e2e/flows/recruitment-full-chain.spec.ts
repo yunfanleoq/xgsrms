@@ -58,20 +58,44 @@ async function approveRow(page: Page, rowMarker: string, actionLabel = '审核')
   await waitForSuccessToast(page).catch(() => page.waitForTimeout(1500));
 }
 
-async function findApplicablePosition(page: Page): Promise<{ name: string; href: string }> {
+async function findApplicablePosition(page: Page): Promise<{ name: string; href: string; alreadyApplied: boolean }> {
   await page.goto('/home/positions', { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(2000);
-  const card = page.locator('.job-card').first();
-  await expect(card).toBeVisible({ timeout: 30_000 });
+  const cards = page.locator('.job-card');
+  await expect(cards.first()).toBeVisible({ timeout: 30_000 });
+  const count = await cards.count();
+
+  for (let i = 0; i < Math.min(count, 10); i++) {
+    if (i > 0) {
+      await page.goto('/home/positions', { waitUntil: 'domcontentloaded' });
+      await page.waitForTimeout(1500);
+    }
+    const card = cards.nth(i);
+    const name = (await card.innerText()).split('\n')[0]?.trim() || '招聘岗位';
+    await card.click();
+    await page.waitForURL(/positionDetail/, { timeout: 15_000 });
+    await expect(page.getByText('职位信息加载中')).toBeHidden({ timeout: 45_000 });
+    const canApply = page.getByRole('button', { name: '在线申请' });
+    if (await canApply.isVisible().catch(() => false)) {
+      return { name, href: new URL(page.url()).pathname, alreadyApplied: false };
+    }
+  }
+
+  await page.goto('/home/positions', { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(1500);
+  const card = cards.first();
   const name = (await card.innerText()).split('\n')[0]?.trim() || '招聘岗位';
   await card.click();
   await page.waitForURL(/positionDetail/, { timeout: 15_000 });
   await expect(page.getByText('职位信息加载中')).toBeHidden({ timeout: 45_000 });
-  return { name, href: new URL(page.url()).pathname };
+  return { name, href: new URL(page.url()).pathname, alreadyApplied: true };
 }
 
 async function applyToPosition(page: Page) {
   await expect(page.getByText('职位信息加载中')).toBeHidden({ timeout: 45_000 });
+  if (await page.getByRole('button', { name: '岗位已申请' }).count()) {
+    throw new Error('岗位已申请');
+  }
   const applyBtn = page.getByRole('button', { name: '在线申请' });
   await expect(applyBtn).toBeVisible({ timeout: 15_000 });
   if (!(await applyBtn.isEnabled())) {
@@ -109,6 +133,9 @@ test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请', async ({ 
     });
 
     try {
+      if (pos.alreadyApplied) {
+        throw new Error('岗位已申请');
+      }
       await applyToPosition(page);
       logStep(state, '2-在线申请', 'ok');
       await cap.capture(page, {
