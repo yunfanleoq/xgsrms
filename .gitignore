@@ -1,3 +1,6 @@
+## CodeGraph 本地索引（可重建，勿提交）
+.codegraph/
+
 ## ide
 **/.idea
 *.iml
@@ -16,7 +19,11 @@ derby.log
 /jeecg-uniapp/.history/
 /logs/
 /测试文档
-/.cursor
+# Cursor：仅忽略本地杂项，保留可提交的 MCP 与 rules
+/.cursor/*
+!/.cursor/mcp.json
+!/.cursor/rules/
+!/.cursor/rules/**
 /.qoder
 /.history
 /jeecgboot-vue3/xgszp
@@ -39,3 +46,9 @@ derby.log
 /node_modules/
 **/__pycache__/
 *.pyc
+# 测试账号预置脚本生成的 SQL（含密码哈希，勿提交）
+scripts/sql/mysql/*.generated.sql
+scripts/java/*.class
+# Playwright 登录态（含 Token）
+jeecgboot-vue3/.auth/
+jeecgboot-vue3/.env.e2e

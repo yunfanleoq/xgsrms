@@ -105,6 +105,11 @@ public final class RecruitmentPublicDataSanitizer {
 		e.setSysOrgCode(null);
 		e.setCreateTime(null);
 		e.setUpdateTime(null);
+		// PROJ-004：门户不暴露审批流与内部备注
+		e.setOpinions(null);
+		e.setApprovalStatus(null);
+		e.setApprovalUser(null);
+		e.setDeleted(null);
 	}
 
 	public static void stripXgsPositionsList(List<XgsPositions> list) {

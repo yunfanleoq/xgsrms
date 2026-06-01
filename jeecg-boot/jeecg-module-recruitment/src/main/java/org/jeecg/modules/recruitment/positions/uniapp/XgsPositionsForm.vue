@@ -22,6 +22,12 @@
               </view>
               <view class="cu-form-group">
                 <view class="flex align-center">
+                  <view class="title"><text space="ensp">联系人：</text></view>
+                  <input  placeholder="请输入联系人" v-model="model.contactPerson"/>
+                </view>
+              </view>
+              <view class="cu-form-group">
+                <view class="flex align-center">
                   <view class="title"><text space="ensp">咨询电话：</text></view>
                   <input  placeholder="请输入咨询电话" v-model="model.telphone"/>
                 </view>

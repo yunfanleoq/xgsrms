@@ -15,6 +15,7 @@ public final class XgsPositionInputSanitizer {
 		if (entity == null) {
 			return;
 		}
+		entity.setContactPerson(cleanPlain(entity.getContactPerson()));
 		entity.setResearchDirection(cleanPlain(entity.getResearchDirection()));
 		entity.setXlxw(cleanPlain(entity.getXlxw()));
 		entity.setProfessional(cleanPlain(entity.getProfessional()));

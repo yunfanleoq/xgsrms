@@ -81,7 +81,10 @@ public final class XgsRecruitmentAuthUtil {
 
     public static void assertCanExportApply(XgsPositionApply apply) {
         LoginUser user = currentUser();
-        if (canExportApplies() || canManageApplies() || ownsApply(user, apply)) {
+        if (canManageApplies()) {
+            return;
+        }
+        if (ownsApply(user, apply)) {
             return;
         }
         throw new UnauthorizedException("无权限导出该申请");

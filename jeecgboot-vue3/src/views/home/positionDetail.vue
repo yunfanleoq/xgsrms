@@ -61,6 +61,12 @@
             </a-col>
             <a-col :xs="24" :sm="12" :md="8">
               <div class="info-item">
+                <label>课题组</label>
+                <div class="info-value">{{ formatPositionKtz(job.ktz_dictText) }}</div>
+              </div>
+            </a-col>
+            <a-col :xs="24" :sm="12" :md="8">
+              <div class="info-item">
                 <label>招聘状态</label>
                 <div class="info-value">
                   <a-tag color="green">{{ job.status }}</a-tag>
@@ -129,7 +135,7 @@
             <a-col :xs="24" :sm="12" :md="8">
               <div class="info-item">
                 <label>联系人</label>
-                <div class="info-value">{{ job.ktz_dictText }}</div>
+                <div class="info-value">{{ formatPositionContactPerson(job.contactPerson, job.ktz_dictText) }}</div>
               </div>
             </a-col>
             <a-col :xs="24" :sm="12" :md="8">
@@ -183,6 +189,7 @@
   import XgsPositionApplyModalNew from '@/views/positions/components/XgsPositionApplyModalNew.vue';
   import { message } from 'ant-design-vue';
   import { defHttp } from '@/utils/http/axios';
+  import { formatPositionContactPerson, formatPositionKtz } from '@/utils/positionContactDisplay';
   // 引入图标
   import {
     LeftOutlined,
@@ -211,6 +218,7 @@
     status_dictText: string;
     duty: string;
     ktz_dictText: string;
+    contactPerson?: string;
     telphone?: string;
     email: string;
     memo?: string;

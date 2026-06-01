@@ -14,8 +14,17 @@
     "batch:prettier": "prettier --write  \"src/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
     "upgrade:log": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "husky:install": "husky install",
-    "test:e2e": "playwright test tests/e2e/resume-submit.spec.ts",
-    "test:e2e:headed": "PLAYWRIGHT_HEADLESS=0 playwright test tests/e2e/resume-submit.spec.ts"
+    "test:e2e": "playwright test",
+    "test:e2e:setup": "playwright test --project=setup",
+    "test:e2e:doc": "playwright test --project=doc-capture",
+    "test:e2e:business": "cross-env PLAYWRIGHT_HEADLESS=0 playwright test --project=setup --project=full-chain",
+    "test:e2e:business:report": "cross-env PLAYWRIGHT_HEADLESS=0 playwright test --project=setup --project=full-chain & py -3 ../scripts/generate_e2e_report_and_manual.py",
+    "test:e2e:security": "playwright test --project=security",
+    "test:e2e:security:full": "playwright test --project=setup --project=security",
+    "test:e2e:report": "py -3 ../scripts/generate_e2e_report_and_manual.py",
+    "test:e2e:full": "playwright test & py -3 ../scripts/generate_e2e_report_and_manual.py",
+    "test:e2e:headed": "cross-env PLAYWRIGHT_HEADLESS=0 playwright test",
+    "test:e2e:legacy": "playwright test tests/e2e/resume-submit.spec.ts"
   },
   "dependencies": {
     "@ant-design/colors": "^7.0.2",
@@ -80,6 +89,7 @@
     "@commitlint/cli": "^18.6.1",
     "@commitlint/config-conventional": "^18.6.2",
     "@iconify/json": "^2.2.185",
+    "@playwright/test": "^1.60.0",
     "@purge-icons/generated": "^0.10.0",
     "@rys-fe/vite-plugin-theme": "^0.8.6",
     "@types/codemirror": "^5.60.15",

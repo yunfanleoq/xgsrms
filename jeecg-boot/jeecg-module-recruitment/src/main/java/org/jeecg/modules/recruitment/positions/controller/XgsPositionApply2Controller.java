@@ -13,6 +13,7 @@ import org.jeecg.common.aspect.annotation.AutoLog;
 import org.jeecg.common.system.base.controller.JeecgController;
 import org.jeecg.common.system.query.QueryGenerator;
 import org.jeecg.common.system.vo.LoginUser;
+import org.jeecg.common.util.oConvertUtils;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.recruitment.security.XgsRecruitmentAuthUtil;
@@ -193,6 +194,18 @@ public class XgsPositionApply2Controller extends JeecgController<XgsPositionAppl
    @RequiresPermissions("positions:xgs_position_apply:exportXls")
    @RequestMapping(value = "/exportXls")
    public ModelAndView exportXls(HttpServletRequest request, XgsPositionApply xgsPositionApply) {
+       String selections = request.getParameter("selections");
+       if (oConvertUtils.isNotEmpty(selections)) {
+           for (String id : selections.split(",")) {
+               XgsPositionApply existing = xgsPositionApplyService.getById(id.trim());
+               if (existing != null) {
+                   XgsRecruitmentAuthUtil.assertCanExportApply(existing);
+               }
+           }
+       } else if (!XgsRecruitmentAuthUtil.canManageApplies()) {
+           LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+           xgsPositionApply.setCreateBy(sysUser.getUsername());
+       }
        return super.exportXls(request, xgsPositionApply, XgsPositionApply.class, "岗位申请");
    }
 

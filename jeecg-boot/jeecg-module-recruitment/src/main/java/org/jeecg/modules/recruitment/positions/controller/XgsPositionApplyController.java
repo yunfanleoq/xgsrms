@@ -27,6 +27,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.jeecg.common.aspect.annotation.AutoLog;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.jeecg.common.util.oConvertUtils;
 
  /**
  * @Description: 岗位申请
@@ -334,6 +335,18 @@ public class XgsPositionApplyController extends JeecgController<XgsPositionApply
     @RequiresPermissions("positions:xgs_position_apply:exportXls")
     @RequestMapping(value = "/exportXls")
     public ModelAndView exportXls(HttpServletRequest request, XgsPositionApply xgsPositionApply) {
+        String selections = request.getParameter("selections");
+        if (oConvertUtils.isNotEmpty(selections)) {
+            for (String id : selections.split(",")) {
+                XgsPositionApply existing = xgsPositionApplyService.getById(id.trim());
+                if (existing != null) {
+                    XgsRecruitmentAuthUtil.assertCanExportApply(existing);
+                }
+            }
+        } else if (!XgsRecruitmentAuthUtil.canManageApplies()) {
+            LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
+            xgsPositionApply.setCreateBy(sysUser.getUsername());
+        }
         return super.exportXls(request, xgsPositionApply, XgsPositionApply.class, "岗位申请");
     }
 

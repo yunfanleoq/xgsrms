@@ -23,6 +23,12 @@
           </a-col>
           <a-col :xs="24" :sm="12" :md="8">
             <div class="info-item">
+              <label>课题组</label>
+              <div class="info-value">{{ formatPositionKtz(job.ktz_dictText) }}</div>
+            </div>
+          </a-col>
+          <a-col :xs="24" :sm="12" :md="8">
+            <div class="info-item">
               <label>招聘状态</label>
               <div class="info-value">
                 <a-tag color="green">{{ job.status_dictText }}</a-tag>
@@ -91,7 +97,7 @@
           <a-col :xs="24" :sm="12" :md="8">
             <div class="info-item">
               <label>联系人</label>
-              <div class="info-value">{{ job.ktz_dictText }}</div>
+              <div class="info-value">{{ formatPositionContactPerson(job.contactPerson, job.ktz_dictText) }}</div>
             </div>
           </a-col>
           <a-col :xs="24" :sm="12" :md="8">
@@ -134,6 +140,7 @@
   import { ref } from 'vue';
   import { getJobById } from '@/api/xgsrms/home';
   import {BasicModal, useModalInner} from '@/components/Modal';
+  import { formatPositionContactPerson, formatPositionKtz } from '@/utils/positionContactDisplay';
   // 引入图标
   import {
     IdcardOutlined,
@@ -154,6 +161,7 @@
     status_dictText: string;
     duty: string;
     ktz_dictText: string;
+    contactPerson?: string;
     telphone?: string;
     email: string;
     memo?: string;

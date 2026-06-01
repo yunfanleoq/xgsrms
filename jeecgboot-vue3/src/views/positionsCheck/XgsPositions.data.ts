@@ -15,6 +15,11 @@ export const columns: BasicColumn[] = [
     dataIndex: 'ktz_dictText',
   },
   {
+    title: '联系人',
+    align: 'center',
+    dataIndex: 'contactPerson',
+  },
+  {
     title: '咨询电话',
     align: 'center',
     dataIndex: 'telphone',
@@ -120,6 +125,11 @@ export const formSchema: FormSchema[] = [
     componentProps: {},
   },
   {
+    label: '联系人',
+    field: 'contactPerson',
+    component: 'Input',
+  },
+  {
     label: '咨询电话',
     field: 'telphone',
     component: 'Input',
@@ -201,17 +211,18 @@ export const formSchema: FormSchema[] = [
 export const superQuerySchema = {
   dept: { title: '招聘部门', order: 0, view: 'sel_depart', type: 'string' },
   ktz: { title: '课题组', order: 1, view: 'sel_depart', type: 'string' },
-  telphone: { title: '咨询电话', order: 2, view: 'text', type: 'string' },
-  email: { title: '邮箱', order: 3, view: 'text', type: 'string' },
-  positionName: { title: '岗位名称', order: 4, view: 'text', type: 'string' },
-  researchDirection: { title: '研究方向', order: 5, view: 'text', type: 'string' },
-  personCount: { title: '招聘人数', order: 6, view: 'text', type: 'string' },
-  duty: { title: '岗位职责', order: 7, view: 'umeditor', type: 'string' },
-  xlxw: { title: '学历学位', order: 8, view: 'textarea', type: 'string' },
-  professional: { title: '专业', order: 9, view: 'text', type: 'string' },
-  workYears: { title: '工作年限', order: 10, view: 'text', type: 'string' },
-  memo: { title: '备注', order: 11, view: 'umeditor', type: 'string' },
-  status: { title: '岗位状态', order: 12, view: 'list', type: 'string', dictCode: '岗位状态' },
+  contactPerson: { title: '联系人', order: 2, view: 'text', type: 'string' },
+  telphone: { title: '咨询电话', order: 3, view: 'text', type: 'string' },
+  email: { title: '邮箱', order: 4, view: 'text', type: 'string' },
+  positionName: { title: '岗位名称', order: 5, view: 'text', type: 'string' },
+  researchDirection: { title: '研究方向', order: 6, view: 'text', type: 'string' },
+  personCount: { title: '招聘人数', order: 7, view: 'text', type: 'string' },
+  duty: { title: '岗位职责', order: 8, view: 'umeditor', type: 'string' },
+  xlxw: { title: '学历学位', order: 9, view: 'textarea', type: 'string' },
+  professional: { title: '专业', order: 10, view: 'text', type: 'string' },
+  workYears: { title: '工作年限', order: 11, view: 'text', type: 'string' },
+  memo: { title: '备注', order: 12, view: 'umeditor', type: 'string' },
+  status: { title: '岗位状态', order: 13, view: 'list', type: 'string', dictCode: '岗位状态' },
 };
 
 /**

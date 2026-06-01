@@ -12,6 +12,7 @@ import org.jeecg.common.constant.ProvinceCityArea;
 import org.jeecg.common.util.SpringContextUtils;
 import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.jeecgframework.poi.excel.annotation.Excel;
 import org.jeecg.common.aspect.annotation.Dict;
@@ -67,6 +68,10 @@ public class XgsPositions implements Serializable {
 	@Dict(dictTable = "sys_depart", dicText = "depart_name", dicCode = "id")
     @ApiModelProperty(value = "课题组")
     private java.lang.String ktz;
+	/**联系人姓名*/
+	@Excel(name = "联系人", width = 15)
+    @ApiModelProperty(value = "联系人姓名")
+    private java.lang.String contactPerson;
 	/**咨询电话*/
 	@Excel(name = "咨询电话", width = 15)
     @ApiModelProperty(value = "咨询电话")
@@ -124,17 +129,21 @@ public class XgsPositions implements Serializable {
     /**意见*/
     @Excel(name = "意见", width = 15)
     @ApiModelProperty(value = "意见")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private java.lang.String opinions;
     /**岗位状态*/
     @Excel(name = "审批状态", width = 15, dicCode = "审批状态")
     @Dict(dicCode = "审批状态")
     @ApiModelProperty(value = "审批状态")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private java.lang.String approvalStatus;
     /**审批人*/
     @Excel(name = "审批人", width = 15)
     @ApiModelProperty(value = "审批人")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private java.lang.String approvalUser;
     /**逻辑删除  Y 已删除  */
     @ApiModelProperty(value = "逻辑删除")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private java.lang.String deleted;
 }

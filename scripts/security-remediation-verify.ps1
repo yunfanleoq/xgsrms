@@ -68,7 +68,11 @@ if ([string]::IsNullOrWhiteSpace($cors)) {
 
 $tok = [Environment]::GetEnvironmentVariable('JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY', 'Process')
 if ([string]::IsNullOrWhiteSpace($tok)) {
-    Write-Host "INFO: JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY is not set. Prod default is false." -ForegroundColor Gray
+    Write-Host "WARN: JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY is not set. Prod should be false (see deploy/rms.env.example)." -ForegroundColor Yellow
+} elseif ($tok -eq 'false') {
+    Write-Host "OK: JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY=false" -ForegroundColor Green
+} else {
+    Write-Host "WARN: JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY=$tok (production should be false)" -ForegroundColor Yellow
 }
 
 Write-Host "`n=== Result ===`n" -ForegroundColor Cyan

@@ -25,7 +25,8 @@
           <strong>职责:</strong>
           <pre>{{ job.duty }}</pre>
         </div>
-        <div class="job-field"> <strong>联系人:</strong> {{ job.ktz_dictText }} </div>
+        <div class="job-field"> <strong>课题组:</strong> {{ formatPositionKtz(job.ktz_dictText) }} </div>
+        <div class="job-field"> <strong>联系人:</strong> {{ formatPositionContactPerson(job.contactPerson, job.ktz_dictText) }} </div>
         <div class="job-field"> <strong>联系电话:</strong> {{ job.telphone || '无' }} </div>
         <div class="job-field"> <strong>电子邮箱:</strong> {{ job.email }} </div>
         <div class="job-field">
@@ -50,6 +51,7 @@
   import { ref, onMounted, computed } from 'vue';
   import { useRoute } from 'vue-router';
   import { getJobById } from '@/api/xgsrms/home';
+  import { formatPositionContactPerson, formatPositionKtz } from '@/utils/positionContactDisplay';
   import { xgsFavoriteJobAdd, xgsFavoriteJobDel, xgsFavoriteJobList } from '@/api/xgsrms/positions';
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';

@@ -1,23 +1,33 @@
-# 部署 dist 到 xgs-server:/www/wwwroot/rms/frontend
-# 用法：在 jeecgboot-vue3 目录执行  .\scripts\deploy-frontend-xgs-server.ps1
-# 依赖：SSH Host xgs-server；远端 xgs 用户有 sudo（用于写入 www 目录）
+# Deploy dist to xgs-server:/www/wwwroot/rms/frontend/dist (nginx root)
+# Usage: from jeecgboot-vue3: .\scripts\deploy-frontend-xgs-server.ps1
+# Needs: SSH host "xgs-server" and remote sudo to write www
 
 $ErrorActionPreference = "Stop"
 $jeecgRoot = Split-Path $PSScriptRoot -Parent
 Set-Location $jeecgRoot
 
 if (-not (Test-Path "dist\index.html")) {
-    Write-Host "dist 不存在，正在执行 pnpm run build ..."
+    Write-Host "dist not found, running pnpm run build..."
     pnpm run build
 }
 
 $remoteTmp = "~/rms_frontend_build"
-$remoteDest = "/www/wwwroot/rms/frontend"
+$remoteDest = "/www/wwwroot/rms/frontend/dist"
 
-Write-Host "上传到 xgs-server:$remoteTmp ..."
+Write-Host "Uploading to xgs-server:$remoteTmp ..."
+ssh xgs-server "mkdir -p ${remoteTmp}"
 scp -r dist/. "xgs-server:${remoteTmp}/"
+if ($LASTEXITCODE -ne 0) { throw "scp failed (exit $LASTEXITCODE)" }
 
-Write-Host "sudo 同步到 $remoteDest ..."
-ssh xgs-server "sudo rsync -a --delete ${remoteTmp}/ ${remoteDest}/ && sudo chown -R www:www ${remoteDest} && rm -rf ${remoteTmp}"
+$finishScript = Resolve-Path (Join-Path $PSScriptRoot '..\..\scripts\finish-rms-deploy.sh')
+$stopScript = Resolve-Path (Join-Path $PSScriptRoot '..\..\scripts\stop-rms-backend.sh')
+scp $finishScript "xgs-server:~/finish-rms-deploy.sh"
+scp $stopScript "xgs-server:~/stop-rms-backend.sh"
+if ($LASTEXITCODE -ne 0) { throw "scp finish/stop script failed (exit $LASTEXITCODE)" }
+ssh xgs-server "sed -i 's/\r$//' ~/finish-rms-deploy.sh ~/stop-rms-backend.sh"
 
-Write-Host "部署完成。"
+Write-Host "rsync to $remoteDest (sudo) ..."
+ssh xgs-server "sed -i 's/\r$//' ~/finish-rms-deploy.sh ~/stop-rms-backend.sh; bash ~/finish-rms-deploy.sh"
+if ($LASTEXITCODE -ne 0) { throw "ssh/finish-rms-deploy failed (exit $LASTEXITCODE)" }
+
+Write-Host "Done. Frontend deployed."
