@@ -71,6 +71,8 @@ public class LoginController {
 	private BaseCommonService baseCommonService;
 	@Autowired
 	private JeecgBaseConfig jeecgBaseConfig;
+	@Autowired
+	private org.jeecg.config.JeecgSecurityProperties jeecgSecurityProperties;
 	
 	private final String BASE_CHECK_CODES = "qwertyuiplkjhgfdsazxcvbnmQWERTYUPLKJHGFDSAZXCVBNM1234567890";
 	/**
@@ -414,7 +416,24 @@ public class LoginController {
 		}
 		return result;
 	}
-	
+
+	/**
+	 * 邮箱验证码接口（注册页调用 /sys/ems）。
+	 * 内网无法出网发信时由 jeecg.security.register-skip-sms 跳过真实发信，避免 404 落入 JWT 过滤器报 token为空。
+	 */
+	@IgnoreAuth
+	@PostMapping(value = "/ems")
+	public Result<String> ems(@RequestBody JSONObject jsonObject) {
+		Result<String> result = new Result<String>();
+		if (jeecgSecurityProperties != null && jeecgSecurityProperties.isRegisterSkipSms()) {
+			result.setSuccess(true);
+			result.setMessage("当前环境未启用验证码，请直接填写信息完成注册");
+			return result;
+		}
+		result.setSuccess(false);
+		result.setMessage("邮箱验证码未配置，请联系管理员或直接注册");
+		return result;
+	}
 
 	/**
 	 * 手机号登录接口

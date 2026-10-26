@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.subject.Subject;
+import org.jeecg.common.api.CommonAPI;
 import org.jeecg.common.api.vo.Result;
 import org.jeecg.common.config.TenantContext;
 import org.jeecg.common.constant.CacheConstant;
@@ -23,6 +24,7 @@ import org.jeecg.common.system.vo.DictQuery;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.*;
 import org.jeecg.config.mybatis.MybatisPlusSaasConfig;
+import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.config.shiro.ShiroRealm;
 import org.jeecg.modules.system.constant.DefIndexConst;
 import org.jeecg.modules.system.entity.SysDict;
@@ -75,6 +77,8 @@ public class SysDictController {
 	public RedisTemplate<String, Object> redisTemplate;
 	@Autowired
 	private RedisUtil redisUtil;
+	@Autowired
+	private CommonAPI commonApi;
 	@Autowired
 	private ShiroRealm shiroRealm;
 
@@ -178,14 +182,26 @@ public class SysDictController {
 
 	/**
 	 * 获取字典数据 【接口签名验证】
-	 * @param dictCode 字典code
-	 * @param dictCode 表名,文本字段,code字段  | 举例：sys_user,realname,id
+	 * @param dictCode 字典code；或表名字典 table,text,code（须登录）
 	 * @return
 	 */
+	@IgnoreAuth
 	@RequestMapping(value = "/getDictItems/{dictCode}", method = RequestMethod.GET)
 	public Result<List<DictModel>> getDictItems(@PathVariable("dictCode") String dictCode, @RequestParam(value = "sign",required = false) String sign,HttpServletRequest request) {
 		log.debug(" dictCode : "+ dictCode);
 		Result<List<DictModel>> result = new Result<List<DictModel>>();
+		// CERT-585812：表字典（含逗号）禁止匿名；仅靠 X-Sign 可被伪造密钥绕过
+		if (oConvertUtils.isNotEmpty(dictCode) && dictCode.contains(SymbolConstant.COMMA)) {
+			try {
+				TokenUtils.verifyToken(request, commonApi, redisUtil);
+			} catch (Exception e) {
+				log.warn("拒绝未授权表字典访问 dictCode={}", dictCode);
+				result.setSuccess(false);
+				result.setCode(401);
+				result.setMessage("无权限访问");
+				return result;
+			}
+		}
 		try {
 			List<DictModel> ls = sysDictService.getDictItems(dictCode);
 			if (ls == null) {

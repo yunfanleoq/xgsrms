@@ -1,6 +1,7 @@
 // #!/usr/bin/env node
 
 import { runBuildConfig } from './buildConf';
+import { scanFrontendBundleSecrets } from './scanFrontendBundleSecrets';
 import colors from 'picocolors';
 
 import pkg from '../../package.json';
@@ -13,6 +14,7 @@ export const runBuild = async () => {
     if (!argvList.includes('disabled-config')) {
       runBuildConfig();
     }
+    scanFrontendBundleSecrets();
 
     console.log(`✨ ${colors.cyan(`[${pkg.name}]`)}` + ' - build successfully!');
   } catch (error) {

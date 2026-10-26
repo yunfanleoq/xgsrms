@@ -1129,16 +1129,20 @@ public class SysUserController {
                 return result;
             }
         }
-        if(null == code){
-            result.setMessage("手机验证码失效，请重新获取");
-            result.setSuccess(false);
-            return result;
+        if (jeecgSecurityProperties != null && jeecgSecurityProperties.isRegisterSkipSms()) {
+            log.info("注册跳过短信/邮箱验证码校验 username={}", username);
+        } else {
+            if(null == code){
+                result.setMessage("手机验证码失效，请重新获取");
+                result.setSuccess(false);
+                return result;
+            }
+            if (!smscode.equals(code.toString())) {
+                result.setMessage("手机验证码错误");
+                result.setSuccess(false);
+                return result;
+            }
         }
-		if (!smscode.equals(code.toString())) {
-			result.setMessage("手机验证码错误");
-			result.setSuccess(false);
-			return result;
-		}
 
         String realname = jsonObject.getString("realname");
         if(oConvertUtils.isEmpty(realname)){

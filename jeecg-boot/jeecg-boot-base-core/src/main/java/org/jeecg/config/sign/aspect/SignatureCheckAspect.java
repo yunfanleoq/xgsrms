@@ -6,9 +6,12 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.jeecg.config.JeecgBaseConfig;
 import org.jeecg.config.sign.annotation.SignatureCheck;
 import org.jeecg.config.sign.interceptor.SignAuthInterceptor;
 import org.springframework.stereotype.Component;
+
+import jakarta.annotation.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -34,7 +37,10 @@ public class SignatureCheckAspect {
     /**
      * 复用SignAuthInterceptor的签名验证逻辑
      */
-    private final SignAuthInterceptor signAuthInterceptor = new SignAuthInterceptor();
+    @Resource
+    private SignAuthInterceptor signAuthInterceptor;
+    @Resource
+    private JeecgBaseConfig jeecgBaseConfig;
 
     /**
      * 验签切点：拦截所有标记了@SignatureCheck注解的方法
@@ -53,6 +59,9 @@ public class SignatureCheckAspect {
         Method method = signature.getMethod();
         SignatureCheck signatureCheck = method.getAnnotation(SignatureCheck.class);
         
+        if (!jeecgBaseConfig.isSignatureEnabled()) {
+            return;
+        }
         log.info("AOP签名验证: {}.{}", method.getDeclaringClass().getSimpleName(), method.getName());
         
         // 如果注解被禁用，直接返回

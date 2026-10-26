@@ -24,6 +24,11 @@ public class JeecgBaseConfig {
      */
     private String signatureSecret = "dd05f1c54d63749eda95f9fa6d49v442a";
     /**
+     * 是否校验浏览器共享密钥签名。生产必须关闭：密钥一旦打进前端包就无法保密。
+     * 关闭后，敏感接口只认登录令牌。
+     */
+    private boolean signatureEnabled = true;
+    /**
      * 自定义后台资源前缀，解决表单设计器无法通过前端nginx转发访问
      */
     private String customResourcePrefixPath;
@@ -136,6 +141,14 @@ public class JeecgBaseConfig {
 
     public void setSignatureSecret(String signatureSecret) {
         this.signatureSecret = signatureSecret;
+    }
+
+    public boolean isSignatureEnabled() {
+        return signatureEnabled;
+    }
+
+    public void setSignatureEnabled(boolean signatureEnabled) {
+        this.signatureEnabled = signatureEnabled;
     }
 
     public Shiro getShiro() {

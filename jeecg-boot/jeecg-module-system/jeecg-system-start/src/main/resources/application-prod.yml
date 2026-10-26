@@ -186,7 +186,9 @@ jeecg:
     lowCodeMode: prod
     # 补充-06 / Auth-01：生产强制登录图形验证码
     enableLoginCaptcha: true
-  # 签名密钥：须与前端构建时 VITE_GLOB_SIGNATURE_SECRET 一致；通过环境变量注入，禁止在仓库填明文
+  # CERT-585812：生产关闭浏览器共享密钥签名。敏感接口只认登录令牌。
+  # signatureSecret 仅保留给尚未删除的工具类，不得再写入前端包。
+  signature-enabled: false
   signatureSecret: ${JEECG_SIGNATURE_SECRET:}
   signUrls: /sys/dict/getDictItems/*,/sys/dict/loadDict/*,/sys/dict/loadDictOrderByValue/*,/sys/dict/loadDictItem/*,/sys/dict/loadTreeData,/sys/api/queryTableDictItemsByCode,/sys/api/queryFilterTableDictInfo,/sys/api/queryTableDictByKeys,/sys/api/translateDictFromTable,/sys/api/translateDictFromTableByKeys,/sys/sendChangePwdSms,/sys/user/sendChangePhoneSms,/sys/sms,/desform/api/sendVerifyCode
   uploadType: alioss
@@ -204,6 +206,7 @@ jeecg:
       expire-days: -1
     allow-password-change-get: false
     allow-token-in-query: ${JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY:false}
+    register-skip-sms: ${JEECG_REGISTER_SKIP_SMS:true}
     cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}
     token:
       expireTime: ${JWT_EXPIRE_TIME:28800000}

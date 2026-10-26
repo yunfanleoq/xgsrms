@@ -1,13 +1,17 @@
 package org.jeecg.modules.recruitment.positions.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.jeecg.common.api.vo.Result;
+import org.jeecg.common.system.api.ISysBaseAPI;
 import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.modules.recruitment.positions.entity.XgsPositionApply;
+import org.jeecg.modules.recruitment.positions.entity.XgsPositions;
 import org.jeecg.modules.recruitment.positions.mapper.XgsPositionApplyMapper;
+import org.jeecg.modules.recruitment.positions.mapper.XgsPositionsMapper;
 import org.jeecg.modules.recruitment.positions.service.IXgsPositionApplyService;
 import org.jeecg.modules.recruitment.positions.vo.XgsPositionApplyVO;
 import org.jeecg.modules.recruitment.xgsResume.entity.XgsResumeBase;
@@ -53,6 +57,10 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
     private XgsPositionApplyMapper positionApplyMapper;
     @Autowired
     private XgsFlowOpinionsMapper flowOpinionsMapper;
+    @Autowired
+    private XgsPositionsMapper positionsMapper;
+    @Autowired
+    private ISysBaseAPI sysBaseAPI;
 
     /**
      *
@@ -124,25 +132,48 @@ public class XgsPositionApplyServiceImpl extends ServiceImpl<XgsPositionApplyMap
         xgsResumeBaseMapper.updateById(xgsResumeBase);
 
         xgsPositionApply.setUserId(loginUser.getId());
+        xgsPositionApply.setUserName(StringUtils.defaultIfBlank(loginUser.getRealname(), loginUser.getUsername()));
         xgsPositionApply.setPositionId(xgsPositionApplyVO.getPositionId());
         xgsPositionApply.setResumeId(xgsResumeBase.getId());
-        xgsPositionApply.setResumeName(xgsResumeBase.getResumeName());
-//        xgsPositionApply.setPositionName(xgsResumeBase.getApplyPositionName());
-//        xgsPositionApply.setPositionDept(xgsResumeBase.getApplyPositionDept());
-//        xgsPositionApply.setPositionType(xgsResumeBase.getApplyPositionType());
+        xgsPositionApply.setResumeName(StringUtils.defaultIfBlank(xgsResumeBase.getResumeName(), xgsPositionApply.getUserName() + "的简历"));
+        fillPositionSnapshot(xgsPositionApply);
         xgsPositionApply.setApprovalNode(IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW); // 提交到 待查看
         xgsPositionApply.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW); // 待人力处查看
         xgsPositionApply.setStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_PENDING_REVIEW); // 用户看到的审核状态为待查看
         save(xgsPositionApply);
         // 增加流程记录
         XgsFlowOpinions flowOpinions = new XgsFlowOpinions();
+        flowOpinions.setParentId(xgsPositionApply.getId());
         flowOpinions.setApprovalNode(IXgsFlowOpinionsService.NODE_HR_PENDING_REVIEW);
         flowOpinions.setApprovalStatus(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW);
         flowOpinions.setOpinions(IXgsFlowOpinionsService.APPROVAL_STATUS_HR_PENDING_REVIEW);
+        flowOpinions.setApprovalUser(xgsPositionApply.getUserName());
         flowOpinionsMapper.insert(flowOpinions);
         result.setMessage("在线申请添加岗位信息成功！");
         result.setResult("在线申请添加岗位信息成功！");
         return result;
+    }
+
+    private void fillPositionSnapshot(XgsPositionApply apply) {
+        if (apply == null || StringUtils.isBlank(apply.getPositionId())) {
+            return;
+        }
+        XgsPositions position = positionsMapper.selectById(apply.getPositionId());
+        if (position == null) {
+            return;
+        }
+        apply.setPositionName(position.getPositionName());
+        apply.setPositionType(position.getCategory());
+        if (StringUtils.isBlank(position.getDept())) {
+            return;
+        }
+        List<JSONObject> departs = sysBaseAPI.queryDepartsByIds(position.getDept());
+        if (departs != null && !departs.isEmpty() && departs.get(0) != null) {
+            apply.setPositionDept(departs.get(0).getString("departName"));
+        }
+        if (StringUtils.isBlank(apply.getPositionDept())) {
+            apply.setPositionDept(position.getDept());
+        }
     }
 
     @Override

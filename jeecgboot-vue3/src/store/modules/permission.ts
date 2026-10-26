@@ -271,6 +271,17 @@ export const usePermissionStore = defineStore({
 
           // 构建后台路由菜单
           const backMenuList = transformRouteToMenu(routeList);
+          const hasAgentMenu = backMenuList.some(
+            (item) => item.path === '/rms/agent-workflow' || item.children?.some((child) => child.path === '/rms/agent-workflow'),
+          );
+          if (!hasAgentMenu) {
+            backMenuList.splice(Math.min(1, backMenuList.length), 0, {
+              name: 'RmsAgentWorkflow',
+              path: '/rms/agent-workflow',
+              icon: 'ant-design:apartment-outlined',
+              meta: { title: '招聘智能体', icon: 'ant-design:apartment-outlined' },
+            });
+          }
           this.setBackMenuList(backMenuList);
 
           // 删除meta.ignoreRoute项

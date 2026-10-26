@@ -1,19 +1,4 @@
-import md5 from 'md5';
-// 与后端 jeecg.signatureSecret / JEECG_SIGNATURE_SECRET 须一致；生产在 .env.production 或构建环境变量中设置 VITE_GLOB_SIGNATURE_SECRET
-const envSignatureSecret =
-  import.meta.env.VITE_GLOB_SIGNATURE_SECRET != null
-    ? String(import.meta.env.VITE_GLOB_SIGNATURE_SECRET).trim()
-    : '';
-// VULN-022：生产构建必须配置 VITE_GLOB_SIGNATURE_SECRET，禁止回退 Jeecg 默认密钥
-if (import.meta.env.PROD && envSignatureSecret === '') {
-  const msg =
-    '[security] 生产构建缺少 VITE_GLOB_SIGNATURE_SECRET，请在 .env.production 或 CI 环境变量中配置，与后端 JEECG_SIGNATURE_SECRET 一致。';
-  console.error(msg);
-  throw new Error(msg);
-}
-const signatureSecret =
-  envSignatureSecret !== '' ? envSignatureSecret : 'dd05f1c54d63749eda95f9fa6d49v442a';
-
+// CERT-585812：生产不再把签名密钥放进前端包。鉴权只使用登录令牌。
 export default class signMd5Utils {
   /**
    * json参数升序
@@ -42,17 +27,7 @@ export default class signMd5Utils {
    * @returns {string} 获取签名
    */
   static getSign(url, requestParams, requestBodyParams) {
-    let urlParams = this.parseQueryString(url);
-    let jsonObj = this.mergeObject(urlParams, requestParams);
-    //update-begin---author:wangshuai---date:2024-04-16---for:【QQYUN-9005】发送短信加签---
-    if(requestBodyParams){
-      jsonObj = this.mergeObject(jsonObj, requestBodyParams)
-    }
-    //update-end---author:wangshuai---date:2024-04-16---for:【QQYUN-9005】发送短信加签---
-    let requestBody = this.sortAsc(jsonObj);
-    delete requestBody._t;
-    console.log('sign requestBody:', requestBody);
-    return md5(JSON.stringify(requestBody) + signatureSecret).toUpperCase();
+    return '';
   }
 
   /**

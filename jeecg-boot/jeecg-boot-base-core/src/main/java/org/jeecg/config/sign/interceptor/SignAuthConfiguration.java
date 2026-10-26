@@ -24,11 +24,16 @@ public class SignAuthConfiguration implements WebMvcConfigurer {
 
     @Bean
     public SignAuthInterceptor signAuthInterceptor() {
-        return new SignAuthInterceptor();
+        SignAuthInterceptor interceptor = new SignAuthInterceptor();
+        interceptor.setSignatureEnabled(jeecgBaseConfig.isSignatureEnabled());
+        return interceptor;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        if (!jeecgBaseConfig.isSignatureEnabled()) {
+            return;
+        }
         //------------------------------------------------------------
         //查询需要进行签名拦截的接口 signUrls
         String signUrls = jeecgBaseConfig.getSignUrls();

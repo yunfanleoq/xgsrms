@@ -31,8 +31,18 @@ public class SignAuthInterceptor implements HandlerInterceptor {
      */
     private final static long MAX_EXPIRE = 5 * 60;
 
+    /** 生产关闭。关闭后不再用前端可下载的共享密钥做鉴权。 */
+    private boolean signatureEnabled = true;
+
+    public void setSignatureEnabled(boolean signatureEnabled) {
+        this.signatureEnabled = signatureEnabled;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if (!signatureEnabled) {
+            return true;
+        }
         log.info("签名拦截器 Interceptor request URI = " + request.getRequestURI());
         
         try {
@@ -68,6 +78,9 @@ public class SignAuthInterceptor implements HandlerInterceptor {
      * @throws IllegalArgumentException 验证失败时抛出异常
      */
     public void validateSignature(HttpServletRequest request, Object bodyParam) throws IllegalArgumentException {
+        if (!signatureEnabled) {
+            return;
+        }
         try {
             log.debug("开始签名验证: {} {}", request.getMethod(), request.getRequestURI());
             

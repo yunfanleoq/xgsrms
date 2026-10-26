@@ -51,6 +51,13 @@ async function gotoMenu(page: Page, request: APIRequestContext, ...titles: strin
 }
 
 async function approveRow(page: Page, rowMarker: string, actionLabel = '审核') {
+  const card = page.locator('article.card').filter({ hasText: rowMarker }).first();
+  if (await card.count()) {
+    await card.getByRole('button', { name: /通过$/ }).first().click();
+    await page.getByRole('button', { name: '执行' }).click();
+    await waitForSuccessToast(page).catch(() => page.waitForTimeout(1500));
+    return;
+  }
   await clickTableActionForRow(page, rowMarker, actionLabel);
   const agree = page.getByText('同意', { exact: true }).first();
   if (await agree.count()) await agree.click();
@@ -240,7 +247,16 @@ test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请', async ({ 
     await gotoMenu(page, request, '面试管理', '面试邀请');
     const analysis = await assertPageReady(page, '面试邀请');
     const applicant = state.applicantName || '求职者';
-    if ((await tableHasText(page, applicant)) && (await tableHasText(page, rowMarker))) {
+    const inviteCard = page.locator('article.card').filter({ hasText: rowMarker }).first();
+    if (await inviteCard.count()) {
+      await inviteCard.getByRole('button', { name: '发送面试邀请' }).click();
+      await page.locator('.invite-form .ant-picker input').fill('2026-10-24 10:00:00');
+      await page.getByPlaceholder('例如 本部 3 号楼会议室').fill('本部会议室');
+      await page.getByPlaceholder('时间、材料、联系人').fill('请携带简历准时参加面试');
+      await page.getByRole('button', { name: '执行' }).click();
+      await waitForSuccessToast(page).catch(() => undefined);
+      logStep(state, '6-面试邀请', 'ok');
+    } else if ((await tableHasText(page, applicant)) && (await tableHasText(page, rowMarker))) {
       await clickTableActionForRow(page, rowMarker, '邀请').catch(async () => {
         await clickTableActionForRow(page, applicant, '邀请');
       });

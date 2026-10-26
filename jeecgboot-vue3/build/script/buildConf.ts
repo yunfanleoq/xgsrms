@@ -42,6 +42,8 @@ function createConfig(params: CreateConfigParams) {
 
 export function runBuildConfig() {
   const config = getEnvConfig();
+  // 签名密钥不得进入公网可下载的 _app.config.js
+  delete config.VITE_GLOB_SIGNATURE_SECRET;
   const configFileName = getConfigFileName(config);
   createConfig({ config, configName: configFileName, configFileName: GLOB_CONFIG_FILE_NAME });
 }

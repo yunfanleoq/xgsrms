@@ -32,4 +32,23 @@ export const AI_ROUTE: AppRouteRecordRaw = {
 //     },
 //   },
 // ];
-export const staticRoutesList = [AI_ROUTE];
+export const RMS_AGENT_ROUTE: AppRouteRecordRaw = {
+  path: '',
+  name: 'rms-agent-parent',
+  component: LAYOUT,
+  meta: {
+    title: '招聘智能体',
+  },
+  children: [
+    {
+      path: '/rms/agent-workflow',
+      name: 'RmsAgentWorkflow',
+      component: () => import('/@/views/rmsAgent/RmsAgentWorkflow.vue'),
+      meta: {
+        title: '招聘智能体工作流',
+      },
+    },
+  ],
+};
+
+export const staticRoutesList = [AI_ROUTE, RMS_AGENT_ROUTE];

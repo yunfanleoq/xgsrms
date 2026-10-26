@@ -55,7 +55,11 @@ export async function waitForSuccessToast(page: Page, timeout = 20_000): Promise
 }
 
 export async function tableHasText(page: Page, text: string): Promise<boolean> {
-  return (await page.locator('.ant-table-tbody').getByText(text, { exact: false }).count()) > 0;
+  const inTable = await page.locator('.ant-table-tbody').getByText(text, { exact: false }).count();
+  if (inTable > 0) {
+    return true;
+  }
+  return (await page.locator('article.card').filter({ hasText: text }).count()) > 0;
 }
 
 export async function clickTableActionForRow(page: Page, rowText: string, actionLabel: string) {

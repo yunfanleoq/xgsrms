@@ -96,6 +96,7 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/sys/getEncryptedString", "anon"); //获取加密串（已废弃 AES，兼容旧客户端）
         filterChainDefinitionMap.put("/sys/loginRsaPublicKey", "anon"); // 登录RSA公钥（推荐）
         filterChainDefinitionMap.put("/sys/sms", "anon");//短信验证码
+        filterChainDefinitionMap.put("/sys/ems", "anon");//邮箱验证码（注册页调用，须免登录）
         filterChainDefinitionMap.put("/sys/phoneLogin", "anon");//手机登录
         filterChainDefinitionMap.put("/sys/user/checkOnlyUser", "anon");//校验用户是否存在
         filterChainDefinitionMap.put("/sys/user/register", "anon");//用户注册
@@ -197,8 +198,9 @@ public class ShiroConfig {
 
         filterChainDefinitionMap.put("/openapi/call/**", "anon");
 
-        // XGS 招聘：已取消整段 anon，改由各 Controller 的 @IgnoreAuth + JwtFilter 白名单控制，避免匿名访问管理端全量列表
-        filterChainDefinitionMap.put("/sys/dict/getDictItems/*", "anon");
+        // CERT-585812：禁止 /sys/dict/getDictItems 整段 Shiro anon。
+        // 门户仅需普通字典 code（无逗号）时，由 SysDictController#getDictItems 的 @IgnoreAuth + 表字典鉴权兜底；
+        // 表字典形态 table,text,code 必须携带有效 JWT，防止伪造 X-Sign 未授权读 sys_user。
 
         // 添加自己的过滤器并且取名为jwt
         Map<String, Filter> filterMap = new HashMap<String, Filter>(1);

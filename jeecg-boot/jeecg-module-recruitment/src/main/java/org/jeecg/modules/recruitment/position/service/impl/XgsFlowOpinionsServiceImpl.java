@@ -31,6 +31,9 @@ public class XgsFlowOpinionsServiceImpl extends ServiceImpl<XgsFlowOpinionsMappe
     @Transactional
     public String add(XgsFlowOpinions xgsFlowOpinions) {
         XgsPositionApply positionApply = positionApplyMapper.selectById(xgsFlowOpinions.getParentId());
+        if (positionApply == null) {
+            return "未找到对应的岗位申请";
+        }
         String resultMessage = "";
         boolean isAgree = APPROVAL_RESULT_AGREE.equals(xgsFlowOpinions.getOpinions());
         

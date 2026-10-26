@@ -65,7 +65,25 @@ powershell -ExecutionPolicy Bypass -File .\scripts\security-remediation-verify.p
 
 仍建议黑盒验证：CSP、JimuReport `testConnection`、生产 `CORS_ALLOWED_ORIGINS` 环境变量是否已配置。
 
-## 5. 升级与回滚注意
+## 5. CERT-585812（字典接口未授权 / 表字典越权）
+
+院数通保通报：`GET /xgszp-boot/sys/dict/getDictItems/sys_user,username,username` 可在伪造 `X-Sign` 后未授权读取用户名。
+
+| 措施 | 状态 |
+|------|------|
+| 去掉 Shiro `anon`：`/sys/dict/getDictItems/*` | 代码已改 |
+| `@IgnoreAuth` 仅放行**普通字典 code**（无逗号）；`table,text,code` 须有效 JWT | 代码已改 |
+| **立即轮换**生产 `JEECG_SIGNATURE_SECRET`（通报中的密钥已泄露）并同步前端 `VITE_GLOB_SIGNATURE_SECRET` 后重新构建/发布 | 运维必做 |
+| 核查库表 `sys_table_white_list`：生产勿把 `sys_user` 配成可查敏感字段 | 运维核查 |
+| 部署后复测：无 Token 访问上述 URL 应 401；门户普通字典（如 `jour_type`、`岗位分类`）仍可用 | 已复测 |
+| 后台账号改密、口令复用与异常登录核对 | `scripts/reset-backend-passwords.py`（只改带业务角色的账号，应聘者仅 `test` 角色不改） |
+| 打开 `/xgszp-boot/` 访问日志、180 天保留、每 10 分钟告警 | `deploy/nginx/10.28.12.15.conf`、`deploy/logrotate/rms-logs`、`scripts/rms-security-alert.sh` |
+| 登录/短信/字典频率限制，封禁 `111.47.56.204`、`182.105.188.5` | 同上 Nginx 配置 |
+| 前端包不再携带签名密钥；生产关闭浏览器侧签名，敏感接口只认登录令牌 | 代码已改，须前后端一起发布 |
+
+反馈院方时附：整改说明、复测截图/请求响应、是否检出恶意样本（无则注明未发现）。
+
+## 6. 升级与回滚注意
 
 - 部署顺序建议：**先发布后端**（支持 POST），再发布前端；若先发布前端而后端未更新，会 **404/405** 于旧接口。
 - 若必须临时兼容仅支持 GET 的旧客户端：在对应环境将 **`allow-password-change-get`** 设为 **`true`**（**缩短窗口期**并尽快升级客户端）。

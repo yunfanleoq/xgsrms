@@ -26,8 +26,16 @@ if [ ! -f "$REPO_CONF" ]; then
   exit 1
 fi
 
+INC_SRC="$(dirname "$REPO_CONF")/rms-api-proxy.inc"
+if [ ! -f "$INC_SRC" ]; then
+  echo "ERROR: 未找到 rms-api-proxy.inc"
+  exit 1
+fi
 cp "$NGINX_SITE" "${NGINX_SITE}.bak.${STAMP}"
+cp "$INC_SRC" /www/server/panel/vhost/nginx/rms-api-proxy.inc
 cp "$REPO_CONF" "$NGINX_SITE"
+touch /www/wwwlogs/xgszp-boot.access.log
+chown www:www /www/wwwlogs/xgszp-boot.access.log || true
 nginx -t
 /etc/init.d/nginx reload || systemctl reload nginx || nginx -s reload
 echo "Nginx 已重载。探测 HTTP 跳转与 CSP："

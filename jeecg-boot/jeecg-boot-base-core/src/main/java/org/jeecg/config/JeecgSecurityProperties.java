@@ -27,6 +27,11 @@ public class JeecgSecurityProperties {
      */
     private String corsAllowedOrigins = "";
 
+    /**
+     * 注册是否跳过短信/邮箱验证码（内网无法出网发信时为 true）。
+     */
+    private boolean registerSkipSms = false;
+
     private Token token = new Token();
 
     @Data
