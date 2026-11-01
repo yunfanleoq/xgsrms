@@ -7,9 +7,9 @@ alwaysApply: true
 
 用户说「部署」「发版」「上线」「正式环境」「prod」「部署到 10.28.12.15」等时，按本规则执行。细则见技能 `.cursor/skills/xgsrms-prod-deploy/SKILL.md`。
 
-## 硬性前置：先登录 VPN
+## 硬性前置：先登录 VPN（aTrust 本地登录）
 
-正式机 `10.28.12.15`（SSH Host `xgs-server`）在内网。
+正式机 `10.28.12.15`（SSH Host `xgs-server`，用户 `xgs`）在内网。VPN：aTrust，门户 `https://159.226.95.71/portal/#!/login`，登录窗口下方选 **本地登录**；VPN 账号 `liuyanliang`，密码只从钥匙串 `159.226.95.71` / `iie-atrust-vpn` 读取。服务器 `xgs` 登录/sudo 密码只从钥匙串 `10.28.12.15` / `xgs-server-sudo` 读取。禁止把任何密码写入仓库。
 
 1. 发版任何 SSH / rsync **之前**，先测：
 
@@ -17,7 +17,7 @@ alwaysApply: true
 ssh -o ConnectTimeout=8 -o BatchMode=yes xgs-server 'echo OK'
 ```
 
-2. 超时或失败 → **立刻停止**，请用户登录单位 VPN（必要时再用 AweSun 会话作跳板）。不要盲重试，不要改脚本绕过网络，不要误判为「缺 Public Key」。
+2. 超时或失败 → **立刻停止**，请用户用 aTrust **本地登录** 登 VPN（必要时再用 AweSun 作跳板）。不要盲重试，不要改脚本绕过网络，不要误判为「缺 Public Key」，不要刷登录接口耗尽尝试次数。
 3. 仅在连通后再构建与发布。
 
 ## 发布路径（固定）

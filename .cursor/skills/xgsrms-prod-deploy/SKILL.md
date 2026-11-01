@@ -8,27 +8,60 @@ description: >-
 
 # xgsrms 正式环境发版部署
 
-## 硬性前置：必须先登录 VPN
+## 硬性前置：必须先登录 VPN（aTrust）
 
-正式机 `10.28.12.15` 在内网，**未连 VPN 时 SSH 会超时**。
+正式机 `10.28.12.15` 在内网，**未连 VPN 时 SSH 会超时**。本项目单位 VPN 用 **aTrust**（不是 EasyConnect 当主入口）。
 
-发版开始前先确认：
+| 项 | 值 |
+|---|---|
+| 门户 | `https://159.226.95.71/portal/#!/login` |
+| 客户端 | macOS `aTrust.app`；接入地址填 `https://159.226.95.71` |
+| 登录方式 | 登录窗口下方小字切到 **本地登录**（本地密码认证），不要走「统一身份认证」除非用户指定 |
+| 账号 | `liuyanliang` |
+| 密码 | **只从钥匙串取**，禁止写入仓库 / 规则正文 / commit |
+
+取密（不要 `echo` 到日志）：
+
+```bash
+security find-internet-password -s '159.226.95.71' -a 'liuyanliang' -w
+# 或
+security find-generic-password -s 'iie-atrust-vpn' -a 'liuyanliang' -w
+```
+
+发版开始前先确认隧道：
 
 ```bash
 ssh -o ConnectTimeout=8 -o BatchMode=yes xgs-server 'echo OK && hostname'
 ```
 
 - 成功打印 `OK` → 继续构建与发布。
-- `Operation timed out` / 无响应 → **立刻停下**，请用户登录单位 VPN（必要时再用 AweSun 远控会话作跳板），不要盲重试、不要改部署脚本绕过网络。
+- `Operation timed out` / 无响应 → **立刻停下**，请用户在 aTrust / 浏览器门户用 **本地登录** 登 VPN（必要时再用 AweSun 作跳板）。不要盲重试、不要改部署脚本绕过网络；不要用脚本狂刷登录接口（易触发剩余次数锁定）。
 
 `~/.ssh/config` 中应有：
 
 ```sshconfig
 Host xgs-server
   HostName 10.28.12.15
-  User root
-  # IdentityFile 按本机实际密钥配置
+  User xgs
+  IdentityFile ~/.ssh/id_ed25519_xgs
 ```
+
+服务器登录/sudo（`xgs`）：**只从钥匙串取**，禁止写入仓库。
+
+```bash
+security find-internet-password -s '10.28.12.15' -a 'xgs' -w
+# 或
+security find-generic-password -s 'xgs-server-sudo' -a 'xgs' -w
+```
+
+`finish-rms-deploy.sh` 需 sudo 写 `/www/wwwroot/rms/`；无交互时可用：
+
+```bash
+SSHPASS="$(security find-internet-password -s '10.28.12.15' -a 'xgs' -w)"
+ssh -o IPQoS=none xgs-server "echo \"$SSHPASS\" | sudo -S bash ~/finish-rms-deploy.sh"
+```
+
+（注意引号与历史记录；不要把密码打印到对话或日志。）
 
 ## 正式机路径与入口
 
