@@ -508,102 +508,7 @@
           </td>
         </tr>
 
-        <!-- 家庭状况区域 -->
-        <tr id="family-info">
-          <td colspan="6" class="section-header">
-            家庭状况
-            <a-button v-if="!formDisabled" type="link" size="small" @click="familyStatusRef?.handleAdd()">
-              <plus-outlined /> 新增
-            </a-button>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="6" class="content-cell">
-            <FamilyStatusTable 
-              ref="familyStatusRef"
-              v-model:dataSource="tableData.xgsResumeHomeList" 
-              :disabled="formDisabled" 
-            />
-          </td>
-        </tr>
-
-        <!-- 工作主要业绩区域 -->
-        <tr id="work-achievement">
-          <td colspan="6" class="section-header">
-            工作主要业绩
-            <a-button v-if="!formDisabled" type="link" size="small" @click="workAchievementRef?.handleAdd()">
-              <plus-outlined /> 新增
-            </a-button>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="6" class="content-cell">
-            <WorkAchievementTable 
-              ref="workAchievementRef"
-              v-model:dataSource="tableData.xgsResumeResearchResultList" 
-              :disabled="formDisabled" 
-            />
-          </td>
-        </tr>
-
-        <!-- 应聘岗位陈述区域 -->
-        <tr id="position-statement">
-          <td colspan="6" class="section-header">
-            应聘岗位陈述
-            <a-button v-if="!formDisabled" type="link" size="small" @click="positionStatementRef?.handleAdd()">
-              <plus-outlined /> 新增
-            </a-button>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="6" class="content-cell">
-            <PositionStatementTable 
-              ref="positionStatementRef"
-              v-model:dataSource="tableData.xgsResumePositionDescriptionList" 
-              :disabled="formDisabled" 
-            />
-          </td>
-        </tr>
-
-        <!-- 研究方向与专长区域 -->
-        <tr id="research-direction">
-          <td colspan="6" class="section-header">
-            研究方向与专长
-            <a-button v-if="!formDisabled" type="link" size="small" @click="researchDirectionRef?.handleAdd()">
-              <plus-outlined /> 新增
-            </a-button>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="6" class="content-cell">
-            <ResearchDirectionTable 
-              ref="researchDirectionRef"
-              v-model:dataSource="tableData.xgsResumeResearchDirectionList" 
-              :disabled="formDisabled" 
-            />
-          </td>
-        </tr>
-
-        <!-- 论文专著专利区域 -->
-        <tr id="paper-patent">
-          <td colspan="6" class="section-header">
-            论文专著专利
-            <a-button v-if="!formDisabled" type="link" size="small" @click="paperPatentRef?.handleAdd()">
-              <plus-outlined /> 新增
-            </a-button>
-          </td>
-        </tr>
-        <tr>
-          <td colspan="6" class="content-cell">
-            <PaperPatentTable 
-              ref="paperPatentRef"
-              v-model:dataSource="tableData.xgsResumeResearchPaperList" 
-              :disabled="formDisabled" 
-            />
-          </td>
-        </tr>
-
-        <!-- 上传其它材料区域 -->
+        <!-- 上传其它材料（必填侧：附件） -->
         <tr id="other-files">
           <td colspan="6" class="section-header">
             上传其它材料
@@ -630,6 +535,107 @@
             </div>
           </td>
         </tr>
+
+        <!-- 冷门字段默认折叠：家庭 / 业绩 / 陈述 / 研究方向 / 论文 -->
+        <tr id="advanced-toggle">
+          <td colspan="6" class="section-header advanced-toggle-row">
+            <a-button type="link" @click="showAdvanced = !showAdvanced">
+              {{ showAdvanced ? '收起更多选填信息' : '展开更多选填信息（家庭状况、业绩、陈述等）' }}
+            </a-button>
+          </td>
+        </tr>
+
+        <template v-if="showAdvanced">
+          <tr id="family-info">
+            <td colspan="6" class="section-header">
+              家庭状况
+              <a-button v-if="!formDisabled" type="link" size="small" @click="familyStatusRef?.handleAdd()">
+                <plus-outlined /> 新增
+              </a-button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" class="content-cell">
+              <FamilyStatusTable
+                ref="familyStatusRef"
+                v-model:dataSource="tableData.xgsResumeHomeList"
+                :disabled="formDisabled"
+              />
+            </td>
+          </tr>
+
+          <tr id="work-achievement">
+            <td colspan="6" class="section-header">
+              工作主要业绩
+              <a-button v-if="!formDisabled" type="link" size="small" @click="workAchievementRef?.handleAdd()">
+                <plus-outlined /> 新增
+              </a-button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" class="content-cell">
+              <WorkAchievementTable
+                ref="workAchievementRef"
+                v-model:dataSource="tableData.xgsResumeResearchResultList"
+                :disabled="formDisabled"
+              />
+            </td>
+          </tr>
+
+          <tr id="position-statement">
+            <td colspan="6" class="section-header">
+              应聘岗位陈述
+              <a-button v-if="!formDisabled" type="link" size="small" @click="positionStatementRef?.handleAdd()">
+                <plus-outlined /> 新增
+              </a-button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" class="content-cell">
+              <PositionStatementTable
+                ref="positionStatementRef"
+                v-model:dataSource="tableData.xgsResumePositionDescriptionList"
+                :disabled="formDisabled"
+              />
+            </td>
+          </tr>
+
+          <tr id="research-direction">
+            <td colspan="6" class="section-header">
+              研究方向与专长
+              <a-button v-if="!formDisabled" type="link" size="small" @click="researchDirectionRef?.handleAdd()">
+                <plus-outlined /> 新增
+              </a-button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" class="content-cell">
+              <ResearchDirectionTable
+                ref="researchDirectionRef"
+                v-model:dataSource="tableData.xgsResumeResearchDirectionList"
+                :disabled="formDisabled"
+              />
+            </td>
+          </tr>
+
+          <tr id="paper-patent">
+            <td colspan="6" class="section-header">
+              论文专著专利
+              <a-button v-if="!formDisabled" type="link" size="small" @click="paperPatentRef?.handleAdd()">
+                <plus-outlined /> 新增
+              </a-button>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="6" class="content-cell">
+              <PaperPatentTable
+                ref="paperPatentRef"
+                v-model:dataSource="tableData.xgsResumeResearchPaperList"
+                :disabled="formDisabled"
+              />
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
 
@@ -640,7 +646,7 @@
     </a-form>
       </div>
 
-      <!-- 右侧锚点导航 -->
+      <!-- 右侧锚点：默认只展示主流程必填模块，冷门项展开后出现 -->
       <div class="anchor-wrapper">
           <a-anchor
             :target-offset="80"
@@ -649,12 +655,15 @@
             <a-anchor-link href="#basic-info" title="基本信息" />
             <a-anchor-link href="#work-experience" title="工作经历" />
             <a-anchor-link href="#education" title="教育经历" />
-            <a-anchor-link href="#family-info" title="家庭状况" />
-            <a-anchor-link href="#work-achievement" title="工作主要业绩" />
-            <a-anchor-link href="#position-statement" title="应聘岗位陈述" />
-            <a-anchor-link href="#research-direction" title="研究方向与专长" />
-            <a-anchor-link href="#paper-patent" title="论文专著专利" />
-            <a-anchor-link href="#other-files" title="上传其它材料" />
+            <a-anchor-link href="#other-files" title="附件材料" />
+            <a-anchor-link href="#advanced-toggle" title="更多选填" />
+            <template v-if="showAdvanced">
+              <a-anchor-link href="#family-info" title="家庭状况" />
+              <a-anchor-link href="#work-achievement" title="工作主要业绩" />
+              <a-anchor-link href="#position-statement" title="应聘岗位陈述" />
+              <a-anchor-link href="#research-direction" title="研究方向与专长" />
+              <a-anchor-link href="#paper-patent" title="论文专著专利" />
+            </template>
           </a-anchor>
       </div>
     </div>
@@ -700,6 +709,9 @@ const props = defineProps({
   // 是否隐藏提交按钮
   hideSubmitBtn: { type: Boolean, default: false },
 });
+
+/** 冷门选填块（家庭/业绩/陈述等）默认折叠，降低门户投递噪音 */
+const showAdvanced = ref(false);
 
 // 岗位类型计算属性
 const positionType = computed(() => formData?.positionType || '普通岗位');

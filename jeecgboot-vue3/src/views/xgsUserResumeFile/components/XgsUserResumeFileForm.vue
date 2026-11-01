@@ -97,7 +97,7 @@
   function analysisResume() {
     confirmLoading.value = true;
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 60000, data: formData })
       .then((data) => {
         if (data) {
           Object.assign(formData, data);

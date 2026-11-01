@@ -178,6 +178,11 @@ mybatis-plus:
 
 minidao:
   base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
+# 简历 PDF 解析：默认本地 Tika；生产可通过 RESUME_PARSE_MODE=zhipu 切智谱（需配置 ClientV4）
+resume:
+  parse:
+    mode: ${RESUME_PARSE_MODE:tika}
+
 jeecg:
   actuator:
     jeecg-http-trace-enabled: false

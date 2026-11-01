@@ -1,39 +1,31 @@
 package org.jeecg.modules.recruitment.resume.service.impl;
 
 import cn.hutool.core.io.file.FileNameUtil;
-import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zhipu.oapi.ClientV4;
-import com.zhipu.oapi.Constants;
 import com.zhipu.oapi.core.response.HttpxBinaryResponseContent;
-import com.zhipu.oapi.service.v4.file.FileApiResponse;
 import com.zhipu.oapi.service.v4.file.UploadFileRequest;
-import com.zhipu.oapi.service.v4.model.ChatCompletionRequest;
 import com.zhipu.oapi.service.v4.model.ChatMessage;
 import com.zhipu.oapi.service.v4.model.ChatMessageRole;
 import com.zhipu.oapi.service.v4.model.ModelData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
-import org.jeecg.chatgpt.service.AiChatService;
 import org.jeecg.common.exception.JeecgBootException;
-import org.jeecg.common.util.Md5Util;
-import org.jeecg.common.util.RedisUtil;
 import org.jeecg.modules.base.service.BaseCommonService;
 import org.jeecg.modules.recruitment.resume.entity.XgsUserResumeFile;
 import org.jeecg.modules.recruitment.resume.mapper.XgsUserResumeFileMapper;
+import org.jeecg.modules.recruitment.resume.parse.LocalResumeTikaParser;
+import org.jeecg.modules.recruitment.resume.parse.ResumeRuleMapper;
 import org.jeecg.modules.recruitment.resume.service.IXgsUserResumeFileService;
+import org.jeecg.common.util.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +43,7 @@ import java.util.regex.Pattern;
 @Service
 public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileMapper, XgsUserResumeFile> implements IXgsUserResumeFileService {
 
-    /** 智谱 ClientV4；未配置 Bean 时不影响系统启动，简历 AI 解析将不可用 */
+    /** 智谱 ClientV4；仅 resume.parse.mode=zhipu 时需要 */
     @Autowired(required = false)
     private ClientV4 clientV4;
 
@@ -61,18 +53,79 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
+    /**
+     * 简历解析模式：tika（默认，本地抽文本+规则）| zhipu（可选云端 GLM）
+     */
+    @Value("${resume.parse.mode:tika}")
+    private String resumeParseMode;
+
     @Autowired
     private BaseCommonService baseCommonService;
 
-    /**
-     * 分析简历
-     * @param xgsUserResumeFile
-     * @return
-     */
+    @Autowired
+    private LocalResumeTikaParser localResumeTikaParser;
+
+    @Autowired
+    private ResumeRuleMapper resumeRuleMapper;
+
     @Override
     public XgsUserResumeFile analysisResume(XgsUserResumeFile xgsUserResumeFile) {
+        String mode = resumeParseMode == null ? "tika" : resumeParseMode.trim().toLowerCase();
+        if ("zhipu".equals(mode)) {
+            return analysisResumeByZhipu(xgsUserResumeFile);
+        }
+        return analysisResumeByTika(xgsUserResumeFile);
+    }
+
+    /**
+     * 默认：Apache Tika 抽文本 + 规则映射；不要求 ClientV4。
+     */
+    private XgsUserResumeFile analysisResumeByTika(XgsUserResumeFile xgsUserResumeFile) {
+        String filePath = upLoadPath + File.separator + xgsUserResumeFile.getFilePath();
+        try {
+            File file = new File(filePath);
+            if (!file.isFile()) {
+                throw new JeecgBootException("简历文件不存在：" + xgsUserResumeFile.getFilePath());
+            }
+            String md5;
+            try (FileInputStream fis = new FileInputStream(file)) {
+                md5 = DigestUtils.md5Hex(fis);
+            }
+            String text = localResumeTikaParser.extractText(Path.of(file.getAbsolutePath()));
+            ResumeRuleMapper.MapResult mapped = resumeRuleMapper.map(text);
+
+            xgsUserResumeFile.setFileName(FileNameUtil.getName(filePath));
+            xgsUserResumeFile.setFileExt(FileNameUtil.getSuffix(filePath));
+            xgsUserResumeFile.setFileSize((int) Math.min(file.length(), Integer.MAX_VALUE));
+            xgsUserResumeFile.setFileMd5(md5);
+            xgsUserResumeFile.setResumeInfo(text.length() > 8000 ? text.substring(0, 8000) : text);
+            xgsUserResumeFile.setFileJson(mapped.json.toJSONString());
+            xgsUserResumeFile.setParseMode("tika");
+            xgsUserResumeFile.setFilledFields(mapped.filled);
+            xgsUserResumeFile.setMissedFields(mapped.missed);
+            xgsUserResumeFile.setParseSummary(String.format(
+                    "本地 Tika 解析完成：已识别 %d 项，未识别 %d 项。未识别：%s",
+                    mapped.filled.size(),
+                    mapped.missed.size(),
+                    String.join("、", mapped.missed.isEmpty() ? List.of("无") : mapped.missed)
+            ));
+            xgsUserResumeFile.setRemarks(xgsUserResumeFile.getParseSummary());
+            saveOrUpdate(xgsUserResumeFile);
+            return xgsUserResumeFile;
+        } catch (JeecgBootException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Tika 简历解析失败", e);
+            throw new JeecgBootException("本地简历解析失败：" + e.getMessage());
+        }
+    }
+
+    /**
+     * 可选：智谱云抽取。未配置 ClientV4 时明确失败。
+     */
+    private XgsUserResumeFile analysisResumeByZhipu(XgsUserResumeFile xgsUserResumeFile) {
         if (clientV4 == null) {
-            throw new JeecgBootException("智谱 AI 未配置（未注册 ClientV4 Bean），简历智能解析功能暂不可用。");
+            throw new JeecgBootException("简历解析模式为 zhipu，但智谱 AI 未配置（未注册 ClientV4 Bean）。可改回 resume.parse.mode=tika。");
         }
         String filePath = upLoadPath + File.separator + xgsUserResumeFile.getFilePath();
         try {
@@ -80,13 +133,6 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
             FileInputStream fis = new FileInputStream(file);
             String md5 = DigestUtils.md5Hex(fis);
             fis.close();
-            // 查询缓存
-//            QueryWrapper<XgsUserResumeFile> queryWrapper = new QueryWrapper<>();
-//            queryWrapper.eq("file_md5", md5);
-//            List<XgsUserResumeFile> list = list(queryWrapper);
-//            if (list.size() > 0) {
-//                return list.get(list.size() - 1);
-//            }
             UploadFileRequest request = UploadFileRequest.builder().purpose("file-extract").filePath(filePath).build();
             com.zhipu.oapi.service.v4.file.File resFile = clientV4.getChatApiService().uploadFile(request).blockingGet();
             HttpxBinaryResponseContent responseContent = clientV4.getChatApiService().fileContent(resFile.getId());
@@ -97,13 +143,9 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
             xgsUserResumeFile.setParentId(resFile.getId());
             xgsUserResumeFile.setFileMd5(md5);
             xgsUserResumeFile.setResumeInfo(text);
-            Map<String, Object> extraJson = new HashMap<>();
-            extraJson.put("temperature", 0.5);
             JSONObject json = JSONObject.parseObject(xgsUserResumeFile.getResumeInfo());
-//            String messageContent = String.format("请对以下个人简历信息进行分析，并且生成JSON格式：\n\n简历内容如下：\n%s}", json.getString("content"));
             String[] jsonTemplate = getResumeInfoJsonTemplate();
             String messageContent = String.format("请对以下个人简历信息进行分析，根据JSON模板生成JSON格式数据\n\n" +
-//                    "#JSON Key 注释\n%s\n\n" +
                     "#JSON模板\n%s\n\n" +
                     "#个人简历信息\n%s\n\n", jsonTemplate[0], json.getString("content"));
             List<ChatMessage> messages = new ArrayList<>();
@@ -114,14 +156,17 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
             completionRequest.put("messages", messages);
             ModelData modelData = clientV4.getChatApiService().createChatCompletion(completionRequest).blockingGet();
             String markdownText = modelData.getChoices().get(0).getMessage().getContent().toString();
-            // 提取 JSON 数据
             List<String> jsonDataList = extractJsonFromMarkdown(markdownText);
             String jsonStr = jsonDataList.iterator().next();
             JSONObject jsonObject = JSONObject.parseObject(jsonStr);
             xgsUserResumeFile.setFileJson(jsonObject.toJSONString());
+            xgsUserResumeFile.setParseMode("zhipu");
+            xgsUserResumeFile.setParseSummary("智谱 GLM 解析完成");
             saveOrUpdate(xgsUserResumeFile);
             Thread.sleep(1500);
             clientV4.getChatApiService().deletedFile(resFile.getId());
+        } catch (JeecgBootException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -129,10 +174,6 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
         return xgsUserResumeFile;
     }
 
-    /**
-     * 获取JSON 模板的数据
-     * @return
-     */
     private String[] getResumeInfoJsonTemplate() {
         String[] jsonTemplate = new String[2];
         jsonTemplate[0] = "\n" +
@@ -204,41 +245,20 @@ public class XgsUserResumeFileServiceImpl extends ServiceImpl<XgsUserResumeFileM
         return jsonTemplate;
     }
 
-    /**
-     * 从 Markdown 文本中提取 JSON 数据
-     *
-     * @param markdownText Markdown 文本
-     * @return 提取的 JSON 数据列表
-     */
     public static List<String> extractJsonFromMarkdown(String markdownText) {
         List<String> jsonDataList = new ArrayList<>();
-
-        // 正则表达式匹配代码块中的 JSON（以 ```json 开头）
         String jsonBlockPattern = "```json\\s*([\\s\\S]*?)\\s*```";
-        // 正则表达式匹配内联的 JSON（用反引号包裹）
         String inlineJsonPattern = "`(\\{.*?\\}|\\[.*?\\])`";
-
-        // 提取代码块中的 JSON
         extractMatches(markdownText, jsonBlockPattern, jsonDataList);
-        // 提取内联的 JSON
         extractMatches(markdownText, inlineJsonPattern, jsonDataList);
-
         return jsonDataList;
     }
 
-    /**
-     * 使用正则表达式提取匹配的内容
-     *
-     * @param text    输入文本
-     * @param pattern 正则表达式
-     * @param matches 存储匹配结果的列表
-     */
     private static void extractMatches(String text, String pattern, List<String> matches) {
         Pattern regex = Pattern.compile(pattern);
         Matcher matcher = regex.matcher(text);
-
         while (matcher.find()) {
-            matches.add(matcher.group(1).trim()); // 提取匹配的内容并去除空白字符
+            matches.add(matcher.group(1).trim());
         }
     }
 }

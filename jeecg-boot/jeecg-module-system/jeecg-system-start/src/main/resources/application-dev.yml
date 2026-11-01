@@ -186,6 +186,11 @@ mybatis-plus:
 #jeecg专用配置
 minidao:
   base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
+# 简历 PDF 解析：tika=本地抽文本+规则（默认，不需 ClientV4）；zhipu=智谱 GLM（可选）
+resume:
+  parse:
+    mode: ${RESUME_PARSE_MODE:tika}
+
 jeecg:
   actuator:
     jeecg-http-trace-enabled: true

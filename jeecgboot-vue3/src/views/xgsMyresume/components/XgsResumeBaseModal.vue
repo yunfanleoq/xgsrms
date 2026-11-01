@@ -207,12 +207,19 @@
     setModalProps({ loading: true, confirmLoading: true });
     resumeText.value = '请稍等，正在分析简历...';
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: { filePath: val } })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 60000, data: { filePath: val } })
       .then((data) => {
         if (data && data.fileJson) {
           let resumeData = JSON.parse(data.fileJson);
           fillResumeInfo(resumeData);
-          resumeText.value = '';
+          resumeText.value = data.parseSummary || '';
+          if (data.parseSummary) {
+            createMessage.success(data.parseSummary);
+          }
+          const missed = Array.isArray(data.missedFields) ? data.missedFields : [];
+          if (missed.length) {
+            createMessage.info(`未识别请手工补全：${missed.slice(0, 12).join('、')}`);
+          }
         } else {
           createMessage.warning('解析失败，请上传PDF格式的简历');
         }

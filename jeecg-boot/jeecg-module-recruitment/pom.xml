@@ -47,6 +47,22 @@
             <artifactId>oapi-java-sdk</artifactId>
             <version>release-V4-2.3.1</version>
         </dependency>
+        <!-- 简历本地解析：与 airag 对齐的 Apache Tika（默认 resume.parse.mode=tika） -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parser-pdf-module</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parser-text-module</artifactId>
+            <version>3.2.3</version>
+        </dependency>
     </dependencies>
 
 </project>

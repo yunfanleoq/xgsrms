@@ -5,9 +5,11 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import java.util.List;
 import org.jeecg.common.constant.ProvinceCityArea;
 import org.jeecg.common.util.SpringContextUtils;
 import lombok.Data;
@@ -122,4 +124,24 @@ public class XgsUserResumeFile implements Serializable {
 	@Excel(name = "备注", width = 15)
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    /**解析模式：tika | zhipu（不落库）*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "解析模式")
+    private String parseMode;
+
+    /**已识别并填充的字段名（不落库）*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "已填充字段")
+    private List<String> filledFields;
+
+    /**未能识别的字段名（不落库）*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "未识别字段")
+    private List<String> missedFields;
+
+    /**给人看的解析摘要（不落库）*/
+    @TableField(exist = false)
+    @ApiModelProperty(value = "解析摘要")
+    private String parseSummary;
 }
