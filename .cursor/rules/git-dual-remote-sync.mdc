@@ -1,5 +1,5 @@
 ---
-description: 推送时同步推送到腾讯工蜂 origin 与 GitHub github 两个远端
+description: 推送时同步推送到 GitHub origin 与 Cursor Origin cursor 两个远端
 alwaysApply: true
 ---
 
@@ -11,10 +11,12 @@ alwaysApply: true
 
 | 远端名 | 地址 | 用途 |
 |--------|------|------|
-| `origin` | `https://git.code.tencent.com/recruiting/xgsrms.git` | 腾讯工蜂（主协作） |
-| `github` | `https://github.com/yunfanleoq/xgsrms.git` | GitHub 镜像 |
+| `origin` | `git@github.com:yunfanleoq/xgsrms.git` | GitHub（SSH） |
+| `cursor` | `https://origin.cursor.com/yunfanleo/xgsrms.git` | Cursor Origin（云端 Agent） |
 
 查看远端：`git remote -v`
+
+> 历史曾用腾讯工蜂 HTTPS + `github` 远端名；现以本表为准。若 `git remote -v` 与上表不一致，以实际配置为准并两边都推。
 
 ## 何时执行
 
@@ -22,41 +24,44 @@ alwaysApply: true
 - **仅在用户明确要求时**才 commit / push（勿主动推送）。
 - **禁止** `git push --force` 到 `master`，除非用户明确授权。
 
-## 标准流程（PowerShell）
+## 标准流程
 
-当前分支一般为 `master`。Windows 下命令用 `;` 分隔，不要用 `&&`。
+当前分支一般为 `master`。
 
-```powershell
-Set-Location "I:\cursorProjects\xgsrms"
+```bash
+cd /Users/yunfanleo/cursorProjects/xgsrms
 git status
 git push origin master
-git push github master
+git push cursor master
 ```
 
 若当前分支不是 `master`，将上述命令中的 `master` 换成实际分支名，**两个远端都要推同一分支**。
+
+macOS / Linux 可用 `&&`；Windows PowerShell 用 `;` 分隔。
 
 ## 执行要求
 
 1. 推送前先 `git status`，确认有已提交内容待推；若本地领先远端，再执行双 push。
 2. **两个远端都要推**；若第一个成功、第二个失败，报告第一个已成功并说明第二个失败原因，不要隐瞒。
-3. 推送完成后简要汇报：`origin` 与 `github` 各自结果（分支、commit 范围）。
+3. 推送完成后简要汇报：`origin` 与 `cursor` 各自结果（分支、commit 范围）。
 4. **不要**修改全局或本仓库 `git config`（含 `user.*`、默认 upstream），除非用户单独要求。
-5. GitHub 可能对历史大文件（如 >50MB 的 sql zip）告警；推送失败时提示检查文件体积或 LFS，勿擅自改历史。
+5. GitHub 用 SSH；HTTPS 易 403。大文件（如 >50MB sql zip）可能导致 GitHub 失败；勿擅自改历史。
 
 ## 仅推单一远端
 
-只有用户**明确**说「只推腾讯 / 只推 GitHub / 只推 origin / 只推 github」时，才推指定远端。
+只有用户**明确**说「只推 GitHub / 只推 Origin / 只推 origin / 只推 cursor」时，才推指定远端。
 
 ## 示例
 
 用户：「推送到远端」
 
-```powershell
-git push origin master; git push github master
+```bash
+git push origin master
+git push cursor master
 ```
 
 用户：「只推 GitHub」
 
-```powershell
-git push github master
+```bash
+git push origin master
 ```

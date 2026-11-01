@@ -19,11 +19,13 @@ derby.log
 /jeecg-uniapp/.history/
 /logs/
 /测试文档
-# Cursor：仅忽略本地杂项，保留可提交的 MCP 与 rules
+# Cursor：仅忽略本地杂项，保留可提交的 MCP、rules 与项目 skills
 /.cursor/*
 !/.cursor/mcp.json
 !/.cursor/rules/
 !/.cursor/rules/**
+!/.cursor/skills/
+!/.cursor/skills/**
 /.qoder
 /.history
 /jeecgboot-vue3/xgszp

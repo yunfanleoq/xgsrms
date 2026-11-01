@@ -1,0 +1,45 @@
+---
+description: xgsrms 正式发版必须先登 VPN，再经 xgs-server 用 stage/finish 脚本部署
+alwaysApply: true
+---
+
+# xgsrms 正式环境发版部署
+
+用户说「部署」「发版」「上线」「正式环境」「prod」「部署到 10.28.12.15」等时，按本规则执行。细则见技能 `.cursor/skills/xgsrms-prod-deploy/SKILL.md`。
+
+## 硬性前置：先登录 VPN
+
+正式机 `10.28.12.15`（SSH Host `xgs-server`）在内网。
+
+1. 发版任何 SSH / rsync **之前**，先测：
+
+```bash
+ssh -o ConnectTimeout=8 -o BatchMode=yes xgs-server 'echo OK'
+```
+
+2. 超时或失败 → **立刻停止**，请用户登录单位 VPN（必要时再用 AweSun 会话作跳板）。不要盲重试，不要改脚本绕过网络，不要误判为「缺 Public Key」。
+3. 仅在连通后再构建与发布。
+
+## 发布路径（固定）
+
+| 步骤 | 动作 |
+|------|------|
+| 1 | 本地构建前端 `jeecgboot-vue3`（`NODE_OPTIONS=--max-old-space-size=8192 npm run build`）与后端 JAR |
+| 2 | 再验一次 `ssh xgs-server` |
+| 3 | `bash scripts/stage-no-client-sign.sh` → 推到服务器 `/tmp/rms-stage/` |
+| 4 | `bash scripts/finish-rms-deploy.sh` → 切换 `/www/wwwroot/rms/{frontend/dist,backend}` |
+| 5 | 按需 `ensure-rms-security-env.sh` + 重启后端 |
+| 6 | 冒烟 `https://10.28.12.15/` |
+
+正式前端 env：`VITE_GLOB_API_URL=/xgszp-boot`，无客户端签名密钥。
+
+## 禁止
+
+- 未通 VPN 时继续 rsync / 手工覆盖正式目录
+- 跳过 stage，直接往 `/www/wwwroot/rms/` 乱拷
+- 未获用户授权时 commit / push / force push
+- 擅自改正式机 `rms.env` 中已有密钥与生产密钥
+
+## 与推送的关系
+
+代码变更的 commit / push **仅在用户明确要求时**执行；push 须同步 `origin`（GitHub）与 `cursor`（Cursor Origin），见 `git-dual-remote-sync` 规则。
