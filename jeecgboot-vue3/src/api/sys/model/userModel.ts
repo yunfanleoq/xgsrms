@@ -9,6 +9,7 @@ export interface LoginParams {
   captcha?: string;
   checkKey?: string | number | null;
   loginOrgCode?: string;
+  smsCode?: string;
 }
 
 export interface ThirdLoginParams {

@@ -264,8 +264,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
     public Result<?> resetPassword(String username, String oldpassword, String newpassword, String confirmpassword) {
         SysUser user = userMapper.getUserByName(username);
-        String passwordEncode = PasswordUtil.encrypt(username, oldpassword, user.getSalt());
-        if (!user.getPassword().equals(passwordEncode)) {
+        if (!PasswordUtil.matches(username, oldpassword, user.getSalt(), user.getPassword())) {
             return Result.error("旧密码输入错误!");
         }
         if (oConvertUtils.isEmpty(newpassword)) {
@@ -274,17 +273,25 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         if (!newpassword.equals(confirmpassword)) {
             return Result.error("两次输入密码不一致!");
         }
+        String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(username, newpassword);
+        if (policyError != null) {
+            return Result.error(policyError);
+        }
         String password = PasswordUtil.encrypt(username, newpassword, user.getSalt());
-        this.userMapper.update(new SysUser().setPassword(password), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
+        this.userMapper.update(new SysUser().setPassword(password).setLastPwdUpdateTime(new Date()), new LambdaQueryWrapper<SysUser>().eq(SysUser::getId, user.getId()));
         return Result.ok("密码重置成功!");
     }
 
     @Override
     @CacheEvict(value = {CacheConstant.SYS_USERS_CACHE}, allEntries = true)
     public Result<?> changePassword(SysUser sysUser) {
+        String password = sysUser.getPassword();
+        String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(sysUser.getUsername(), password);
+        if (policyError != null) {
+            return Result.error(policyError);
+        }
         String salt = oConvertUtils.randomGen(8);
         sysUser.setSalt(salt);
-        String password = sysUser.getPassword();
         String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(), password, salt);
         sysUser.setPassword(passwordEncode);
         sysUser.setLastPwdUpdateTime(new Date());
@@ -2723,12 +2730,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             throw new JeecgBootBizTipException("手机号不为空，请根据手机号进行修改密码操作！");
         }
         //step4 判断旧密码是否正确
-        String passwordEncode = PasswordUtil.encrypt(username, oldPassword, user.getSalt());
-        if (!user.getPassword().equals(passwordEncode)) {
+        if (!PasswordUtil.matches(username, oldPassword, user.getSalt(), user.getPassword())) {
             throw new JeecgBootBizTipException("旧密码输入错误!");
         }
         if (oConvertUtils.isEmpty(password)) {
             throw new JeecgBootBizTipException("新密码不允许为空!");
+        }
+        String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(username, password);
+        if (policyError != null) {
+            throw new JeecgBootBizTipException(policyError);
         }
         //step5 修改密码
         String newPassWord = PasswordUtil.encrypt(username, password, user.getSalt());
@@ -2952,9 +2962,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 			}
 
 			// step.3 校验用户名或密码是否正确
-			String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
-			String syspassword = sysUser.getPassword();
-			if (!syspassword.equals(userpassword)) {
+			if (!PasswordUtil.matches(username, password, sysUser.getSalt(), sysUser.getPassword())) {
 				result.error500("用户名或密码错误");
 				return result;
 			}
@@ -3005,7 +3013,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 				UpdateWrapper<SysUser> updateWrapper = new UpdateWrapper<>();
 				updateWrapper
 						.eq("username", username)
-						.set("last_pwd_update_time", new Date())
+						.setSql("last_pwd_update_time = null")
 						.set("password", passwordEncode)
 						.set("salt", salt);
 				this.baseMapper.update(null, updateWrapper);

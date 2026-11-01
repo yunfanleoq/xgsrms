@@ -6,7 +6,9 @@
 <script lang="ts" setup>
   import { ref, unref } from 'vue';
   import { rules } from '/@/utils/helper/validator';
+  import { passwordPolicyRules, PWD_EXPIRED_KEY } from '/@/utils/helper/passwordPolicy';
   import { defHttp } from '/@/utils/http/axios';
+  import { useUserStore } from '/@/store/modules/user';
   import { BasicModal, useModalInner } from '/@/components/Modal';
   import BasicForm from '/@/components/Form/src/BasicForm.vue';
   import { useForm } from '/@/components/Form/src/hooks/useForm';
@@ -38,12 +40,7 @@
         componentProps: {
           placeholder: t('layout.changePassword.pleaseEnterNewPassword'),
         },
-        rules: [
-          {
-            required: true,
-            message: t('layout.changePassword.pleaseEnterNewPassword'),
-          },
-        ],
+        rules: passwordPolicyRules(),
       },
       {
         label: t('layout.changePassword.confirmNewPassword'),
@@ -70,6 +67,8 @@
       defHttp.put({ url: '/sys/user/updatePassword', params }, { isTransformResponse: false }).then((res) => {
         if (res.success) {
           $message.createMessage.success(res.message);
+          sessionStorage.removeItem(PWD_EXPIRED_KEY);
+          useUserStore().setPwdExpired(false);
           //关闭弹窗
           closeModal();
         } else {

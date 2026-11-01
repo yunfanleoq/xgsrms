@@ -83,7 +83,21 @@ powershell -ExecutionPolicy Bypass -File .\scripts\security-remediation-verify.p
 
 反馈院方时附：整改说明、复测截图/请求响应、是否检出恶意样本（无则注明未发现）。
 
-## 6. 升级与回滚注意
+## 6. 弱口令整治（附件2/附件3）
+
+| 清单项 | 落地 |
+|----|------|
+| 口令复杂度 | 后端 `PasswordPolicy`：≥12 位且含大小写、数字、特殊字符；新建用户 / 改密 / 注册 / 忘记密码均校验 |
+| 弱口令字典 | 常见弱口令黑名单，命中拒绝 |
+| 更新机制 | `lastPwdUpdateTime` 超过 `jeecg.security.password.expire-days`（默认 90，从未改过视为过期）登录后强制改密 |
+| 防暴破 | 账号+IP 失败达 `login.max-fail-times`（5）锁定 `login.lock-duration`（1800 秒）；Nginx 登录限流仍在 |
+| 多因子 | 登录图形验证码 + 生产打开短信二次认证（已绑手机必填）；传输走登录 RSA |
+| 加密存储 | 新口令 `PBKDF2-HMAC-SHA256`；存量 PBE 登录成功后自动升级。传输 RSA / HTTPS |
+| 跨境登录 | `block-overseas=true`：网关 `X-Country-Code` 或应用内国内 IPv4 段，不在 `CN,HK,MO,TW` / 非国内地址则拒绝。内网/回环放行 |
+
+生产 `application-prod.yml` 已打开 90 天过期、30 分钟锁定、跨境拦截、强制 RSA、短信 MFA。未绑手机账号仍用验证码 + RSA。
+
+## 7. 升级与回滚注意
 
 - 部署顺序建议：**先发布后端**（支持 POST），再发布前端；若先发布前端而后端未更新，会 **404/405** 于旧接口。
 - 若必须临时兼容仅支持 GET 的旧客户端：在对应环境将 **`allow-password-change-get`** 设为 **`true`**（**缩短窗口期**并尽快升级客户端）。

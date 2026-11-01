@@ -40,6 +40,9 @@ const selectList = () => {
       } catch (e) {
       }
     })
+    .catch((e) => {
+      console.warn('联系我们内容加载失败（可忽略：后端未启动或接口异常）', e);
+    })
 }
 
 onMounted(selectList)

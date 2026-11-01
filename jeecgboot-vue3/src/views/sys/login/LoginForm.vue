@@ -28,6 +28,10 @@
       </ACol>
     </ARow>
 
+    <FormItem name="smsCode" class="enter-x" v-if="mfaRequired">
+      <Input size="large" v-model:value="formData.smsCode" :maxlength="6" :placeholder="t('sys.login.smsCode')" />
+    </FormItem>
+
     <ARow class="enter-x">
       <ACol :span="12">
         <FormItem>
@@ -120,11 +124,13 @@
   const thirdModalRef = ref();
   const loading = ref(false);
   const rememberMe = ref(false);
+  const mfaRequired = ref(false);
 
   const formData = reactive({
     account: 'admin',
     password: '123456',
     inputCode: '',
+    smsCode: '',
   });
   const randCodeData = reactive({
     randCodeImage: '',
@@ -149,6 +155,7 @@
           username: data.account,
           captcha: data.inputCode,
           checkKey: randCodeData.checkKey,
+          smsCode: formData.smsCode,
           mode: 'none', //不要默认的错误提示
         })
       );
@@ -159,7 +166,17 @@
           duration: 3,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.code === 40101) {
+        mfaRequired.value = true;
+        notification.info({
+          message: t('sys.login.smsCode'),
+          description: error.message || t('sys.login.smsCode'),
+          duration: 3,
+        });
+        loading.value = false;
+        return;
+      }
       notification.error({
         message: t('sys.api.errorTip'),
         description: error.message || t('sys.api.networkExceptionMsg'),

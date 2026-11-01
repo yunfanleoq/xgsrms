@@ -6,6 +6,7 @@ import { checkOnlyUser } from '/@/api/sys/user';
 import { defHttp } from '/@/utils/http/axios';
 import { OAUTH2_THIRD_LOGIN_TENANT_ID } from "/@/enums/cacheEnum";
 import { getAuthCache } from "/@/utils/auth";
+import { validatePasswordPolicy } from '/@/utils/helper/passwordPolicy';
 
 export enum LoginStateEnum {
   LOGIN,
@@ -93,7 +94,16 @@ export function useFormRules(formData?: Recordable) {
         return {
           inputCode: createRule(t('sys.login.inputCodePlaceholder')),
           account: registerAccountRule,
-          password: passwordFormRule,
+          password: [
+            ...passwordFormRule,
+            {
+              validator: async (_: RuleObject, value: string) => {
+                const err = validatePasswordPolicy(value);
+                return err ? Promise.reject(err) : Promise.resolve();
+              },
+              trigger: 'change',
+            },
+          ],
           mobile: registerMobileRule,
           sms: smsFormRule,
           confirmPassword: [{ validator: validateConfirmPassword(formData?.password), trigger: 'change' }],

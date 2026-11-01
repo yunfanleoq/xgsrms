@@ -98,6 +98,26 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'career',
+      name: 'homeCareer',
+      component: () => import('/@/views/home/zhiyefazhan.vue'),
+      meta: {
+        title: '职业发展',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'salary',
+      name: 'homeSalary',
+      component: () => import('/@/views/home/xinchou.vue'),
+      meta: {
+        title: '薪酬福利',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
       path: 'yjsk',
       name: 'homeYjsk',
       component: () => import('/@/views/home/yjsk.vue'),
@@ -113,6 +133,16 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       component: () => import('/@/views/home/positions.vue'),
       meta: {
         title: '招聘岗位',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'talent',
+      name: 'homeTalent',
+      component: () => import('/@/views/home/gaocengcirencai.vue'),
+      meta: {
+        title: '高层次人才引进',
         ignoreAuth: true,
         ignoreMenu: true,
       },

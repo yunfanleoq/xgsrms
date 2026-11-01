@@ -35,7 +35,7 @@
   // components
   import { Dropdown, Menu } from 'ant-design-vue';
 
-  import { defineComponent, computed, ref } from 'vue';
+  import { defineComponent, computed, ref, onMounted } from 'vue';
 
   import { SITE_URL } from '/@/settings/siteSetting';
 
@@ -150,6 +150,12 @@
         await getRefPromise(updatePasswordRef);
         updatePasswordRef.value.show(userStore.getUserInfo.username);
       }
+      onMounted(() => {
+        if (userStore.getPwdExpired) {
+          createMessage.warning('密码已过期或不符合当前口令策略，请立即修改');
+          updatePassword();
+        }
+      });
       // update-end--author:liaozhiyang---date:20230901---for：【QQYUN-6333】空路由问题—首次访问资源太大
       function handleMenuClick(e: { key: MenuEvent }) {
         switch (e.key) {

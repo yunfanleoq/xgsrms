@@ -24,6 +24,8 @@ public class SysLoginModel {
     private String captcha;
 	@Schema(description = "验证码key")
     private String checkKey;
+	@Schema(description = "登录二次认证短信验证码")
+    private String smsCode;
 
     public String getUsername() {
         return username;
@@ -71,5 +73,13 @@ public class SysLoginModel {
 
     public void setRsaKeyId(String rsaKeyId) {
         this.rsaKeyId = rsaKeyId;
+    }
+
+    public String getSmsCode() {
+        return smsCode;
+    }
+
+    public void setSmsCode(String smsCode) {
+        this.smsCode = smsCode;
     }
 }

@@ -98,6 +98,7 @@
   import { SmsEnum, useFormRules, useFormValid, useLoginState } from '/@/views/sys/login/useLogin';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { getCaptcha, passwordChange, emailVerify } from '/@/api/sys/user';
+  import { validatePasswordPolicy } from '/@/utils/helper/passwordPolicy';
   import adTextImg from '/@/assets/loginmini/icon/jeecg_ad_text.png';
   import successImg from '/@/assets/loginmini/icon/icon-success.png';
   import CaptchaModal from '@/components/jeecg/captcha/CaptchaModal.vue';
@@ -183,6 +184,11 @@
     }
     if (pwdFormData.password !== pwdFormData.confirmPassword) {
       createMessage.warn(t('sys.login.diffPwd'));
+      return;
+    }
+    const policyError = validatePasswordPolicy(pwdFormData.password);
+    if (policyError) {
+      createMessage.warn(policyError);
       return;
     }
     const resultInfo = await passwordChange(

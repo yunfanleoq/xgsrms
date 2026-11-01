@@ -31,7 +31,7 @@
                     >{{ t('sys.login.mobileSignInFormTitle') }}
                   </div>
                 </div>
-                <div class="aui-form-box" style="height: 180px">
+                <div class="aui-form-box" :style="{ height: mfaRequired ? '230px' : '180px' }">
                   <a-form ref="loginRef" :model="formData" v-if="activeIndex === 'accountLogin'" @keyup.enter.native="loginHandleClick">
                     <div class="aui-account">
                       <div class="aui-inputClear">
@@ -55,6 +55,12 @@
                           <img v-if="randCodeData.requestCodeSuccess" :src="randCodeData.randCodeImage" @click="handleChangeCheckCode" />
                           <img v-else style="margin-top: 2px; max-width: initial" :src="codeImg" @click="handleChangeCheckCode" />
                         </div>
+                      </div>
+                      <div class="aui-inputClear" v-if="mfaRequired">
+                        <i class="icon icon-code"></i>
+                        <a-form-item>
+                          <a-input class="fix-auto-fill" :maxlength="6" :placeholder="t('sys.login.smsCode')" v-model:value="formData.smsCode" />
+                        </a-form-item>
                       </div>
                       <div class="aui-flex">
                         <div class="aui-flex-box">
@@ -194,10 +200,12 @@
   const activeIndex = ref<string>('accountLogin');
   const type = ref<string>('login');
   //账号登录表单字段
+  const mfaRequired = ref(false);
   const formData = reactive<any>({
     inputCode: '',
     username: '',
     password: '',
+    smsCode: '',
   });
   //手机登录表单字段
   const phoneFormData = reactive<any>({
@@ -277,6 +285,7 @@
           username: formData.username,
           captcha: formData.inputCode,
           checkKey: randCodeData.checkKey,
+          smsCode: formData.smsCode,
           mode: 'none', //不要默认的错误提示
         })
       );
@@ -287,7 +296,12 @@
           duration: 3,
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.code === 40101) {
+        mfaRequired.value = true;
+        createMessage.info(error.message || t('sys.login.smsCode'));
+        return;
+      }
       notification.error({
         message: t('sys.api.errorTip'),
         description: error.message || t('sys.login.networkExceptionMsg'),

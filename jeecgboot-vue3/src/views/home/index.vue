@@ -11,11 +11,11 @@
       <nav class="nav-menu">
         <RouterLink :to="{ name: 'homeHome' }" class="nav-link">首页</RouterLink>
         <span class="nav-divider">|</span>
-        <RouterLink :to="{ name: 'homeNews' }" class="nav-link">科研概况</RouterLink>
-        <span class="nav-divider">|</span>
-        <RouterLink :to="{ name: 'homeYgqk' }" class="nav-link">员工情况</RouterLink>
-        <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'homePositions' }" class="nav-link">招聘信息</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'homeCareer' }" class="nav-link">职业发展</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'homeSalary' }" class="nav-link">薪酬福利</RouterLink>
         <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'contactUs' }" class="nav-link">联系我们</RouterLink>
       </nav>
@@ -136,18 +136,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(90deg, #3d54a7, #3d54a7);
+    background: linear-gradient(90deg, #0b2f6b 0%, #1a4a9a 55%, #2563b8 100%);
     color: white;
-    padding: 15px 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 14px 36px;
+    box-shadow: 0 4px 18px rgba(11, 47, 107, 0.28);
     position: sticky;
     top: 0;
     z-index: 1000;
   }
 
   .logo {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     white-space: nowrap;
   }
 

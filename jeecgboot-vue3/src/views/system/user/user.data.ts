@@ -2,6 +2,7 @@ import { BasicColumn } from '/@/components/Table';
 import { FormSchema } from '/@/components/Table';
 import { getAllRolesListNoByTenant, getAllTenantList } from './user.api';
 import { rules } from '/@/utils/helper/validator';
+import { passwordPolicyRules } from '/@/utils/helper/passwordPolicy';
 import { render } from '/@/utils/common/renderUtils';
 export const columns: BasicColumn[] = [
   {
@@ -151,16 +152,7 @@ export const formSchema: FormSchema[] = [
     componentProps:{
       autocomplete: 'new-password',
     },
-    rules: [
-      {
-        required: true,
-        message: '请输入登录密码',
-      },
-      {
-        pattern: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[~!@#$%^&*()_+`\-={}:";'<>?,./]).{8,}$/,
-        message: '密码由8位数字、大小写字母和特殊符号组成!',
-      },
-    ],
+    rules: passwordPolicyRules(),
   },
   {
     label: '确认密码',
@@ -352,16 +344,7 @@ export const formPasswordSchema: FormSchema[] = [
     componentProps: {
       placeholder: '请输入登录密码',
     },
-    rules: [
-      {
-        required: true,
-        message: '请输入登录密码',
-      },
-      {
-        pattern: /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[~!@#$%^&*()_+`\-={}:";'<>?,./]).{8,}$/,
-        message: '密码由8位数字、大小写字母和特殊符号组成!',
-      },
-    ],
+    rules: passwordPolicyRules(),
   },
   {
     label: '确认密码',

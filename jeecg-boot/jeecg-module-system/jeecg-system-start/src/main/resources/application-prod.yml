@@ -203,7 +203,15 @@ jeecg:
     excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/api/getUserInfo
   security:
     password:
-      expire-days: -1
+      expire-days: 90
+      min-length: 12
+    login:
+      max-fail-times: 5
+      lock-duration: 1800
+      block-overseas: true
+      require-rsa: true
+      mfa-sms: true
+      allowed-country-codes: CN,HK,MO,TW
     allow-password-change-get: false
     allow-token-in-query: ${JEECG_SECURITY_ALLOW_TOKEN_IN_QUERY:false}
     register-skip-sms: ${JEECG_REGISTER_SKIP_SMS:true}

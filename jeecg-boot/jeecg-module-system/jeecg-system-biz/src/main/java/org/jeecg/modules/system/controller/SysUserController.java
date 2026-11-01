@@ -168,6 +168,10 @@ public class SysUserController {
 		String selectedDeparts = jsonObject.getString("selecteddeparts");
 		try {
 			SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
+			String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(user.getUsername(), user.getPassword());
+			if (policyError != null) {
+				return result.error500(policyError);
+			}
 			user.setCreateTime(new Date());//设置创建时间
 			String salt = oConvertUtils.randomGen(8);
 			user.setSalt(salt);
@@ -244,6 +248,10 @@ public class SysUserController {
         String selectedDeparts = jsonObject.getString("selecteddeparts");
         try {
             SysUser user = JSON.parseObject(jsonObject.toJSONString(), SysUser.class);
+            String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(user.getUsername(), user.getPassword());
+            if (policyError != null) {
+                return result.error500(policyError);
+            }
             user.setCreateTime(new Date());//设置创建时间
             String salt = oConvertUtils.randomGen(8);
             user.setSalt(salt);
@@ -1105,7 +1113,11 @@ public class SysUserController {
         //未设置密码，则随机生成一个密码
 		String password = jsonObject.getString("password");
 		if(oConvertUtils.isEmpty(password)){
-            password = RandomUtil.randomString(8);
+            password = RandomUtil.randomString(10) + "Aa1!";
+        }
+        String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(username, password);
+        if (policyError != null) {
+            return result.error500(policyError);
         }
 		String email = jsonObject.getString("email");
 		SysUser sysUser1 = sysUserService.getUserByName(username);
@@ -1267,9 +1279,28 @@ public class SysUserController {
         if (!jeecgSecurityProperties.isAllowPasswordChangeGet()) {
             return Result.error("请使用 POST /sys/user/passwordChange 重置密码");
         }
+        return doPasswordChange(username, password, smscode, phone);
+    }
+
+	@PostMapping("/passwordChange")
+	public Result<SysUser> passwordChangePost(@RequestBody JSONObject json) {
+        return doPasswordChange(
+                json.getString("username"),
+                json.getString("password"),
+                json.getString("smscode"),
+                json.getString("phone"));
+    }
+
+    private Result<SysUser> doPasswordChange(String username, String password, String smscode, String phone) {
         Result<SysUser> result = new Result<SysUser>();
         if(oConvertUtils.isEmpty(username) || oConvertUtils.isEmpty(password) || oConvertUtils.isEmpty(smscode)  || oConvertUtils.isEmpty(phone) ) {
             result.setMessage("重置密码失败！");
+            result.setSuccess(false);
+            return result;
+        }
+        String policyError = org.jeecg.common.util.security.PasswordPolicy.validate(username, password);
+        if (policyError != null) {
+            result.setMessage(policyError);
             result.setSuccess(false);
             return result;
         }
@@ -2103,8 +2134,7 @@ public class SysUserController {
         
         LoginUser sysUser = (LoginUser) SecurityUtils.getSubject().getPrincipal();
         SysUser user = sysUserService.getById(sysUser.getId());
-        String passwordEncode = PasswordUtil.encrypt(user.getUsername(), PasswordConstant.DEFAULT_PASSWORD, user.getSalt());
-        if(passwordEncode.equals(user.getPassword())){
+        if(PasswordUtil.matches(user.getUsername(), PasswordConstant.DEFAULT_PASSWORD, user.getSalt(), user.getPassword())){
             String encode = URLEncoder.encode(PasswordConstant.DEFAULT_PASSWORD, "UTF-8");
             return Result.OK("yes_" + encode);
         }

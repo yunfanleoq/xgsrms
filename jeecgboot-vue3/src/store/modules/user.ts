@@ -21,6 +21,7 @@ import { useSso } from '/@/hooks/web/useSso';
 import { isOAuth2AppEnv } from '/@/views/sys/login/useLogin';
 import { getUrlParam } from '@/utils';
 import { encryptPasswordWithLoginRsa } from '/@/utils/encryption/loginRsa';
+import { PWD_EXPIRED_KEY } from '/@/utils/helper/passwordPolicy';
 interface dictType {
   [key: string]: any;
 }
@@ -43,6 +44,7 @@ interface UserState {
   tenantid?: string | number;
   shareTenantId?: Nullable<string | number>;
   loginInfo?: Nullable<LoginInfo>;
+  pwdExpired?: boolean;
 }
 
 export const useUserStore = defineStore({
@@ -67,6 +69,7 @@ export const useUserStore = defineStore({
     shareTenantId: null,
     //登录返回信息
     loginInfo: null,
+    pwdExpired: sessionStorage.getItem(PWD_EXPIRED_KEY) === '1',
   }),
   getters: {
     getUserInfo(): UserInfo {
@@ -106,6 +109,9 @@ export const useUserStore = defineStore({
     // 是否有分享租户id
     hasShareTenantId(): boolean {
       return this.shareTenantId != null && this.shareTenantId !== '';
+    },
+    getPwdExpired(): boolean {
+      return !!this.pwdExpired || sessionStorage.getItem(PWD_EXPIRED_KEY) === '1';
     },
   },
   actions: {
@@ -150,12 +156,21 @@ export const useUserStore = defineStore({
     setSessionTimeout(flag: boolean) {
       this.sessionTimeout = flag;
     },
+    setPwdExpired(flag: boolean) {
+      this.pwdExpired = flag;
+      if (flag) {
+        sessionStorage.setItem(PWD_EXPIRED_KEY, '1');
+      } else {
+        sessionStorage.removeItem(PWD_EXPIRED_KEY);
+      }
+    },
     resetState() {
       this.userInfo = null;
       this.dictItems = null;
       this.token = '';
       this.roleList = [];
       this.sessionTimeout = false;
+      this.setPwdExpired(false);
     },
     /**
      * 登录事件
@@ -177,6 +192,7 @@ export const useUserStore = defineStore({
         // save token
         this.setToken(token);
         this.setTenant(userInfo.loginTenantId);
+        this.setPwdExpired(!!(data as any)?.pwdExpired);
         return this.afterLoginAction(goHome, data);
       } catch (error) {
         return Promise.reject(error);
@@ -281,7 +297,10 @@ export const useUserStore = defineStore({
       if (!this.getToken) {
         return null;
       }
-      const { userInfo, sysAllDictItems } = await getUserInfo();
+      const { userInfo, sysAllDictItems, pwdExpired } = (await getUserInfo()) as any;
+      if (pwdExpired) {
+        this.setPwdExpired(true);
+      }
       if (userInfo) {
         const { roles = [] } = userInfo;
         if (isArray(roles)) {
@@ -328,6 +347,7 @@ export const useUserStore = defineStore({
       this.setUserInfo(null);
       this.setLoginInfo(null);
       this.setTenant(null);
+      this.setPwdExpired(false);
       // update-begin--author:liaozhiyang---date:20240517---for：【TV360X-23】退出登录后会提示「Token时效，请重新登录」
       setTimeout(() => {
         this.setAllDictItems(null);

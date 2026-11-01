@@ -629,8 +629,7 @@ public class SysTenantController {
         }
         SysUser userById = sysUserService.getById(sysUser.getId());
         String loginPassword = request.getParameter("loginPassword");
-        String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(),loginPassword, userById.getSalt());
-        if (!passwordEncode.equals(userById.getPassword())) {
+        if (!PasswordUtil.matches(sysUser.getUsername(), loginPassword, userById.getSalt(), userById.getPassword())) {
             return Result.error("密码不正确");
         }
         sysTenantService.removeById(sysTenant.getId());
@@ -709,8 +708,7 @@ public class SysTenantController {
         //验证密码
         String loginPassword = request.getParameter("loginPassword");
         SysUser userById = sysUserService.getById(sysUser.getId());
-        String passwordEncode = PasswordUtil.encrypt(sysUser.getUsername(),loginPassword, userById.getSalt());
-        if (!passwordEncode.equals(userById.getPassword())) {
+        if (!PasswordUtil.matches(sysUser.getUsername(), loginPassword, userById.getSalt(), userById.getPassword())) {
             return Result.error("密码不正确");
         }
         //退出登录

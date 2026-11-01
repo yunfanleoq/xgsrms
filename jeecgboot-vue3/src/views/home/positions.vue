@@ -2,6 +2,7 @@
   <div id="app" class="positionContainer">
     <aside class="sidebar">
       <ul>
+        <li class="talent-entry" @click="goTalentPage">高层次人才引进</li>
         <li
           v-for="(category, index) in jobCategories"
           :key="index"
@@ -278,6 +279,10 @@
   // 跳转至招聘公告详情
   const goToAnnouncementDetail = (announcementId: string) => {
     router.push({ name: 'announcementDetail', params: { id: announcementId } });
+  };
+
+  const goTalentPage = () => {
+    router.push({ name: 'homeTalent' });
   };
 
   // 切换招聘公告页码 showPositionList
@@ -963,6 +968,13 @@
     background: rgba(255, 255, 255, 0.3);
     font-weight: bold;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar ul li.talent-entry {
+    background: linear-gradient(90deg, #f0c14b, #e8a317);
+    color: #1a2a4a;
+    font-weight: 700;
+    margin-bottom: 20px;
   }
 
   .announcement-list {

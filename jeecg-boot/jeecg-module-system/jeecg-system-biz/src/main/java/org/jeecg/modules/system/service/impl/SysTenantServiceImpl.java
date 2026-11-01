@@ -947,8 +947,7 @@ public class SysTenantServiceImpl extends ServiceImpl<SysTenantMapper, SysTenant
         //step2 验证密码
         //获取admin的用户
         SysUser adminUser = userService.getById(user.getId());
-        String passwordEncode = PasswordUtil.encrypt(adminUser.getUsername(), password, adminUser.getSalt());
-        if(!passwordEncode.equals(adminUser.getPassword())){
+        if(!PasswordUtil.matches(adminUser.getUsername(), password, adminUser.getSalt(), adminUser.getPassword())){
             throw new JeecgBootException("您输入的密码不正确，无法删除该用户！");
         }
     }

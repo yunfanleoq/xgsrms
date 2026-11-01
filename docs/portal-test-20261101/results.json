@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-11-01T01:00:18+08:00",
+  "base": "http://127.0.0.1:3100",
+  "results": [
+    {
+      "id": "01-home",
+      "name": "首页",
+      "url": "http://127.0.0.1:3100/home/index",
+      "status": "WARN",
+      "notes": [
+        "http=200",
+        "nav=[\"首页\", \"招聘信息\", \"职业发展\", \"薪酬福利\", \"联系我们\"]",
+        "screenshot=01-home.png",
+        "console:Failed to load resource: the server responded with a status of 500 (Internal Server Error) | 请求轮播图数据失败: AxiosError | Failed to load resource: the server responded with a status of 500 (Internal Server Error) | 请求新闻数据失败: AxiosError | Failed to load resource: the server responded with a status of 500 (Internal Server Error) | 请求招聘公告数据失败: AxiosError"
+      ]
+    },
+    {
+      "id": "02-positions",
+      "name": "招聘信息",
+      "url": "http://127.0.0.1:3100/home/positions",
+      "status": "WARN",
+      "notes": [
+        "http=200",
+        "侧栏含高层次人才引进",
+        "screenshot=02-positions.png",
+        "console:Failed to load resource: the server responded with a status of 500 (Internal Server Error) | getDeptList failed AxiosError | Failed to load resource: the server responded with a status of 500 (Internal Server Error) | getDictItems(岗位分类) failed AxiosError | Failed to load resource: the server responded with a status of 500 (Internal Server Error) | getPositionList failed AxiosError"
+      ]
+    },
+    {
+      "id": "03-career",
+      "name": "职业发展",
+      "url": "http://127.0.0.1:3100/home/career",
+      "status": "PASS",
+      "notes": [
+        "http=200",
+        "screenshot=03-career.png"
+      ]
+    },
+    {
+      "id": "04-career-train",
+      "name": "职业发展-培训发展",
+      "url": "http://127.0.0.1:3100/home/career",
+      "status": "PASS",
+      "notes": [
+        "http=200",
+        "screenshot=04-career-train.png"
+      ]
+    },
+    {
+      "id": "05-salary",
+      "name": "薪酬福利",
+      "url": "http://127.0.0.1:3100/home/salary",
+      "status": "PASS",
+      "notes": [
+        "http=200",
+        "screenshot=05-salary.png"
+      ]
+    },
+    {
+      "id": "06-talent",
+      "name": "高层次人才引进",
+      "url": "http://127.0.0.1:3100/home/talent",
+      "status": "PASS",
+      "notes": [
+        "http=200",
+        "screenshot=06-talent.png"
+      ]
+    },
+    {
+      "id": "07-contact",
+      "name": "联系我们",
+      "url": "http://127.0.0.1:3100/home/contactUs",
+      "status": "FAIL",
+      "notes": [
+        "http=200",
+        "screenshot=07-contact.png",
+        "pageerror:AxiosError",
+        "console:Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+      ]
+    }
+  ],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "请求轮播图数据失败: AxiosError",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "请求新闻数据失败: AxiosError",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "请求招聘公告数据失败: AxiosError",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "getDeptList failed AxiosError",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "getDictItems(岗位分类) failed AxiosError",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)",
+    "getPositionList failed AxiosError",
+    "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+  ],
+  "pageErrors": [
+    "AxiosError"
+  ]
+}

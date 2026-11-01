@@ -323,9 +323,14 @@ jeecg:
   security:
     password:
       expire-days: 90
+      min-length: 12
     login:
       max-fail-times: 5
-      lock-duration: 300
+      lock-duration: 1800
+      block-overseas: false
+      require-rsa: false
+      mfa-sms: false
+      allowed-country-codes: CN,HK,MO,TW
     token:
       # C-004：开发环境 JWT 8 小时（与生产默认一致，勿使用 7 天）
       expire-time: 28800000

@@ -78,28 +78,92 @@ public class PasswordUtil {
 		return secretKey;
 	}
 
-	/**
-	 * 加密明文字符串
-	 * 
-	 * @param plaintext
-	 *            待加密的明文字符串
-	 * @param password
-	 *            生成密钥时所使用的密码
-	 * @param salt
-	 *            盐值
-	 * @return 加密后的密文字符串
-	 * @throws Exception
-	 */
-	public static String encrypt(String plaintext, String password, String salt) {
+	public static final String HASH_PREFIX = "{pbkdf2}";
+	private static final String PBKDF2_ALG = "PBKDF2WithHmacSHA256";
+	private static final int PBKDF2_ITERATIONS = 120000;
+	private static final int PBKDF2_KEY_BITS = 256;
 
+	/**
+	 * 写入库内口令。新口令使用 PBKDF2-HMAC-SHA256（不可逆）；旧数据仍按历史 PBE 校验，登录成功后升级。
+	 */
+	public static String encrypt(String username, String password, String salt) {
+		return hash(username, password);
+	}
+
+	public static String hash(String username, String password) {
+		try {
+			byte[] saltBytes = new byte[16];
+			new SecureRandom().nextBytes(saltBytes);
+			byte[] derived = pbkdf2(username + '\0' + password, saltBytes, PBKDF2_ITERATIONS);
+			return HASH_PREFIX + PBKDF2_ITERATIONS + ":" + bytesToHexString(saltBytes) + ":" + bytesToHexString(derived);
+		} catch (Exception e) {
+			throw new IllegalStateException("password hash failed", e);
+		}
+	}
+
+	public static boolean isModernHash(String stored) {
+		return stored != null && stored.startsWith(HASH_PREFIX);
+	}
+
+	public static boolean needsUpgrade(String stored) {
+		return !isModernHash(stored);
+	}
+
+	public static boolean matches(String username, String password, String salt, String stored) {
+		if (username == null || password == null || stored == null) {
+			return false;
+		}
+		if (isModernHash(stored)) {
+			return matchesPbkdf2(username, password, stored);
+		}
+		String legacy = encryptLegacy(username, password, salt == null ? "" : salt);
+		return stored.equals(legacy);
+	}
+
+	private static boolean matchesPbkdf2(String username, String password, String stored) {
+		try {
+			String body = stored.substring(HASH_PREFIX.length());
+			String[] parts = body.split(":");
+			if (parts.length != 3) {
+				return false;
+			}
+			int iterations = Integer.parseInt(parts[0]);
+			byte[] saltBytes = hexStringToBytes(parts[1]);
+			byte[] expected = hexStringToBytes(parts[2]);
+			byte[] actual = pbkdf2(username + '\0' + password, saltBytes, iterations);
+			return slowEquals(expected, actual);
+		} catch (Exception ignored) {
+			return false;
+		}
+	}
+
+	private static byte[] pbkdf2(String secret, byte[] salt, int iterations) throws Exception {
+		PBEKeySpec spec = new PBEKeySpec(secret.toCharArray(), salt, iterations, PBKDF2_KEY_BITS);
+		SecretKeyFactory factory = SecretKeyFactory.getInstance(PBKDF2_ALG);
+		return factory.generateSecret(spec).getEncoded();
+	}
+
+	private static boolean slowEquals(byte[] a, byte[] b) {
+		if (a == null || b == null || a.length != b.length) {
+			return false;
+		}
+		int diff = 0;
+		for (int i = 0; i < a.length; i++) {
+			diff |= a[i] ^ b[i];
+		}
+		return diff == 0;
+	}
+
+	/**
+	 * 历史算法：用口令作密钥加密用户名。仅用于核对存量记录。
+	 */
+	public static String encryptLegacy(String plaintext, String password, String salt) {
 		Key key = getPbeKey(password);
 		byte[] encipheredData = null;
 		PBEParameterSpec parameterSpec = new PBEParameterSpec(salt.getBytes(), ITERATIONCOUNT);
 		try {
 			Cipher cipher = Cipher.getInstance(ALGORITHM);
-
 			cipher.init(Cipher.ENCRYPT_MODE, key, parameterSpec);
-			// 代码逻辑说明: 中文作为用户名时，加密的密码windows和linux会得到不同的结果 gitee/issues/IZUD7
 			encipheredData = cipher.doFinal(plaintext.getBytes("utf-8"));
 		} catch (Exception e) {
 		}

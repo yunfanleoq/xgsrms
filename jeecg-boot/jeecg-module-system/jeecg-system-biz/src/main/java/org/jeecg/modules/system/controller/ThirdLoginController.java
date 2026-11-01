@@ -189,9 +189,7 @@ public class ThirdLoginController {
 			return result;
 		}
 		String password = json.getString("password");
-		String salt = user.getSalt();
-		String passwordEncode = PasswordUtil.encrypt(user.getUsername(), password, salt);
-		if(!passwordEncode.equals(user.getPassword())){
+		if(!PasswordUtil.matches(user.getUsername(), password, user.getSalt(), user.getPassword())){
 			result.setMessage("密码不正确");
 			result.setSuccess(false);
 			return result;

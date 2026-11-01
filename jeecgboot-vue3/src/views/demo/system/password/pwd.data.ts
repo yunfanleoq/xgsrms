@@ -1,4 +1,5 @@
 import { FormSchema } from '/@/components/Form';
+import { passwordPolicyRules } from '/@/utils/helper/passwordPolicy';
 
 export const formSchema: FormSchema[] = [
   {
@@ -14,12 +15,7 @@ export const formSchema: FormSchema[] = [
     componentProps: {
       placeholder: '新密码',
     },
-    rules: [
-      {
-        required: true,
-        message: '请输入新密码',
-      },
-    ],
+    rules: passwordPolicyRules(),
   },
   {
     field: 'confirmPassword',

@@ -1,5 +1,6 @@
 import { FormSchema } from '/@/components/Form/index';
 import { rules } from '/@/utils/helper/validator';
+import { passwordPolicyRules } from '/@/utils/helper/passwordPolicy';
 import anquan1 from './icons/anquan1.png';
 import anquan2 from './icons/anquan2.png';
 import app1 from './icons/app1.png';
@@ -148,12 +149,7 @@ export const formPasswordSchema: FormSchema[] = [
     componentProps: {
       placeholder: '请输入新密码',
     },
-    rules: [
-      {
-        required: true,
-        message: '请输入新密码',
-      },
-    ],
+    rules: passwordPolicyRules(),
   },
   {
     label: '确认新密码',

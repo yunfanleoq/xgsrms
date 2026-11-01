@@ -23,6 +23,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.*;
 import org.jeecg.common.util.encryption.AesEncryptUtil;
 import org.jeecg.common.util.encryption.EncryptedString;
+import org.jeecg.common.util.security.LoginGeoGuard;
 import org.jeecg.config.JeecgBaseConfig;
 import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.base.service.BaseCommonService;
@@ -87,12 +88,14 @@ public class LoginController {
 	public Result<JSONObject> login(@RequestBody SysLoginModel sysLoginModel, HttpServletRequest request){
 		Result<JSONObject> result = new Result<>();
 		String username = sysLoginModel.getUsername();
+		if (rejectOverseasLogin(request, result) || rejectPlainLogin(sysLoginModel, result)) {
+			return result;
+		}
 		String password = resolveLoginPassword(sysLoginModel);
 		log.debug("登录密码，原始密码:{}，解密密码:{}" , sysLoginModel.getPassword(), password);
 
-		//step.1 登录失败超出次数5次锁定用户10分钟
-		if(isLoginFailOvertimes(username)){
-			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
+		if(isLoginFailOvertimes(username, request)){
+			return result.error500(loginLockMessage());
 		}
 
 		// step.2 验证码check
@@ -106,21 +109,23 @@ public class LoginController {
 		queryWrapper.eq(SysUser::getUsername,username);
 		SysUser sysUser = sysUserService.getOne(queryWrapper);
 		if (sysUser == null) {
-			addLoginFailOvertimes(username);
+			addLoginFailOvertimes(username, request);
 			return result.error500("用户名或密码错误");
 		}
 		result = sysUserService.checkUserIsEffective(sysUser);
 		if (!result.isSuccess()) {
-			addLoginFailOvertimes(username);
+			addLoginFailOvertimes(username, request);
 			return result.error500("用户名或密码错误");
 		}
 
 		// step.4 校验用户名或密码是否正确
-		String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
-		String syspassword = sysUser.getPassword();
-		if (!syspassword.equals(userpassword)) {
-			addLoginFailOvertimes(username);
+		if (!PasswordUtil.matches(username, password, sysUser.getSalt(), sysUser.getPassword())) {
+			addLoginFailOvertimes(username, request);
 			result.error500("用户名或密码错误");
+			return result;
+		}
+		upgradePasswordIfNeeded(sysUser, password);
+		if (!verifyLoginMfaSms(sysLoginModel, sysUser, result)) {
 			return result;
 		}
 
@@ -168,6 +173,7 @@ public class LoginController {
 			log.debug("2 获取用户信息耗时 (首页面配置)" + (System.currentTimeMillis() - start) + "毫秒");
 			
 			obj.put("userInfo",sysUser);
+			obj.put("pwdExpired", jeecgSecurityProperties.isPasswordExpired(sysUser.getLastPwdUpdateTime()));
 			obj.put("sysAllDictItems", sysDictService.queryAllDictItems());
 			log.debug("3 获取用户信息耗时 (字典数据)" + (System.currentTimeMillis() - start) + "毫秒");
 			
@@ -446,20 +452,23 @@ public class LoginController {
 	public Result<JSONObject> phoneLogin(@RequestBody JSONObject jsonObject, HttpServletRequest request) {
 		Result<JSONObject> result = new Result<JSONObject>();
 		String phone = jsonObject.getString("mobile");
+		if (rejectOverseasLogin(request, result)) {
+			return result;
+		}
 		// 平台用户登录失败锁定用户
-		if(isLoginFailOvertimes(phone)){
-			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
+		if(isLoginFailOvertimes(phone, request)){
+			return result.error500(loginLockMessage());
 		}
 		
 		//校验用户有效性（与验证码错误区分场景下仍避免泄露「用户不存在」）
 		SysUser sysUser = sysUserService.getUserByPhone(phone);
 		if (sysUser == null) {
-			addLoginFailOvertimes(phone);
+			addLoginFailOvertimes(phone, request);
 			return result.error500("登录失败，请检查手机号或验证码");
 		}
 		result = sysUserService.checkUserIsEffective(sysUser);
 		if (!result.isSuccess()) {
-			addLoginFailOvertimes(phone);
+			addLoginFailOvertimes(phone, request);
 			return result.error500("登录失败，请检查手机号或验证码");
 		}
 		
@@ -470,7 +479,7 @@ public class LoginController {
 		Object code = redisUtil.get(redisKey);
 
 		if (!smscode.equals(code)) {
-			addLoginFailOvertimes(phone);
+			addLoginFailOvertimes(phone, request);
 			return Result.error("手机验证码错误");
 		}
 		//用户信息
@@ -558,6 +567,7 @@ public class LoginController {
 		if(oConvertUtils.isEmpty(vue3Version)){
 			obj.put("sysAllDictItems", sysDictService.queryAllDictItems());
 		}
+		obj.put("pwdExpired", jeecgSecurityProperties.isPasswordExpired(sysUser.getLastPwdUpdateTime()));
 		
 		result.setResult(obj);
 		result.success("登录成功");
@@ -704,33 +714,39 @@ public class LoginController {
 	public Result<JSONObject> mLogin(@RequestBody SysLoginModel sysLoginModel, HttpServletRequest request) throws Exception {
 		Result<JSONObject> result = new Result<JSONObject>();
 		String username = sysLoginModel.getUsername();
+		if (rejectOverseasLogin(request, result) || rejectPlainLogin(sysLoginModel, result)) {
+			return result;
+		}
 		String password = resolveLoginPassword(sysLoginModel);
 		log.debug("登录密码，原始密码:{}，解密密码:{}" , sysLoginModel.getPassword(), password);
 
 		JSONObject obj = new JSONObject();
 		
 		// 1.平台用户登录失败锁定用户
-		if(isLoginFailOvertimes(username)){
-			return result.error500("该用户登录失败次数过多，请于10分钟后再次登录！");
+		if(isLoginFailOvertimes(username, request)){
+			return result.error500(loginLockMessage());
 		}
 		// 2.校验用户是否有效（与密码错误统一文案，防止用户名枚举）
 		SysUser sysUser = sysUserService.getUserByName(username);
 		if (sysUser == null) {
-			addLoginFailOvertimes(username);
+			addLoginFailOvertimes(username, request);
 			return result.error500("用户名或密码错误");
 		}
 		result = sysUserService.checkUserIsEffective(sysUser);
 		if (!result.isSuccess()) {
-			addLoginFailOvertimes(username);
+			addLoginFailOvertimes(username, request);
 			return result.error500("用户名或密码错误");
 		}
 		
 		// 3.校验用户名或密码是否正确
-		String userpassword = PasswordUtil.encrypt(username, password, sysUser.getSalt());
-		String syspassword = sysUser.getPassword();
-		if (!syspassword.equals(userpassword)) {
-			addLoginFailOvertimes(username);
+		if (!PasswordUtil.matches(username, password, sysUser.getSalt(), sysUser.getPassword())) {
+			addLoginFailOvertimes(username, request);
 			result.error500("用户名或密码错误");
+			return result;
+		}
+		upgradePasswordIfNeeded(sysUser, password);
+		String syspassword = sysUser.getPassword();
+		if (!verifyLoginMfaSms(sysLoginModel, sysUser, result)) {
 			return result;
 		}
 		
@@ -857,36 +873,135 @@ public class LoginController {
 		return Result.OK(result);
 	}
 
-	/**
-	 * 登录失败超出次数5 返回true
-	 * @param username
-	 * @return
-	 */
 	private boolean isLoginFailOvertimes(String username){
-		String key = CommonConstant.LOGIN_FAIL + username;
-		Object failTime = redisUtil.get(key);
-		if(failTime!=null){
-			Integer val = Integer.parseInt(failTime.toString());
-			if(val>5){
-				return true;
-			}
+		return isLoginFailOvertimes(username, null);
+	}
+
+	private boolean isLoginFailOvertimes(String username, HttpServletRequest request){
+		int limit = loginFailLimit();
+		if (failCount(CommonConstant.LOGIN_FAIL + username) >= limit) {
+			return true;
+		}
+		if (request != null && failCount(CommonConstant.LOGIN_FAIL + "ip:" + IpUtils.getIpAddr(request)) >= limit) {
+			return true;
 		}
 		return false;
 	}
 
-	/**
-	 * 记录登录失败次数
-	 * @param username
-	 */
 	private void addLoginFailOvertimes(String username){
-		String key = CommonConstant.LOGIN_FAIL + username;
-		Object failTime = redisUtil.get(key);
-		Integer val = 0;
-		if(failTime!=null){
-			val = Integer.parseInt(failTime.toString());
+		addLoginFailOvertimes(username, null);
+	}
+
+	private void addLoginFailOvertimes(String username, HttpServletRequest request){
+		long ttl = loginFailTtl();
+		bumpFail(CommonConstant.LOGIN_FAIL + username, ttl);
+		if (request != null) {
+			bumpFail(CommonConstant.LOGIN_FAIL + "ip:" + IpUtils.getIpAddr(request), ttl);
 		}
-		// 10分钟，一分钟为60s
-		redisUtil.set(key, ++val, 600);
+	}
+
+	private int failCount(String key) {
+		Object failTime = redisUtil.get(key);
+		if (failTime == null) {
+			return 0;
+		}
+		return Integer.parseInt(failTime.toString());
+	}
+
+	private void bumpFail(String key, long ttl) {
+		redisUtil.set(key, failCount(key) + 1, ttl);
+	}
+
+	private int loginFailLimit() {
+		if (jeecgSecurityProperties.getLogin() == null) {
+			return 5;
+		}
+		return Math.max(1, jeecgSecurityProperties.getLogin().getMaxFailTimes());
+	}
+
+	private long loginFailTtl() {
+		if (jeecgSecurityProperties.getLogin() == null) {
+			return 1800L;
+		}
+		return Math.max(60L, jeecgSecurityProperties.getLogin().getLockDuration());
+	}
+
+	private String loginLockMessage() {
+		long minutes = Math.max(1L, loginFailTtl() / 60L);
+		return "该用户登录失败次数过多，请于" + minutes + "分钟后再次登录！";
+	}
+
+	private boolean rejectOverseasLogin(HttpServletRequest request, Result<JSONObject> result) {
+		org.jeecg.config.JeecgSecurityProperties.Login login = jeecgSecurityProperties.getLogin();
+		boolean enabled = login != null && login.isBlockOverseas();
+		String allowed = login == null ? "CN,HK,MO,TW" : login.getAllowedCountryCodes();
+		if (LoginGeoGuard.isOverseasBlocked(request, enabled, allowed)) {
+			result.error500("当前登录来源不在允许范围内");
+			return true;
+		}
+		return false;
+	}
+
+	private boolean rejectPlainLogin(SysLoginModel sysLoginModel, Result<JSONObject> result) {
+		org.jeecg.config.JeecgSecurityProperties.Login login = jeecgSecurityProperties.getLogin();
+		if (login != null && login.isRequireRsa() && oConvertUtils.isEmpty(sysLoginModel.getRsaKeyId())) {
+			result.error500("请使用加密通道登录");
+			return true;
+		}
+		return false;
+	}
+
+	private void upgradePasswordIfNeeded(SysUser sysUser, String rawPassword) {
+		if (!PasswordUtil.needsUpgrade(sysUser.getPassword())) {
+			return;
+		}
+		String hashed = PasswordUtil.encrypt(sysUser.getUsername(), rawPassword, sysUser.getSalt());
+		sysUser.setPassword(hashed);
+		SysUser patch = new SysUser();
+		patch.setId(sysUser.getId());
+		patch.setPassword(hashed);
+		sysUserService.updateById(patch);
+	}
+
+	private boolean verifyLoginMfaSms(SysLoginModel sysLoginModel, SysUser sysUser, Result<JSONObject> result) {
+		org.jeecg.config.JeecgSecurityProperties.Login login = jeecgSecurityProperties.getLogin();
+		if (login == null || !login.isMfaSms() || oConvertUtils.isEmpty(sysUser.getPhone())) {
+			return true;
+		}
+		if (oConvertUtils.isEmpty(sysLoginModel.getSmsCode())) {
+			sendLoginMfaSms(sysUser);
+			result.error500("请输入短信验证码完成二次认证");
+			result.setCode(40101);
+			return false;
+		}
+		String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE + sysUser.getPhone();
+		Object code = redisUtil.get(redisKey);
+		if (code == null || !sysLoginModel.getSmsCode().equals(code.toString())) {
+			result.error500("短信验证码错误");
+			return false;
+		}
+		redisUtil.del(redisKey);
+		return true;
+	}
+
+	private void sendLoginMfaSms(SysUser sysUser) {
+		String redisKey = CommonConstant.PHONE_REDIS_KEY_PRE + sysUser.getPhone();
+		if (redisUtil.get(redisKey) != null) {
+			return;
+		}
+		try {
+			String captcha = RandomUtil.randomNumbers(6);
+			JSONObject obj = new JSONObject();
+			obj.put("code", captcha);
+			boolean sent = DySmsHelper.sendSms(sysUser.getPhone(), obj, DySmsEnum.LOGIN_TEMPLATE_CODE);
+			if (sent) {
+				redisUtil.set(redisKey, captcha, 600);
+			} else {
+				log.warn("登录二次认证短信未发出，手机号已绑定用户 {}", sysUser.getUsername());
+			}
+		} catch (Exception e) {
+			log.warn("登录二次认证短信发送失败: {}", e.getMessage());
+		}
 	}
 
 	/**
