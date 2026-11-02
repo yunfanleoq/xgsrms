@@ -82,7 +82,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeHome',
       component: () => import('/@/views/home/home.vue'),
       meta: {
-        title: '招聘首页',
+        title: '首页',
         ignoreAuth: true,
         ignoreMenu: true,
       },
@@ -102,7 +102,17 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeCareer',
       component: () => import('/@/views/home/zhiyefazhan.vue'),
       meta: {
-        title: '职业发展',
+        title: '职业路径',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'training',
+      name: 'homeTraining',
+      component: () => import('/@/views/home/peixun.vue'),
+      meta: {
+        title: '培训发展',
         ignoreAuth: true,
         ignoreMenu: true,
       },
@@ -142,7 +152,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeTalent',
       component: () => import('/@/views/home/gaocengcirencai.vue'),
       meta: {
-        title: '高层次人才引进',
+        title: '人才引进',
         ignoreAuth: true,
         ignoreMenu: true,
       },

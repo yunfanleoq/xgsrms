@@ -11,9 +11,15 @@
       <nav class="nav-menu">
         <RouterLink :to="{ name: 'homeHome' }" class="nav-link">首页</RouterLink>
         <span class="nav-divider">|</span>
-        <RouterLink :to="{ name: 'homePositions' }" class="nav-link">招聘信息</RouterLink>
+        <RouterLink
+          :to="{ name: 'homeTalent' }"
+          class="nav-link"
+          :class="{ 'router-link-active': talentSectionActive && route.name !== 'homeTalent' }"
+        >人才引进</RouterLink>
         <span class="nav-divider">|</span>
-        <RouterLink :to="{ name: 'homeCareer' }" class="nav-link">职业发展</RouterLink>
+        <RouterLink :to="{ name: 'homeCareer' }" class="nav-link">职业路径</RouterLink>
+        <span class="nav-divider">|</span>
+        <RouterLink :to="{ name: 'homeTraining' }" class="nav-link">培训发展</RouterLink>
         <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'homeSalary' }" class="nav-link">薪酬福利</RouterLink>
         <span class="nav-divider">|</span>
@@ -53,12 +59,18 @@
 </template>
 
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { computed, onMounted } from 'vue';
   import { useUserStore } from '@/store/modules/user';
   import { useMultipleTabStore } from '@/store/modules/multipleTab';
+  const route = useRoute();
   const router = useRouter();
   const userStore = useUserStore();
+
+  // 岗位列表和应聘详情从「人才引进」进入，顶栏仍高亮这一项
+  const talentSectionActive = computed(() =>
+    ['homeTalent', 'homePositions', 'positionDetail'].includes(String(route.name)),
+  );
 
   const isLoggedIn = computed(() => !!userStore.userInfo?.username);
   const loggedInUser = computed(() => userStore.userInfo);

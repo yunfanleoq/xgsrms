@@ -26,14 +26,12 @@
 <script setup lang="ts" name="homeCareer">
   import { ref, onMounted, markRaw, shallowRef } from 'vue';
   import GangweiFazhanlu from '/@/views/home/category/gangweifazhanlu.vue';
-  import PeixunFazhan from '/@/views/home/category/peixunfazhan.vue';
 
   const menuList = ref<{ text: string; value: string; component: any }[]>([
-    { text: '职业发展路径', value: '职业发展路径', component: markRaw(GangweiFazhanlu) },
-    { text: '培训发展', value: '培训发展', component: markRaw(PeixunFazhan) },
+    { text: '职业路径', value: '职业路径', component: markRaw(GangweiFazhanlu) },
   ]);
 
-  const currentType = ref('职业发展路径');
+  const currentType = ref('职业路径');
   const currentComponent = shallowRef(GangweiFazhanlu);
 
   const handleTypeChange = (newType: string) => {
