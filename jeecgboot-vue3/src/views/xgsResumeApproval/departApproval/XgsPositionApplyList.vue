@@ -1,6 +1,6 @@
 <template>
   <div v-auth="'positions:xgs_position_apply:list'">
-    <RmsAgentWorkflow initial-phase="dept_review" my-dept />
+    <RmsAgentWorkflow initial-phase="dept_review" my-dept locked />
   </div>
 </template>
 

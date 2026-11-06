@@ -149,7 +149,7 @@
     setModalProps({ confirmLoading: true });
     resumeText.value = '请稍等，正在分析简历...';
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 60000, data: formData })
       .then((data) => {
         if (data) {
           // TODO 在这里做分析后的对应关系

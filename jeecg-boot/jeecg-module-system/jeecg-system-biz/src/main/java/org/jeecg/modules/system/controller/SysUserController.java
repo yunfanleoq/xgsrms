@@ -83,6 +83,9 @@ public class SysUserController {
 	private ISysUserRoleService sysUserRoleService;
 
 	@Autowired
+	private ISysRoleService sysRoleService;
+
+	@Autowired
 	private ISysUserDepartService sysUserDepartService;
 
     @Autowired
@@ -1174,8 +1177,15 @@ public class SysUserController {
 			user.setStatus(CommonConstant.USER_UNFREEZE);
 			user.setDelFlag(CommonConstant.DEL_FLAG_0);
 			user.setActivitiSync(CommonConstant.ACT_SYNC_1);
-            user.setLastPwdUpdateTime(new Date());
-			sysUserService.addUserWithRole(user,"");//默认临时角色 test
+			user.setLastPwdUpdateTime(new Date());
+			// 手机号自助注册一律是求职者，不分配后台角色
+			SysRole applicantRole = sysRoleService.getRoleNoTenant("register");
+			if (applicantRole == null || oConvertUtils.isEmpty(applicantRole.getId())) {
+				log.error("未找到求职者角色 register，注册用户未分配角色 username={}", username);
+				sysUserService.addUserWithRole(user, "");
+			} else {
+				sysUserService.addUserWithRole(user, applicantRole.getId());
+			}
 			result.success("注册成功");
 		} catch (Exception e) {
 			result.error500("注册失败");

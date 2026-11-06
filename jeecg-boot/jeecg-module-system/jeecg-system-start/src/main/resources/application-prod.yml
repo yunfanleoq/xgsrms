@@ -178,6 +178,11 @@ mybatis-plus:
 
 minidao:
   base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
+# 简历 PDF 解析：默认本地 Tika；生产可通过 RESUME_PARSE_MODE=zhipu 切智谱（需配置 ClientV4）
+resume:
+  parse:
+    mode: ${RESUME_PARSE_MODE:tika}
+
 jeecg:
   actuator:
     jeecg-http-trace-enabled: false
@@ -201,6 +206,9 @@ jeecg:
   shiro:
     # C-003 / VULN-017：不得将 /jmreport/** 或子路径放入 excludeUrls（anon 会优先匹配，绕过 ShiroConfig 中 /jmreport/** → jwt,roles[admin]）
     excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**,/api/getUserInfo
+  # 统一身份认证短信默认关闭。不要把密钥写进本文件。四项环境变量都非空才发信：
+  # XGSRMS_SMS_BASE_URL、XGSRMS_SMS_CLIENT_ID、XGSRMS_SMS_CLIENT_SECRET、XGSRMS_SMS_ACCOUNT
+  # 可选 XGSRMS_SMS_SIGN_NAME。未设置时仍走 smsSendType（默认阿里云），mfa-sms 保持原值。
   security:
     password:
       expire-days: 90

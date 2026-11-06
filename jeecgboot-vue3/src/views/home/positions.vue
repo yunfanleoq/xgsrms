@@ -1,20 +1,21 @@
 <template>
-  <div id="app" class="positionContainer">
-    <aside class="sidebar">
-      <ul>
-        <li class="talent-entry" @click="goTalentPage">高层次人才引进</li>
-        <li
-          v-for="(category, index) in jobCategories"
-          :key="index"
-          @click="filterJobCategory(category)"
-          :class="{ active: selectedCategory === category && !showAnnouncementList }">
-          {{ category }}
-        </li>
-<!--        <li @click="showAnnouncements" :class="{ active: showAnnouncementList }">-->
-<!--          招聘公告-->
-<!--        </li>-->
-      </ul>
-    </aside>
+  <div class="portal-page positions-page">
+    <header class="page-head">
+      <h1>招聘岗位</h1>
+    </header>
+    <div class="type-bar" role="tablist" aria-label="岗位类型">
+      <button type="button" class="type-link" :class="{ active: !selectedPositionType }" @click="selectPositionType(null)">全部</button>
+      <button
+        v-for="typeName in positionTypes"
+        :key="typeName"
+        type="button"
+        class="type-link"
+        :class="{ active: selectedPositionType === typeName }"
+        @click="selectPositionType(typeName)"
+      >
+        {{ typeName }}
+      </button>
+    </div>
     <main class="content">
 
       <section v-if="showAnnouncementList" class="announcement-list">
@@ -110,8 +111,9 @@
               </div>
             </div>
           </section>
+          <p v-if="!paginatedPositions.length" class="job-quiet">暂无在招岗位</p>
           <!-- 分页控件 -->
-          <div class="pagination-wrapper">
+          <div v-if="totalCount > 0" class="pagination-wrapper">
             <div class="pagination-controls">
               <button 
                 class="page-btn" 
@@ -207,7 +209,7 @@
   const router = useRouter();
   const route = useRoute();
 
-  const jobCategories = ref<any[]>([]);
+  const positionTypes = ref<string[]>([]);
   const showPositionDetail = ref(false);
   const selectedPosition = ref({});
   // 招聘公告相关数据
@@ -281,10 +283,6 @@
     router.push({ name: 'announcementDetail', params: { id: announcementId } });
   };
 
-  const goTalentPage = () => {
-    router.push({ name: 'homeTalent' });
-  };
-
   // 切换招聘公告页码 showPositionList
   const showPositionList = ref(true);
   
@@ -336,20 +334,32 @@
     showPositionList.value = false;
   };
 
-  const filterJobCategory = (category) => {
-    //页面跳转到 positions 然后显示查询结果
-    router.push({ name: 'homePositions', query: { category: category } });
+  const LEGACY_POSITION_CATEGORIES = ['普通岗位', '副高级以上岗位', '博士后岗位', '人才派遣岗位'];
+  const POSITION_TYPE_ORDER = ['科研', '管理', '支撑'];
+  const FALLBACK_POSITION_TYPES = [...POSITION_TYPE_ORDER];
+
+  const orderPositionTypes = (names: string[]) =>
+    [...names].sort((a, b) => {
+      const rank = (name: string) => {
+        const index = POSITION_TYPE_ORDER.indexOf(name);
+        return index === -1 ? POSITION_TYPE_ORDER.length : index;
+      };
+      return rank(a) - rank(b);
+    });
+
+  const selectPositionType = (type: string | null) => {
     showPositionList.value = true;
-    showAnnouncementList.value = false; // 退出招聘公告模式
-    // 根据选择的岗位分类进行过滤的逻辑
-    console.log('Selected job category:', category);
-    selectedCategory.value = category;
-    // 招聘详情页隐藏
-    // showPositionDetail.value = false;
+    showAnnouncementList.value = false;
+    selectedCategory.value = null;
+    selectedPositionType.value = type;
+    const query: Record<string, string> = {};
+    if (type) query.positionType = type;
+    router.push({ name: 'homePositions', query });
   };
 
   const searchQuery = ref('');
-  const selectedCategory = ref(null);
+  const selectedCategory = ref<string | null>(null);
+  const selectedPositionType = ref<string | null>(null);
   const selectedDept = ref(null); // 改为直接存储部门ID
 
   const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
@@ -466,6 +476,9 @@
     if (selectedCategory.value) {
       params.category = selectedCategory.value;
     }
+    if (selectedPositionType.value) {
+      params.positionType = selectedPositionType.value;
+    }
 
     // 添加部门筛选
     if (selectedDept.value) {
@@ -492,7 +505,7 @@
 
   // 监听查询条件变化，重置到第一页并重新获取数据
   // 注意：searchQuery 不在这里监听，而是通过点击搜索按钮触发
-  watch([selectedCategory, selectedDept], () => {
+  watch([selectedCategory, selectedPositionType, selectedDept], () => {
     currentPage.value = 1;
     fetchPositions();
   });
@@ -501,8 +514,11 @@
     selectedDept.value = null;
     searchQuery.value = '';
     selectedCategory.value = null;
-    // 重置后重新加载数据
+    selectedPositionType.value = null;
     currentPage.value = 1;
+    if (route.query.positionType || route.query.category) {
+      router.replace({ name: 'homePositions' });
+    }
     fetchPositions();
   };
 
@@ -528,28 +544,64 @@
       });
   };
 
-  const fetchCategorys = () => {
-    const params = {
-      dictCode: '岗位分类', // 只获取一级部门
-    };
-    getDictItems(params)
+  const fetchPositionTypes = () => {
+    getDictItems({ dictCode: '岗位类型' })
       .then((res) => {
-        if (res && res.success) {
-          let list = res.result;
-          list = list.map((item) => item.title);
-          jobCategories.value = list;
-        }
+        const list = res && res.success && Array.isArray(res.result) ? res.result : [];
+        const names = orderPositionTypes(
+          list
+            .map((item: any) => String(item?.title || item?.text || item?.label || '').trim())
+            .filter((name: string) => !!name && !LEGACY_POSITION_CATEGORIES.includes(name)),
+        );
+        positionTypes.value = names.length ? names : [...FALLBACK_POSITION_TYPES];
       })
       .catch((e) => {
-        console.error('getDictItems(岗位分类) failed', e);
+        console.error('getDictItems(岗位类型) failed', e);
+        positionTypes.value = [...FALLBACK_POSITION_TYPES];
       });
   };
 
+  const categoryFromRoute = () => {
+    const raw = route.query.category;
+    const category = Array.isArray(raw) ? raw[0] : raw;
+    return typeof category === 'string' && category ? category : null;
+  };
+
+  const positionTypeFromRoute = () => {
+    const raw = route.query.positionType;
+    const positionType = Array.isArray(raw) ? raw[0] : raw;
+    return typeof positionType === 'string' && positionType ? positionType : null;
+  };
+
   onMounted(() => {
+    const category = categoryFromRoute();
+    const positionType = positionTypeFromRoute();
+    if (category) {
+      selectedCategory.value = category;
+    }
+    if (positionType) {
+      selectedPositionType.value = positionType;
+    }
     fetchDepts();
-    fetchCategorys();
-    fetchPositions(); // 初始加载数据
+    fetchPositionTypes();
+    if (!category && !positionType) {
+      fetchPositions();
+    }
   });
+
+  watch(
+    () => [route.query.category, route.query.positionType],
+    () => {
+      const category = categoryFromRoute();
+      const positionType = positionTypeFromRoute();
+      if (category !== selectedCategory.value || positionType !== selectedPositionType.value) {
+        showAnnouncementList.value = false;
+        showPositionList.value = true;
+        selectedCategory.value = category;
+        selectedPositionType.value = positionType;
+      }
+    },
+  );
 
   // 路由操作
   // const router = useRouter();
@@ -578,214 +630,185 @@
 </script>
 
 <style scoped>
-  .positionContainer {
+  .positions-page {
+    color: #333333;
+  }
+
+  .type-bar {
     display: flex;
-    /*height: 100vh; !* 填充整个视口高度 *!*/
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 4px;
+    margin: 0 0 18px;
+    border-bottom: 1px solid #e6e6e6;
   }
 
-  .job-categories {
-    /*width: 20vw; !* 设置宽度为视口宽度的 20% *!*/
-    padding: 20px; /* 可选：添加内边距 */
-    background-color: #f9f9f9; /* 可选：添加背景颜色 */
-    border-right: 1px solid #ddd; /* 可选：添加右侧边框 */
-  }
-
-  .category-button {
-    display: block; /* 可选：使按钮垂直排列 */
-    width: 100%; /* 可选：使按钮宽度占满容器 */
-    margin-bottom: 10px; /* 可选：添加按钮之间的间距 */
-  }
-  .dept-button {
-    display: flex;
-  }
-
-  .job-list-container {
-    /*width: 80vw; !* 设置宽度为视口宽度的 80% *!*/
-    /*flex  : 1 1 auto;*/
-    padding: 20px;
-  }
-
-  /* 添加样式以美化首页 */
-  h1 {
-    color: #42b983;
-  }
-
-  .status-filter {
-    /*display: flex;*/
-    /*justify-content: space-between;*/
-    /*align-items: center;*/
-    /*padding: 20px;*/
-    /*background-color: white;*/
-    /*border-radius: 10px;*/
-    /*box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);*/
-    /*margin: 20px;*/
+  .type-link {
+    position: relative;
+    border: 0;
+    background: transparent;
+    color: #444444;
     font-size: 16px;
-    font-weight: bold;
-    color: #2e9232;
+    font-weight: 400;
+    letter-spacing: 0;
+    padding: 8px 16px 10px;
+    cursor: pointer;
   }
 
-  /* 分类和搜索 */
+  .type-link:hover,
+  .type-link.active {
+    color: #004098;
+  }
+
+  .type-link.active::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: #004098;
+  }
+
+  .content {
+    background: transparent;
+    padding: 0;
+  }
+
   .filters {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 25px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    margin: 20px;
+    gap: 16px;
+    padding: 20px 24px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    margin-bottom: 18px;
   }
 
   .filter-section {
     display: flex;
     align-items: flex-start;
-    gap: 15px;
+    gap: 12px;
   }
 
   .filter-label {
-    font-weight: 600;
-    color: #333;
+    font-weight: 400;
+    color: #8a8a8a;
     white-space: nowrap;
-    padding-top: 8px;
-    font-size: 15px;
+    padding-top: 6px;
+    font-size: 14px;
   }
 
   .dept-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     flex: 1;
   }
 
   .dept-button {
-    padding: 8px 20px;
-    border-radius: 20px;
-    border: 2px solid #e0e6ed;
-    background-color: #fff;
-    color: #5a6c7d;
-    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 0;
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    color: #444444;
+    font-weight: 400;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     font-size: 14px;
   }
 
-  .dept-button:hover {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
-  }
-
+  .dept-button:hover,
   .dept-button.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    border-color: transparent;
-    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
-    font-weight: 600;
+    color: #004098;
+    border-color: #004098;
+    background: #fff;
   }
 
-  /* 职位列表 */
+  .job-list-container {
+    padding: 0;
+  }
+
+  .job-quiet {
+    margin: 8px 0 0;
+    color: #8a8a8a;
+    font-size: 14px;
+  }
+
   .job-list {
     display: grid;
-    justify-content: space-between;
-
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 16px;
   }
 
-  /* 职位卡片样式 */
   .job-card {
+    display: flex;
+    flex-direction: column;
     background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 24px;
-    margin-bottom: 16px;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 20px 22px;
+    margin: 0;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid transparent;
+    border: 1px solid #e6e6e6;
     position: relative;
-    overflow: hidden;
-  }
-
-  .job-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transform: scaleY(0);
-    transition: transform 0.3s ease;
   }
 
   .job-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    border-color: #667eea;
+    border-color: #004098;
   }
 
-  .job-card:hover::before {
-    transform: scaleY(1);
-  }
-
-  /* 卡片头部 */
   .job-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 20px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e6e6e6;
   }
 
   .job-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #1a1a1a;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333333;
     margin: 0;
     line-height: 1.4;
     flex: 1;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
   }
 
-  /* 状态徽章 */
+  .job-card:hover .job-title {
+    color: #004098;
+  }
+
   .job-status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
+    padding: 2px 8px;
+    border-radius: 0;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 400;
     white-space: nowrap;
     margin-left: 16px;
   }
 
   .status-active {
-    background: #e6fffb;
-    color: #13c2c2;
-    border: 1px solid #87e8de;
+    background: #f7f7f7;
+    color: #004098;
+    border: 1px solid #e6e6e6;
   }
 
   .status-closed {
-    background: #fff1f0;
-    color: #cf1322;
-    border: 1px solid #ffa39e;
+    background: #fff;
+    color: #8a8a8a;
+    border: 1px solid #e6e6e6;
   }
 
   .status-default {
-    background: #f0f0f0;
-    color: #595959;
-    border: 1px solid #d9d9d9;
+    background: #f7f7f7;
+    color: #8a8a8a;
+    border: 1px solid #e6e6e6;
   }
 
-  /* 卡片主体 */
   .job-card-body {
-    margin-bottom: 16px;
+    flex: 1;
+    margin-bottom: 12px;
   }
 
   .job-info-row {
@@ -802,83 +825,41 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
   }
 
   .info-label {
     font-size: 13px;
-    color: #8c8c8c;
-    font-weight: 500;
+    color: #8a8a8a;
+    font-weight: 400;
   }
 
   .info-value {
     font-size: 15px;
-    color: #262626;
-    font-weight: 500;
+    color: #333333;
+    font-weight: 400;
   }
 
   .info-value.highlight {
-    color: #1890ff;
-    font-weight: 600;
-    font-size: 16px;
+    color: #004098;
+    font-weight: 400;
   }
 
-  /* 卡片底部 */
   .job-card-footer {
     display: flex;
     justify-content: flex-end;
     align-items: center;
     gap: 8px;
-    padding-top: 16px;
-    border-top: 1px solid #f0f0f0;
-    color: #1890ff;
+    padding-top: 12px;
+    border-top: 1px solid #e6e6e6;
+    color: #004098;
     font-size: 14px;
-    font-weight: 500;
-  }
-
-  .view-detail-text {
-    transition: all 0.3s ease;
   }
 
   .arrow-icon {
-    transition: all 0.3s ease;
     font-size: 12px;
   }
 
-  .job-card:hover .view-detail-text {
-    color: #096dd9;
-  }
-
-  .job-card:hover .arrow-icon {
-    transform: translateX(4px);
-    color: #096dd9;
-  }
-
-  /* 响应式设计 */
-  @media (max-width: 768px) {
-    .job-card {
-      padding: 16px;
-    }
-
-    .job-card-header {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .job-status-badge {
-      margin-left: 0;
-      align-self: flex-start;
-    }
-
-    .job-info-row {
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .job-title {
-      font-size: 18px;
-    }
-  }
   .pagination {
     display: flex;
     justify-content: center;
@@ -889,147 +870,67 @@
   .pagination button {
     margin: 0 10px;
     padding: 5px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
+    background: #fff;
+    color: #444444;
     cursor: pointer;
   }
 
   .pagination button:disabled {
-    background-color: #ddd;
+    background: #f7f7f7;
+    color: #8a8a8a;
     cursor: not-allowed;
   }
 
-  .positions-per-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 10px;
+  .announcement-list {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    padding: 8px 20px 20px;
   }
 
-  .positions-per-page label {
-    margin-right: 10px;
-  }
-
-  .positions-per-page select {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-
-  #app {
-    display: flex;
-    flex-direction: row; /* 设置为行方向 */
-    flex: 1;
-    padding: 20px;
-    /*flex-direction: column;*/
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-  }
-
-  main {
-    flex-grow: 1; /* 让 main 占据剩余空间 */
-    padding: 15px; /* 可选：设置内边距 */
-  }
-
-  .sidebar {
-    width: 250px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 30px 20px;
-    box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    margin-right: 20px;
-  }
-
-  .sidebar ul {
+  .announcement-list ul {
     list-style: none;
+    margin: 0;
     padding: 0;
   }
 
-  .sidebar ul li {
-    margin: 15px 0;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 8px;
-    color: #fff;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  .sidebar ul li:hover {
-    background: rgba(255, 255, 255, 0.25);
-    transform: translateX(5px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  }
-
-  .sidebar ul .active {
-    background: rgba(255, 255, 255, 0.3);
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  }
-
-  .sidebar ul li.talent-entry {
-    background: linear-gradient(90deg, #f0c14b, #e8a317);
-    color: #1a2a4a;
+  .announcement-list h2 {
+    font-size: 18px;
     font-weight: 700;
-    margin-bottom: 20px;
-  }
-
-  .announcement-list {
-    margin: 20px;
-  }
-
-  h2 {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 20px;
-    color: #333;
+    margin: 16px 0;
+    color: #333333;
   }
 
   .announcement-item {
     cursor: pointer;
-  }
-
-  .announcement-item:hover {
-    color: #3d54a7;
+    list-style: none;
   }
 
   .announcement-card {
-    padding: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-  }
-
-  .announcement-card:hover {
-    color: #3d54a7;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e6e6e6;
   }
 
   .announcement-card h3 {
     font-size: 16px;
+    font-weight: 400;
     margin: 0;
-    flex: 1; /* 使标题占满可用空间 */
+    color: #444444;
   }
 
-  .announcement-card .announcement-time {
-    font-size: 16px;
-    color: #888;
-    text-align: right;
+  .announcement-item:hover h3 {
+    color: #004098;
   }
 
-
-  .content {
-    flex: 1;
-    background-color: #fff;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-
-  .content h2 {
-    margin-bottom: 20px;
-    color: #3d54a7;
+  .announcement-time {
+    font-size: 14px;
+    color: #8a8a8a;
+    white-space: nowrap;
   }
 
   .search-container {
@@ -1040,56 +941,56 @@
 
   .search-input {
     flex: 1;
-    padding: 12px 20px;
-    border: 2px solid #e0e6ed;
-    border-radius: 25px;
+    padding: 8px 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
     font-size: 14px;
-    transition: all 0.3s ease;
-    background-color: #fff;
+    background: #fff;
+    color: #333333;
   }
 
   .search-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #004098;
   }
 
   .search-buttons {
     display: flex;
-    gap: 10px;
+    gap: 8px;
   }
 
   .search-button {
-    padding: 12px 28px;
-    border: none;
-    border-radius: 25px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    font-weight: 600;
+    padding: 8px 18px;
+    border: 1px solid #004098;
+    border-radius: 0;
+    background: #fff;
+    color: #004098;
+    font-weight: 400;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
     font-size: 14px;
+  }
+
+  .search-button:last-child {
+    background: #004098;
+    color: #fff;
   }
 
   .search-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+    background: #10243f;
+    border-color: #10243f;
+    color: #fff;
   }
 
-  /* 分页器样式 */
   .pagination-wrapper {
-    margin-top: 30px;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-top: 18px;
+    padding: 16px 0 0;
+    background: transparent;
   }
 
   .pagination-info {
-    color: #666;
+    color: #8a8a8a;
     font-size: 14px;
-    margin-left: 20px;
+    margin-left: 16px;
     white-space: nowrap;
   }
 
@@ -1101,56 +1002,40 @@
     gap: 8px;
   }
 
-  .page-btn {
-    padding: 8px 16px;
-    border: 1px solid #d9d9d9;
+  .page-btn,
+  .page-number {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid #e6e6e6;
     background: #fff;
-    color: #333;
-    border-radius: 4px;
+    color: #444444;
+    border-radius: 0;
     cursor: pointer;
     font-size: 14px;
-    transition: all 0.3s ease;
   }
 
-  .page-btn:hover:not(:disabled) {
-    color: #667eea;
-    border-color: #667eea;
+  .page-btn:hover:not(:disabled),
+  .page-number:hover {
+    color: #004098;
+    border-color: #004098;
   }
 
   .page-btn:disabled {
-    color: #ccc;
+    color: #cccccc;
     cursor: not-allowed;
-    background: #f5f5f5;
+    background: #f7f7f7;
   }
 
   .page-numbers {
     display: flex;
-    gap: 5px;
-  }
-
-  .page-number {
-    min-width: 36px;
-    height: 36px;
-    padding: 0 8px;
-    border: 1px solid #d9d9d9;
-    background: #fff;
-    color: #333;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
-  }
-
-  .page-number:hover {
-    color: #667eea;
-    border-color: #667eea;
+    gap: 6px;
   }
 
   .page-number.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #004098;
     color: #fff;
-    border-color: transparent;
-    font-weight: 600;
+    border-color: #004098;
   }
 
   .page-ellipsis {
@@ -1159,41 +1044,59 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #999;
+    color: #8a8a8a;
     font-size: 14px;
   }
 
   .page-size-selector {
     display: flex;
     align-items: center;
-    gap: 5px;
-    margin-left: 15px;
-    padding-left: 15px;
-    border-left: 1px solid #e0e0e0;
+    gap: 6px;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid #e6e6e6;
   }
 
   .page-size-selector label {
-    color: #666;
+    color: #8a8a8a;
     font-size: 14px;
   }
 
   .page-size-selector select {
-    padding: 6px 10px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
+    padding: 6px 8px;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
     font-size: 14px;
-    cursor: pointer;
     background: #fff;
-    transition: all 0.3s ease;
-  }
-
-  .page-size-selector select:hover {
-    border-color: #667eea;
+    color: #333333;
   }
 
   .page-size-selector select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    border-color: #004098;
+  }
+
+  @media (max-width: 768px) {
+    .filter-section,
+    .search-container {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .job-card-header,
+    .job-info-row {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .job-status-badge {
+      margin-left: 0;
+      align-self: flex-start;
+    }
+
+    .type-link {
+      font-size: 15px;
+      padding: 8px 12px 10px;
+    }
   }
 </style>

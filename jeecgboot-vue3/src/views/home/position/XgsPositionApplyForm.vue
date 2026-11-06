@@ -164,18 +164,28 @@
     disabled: false,
   });
 
-  // 分析简历
+  // 分析简历（默认本地 Tika）
   const resumeText = ref('');
   function analysisResume() {
     confirmLoading.value = true;
-    resumeText.value = '请稍等，正在分析简历...';
+    resumeText.value = '请稍等，正在本地解析简历...';
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData.value })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 60000, data: formData.value })
       .then((data) => {
         if (data && data.fileJson) {
           let resumeData = JSON.parse(data.fileJson);
           fillResumeInfo(resumeData);
           resumeText.value = '';
+          const filled = Array.isArray(data.filledFields) ? data.filledFields : [];
+          const missed = Array.isArray(data.missedFields) ? data.missedFields : [];
+          if (data.parseSummary) {
+            createMessage.success(data.parseSummary);
+          } else {
+            createMessage.success(`自动填充完成（已识别 ${filled.length} 项）`);
+          }
+          if (missed.length) {
+            createMessage.info(`未识别请手工补全：${missed.slice(0, 12).join('、')}`);
+          }
         } else {
           createMessage.warning('解析失败，请上传PDF格式的简历');
         }

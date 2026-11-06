@@ -63,6 +63,14 @@ public class DySmsHelper {
     
     
     public static boolean sendSms(String phone, JSONObject templateParamJson, DySmsEnum dySmsEnum) throws ClientException {
+        if (IdentitySmsClient.isEnabled()) {
+            return IdentitySmsClient.send(phone, templateParamJson, dySmsEnum);
+        }
+        String identitySmsError = IdentitySmsClient.configError();
+        if (identitySmsError != null) {
+            logger.error("统一身份认证短信未发送：{}", identitySmsError);
+            return false;
+        }
         JeecgBaseConfig config = SpringContextUtils.getBean(JeecgBaseConfig.class);
         String smsSendType = config.getSmsSendType();
         if(oConvertUtils.isNotEmpty(smsSendType) && CommonConstant.SMS_SEND_TYPE_TENCENT.equals(smsSendType)){

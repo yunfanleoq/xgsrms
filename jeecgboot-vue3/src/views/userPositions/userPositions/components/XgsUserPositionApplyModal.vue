@@ -213,7 +213,7 @@
     resumeText.value = '请稍等，正在分析简历...';
     console.log('fileData', fileData.value);
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: fileData })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 60000, data: fileData })
       .then((data) => {
         if (data) {
           // TODO 在这里做分析后的对应关系

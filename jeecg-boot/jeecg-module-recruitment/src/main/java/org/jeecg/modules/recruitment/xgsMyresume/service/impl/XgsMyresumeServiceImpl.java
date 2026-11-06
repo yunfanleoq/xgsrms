@@ -10,6 +10,8 @@ import com.zhipu.oapi.service.v4.model.ModelData;
 import org.jeecg.common.exception.JeecgBootException;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.modules.base.service.BaseCommonService;
+import org.jeecg.modules.recruitment.resume.parse.LocalResumeTikaParser;
+import org.jeecg.modules.recruitment.resume.parse.ResumeRuleMapper;
 import org.jeecg.modules.recruitment.xgsMyresume.entity.XgsMyresume;
 import org.jeecg.modules.recruitment.xgsMyresume.mapper.XgsMyresumeMapper;
 import org.jeecg.modules.recruitment.xgsMyresume.service.IXgsMyresumeService;
@@ -22,6 +24,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +41,7 @@ import java.util.regex.Pattern;
 @Service
 public class XgsMyresumeServiceImpl extends ServiceImpl<XgsMyresumeMapper, XgsMyresume> implements IXgsMyresumeService {
 
-    /** 智谱 ClientV4；未配置 Bean 时不影响系统启动，简历 AI 解析将不可用 */
+    /** 智谱 ClientV4；仅 resume.parse.mode=zhipu 时需要 */
     @Autowired(required = false)
     private ClientV4 clientV4;
 
@@ -48,13 +51,50 @@ public class XgsMyresumeServiceImpl extends ServiceImpl<XgsMyresumeMapper, XgsMy
     @Value("${jeecg.path.upload}")
     private String upLoadPath;
 
+    @Value("${resume.parse.mode:tika}")
+    private String resumeParseMode;
+
     @Autowired
     private BaseCommonService baseCommonService;
 
+    @Autowired
+    private LocalResumeTikaParser localResumeTikaParser;
+
+    @Autowired
+    private ResumeRuleMapper resumeRuleMapper;
+
     @Override
     public void analysisResume(XgsMyresume xgsMyresume) {
+        String mode = resumeParseMode == null ? "tika" : resumeParseMode.trim().toLowerCase();
+        if ("zhipu".equals(mode)) {
+            analysisResumeByZhipu(xgsMyresume);
+            return;
+        }
+        analysisResumeByTika(xgsMyresume);
+    }
+
+    private void analysisResumeByTika(XgsMyresume xgsMyresume) {
+        String filePath = upLoadPath + File.separator + xgsMyresume.getResumeFile();
+        try {
+            File file = new File(filePath);
+            if (!file.isFile()) {
+                throw new JeecgBootException("简历文件不存在：" + xgsMyresume.getResumeFile());
+            }
+            String text = localResumeTikaParser.extractText(Path.of(file.getAbsolutePath()));
+            ResumeRuleMapper.MapResult mapped = resumeRuleMapper.map(text);
+            XgsMyresume parsed = JSONObject.parseObject(mapped.json.toJSONString(), XgsMyresume.class);
+            BeanUtils.copyProperties(parsed, xgsMyresume, "id", "createBy", "createTime", "updateBy", "updateTime", "sysOrgCode", "resumeFile");
+            saveOrUpdate(xgsMyresume);
+        } catch (JeecgBootException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new JeecgBootException("本地简历解析失败：" + e.getMessage());
+        }
+    }
+
+    private void analysisResumeByZhipu(XgsMyresume xgsMyresume) {
         if (clientV4 == null) {
-            throw new JeecgBootException("智谱 AI 未配置（未注册 ClientV4 Bean），简历智能解析功能暂不可用。");
+            throw new JeecgBootException("简历解析模式为 zhipu，但智谱 AI 未配置（未注册 ClientV4 Bean）。可改回 resume.parse.mode=tika。");
         }
         String filePath = upLoadPath + File.separator + xgsMyresume.getResumeFile();
         try {
@@ -66,8 +106,6 @@ public class XgsMyresumeServiceImpl extends ServiceImpl<XgsMyresumeMapper, XgsMy
             com.zhipu.oapi.service.v4.file.File resFile = clientV4.getChatApiService().uploadFile(request).blockingGet();
             HttpxBinaryResponseContent responseContent = clientV4.getChatApiService().fileContent(resFile.getId());
             String text = responseContent.getText();
-            Map<String, Object> extraJson = new HashMap<>();
-            extraJson.put("temperature", 0.5);
             JSONObject json = JSONObject.parseObject(text);
             String[] jsonTemplate = getResumeInfoJsonTemplate();
             String messageContent = String.format("请对以下个人简历信息进行分析，根据JSON模板生成JSON格式数据，结果直接返回JSON格式\n\n" +
@@ -81,8 +119,6 @@ public class XgsMyresumeServiceImpl extends ServiceImpl<XgsMyresumeMapper, XgsMy
             completionRequest.put("messages", messages);
             ModelData modelData = clientV4.getChatApiService().createChatCompletion(completionRequest).blockingGet();
             String markdownText = modelData.getChoices().get(0).getMessage().getContent().toString();
-            System.out.println("-------->" + markdownText);
-            // 提取 JSON 数据
             List<String> jsonDataList = extractJsonFromMarkdown(markdownText);
             String jsonStr = jsonDataList.iterator().next();
             XgsMyresume xgsUserResumeFile = JSONObject.parseObject(jsonStr, XgsMyresume.class);

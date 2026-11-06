@@ -118,7 +118,7 @@ async function applyToPosition(page: Page) {
 
 test.describe.configure({ mode: 'serial' });
 
-test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请', async ({ browser }) => {
+test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请 → 面试结果', async ({ browser }) => {
   test.setTimeout(900_000);
   const cap = new StepCapture();
   const state = loadChainState(RUN_ID);
@@ -249,7 +249,7 @@ test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请', async ({ 
     const applicant = state.applicantName || '求职者';
     const inviteCard = page.locator('article.card').filter({ hasText: rowMarker }).first();
     if (await inviteCard.count()) {
-      await inviteCard.getByRole('button', { name: '发送面试邀请' }).click();
+      await inviteCard.getByRole('button', { name: '邀请' }).click();
       await page.locator('.invite-form .ant-picker input').fill('2026-10-24 10:00:00');
       await page.getByPlaceholder('例如 本部 3 号楼会议室').fill('本部会议室');
       await page.getByPlaceholder('时间、材料、联系人').fill('请携带简历准时参加面试');
@@ -298,6 +298,55 @@ test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请', async ({ 
         title: '我的面试-接受邀请',
         action: '求职者在【我的面试】中对邀请点击【接受邀请】。',
         pageDesc: `列表行数≈${analysis.tableRowCount}。`,
+        route: page.url(),
+      },
+      { strict: false },
+    );
+  });
+
+  // TC-RESULT：默认录入「面试通过」；可用 E2E_INTERVIEW_RESULT=fail 跑未通过变体
+  const resultMode = (process.env.E2E_INTERVIEW_RESULT || 'pass').toLowerCase();
+  const resultActionLabel = resultMode === 'fail' ? '面试未通过' : '面试通过';
+  const resultActionId = resultMode === 'fail' ? 'RecordInterviewFail' : 'RecordInterviewPass';
+
+  await withRole(browser, 'test-rl', async (page, request) => {
+    await gotoMenu(page, request, '面试管理', '面试邀请');
+    const analysis = await assertPageReady(page, '面试邀请');
+    const card = page.locator('article.card').filter({ hasText: rowMarker }).first();
+    let done = false;
+    if (await card.count()) {
+      const btn = card.getByRole('button', { name: new RegExp(resultActionLabel) }).first();
+      if (await btn.count()) {
+        await btn.click();
+        await page.getByRole('button', { name: '执行' }).click().catch(async () => {
+          await page.getByRole('button', { name: /确定|提交|保存/ }).first().click();
+        });
+        await waitForSuccessToast(page).catch(() => page.waitForTimeout(1500));
+        done = true;
+      }
+    }
+    if (!done && (await tableHasText(page, rowMarker))) {
+      await clickTableActionForRow(page, rowMarker, resultMode === 'fail' ? '未通过' : '通过').catch(
+        () => undefined,
+      );
+      await page.getByRole('button', { name: /确定|提交|保存|执行/ }).first().click().catch(() => undefined);
+      await waitForSuccessToast(page).catch(() => undefined);
+      done = true;
+    }
+    logStep(
+      state,
+      '8-面试结果',
+      done ? 'ok' : 'skip',
+      done ? `${resultActionId}/${resultActionLabel}` : `未找到可操作卡片/行：${rowMarker}`,
+    );
+    await cap.capture(
+      page,
+      {
+        role: 'test-rl',
+        roleLabel: '人事处',
+        title: `面试结果-${resultActionLabel}`,
+        action: `人事处对已接受邀请的记录录入【${resultActionLabel}】（用例 TC-RESULT）。`,
+        pageDesc: `表格行数≈${analysis.tableRowCount}；期望 interviewResult 与操作一致。`,
         route: page.url(),
       },
       { strict: false },

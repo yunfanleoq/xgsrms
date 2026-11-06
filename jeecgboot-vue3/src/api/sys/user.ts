@@ -23,8 +23,9 @@ enum Api {
   GetPermCode = '/sys/permission/getPermCode',
   //新加的获取图形验证码的接口
   getInputCode = '/sys/randomImage',
-  //获取短信验证码的接口
-  getCaptcha = '/sys/ems',
+  // 手机验证码走短信；只有邮箱找回才走 /sys/ems
+  getCaptcha = '/sys/sms',
+  getEmailCaptcha = '/sys/ems',
   //注册接口
   registerApi = '/sys/user/register',
   //校验用户接口
@@ -121,9 +122,10 @@ export function getCodeInfo(currdatetime) {
  * @description: 获取短信验证码
  */
 export function getCaptcha(params) {
+  const url = params && params.mobile ? Api.getCaptcha : Api.getEmailCaptcha;
   return new Promise((resolve, reject) => {
     defHttp
-      .post({ url: Api.getCaptcha, params }, { isTransformResponse: false })
+      .post({ url, params }, { isTransformResponse: false })
       .then((res) => {
         console.log(res);
         if (res.success) {
