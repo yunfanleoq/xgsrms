@@ -173,8 +173,7 @@
       </div>
     </div>
   </div>
-  <!-- 使用新的重构后的在线申请表单 -->
-  <XgsPositionApplyModalNew ref="registerModalRef" :form-data="record" :formBpm="true" @success="handleApplySuccess" />
+  <PortalPositionApply ref="registerModalRef" @success="handleApplySuccess" />
 </template>
 
 <script setup lang="ts" name="PositionDetail">
@@ -185,8 +184,7 @@
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   import { useMessage } from '@/hooks/web/useMessage';
-  // 引入新的重构表单组件
-  import XgsPositionApplyModalNew from '@/views/positions/components/XgsPositionApplyModalNew.vue';
+  import PortalPositionApply from '@/views/home/position/PortalPositionApply.vue';
   import { message } from 'ant-design-vue';
   import { defHttp } from '@/utils/http/axios';
   import { formatPositionContactPerson, formatPositionKtz } from '@/utils/positionContactDisplay';

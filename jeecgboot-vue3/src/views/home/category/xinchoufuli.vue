@@ -1,6 +1,5 @@
 <template>
   <div class="category-content">
-    <h2>薪酬福利</h2>
     <div class="text-content">
       <p>
         研究所实行事业单位岗位绩效工资制度，基本工资、津补贴按国家政策发放；绩效工资分配突出贡献导向，实施动态调整与统筹调控，激励承担重大国家任务。职工享受“五险两金”、补充医疗保险、北京普惠健康保、年度体检、子女团险优惠等职工福利，除此之外还享有职工疗养、工会重疾互助等工会福利。
@@ -38,20 +37,15 @@
 
 <style scoped>
   .category-content {
-    color: #24324d;
+    color: #333333;
     line-height: 1.8;
-  }
-
-  h2 {
-    margin: 0 0 16px;
-    color: #0b2f6b;
-    font-size: 24px;
   }
 
   h3 {
     margin: 0 0 12px;
-    color: #0b2f6b;
+    color: #333333;
     font-size: 18px;
+    font-weight: 700;
   }
 
   .text-content p {
@@ -66,9 +60,9 @@
 
   .image-container {
     text-align: center;
-    background: #f7faff;
-    border: 1px solid #e4ebf7;
-    border-radius: 10px;
+    background: #f7f7f7;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
     padding: 20px;
   }
 
@@ -79,7 +73,7 @@
 
   .image-caption {
     margin: 10px 0 0;
-    color: #6a7893;
+    color: #8a8a8a;
     font-size: 13px;
   }
 
@@ -90,13 +84,13 @@
   }
 
   .welfare-item {
-    background: linear-gradient(180deg, #f8fbff, #fff);
-    border: 1px solid #e4ebf7;
-    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
     padding: 14px 12px;
     text-align: center;
-    font-weight: 600;
-    color: #0b2f6b;
+    font-weight: 400;
+    color: #333333;
   }
 
   @media (max-width: 900px) {

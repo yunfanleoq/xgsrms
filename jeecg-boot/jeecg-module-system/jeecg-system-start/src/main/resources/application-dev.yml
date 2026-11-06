@@ -244,6 +244,9 @@ jeecg:
     # C-003：不得将 /jmreport/** 子路径放入 excludeUrls（会优先 anon，绕过 ShiroConfig）
     excludeUrls: /test/jeecgDemo/demo3,/test/jeecgDemo/redisDemo/**,/bigscreen/category/**,/bigscreen/visual/**,/bigscreen/map/**
   # 短信发送方式 aliyun阿里云短信 tencent腾讯云短信
+  # 统一身份认证短信另看环境变量，四项都为空则不会启用：
+  # XGSRMS_SMS_BASE_URL、XGSRMS_SMS_CLIENT_ID、XGSRMS_SMS_CLIENT_SECRET、XGSRMS_SMS_ACCOUNT
+  # 可选 XGSRMS_SMS_SIGN_NAME。基址要带协议和端口。
   smsSendType: aliyun
   #阿里云oss存储和大鱼短信秘钥配置
   oss:
@@ -343,6 +346,7 @@ jeecg:
       timeout: 1800
     allow-password-change-get: false
     allow-token-in-query: true
+    register-skip-sms: false
     cors-allowed-origins: ""
 #cas单点登录
 cas:

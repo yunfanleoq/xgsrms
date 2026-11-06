@@ -1,102 +1,143 @@
 <template>
-  <div id="app">
-    <div class="banner">
-      <img src="@/assets/images/xgs_logo_.png" alt="Banner Image" class="banner-image" />
-      <img src="@/assets/images/xgs_logo01.png" alt="" class="banner-image" />
-    </div>
-
-    <!-- 顶部导航栏 -->
-    <header>
-      <div class="logo">中国科学院信息工程研究所人才招聘管理系统</div>
-      <nav class="nav-menu">
+  <div id="app" class="portal-shell">
+    <header class="mast">
+      <div class="mast-bar">
+        <RouterLink :to="{ name: 'homeHome' }" class="brand">
+          <img src="@/assets/images/xgs_logo_.png" alt="中国科学院信息工程研究所人才招聘" class="brand-word" />
+          <img src="@/assets/images/xgs_logo01.png" alt="信工所标识" class="brand-seal" />
+        </RouterLink>
+        <div class="header-actions">
+          <div v-if="!isLoggedIn" class="auth-buttons">
+            <button type="button" @click="goToLoginPage" class="text-action">登录</button>
+            <span class="action-split" aria-hidden="true"></span>
+            <button type="button" @click="goToRegisterPage" class="text-action text-action--strong">注册</button>
+          </div>
+          <div v-else class="user-section">
+            <RouterLink v-if="managerEntry" :to="{ name: 'homeHome' }" class="home-btn" :class="{ 'home-btn--on': isHome }">首页</RouterLink>
+            <button
+              v-if="managerEntry"
+              type="button"
+              class="workbench-btn"
+              :class="{ 'workbench-btn--on': inWorkbench }"
+              @click="goToUserCenter"
+            >
+              工作台
+            </button>
+            <div ref="accountRef" class="account" :class="{ open: accountOpen }">
+              <button type="button" class="account-trigger" aria-haspopup="menu" :aria-expanded="accountOpen" @click="accountOpen = !accountOpen">
+                <span class="account-name">{{ loggedInUser?.realname || loggedInUser?.username }}</span>
+                <span class="account-caret" aria-hidden="true"></span>
+              </button>
+              <div v-if="accountOpen" class="account-menu" role="menu">
+                <button type="button" role="menuitem" @click="goCenter">个人中心</button>
+                <button type="button" role="menuitem" class="account-menu__leave" @click="logout">退出登录</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <nav v-if="!hidePortalNav" class="portal-nav" aria-label="门户导航">
         <RouterLink :to="{ name: 'homeHome' }" class="nav-link">首页</RouterLink>
-        <span class="nav-divider">|</span>
         <RouterLink
           :to="{ name: 'homeTalent' }"
           class="nav-link"
           :class="{ 'router-link-active': talentSectionActive && route.name !== 'homeTalent' }"
         >人才引进</RouterLink>
-        <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'homeCareer' }" class="nav-link">职业路径</RouterLink>
-        <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'homeTraining' }" class="nav-link">培训发展</RouterLink>
-        <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'homeSalary' }" class="nav-link">薪酬福利</RouterLink>
-        <span class="nav-divider">|</span>
         <RouterLink :to="{ name: 'contactUs' }" class="nav-link">联系我们</RouterLink>
       </nav>
-      <div class="header-actions">
-        <div v-if="!isLoggedIn" class="auth-buttons">
-          <button @click="goToLoginPage" class="btn btn-login">登录</button>
-          <button @click="goToRegisterPage" class="btn btn-register">注册</button>
-        </div>
-        <div v-else class="user-section">
-          <span class="user-info" v-if="loggedInUser">欢迎, {{ loggedInUser.realname }}</span>
-          <button @click="goToUserCenter" class="btn btn-user-center">个人中心</button>
-          <button @click="logout" class="btn btn-logout">退出</button>
-        </div>
-      </div>
     </header>
 
-    <main class="main-content">
+    <main class="portal-main" :class="{ 'portal-main--home': isHome }">
       <RouterView />
     </main>
 
-    <footer>
-      <!-- 友情链接 -->
+    <footer class="portal-foot">
       <div class="friend-links">
         <a href="https://www.cas.cn" target="_blank" rel="noopener noreferrer">中国科学院</a>
-        <span class="link-separator">|</span>
         <a href="http://www.nsfc.gov.cn/" target="_blank" rel="noopener noreferrer">国家自然科学基金</a>
-        <span class="link-separator">|</span>
         <a href="https://www.casjob.com/" target="_blank" rel="noopener noreferrer">中科人才网</a>
-        <span class="link-separator">|</span>
         <a href="http://www.iie.cas.cn/" target="_blank" rel="noopener noreferrer">中科院信工所</a>
       </div>
-      <p class="footer-text">© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统. All rights reserved.</p>
+      <p class="footer-text">© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统</p>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
   import { useRoute, useRouter } from 'vue-router';
-  import { computed, onMounted } from 'vue';
+  import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
   import { useUserStore } from '@/store/modules/user';
-  import { useMultipleTabStore } from '@/store/modules/multipleTab';
+  import { ROLE_DEPARTMENT, ROLE_HR, workPagesForRoles } from './mine/workPages';
   const route = useRoute();
   const router = useRouter();
   const userStore = useUserStore();
+
+  const isHome = computed(() => route.name === 'homeHome');
+  const inWorkbench = computed(() => String(route.name || '').startsWith('work'));
+  const hidePortalNav = computed(() => inWorkbench.value || route.name === 'homeCenter');
 
   // 岗位列表和应聘详情从「人才引进」进入，顶栏仍高亮这一项
   const talentSectionActive = computed(() =>
     ['homeTalent', 'homePositions', 'positionDetail'].includes(String(route.name)),
   );
 
+  const managerEntry = computed(() => {
+    const roles = (userStore.getRoleList || []) as string[];
+    if (!roles.includes(ROLE_DEPARTMENT) && !roles.includes(ROLE_HR)) {
+      return '';
+    }
+    return workPagesForRoles(roles)[0]?.name || '';
+  });
+
+  const accountOpen = ref(false);
+  const accountRef = ref<HTMLElement | null>(null);
+
   const isLoggedIn = computed(() => !!userStore.userInfo?.username);
   const loggedInUser = computed(() => userStore.userInfo);
 
+  function closeAccountOnOutside(event: MouseEvent) {
+    if (!accountRef.value?.contains(event.target as Node)) {
+      accountOpen.value = false;
+    }
+  }
+
+  function closeAccountOnEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      accountOpen.value = false;
+    }
+  }
+
   onMounted(() => {
+    document.addEventListener('click', closeAccountOnOutside);
+    document.addEventListener('keydown', closeAccountOnEscape);
     userStore.getUserInfoAction().catch((e) => {
       console.warn('首页获取用户信息失败（可忽略：未登录或 token 失效）', e);
     });
   });
 
+  onBeforeUnmount(() => {
+    document.removeEventListener('click', closeAccountOnOutside);
+    document.removeEventListener('keydown', closeAccountOnEscape);
+  });
+
   const currentYear = computed(() => new Date().getFullYear());
 
   const logout = async () => {
-    // 调用 userStore 的 logout 方法，会清除用户状态
+    accountOpen.value = false;
     await userStore.logout(false);
-    // 退出后跳转到首页
     router.push({ name: 'homeHome' });
   };
 
   const goToUserCenter = () => {
+    router.push({ name: managerEntry.value || 'homeCenter' });
+  };
 
-    // useMultipleTabStore.closeAllTabs(router);
-    // 正确调用方式：先获取 store 实例
-    const tabStore = useMultipleTabStore();
-    tabStore.closeAllTab(router);
-    router.push({ path: '/dashboard/analysis' });
+  const goCenter = () => {
+    accountOpen.value = false;
+    router.push({ name: 'homeCenter' });
   };
 
   const goToLoginPage = () => {
@@ -109,280 +150,383 @@
 </script>
 
 <style scoped>
-  /* 全局样式 */
-  body {
-    margin: 0;
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f7f9fc;
-  }
-
-  #app {
+  .portal-shell {
     width: 100%;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background: #f7f7f7;
+    color: #333333;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
   }
 
-  /* Banner 样式 */
-  .banner {
-    background-image: url('@/assets/images/xgs_topbg.png');
-    background-size: cover;
-    background-position: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  .banner-image {
-    height: 100px;
-    width: 80%;
-    max-width: 1200px;
-    border-radius: 7px;
-    object-fit: contain;
-    margin: 0 5px;
-  }
-
-  /* 顶部导航栏 */
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(90deg, #0b2f6b 0%, #1a4a9a 55%, #2563b8 100%);
-    color: white;
-    padding: 14px 36px;
-    box-shadow: 0 4px 18px rgba(11, 47, 107, 0.28);
+  .mast {
+    background: #fff;
     position: sticky;
     top: 0;
     z-index: 1000;
+    border-bottom: 1px solid #e6e6e6;
   }
 
-  .logo {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
-
-  /* 导航菜单 */
-  .nav-menu {
+  .mast-bar {
+    width: min(1280px, calc(100% - 80px));
+    margin: 0 auto;
+    min-height: 52px;
+    padding: 6px 0 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    flex: 1;
-    gap: 5px;
+    justify-content: space-between;
+    gap: 24px;
   }
 
-  .nav-link {
-    color: white;
-    padding: 8px 16px;
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
     text-decoration: none;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 4px;
-    position: relative;
   }
 
-  .nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    transform: translateY(-2px);
+  .brand-word {
+    height: 40px;
+    width: auto;
+    max-width: min(420px, 46vw);
+    object-fit: contain;
+    object-position: left center;
   }
 
-  .nav-link.router-link-active {
-    background-color: rgba(255, 255, 255, 0.2);
+  .brand-seal {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
   }
 
-  .nav-divider {
-    color: rgba(255, 255, 255, 0.5);
-    margin: 0 4px;
-  }
-
-  /* 头部操作区 */
   .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    flex: none;
   }
 
   .auth-buttons,
   .user-section {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
   }
 
-  /* 按钮样式 */
-  .btn {
-    padding: 8px 20px;
-    border-radius: 6px;
-    border: none;
-    font-size: 16px;
-    font-weight: 600;
+  .text-action {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: #999999;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0;
     cursor: pointer;
-    transition: all 0.3s ease;
+  }
+
+  .text-action--strong {
+    color: #999999;
+    font-weight: 400;
+  }
+
+  .text-action:hover,
+  .text-action--current {
+    color: #004098;
+  }
+
+  .action-split {
+    width: 1px;
+    height: 12px;
+    background: #e0e0e0;
+  }
+
+  .home-btn {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid #d0d7e2;
+    border-radius: 4px;
+    background: #fff;
+    color: #004098;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+
+  .home-btn:hover,
+  .home-btn--on {
+    border-color: #004098;
+    background: #f3f6fb;
+  }
+
+  .workbench-btn {
+    height: 32px;
+    padding: 0 16px;
+    border: 1px solid #004098;
+    border-radius: 4px;
+    background: #004098;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+  }
+
+  .workbench-btn:hover,
+  .workbench-btn--on {
+    background: #003067;
+    border-color: #003067;
+  }
+
+  .account {
+    position: relative;
+    z-index: 3;
+  }
+
+  .account-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 9em;
+    height: 32px;
+    padding: 0 2px 0 4px;
+    border: 0;
+    background: transparent;
+    color: #333333;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .account-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .btn-login,
-  .btn-register {
-    background-color: transparent;
-    color: white;
-    border: 2px solid white;
+  .account-caret {
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #666666;
   }
 
-  .btn-login:hover,
-  .btn-register:hover {
-    background-color: white;
-    color: #3d54a7;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  .account.open .account-caret {
+    transform: rotate(180deg);
   }
 
-  .btn-logout {
-    background-color: #e74c3c;
-    color: white;
+  .account-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 3;
+    min-width: 148px;
+    padding: 6px;
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 32, 64, 0.12);
   }
 
-  .btn-logout:hover {
-    background-color: #c0392b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+  .account-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #333333;
+    font-size: 14px;
+    text-align: left;
+    cursor: pointer;
   }
 
-  .btn-user-center {
-    background-color: #27ae60;
-    color: white;
+  .account-menu button:hover {
+    background: #f3f6fa;
+    color: #004098;
   }
 
-  .btn-user-center:hover {
-    background-color: #229954;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+  .account-menu__leave {
+    color: #666666;
   }
 
-  .user-info {
-    color: white;
+  .portal-nav {
+    position: relative;
+    z-index: 1;
+    width: min(1280px, calc(100% - 80px));
+    margin: 0 auto;
+    min-height: 36px;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  .nav-link {
+    position: relative;
+    color: #444444;
+    text-decoration: none;
     font-size: 16px;
-    padding: 0 10px;
+    font-weight: 400;
+    letter-spacing: 0;
+    padding: 8px 16px 10px;
+    white-space: nowrap;
   }
 
-  /* 主内容区 */
-  .main-content {
+  .nav-link:hover {
+    color: #004098;
+  }
+
+  .nav-link.router-link-active {
+    color: #004098;
+    font-weight: 400;
+  }
+
+  .nav-link.router-link-active::after {
+    content: '';
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 0;
+    height: 2px;
+    background: #004098;
+  }
+
+  .portal-main {
     flex: 1;
-    padding: 20px;
-    background-color: #f9f9f9;
+    padding: 28px 20px 48px;
+    background: #f7f7f7;
   }
 
-  /* 页脚 */
-  footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #f5f5f5;
-    color: #666;
-    margin-top: auto;
-    border-top: 1px solid #e0e0e0;
+  .portal-main--home {
+    padding: 0;
+    background: #fff;
   }
 
-  /* 友情链接 */
+  .portal-foot {
+    background: #10243f;
+    color: rgba(255, 255, 255, 0.8);
+    min-height: 220px;
+    padding: 56px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
   .friend-links {
+    width: min(1280px, calc(100% - 80px));
+    margin: 0 auto 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
     flex-wrap: wrap;
-    gap: 5px;
-    padding: 15px 0;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 15px;
+    gap: 12px 36px;
   }
 
   .friend-links a {
-    color: #666;
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-size: 14px;
-    padding: 5px 10px;
-    transition: color 0.3s ease;
+    letter-spacing: 0;
   }
 
   .friend-links a:hover {
-    color: #3d54a7;
-    text-decoration: underline;
-  }
-
-  .link-separator {
-    color: #ccc;
-    font-size: 14px;
+    color: #fff;
   }
 
   .footer-text {
     margin: 0;
+    text-align: center;
     font-size: 13px;
-    color: #999;
+    letter-spacing: 0;
+    color: rgba(255, 255, 255, 0.8);
   }
 
-  /* 响应式设计 */
   @media (max-width: 1024px) {
-    header {
-      flex-wrap: wrap;
-      padding: 10px 20px;
+    .mast-bar,
+    .portal-nav,
+    .friend-links {
+      width: min(1280px, calc(100% - 32px));
     }
 
-    .logo {
-      font-size: 16px;
-      width: 100%;
-      text-align: center;
-      margin-bottom: 10px;
+    .brand-word,
+    .brand-seal {
+      height: 36px;
     }
 
-    .nav-menu {
-      order: 3;
-      width: 100%;
-      justify-content: center;
-      margin-top: 10px;
+    .portal-nav {
+      justify-content: flex-start;
+      overflow-x: auto;
     }
 
     .nav-link {
-      font-size: 14px;
-      padding: 6px 10px;
-    }
-
-    .header-actions {
-      order: 2;
+      font-size: 15px;
+      padding: 8px 12px 10px;
     }
   }
 
-  @media (max-width: 768px) {
-    .banner-image {
-      height: 60px;
-      width: 90%;
+  @media (max-width: 720px) {
+    .mast-bar {
+      align-items: flex-start;
+      padding-top: 10px;
     }
 
-    .nav-link {
-      font-size: 12px;
-      padding: 5px 8px;
+    .brand {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
     }
 
-    .btn {
-      font-size: 14px;
-      padding: 6px 12px;
+    .brand-seal {
+      display: none;
+    }
+  }
+</style>
+
+<style>
+  /* 管理端把 html / #app 锁在一屏里。门户页需要整页往下排。 */
+  html:has(.portal-shell),
+  html:has(.portal-shell) body,
+  html:has(.portal-shell) #app {
+    height: auto !important;
+    min-height: 100%;
+    overflow: auto !important;
+  }
+
+  /* 内页与首页同一栏宽、同一套标题和纸色卡片 */
+  .portal-page {
+    width: min(1280px, calc(100% - 40px));
+    margin: 0 auto;
+    color: #333333;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+  }
+
+  .portal-page .page-head h1 {
+    margin: 0 0 18px;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #333333;
+    letter-spacing: 0;
+  }
+
+  .portal-page .page-card {
+    background: #fff;
+    border: 1px solid #e6e6e6;
+    padding: 28px 32px 36px;
+  }
+
+  .portal-mine {
+    overflow-x: auto;
+  }
+
+  @media (max-width: 720px) {
+    .portal-page .page-head h1 {
+      font-size: 26px;
     }
 
-    .friend-links {
-      gap: 3px;
-    }
-
-    .friend-links a {
-      font-size: 12px;
-      padding: 3px 6px;
-    }
-
-    .link-separator {
-      font-size: 12px;
-    }
-
-    .footer-text {
-      font-size: 12px;
+    .portal-page .page-card {
+      padding: 20px 16px 28px;
     }
   }
 </style>

@@ -98,7 +98,9 @@ public class JeecgBaseConfig {
     private JeecgOSS oss;
 
     /**
-     * 短信发送方式 aliyun阿里云短信 tencent腾讯云短信
+     * 短信发送方式 aliyun阿里云短信 tencent腾讯云短信。
+     * 统一身份认证短信不在这里切换：XGSRMS_SMS_BASE_URL、XGSRMS_SMS_CLIENT_ID、
+     * XGSRMS_SMS_CLIENT_SECRET、XGSRMS_SMS_ACCOUNT 四项都非空时才发送。
      */
     @Getter
     @Setter

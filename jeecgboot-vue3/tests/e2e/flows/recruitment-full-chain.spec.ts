@@ -249,7 +249,7 @@ test('E2E 招聘全链路：投递 → 三级审核 → 面试邀请 → 面试�
     const applicant = state.applicantName || '求职者';
     const inviteCard = page.locator('article.card').filter({ hasText: rowMarker }).first();
     if (await inviteCard.count()) {
-      await inviteCard.getByRole('button', { name: '发送面试邀请' }).click();
+      await inviteCard.getByRole('button', { name: '邀请' }).click();
       await page.locator('.invite-form .ant-picker input').fill('2026-10-24 10:00:00');
       await page.getByPlaceholder('例如 本部 3 号楼会议室').fill('本部会议室');
       await page.getByPlaceholder('时间、材料、联系人').fill('请携带简历准时参加面试');

@@ -1,120 +1,78 @@
 <template>
-  <div class="job-detail">
-    <main>
-      <h2>联系我们</h2>
-      <ul class="job-list">
-        <li>
-          <div class="top-border" v-html="contactText"></div>
-        </li>
-      </ul>
-    </main>
+  <div class="portal-page">
+    <header class="page-head">
+      <h1>联系我们</h1>
+    </header>
+    <div class="page-card contact-body">
+      <dl class="contact-list">
+        <div class="contact-row">
+          <dt>机构</dt>
+          <dd>中国科学院信息工程研究所人事处</dd>
+        </div>
+        <div class="contact-row">
+          <dt>地址</dt>
+          <dd>北京市海淀区树村路19号</dd>
+        </div>
+        <div class="contact-row">
+          <dt>邮编</dt>
+          <dd>100085</dd>
+        </div>
+        <div class="contact-row">
+          <dt>电话</dt>
+          <dd>
+            <a href="tel:+861082345076">+86-10-82345076</a>
+            <span class="contact-note">（谢绝任何形式的业务推销）</span>
+          </dd>
+        </div>
+        <div class="contact-row">
+          <dt>邮箱</dt>
+          <dd>
+            <a href="mailto:zhaopin@iie.ac.cn">zhaopin@iie.ac.cn</a>
+          </dd>
+        </div>
+      </dl>
+    </div>
   </div>
 </template>
-<script setup lang="ts" name="contactUs">
-import {onMounted, ref} from 'vue';
-import {defHttp} from "@/utils/http/axios";
-import { useRouter } from 'vue-router';
 
-const contactList = ref([
-  {
-    text: "联系我们的相关信息",
-  },
-])
-const contactText = ref(
-  "<p>联系我们的相关信息</p>")
-
-const listUrl = "/xgsContactUs/xgsContactUs/list"
-
-const selectList = () => {
-  defHttp.get({ url: listUrl, params: {"pageSize" :100} }, { isTransformResponse: false })
-    .then((res) => {
-      try {
-        if (res.success) {
-          contactList.value = res.result.records
-          contactList.value.reverse()
-          if(contactList.value.length > 0){
-            contactText.value = contactList.value[0].text
-            console.log("contactText=========================", contactText.value)
-          }
-        }
-      } catch (e) {
-      }
-    })
-    .catch((e) => {
-      console.warn('联系我们内容加载失败（可忽略：后端未启动或接口异常）', e);
-    })
-}
-
-onMounted(selectList)
-
-</script>
+<script setup lang="ts" name="contactUs"></script>
 
 <style scoped>
+  .contact-body {
+    color: #333333;
+    font-size: 15px;
+    line-height: 1.8;
+  }
 
-#app {
-  display: flex;
-  flex-direction: column;
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
-  color: #333;
-}
+  .contact-list {
+    margin: 0;
+  }
 
-main {
-  flex: 1;
-  padding: 20px;
-}
+  .contact-row {
+    display: grid;
+    grid-template-columns: 4em 1fr;
+    column-gap: 12px;
+    margin: 0 0 8px;
+  }
 
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-}
+  .contact-row:last-child {
+    margin-bottom: 0;
+  }
 
-.sidebar li {
-  margin: 10px 0;
-  padding: 10px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
+  dt,
+  dd {
+    margin: 0;
+  }
 
-.sidebar li:hover {
-  background-color: #f0f0f0;
-}
+  dt {
+    font-weight: 700;
+  }
 
-.content h2 {
-  margin-bottom: 20px;
-  color: #3d54a7;
-}
+  .contact-body a {
+    color: #004098;
+  }
 
-.job-list {
-  list-style: none;
-  padding-left: 50px;
-  padding-right: 50px;
-}
-
-.job-list li {
-  margin-bottom: 20px;
-}
-
-.pagination-button i {
-  margin: 0 5px;
-}
-
-.top-border {
-  border-top: 1px solid #3d54a7;
-  padding-bottom: 20px;
-  padding-top: 20px;
-}
-
-.job-detail {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-  text-align: center;
-}
+  .contact-note {
+    color: #666666;
+  }
 </style>

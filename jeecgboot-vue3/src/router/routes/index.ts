@@ -5,6 +5,7 @@ import { PAGE_NOT_FOUND_ROUTE, REDIRECT_ROUTE } from '/@/router/routes/basic';
 import { mainOutRoutes } from './mainOut';
 import { PageEnum } from '/@/enums/pageEnum';
 import { t } from '/@/hooks/web/useI18n';
+import { WORK_PAGES } from '/@/views/home/mine/workPages';
 
 const modules = import.meta.glob('./modules/**/*.ts', { eager: true });
 
@@ -217,6 +218,66 @@ export const homeIndexRoute: AppRouteRecordRaw = {
         ignoreMenu: true,
       },
     },
+    {
+      path: 'center',
+      name: 'homeCenter',
+      component: () => import('/@/views/home/center.vue'),
+      meta: {
+        title: '个人中心',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'resume',
+      name: 'homeResume',
+      component: () => import('/@/views/home/mine/resume.vue'),
+      meta: {
+        title: '我的简历',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'apply',
+      name: 'homeApply',
+      component: () => import('/@/views/home/mine/apply.vue'),
+      meta: {
+        title: '我的应聘',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'interview',
+      name: 'homeInterview',
+      component: () => import('/@/views/home/mine/interview.vue'),
+      meta: {
+        title: '我的面试',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'favorite',
+      name: 'homeFavorite',
+      component: () => import('/@/views/home/mine/favorite.vue'),
+      meta: {
+        title: '我的收藏',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    ...WORK_PAGES.map((page) => ({
+      path: page.path,
+      name: page.name,
+      component: () => import('/@/views/home/work/WorkFrame.vue'),
+      meta: {
+        title: page.label,
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    })),
 
     // 添加其他子路由
   ],

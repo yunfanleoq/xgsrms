@@ -13,6 +13,7 @@ import { isOAuth2AppEnv, isOAuth2DingAppEnv } from '/@/views/sys/login/useLogin'
 import { OAUTH2_THIRD_LOGIN_TENANT_ID } from '/@/enums/cacheEnum';
 import { setAuthCache } from '/@/utils/auth';
 import { PAGE_NOT_FOUND_NAME_404 } from '/@/router/constant';
+import { isPortalApplicantHome, isPortalPath } from '/@/utils/portalApplicant';
 
 const LOGIN_PATH = PageEnum.BASE_LOGIN;
 //auth2登录路由
@@ -41,9 +42,15 @@ export function createPermissionGuard(router: Router) {
 
   // 自定义首页跳转次数
   let homePathJumpCount = 0;
+  // 每个页面加载只向后端确认一次身份，避免管理端每次切页都拉用户信息
+  let applicantGateChecked = false;
 
   router.beforeEach(async (to, from, next) => {
-    if (to.path === PageEnum.HOME_INDEX || to.path === PageEnum.HOME_ROOT) {
+    if (isPortalPath(to.path)) {
+      if (to.meta.portalAuth && !userStore.getToken) {
+        next({ path: LOGIN_PATH, query: { redirect: to.fullPath }, replace: true });
+        return;
+      }
       next();
       return;
     }
@@ -208,6 +215,21 @@ export function createPermissionGuard(router: Router) {
       userStore.setAllDictItemsByLocal();
     }
     // update-end--author:liaozhiyang---date:20240321---for：【QQYUN-8572】表格行选择卡顿问题（customRender中字典引起的）
+
+    // 求职者不能进入后台。首次进入非前台地址时刷新一次用户信息，避免沿用旧的后台首页。
+    if (!applicantGateChecked) {
+      applicantGateChecked = true;
+      try {
+        await userStore.getUserInfoAction();
+      } catch (error) {
+        console.info(error);
+      }
+    }
+    if (isPortalApplicantHome(userStore.getUserInfo?.homePath)) {
+      next({ path: PageEnum.HOME_ROOT, replace: true });
+      return;
+    }
+
     if (permissionStore.getIsDynamicAddedRoute) {
       next();
       return;

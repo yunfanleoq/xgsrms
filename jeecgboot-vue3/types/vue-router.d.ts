@@ -11,6 +11,8 @@ declare module 'vue-router' {
     realPath?: string;
     // Whether to ignore permissions
     ignoreAuth?: boolean;
+    // 前台页面需要登录（求职者个人中心）
+    portalAuth?: boolean;
     // role info
     roles?: RoleEnum[];
     // Whether not to cache

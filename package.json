@@ -6,6 +6,7 @@
     "sugarss": "^5.0.0"
   },
   "dependencies": {
+    "docx": "^9.15.1",
     "jsencrypt": "^3.5.4"
   }
 }

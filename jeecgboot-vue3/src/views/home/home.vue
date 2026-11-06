@@ -1,68 +1,109 @@
 <template>
-  <div>
-    <div class="main-content">
-      <!-- 轮播图 -->
-      <div class="carousel" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
-        <!-- Loading 状态 -->
-        <div v-if="isLoadingCarousel" class="carousel-loading">
-          <a-spin size="large" tip="加载中..." />
+  <div class="portal-home">
+    <section class="hero" aria-label="首页横幅" @mouseenter="isHovered = true" @mouseleave="isHovered = false">
+      <video
+        v-if="heroVideoSrc"
+        class="hero-media"
+        :src="heroVideoSrc"
+        autoplay
+        muted
+        loop
+        playsinline
+      ></video>
+      <img v-else-if="currentImgSrc" class="hero-media" :src="currentImgSrc" alt="" @error="handleImageError" />
+      <div v-else class="hero-field" aria-hidden="true"></div>
+      <div class="hero-shade"></div>
+      <div class="hero-copy">
+        <p class="hero-kicker">中国科学院信息工程研究所</p>
+        <h1>人才招聘</h1>
+      </div>
+      <template v-if="!heroVideoSrc && carouselImages.length > 1">
+        <button type="button" class="hero-nav hero-nav--prev" aria-label="上一张" @click="showPrevImage">‹</button>
+        <button type="button" class="hero-nav hero-nav--next" aria-label="下一张" @click="showNextImage">›</button>
+        <div class="hero-dots">
+          <button
+            v-for="(_image, index) in carouselImages"
+            :key="index"
+            type="button"
+            :class="['dot', { active: index === currentIndex }]"
+            :aria-label="`第 ${index + 1} 张`"
+            @click="currentIndex = index"
+          ></button>
         </div>
-        <!-- 无图片占位 -->
-        <div v-else-if="!currentImgSrc" class="carousel-placeholder">
-          <PictureOutlined class="placeholder-icon" />
-          <p class="placeholder-text">暂无轮播图片</p>
-        </div>
-        <!-- 轮播图内容 -->
-        <template v-else>
-          <button class="carousel-button left" @click="showPrevImage">◀</button>
-          <img :src="currentImgSrc" alt="轮播图" @error="handleImageError" />
-          <button class="carousel-button right" @click="showNextImage">▶</button>
-          <!-- 圆点导航 -->
-          <div class="carousel-dots">
-            <span
-              v-for="(_image, index) in carouselImages"
-              :key="index"
-              :class="['dot', { active: index === currentIndex }]"
-              @click="currentIndex = index"
-            ></span>
+      </template>
+    </section>
+
+    <section class="recruit" aria-label="招聘信息与通知公告">
+      <div class="recruit-wrap">
+        <div class="jobs-col">
+          <header class="col-head">
+            <h2>招聘信息</h2>
+          </header>
+          <div v-if="categoriesLoading" class="col-state">
+            <a-spin />
           </div>
-        </template>
-      </div>
-      <!-- 新闻区域 -->
-      <div class="news">
-        <div v-for="(news, index) in newsList" :key="index" class="news-item" @click="news.id && goToNewsDetail(String(news.id))">
-          <h3 v-html="news.title"></h3>
-          <span class="subText" v-if="index === 0" v-html="news.shortText"></span>
+          <p v-else-if="!categoryGroups.length" class="col-state">暂无岗位分类</p>
+          <article v-for="group in categoryGroups" :key="group.name" class="category">
+            <header class="category-head">
+              <h3>{{ group.name }}</h3>
+              <router-link :to="{ name: 'homePositions', query: { positionType: group.name } }">更多</router-link>
+            </header>
+            <ul v-if="group.jobs.length" class="job-list">
+              <li v-for="job in group.jobs" :key="job.id" @click="goToPosition(job.id)">
+                <span class="job-name">{{ job.positionName }}</span>
+                <span class="job-side">
+                  <span v-if="job.dept">{{ job.dept }}</span>
+                  <time v-if="job.date">{{ job.date }}</time>
+                </span>
+              </li>
+            </ul>
+            <p v-else class="job-quiet">暂无在招岗位</p>
+          </article>
         </div>
-        <!-- 查看更多链接 -->
-        <div class="news-more">
-          <router-link to="/home/news"> <a-button type="link" class="more-link">查看更多 +</a-button></router-link>
+
+        <aside class="notice-col" aria-label="通知公告">
+          <header class="col-head notice-head">
+            <h2>通知公告</h2>
+            <router-link :to="{ name: 'homeNews' }">更多</router-link>
+          </header>
+          <ul v-if="notices.length" class="notice-list">
+            <li v-for="item in notices" :key="item.id" @click="goToNotice(item.id)">
+              <span class="notice-text" v-html="item.title"></span>
+              <time v-if="formatDate(item.createTime)">{{ formatDate(item.createTime) }}</time>
+            </li>
+          </ul>
+          <p v-else class="col-state">暂无通知</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="campus" aria-label="园区风貌" @mouseenter="campusHovered = true" @mouseleave="campusHovered = false">
+      <h2>园区风貌</h2>
+      <div class="campus-carousel">
+        <div class="campus-stage">
+          <img
+            v-for="(photo, index) in campusPhotos"
+            :key="photo.src"
+            :src="photo.src"
+            :alt="photo.alt"
+            :class="['campus-slide', { active: index === campusIndex }]"
+            :style="{ objectPosition: photo.position }"
+          />
+        </div>
+        <button type="button" class="campus-nav campus-nav--prev" aria-label="上一张" @click="showPrevCampus">‹</button>
+        <button type="button" class="campus-nav campus-nav--next" aria-label="下一张" @click="showNextCampus">›</button>
+        <div class="campus-dots">
+          <button
+            v-for="(photo, index) in campusPhotos"
+            :key="`${photo.alt}-dot`"
+            type="button"
+            :class="['campus-dot', { active: index === campusIndex }]"
+            :aria-label="`第 ${index + 1} 张，${photo.alt}`"
+            @click="campusIndex = index"
+          ></button>
         </div>
       </div>
-    </div>
-    <!-- 公告导航栏和内容 -->
-    <div class="announcements-container">
-      <div class="tabs-container">
-        <ul class="tabs">
-          <!-- <li :class="{ selected: tabSelected === 'notice' }" @mouseover="tabSelected = 'notice'">通知公告</li> -->
-          <li :class="{ selected: tabSelected === 'recruitment' }" @mouseover="tabSelected = 'recruitment'">
-            <span class="tab-icon"><BulbOutlined /></span>
-            招聘公告
-          </li>
-        </ul>
-        <!-- <a class="more-link" :href="tabSelected === 'notice' ? './home/news' : './home/positions'">查看更多 +</a> -->
-        <router-link to="/home/positions"> <span class="more-link">查看更多 +</span></router-link>
-      </div>
-      <div class="announcements-content">
-        <ul class="recruitment-list">
-          <li v-for="(item, index) in recruitments" :key="index" @click="goToAnnouncementDetail(String(item.id))">
-            <span class="item-icon"><FileTextOutlined /></span>
-            <p v-html="item.announcement"></p>
-            <span class="item-arrow"><RightOutlined /></span>
-          </li>
-        </ul>
-      </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -70,90 +111,121 @@
   import { ref, onMounted, onBeforeUnmount, watchEffect } from 'vue';
   import { defHttp } from '@/utils/http/axios';
   import { router } from '@/router';
-  import { BulbOutlined, FileTextOutlined, RightOutlined, PictureOutlined } from '@ant-design/icons-vue';
+  import { getDictItems, getPositionList } from '@/api/xgsrms/home';
+  import campusGate from '@/assets/images/campus_gate.jpg';
+  import campusFacade from '@/assets/images/campus_facade.jpg';
+  import campusLawn from '@/assets/images/campus_lawn.jpg';
+
+  const campusPhotos = [
+    { src: campusGate, alt: '中国科学院信息工程研究所正门', position: 'center 68%' },
+    { src: campusFacade, alt: '中国科学院信息工程研究所主楼', position: 'center 62%' },
+    { src: campusLawn, alt: '中国科学院信息工程研究所园区', position: 'center 42%' },
+  ];
+
+  const campusIndex = ref(0);
+  const campusHovered = ref(false);
+  let campusTimer: ReturnType<typeof setInterval> | null = null;
+
+  const showPrevCampus = () => {
+    campusIndex.value = (campusIndex.value - 1 + campusPhotos.length) % campusPhotos.length;
+  };
+
+  const showNextCampus = () => {
+    campusIndex.value = (campusIndex.value + 1) % campusPhotos.length;
+  };
+
+  const startCampusCarousel = () => {
+    if (campusTimer) return;
+    campusTimer = setInterval(() => {
+      if (!campusHovered.value && campusPhotos.length > 1) {
+        showNextCampus();
+      }
+    }, 5000);
+  };
+
+  const stopCampusCarousel = () => {
+    if (campusTimer) {
+      clearInterval(campusTimer);
+      campusTimer = null;
+    }
+  };
 
   interface CarouselImage {
     image: string;
-    createTime: string;
   }
 
-  interface NewsItem {
-    title: string;
-    shortText?: string;
+  interface NoticeItem {
     id: string;
+    title: string;
     createTime?: string;
   }
 
-  interface RecruitmentItem {
+  interface JobRow {
     id: string;
-    announcement: string;
-    title: string;
-    shortText: string;
-    createTime: string;
+    positionName: string;
+    dept: string;
+    date: string;
+  }
+
+  interface CategoryGroup {
+    name: string;
+    jobs: JobRow[];
   }
 
   const listUrl = '/xgsJournalism/xgsJournalism/listForHomeNews';
   const imgListUrl = '/xgsHome/xgsHome/listForHome';
 
+  /**
+   * 可替换的首屏视频。只接受本所自有片源的本地或站内地址。
+   * 留空时使用首页轮播图；轮播也没有时，显示深蓝静帧。
+   */
+  const heroVideoSrc = '';
+
   const carouselImages = ref<CarouselImage[]>([]);
   const currentIndex = ref(0);
   const currentImgSrc = ref('');
-  const isLoadingCarousel = ref(true); // 轮播图加载状态
-  
+  const isHovered = ref(false);
+
   watchEffect(() => {
     currentImgSrc.value = carouselImages.value[currentIndex.value]?.image || '';
   });
 
-  // 获取轮播图数据的函数
   const fetchCarouselImages = async () => {
-    isLoadingCarousel.value = true; // 开始加载
     try {
       const res = await defHttp.get(
         {
           url: imgListUrl,
           params: { newsType: 'homeImages', pageNo: 1, pageSize: 10 },
         },
-        { isTransformResponse: false }
+        { isTransformResponse: false },
       );
       const response = res && res.success ? res.result : res;
-
       if (response && response.records) {
         carouselImages.value = response.records
-          .filter((item) => item.images) // 过滤掉没有images字段的数据
+          .filter((item) => item.images)
           .map((item) => {
-            // 直接使用images字段（Base64编码）
             let imageUrl = item.images;
-            
-            // 如果Base64数据不包含data URI前缀，则添加
-            if (imageUrl && !imageUrl.startsWith('data:image')) {
+            if (imageUrl && !imageUrl.startsWith('data:image') && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
               imageUrl = `data:image/jpeg;base64,${imageUrl}`;
             }
-            
-            return {
-              image: imageUrl, // 使用Base64编码的图片数据
-              createTime: item.createTime,
-            };
+            return { image: imageUrl };
           })
-          .slice(0, 5); // 截取前5张轮播图
-        console.log('处理后的 carouselImages', carouselImages.value);
+          .slice(0, 5);
       }
     } catch (error) {
       console.error('请求轮播图数据失败:', error);
-    } finally {
-      isLoadingCarousel.value = false; // 加载结束
     }
   };
 
-  // 自动轮播
   let carouselTimer: ReturnType<typeof setInterval> | null = null;
 
   const startCarousel = () => {
     if (carouselTimer) return;
     carouselTimer = setInterval(() => {
-      if (!isHovered.value && carouselImages.value.length > 0) {
+      if (!isHovered.value && carouselImages.value.length > 1) {
         currentIndex.value = (currentIndex.value + 1) % carouselImages.value.length;
       }
-    }, 3000);
+    }, 5000);
   };
 
   const stopCarousel = () => {
@@ -163,508 +235,542 @@
     }
   };
 
-  // 控制轮播图按钮的显隐状态
-  const isHovered = ref(false);
-
-  // 轮播图按钮切换逻辑
   const showPrevImage = () => {
+    if (carouselImages.value.length < 2) return;
     currentIndex.value = (currentIndex.value - 1 + carouselImages.value.length) % carouselImages.value.length;
   };
 
   const showNextImage = () => {
+    if (carouselImages.value.length < 2) return;
     currentIndex.value = (currentIndex.value + 1) % carouselImages.value.length;
   };
 
-  // 图片加载错误处理
   const handleImageError = () => {
     console.error('轮播图加载失败');
-    // 可以在这里设置一个默认的错误图片
-  };
-
-  // 新闻列表数据
-  const newsList = ref<NewsItem[]>([]);
-  const fetchNews = async () => {
-    try {
-      const homeResponse = await defHttp.get({
-        url: listUrl,
-        params: { typeCode: 'ttxw', pageNo: 1, pageSize: 5 },
-      });
-
-      if (homeResponse?.records) {
-        newsList.value = homeResponse.records.map((item: any) => ({
-          title: item.journalismHead,
-          shortText: item.shortText,
-          id: item.id,
-          createTime: item.createTime || '',
-        }));
-      }
-    } catch (error) {
-      console.error('请求新闻数据失败:', error);
+    const failed = currentIndex.value;
+    carouselImages.value = carouselImages.value.filter((_, index) => index !== failed);
+    if (currentIndex.value >= carouselImages.value.length) {
+      currentIndex.value = 0;
     }
   };
 
-  // 跳转至头条新闻详情
-  const goToNewsDetail = (itemId: string) => {
-    router.push({ name: 'newsDetail', params: { id: itemId } });
-  };
+  const notices = ref<NoticeItem[]>([]);
 
-  // 数据
-  const recruitments = ref<RecruitmentItem[]>([]);
-  const tabSelected = ref('recruitment');
-
-  // 获取招聘公告标题数据
-  const fetchRecruitments = async () => {
+  const fetchNotices = async () => {
     try {
       const response = await defHttp.get({
         url: listUrl,
-        params: { typeCode: 'rczp', pageNo: 1, pageSize: 10 },
+        params: { typeCode: 'rczp', pageNo: 1, pageSize: 5 },
       });
-
       if (response && response.records) {
-        recruitments.value = response.records.map((item: any) => ({
+        notices.value = response.records.map((item: any) => ({
           id: item.id,
-          announcement: item.journalismHead,
           title: item.journalismHead,
-          shortText: item.shortText,
           createTime: item.createTime,
         }));
       }
     } catch (error) {
-      console.error('请求招聘公告数据失败:', error);
+      console.error('请求通知公告失败:', error);
     }
   };
 
-  // 跳转至招聘公告详情
-  const goToAnnouncementDetail = (itemId: string) => {
+  const goToNotice = (itemId: string) => {
     router.push({ name: 'newsDetail', params: { id: itemId } });
   };
 
-  // 组件挂载时加载数据并启动轮播
+  const categoryGroups = ref<CategoryGroup[]>([]);
+  const categoriesLoading = ref(true);
+  const POSITION_TYPE_ORDER = ['科研', '管理', '支撑'];
+
+  const orderPositionTypes = (names: string[]) =>
+    [...names].sort((a, b) => {
+      const rank = (name: string) => {
+        const index = POSITION_TYPE_ORDER.indexOf(name);
+        return index === -1 ? POSITION_TYPE_ORDER.length : index;
+      };
+      return rank(a) - rank(b);
+    });
+
+  const fetchCategoryGroups = async () => {
+    categoriesLoading.value = true;
+    try {
+      const res = await getDictItems({ dictCode: '岗位类型' });
+      const list = res && res.success && Array.isArray(res.result) ? res.result : [];
+      const names = orderPositionTypes(
+        list
+          .map((item: any) => String(item?.title || item?.text || item?.label || '').trim())
+          .filter((name: string) => !!name),
+      );
+
+      const groups = await Promise.all(
+        names.map(async (name: string) => {
+          try {
+            const jobRes = await getPositionList({
+              pageNo: 1,
+              pageSize: 5,
+              status: '招聘中',
+              positionType: name,
+            });
+            const records = jobRes && jobRes.success && jobRes.result ? jobRes.result.records || [] : [];
+            const jobs: JobRow[] = records.map((job: any) => ({
+              id: String(job.id),
+              positionName: job.positionName || '',
+              dept: job.dept_dictText || '',
+              date: formatDate(job.createTime || job.updateTime),
+            }));
+            return { name, jobs };
+          } catch (error) {
+            console.error('加载分类岗位失败:', name, error);
+            return { name, jobs: [] as JobRow[] };
+          }
+        }),
+      );
+      categoryGroups.value = groups;
+    } catch (error) {
+      console.error('getDictItems(岗位类型) failed', error);
+      categoryGroups.value = [];
+    } finally {
+      categoriesLoading.value = false;
+    }
+  };
+
+  const goToPosition = (id: string) => {
+    router.push({ name: 'positionDetail', params: { id } });
+  };
+
+  const formatDate = (value?: string) => {
+    if (!value) return '';
+    const matched = String(value).match(/\d{4}-\d{2}-\d{2}/);
+    return matched ? matched[0] : String(value).slice(0, 10);
+  };
+
   onMounted(() => {
-    fetchCarouselImages(); // 首页图片
-    fetchNews(); // 首页新闻
-    fetchRecruitments(); //  首页招聘信息
-    startCarousel(); // 启动轮播
+    fetchCarouselImages();
+    fetchNotices();
+    fetchCategoryGroups();
+    startCarousel();
+    startCampusCarousel();
   });
 
-  // 组件卸载时清理定时器
   onBeforeUnmount(() => {
     stopCarousel();
+    stopCampusCarousel();
   });
 </script>
 
 <style scoped>
-  /* 主容器样式 */
-  .main-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: stretch;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    box-sizing: border-box;
-    gap: 20px;
+  .portal-home {
+    background: #fff;
+    color: #333333;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
   }
 
-  /* 标题样式 */
-  h1 {
-    color: #42b983;
-    margin: 0;
-  }
-
-  h2 {
-    color: #3d54a7;
-    text-decoration: none;
-    font-size: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    margin: 0;
-  }
-
-  /* 轮播图和新闻区域高度统一 */
-  .carousel,
-  .news {
-    height: 400px;
-  }
-
-  /* 轮播图样式 */
-  .carousel {
-    flex: 3;
-    max-width: calc(75% - 10px);
-    height: 400px;
-    margin: 0;
-    padding: 0;
+  .hero {
     position: relative;
+    height: 540px;
+    background: #10243f;
     overflow: hidden;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
-  .carousel img {
-    display: block;
+  .hero-media,
+  .hero-field {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
+  }
+
+  .hero-media {
     object-fit: cover;
-    transition: transform 0.3s ease;
+    display: block;
   }
 
-  /* 轮播图加载状态 */
-  .carousel-loading {
+  .hero-field {
+    background:
+      radial-gradient(ellipse at 78% 18%, rgba(214, 204, 184, 0.18), transparent 42%),
+      radial-gradient(ellipse at 8% 88%, rgba(0, 64, 152, 0.38), transparent 48%),
+      linear-gradient(165deg, #243e66 0%, #10243f 52%, #0b182c 100%);
+  }
+
+  .hero-field::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 100% 80px;
+    mask-image: linear-gradient(to bottom, transparent, #000 24%, #000 76%, transparent);
+  }
+
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(8, 16, 32, 0.42), rgba(8, 16, 32, 0.16) 46%, rgba(8, 16, 32, 0.22));
+    pointer-events: none;
+  }
+
+  .hero-copy {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+    color: #fff;
+    text-align: center;
+    pointer-events: none;
   }
 
-  /* 轮播图占位符 */
-  .carousel-placeholder {
+  .hero-kicker {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-  }
-
-  .placeholder-icon {
-    font-size: 80px;
-    color: #d9d9d9;
-    margin-bottom: 16px;
-  }
-
-  .placeholder-text {
+    gap: 16px;
+    margin: 0 0 18px;
     font-size: 16px;
-    color: #999;
-    margin: 0;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    color: rgba(255, 255, 255, 0.92);
   }
 
-  /* 轮播图按钮 */
-  .carousel-button {
+  .hero-kicker::before,
+  .hero-kicker::after {
+    content: '';
+    width: 36px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  .hero-copy h1 {
+    margin: 0;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', 'Songti SC', serif;
+    font-size: 48px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+  }
+
+  .hero-nav {
     position: absolute;
     top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-size: 20px;
-    border: none;
-    border-radius: 50%;
+    z-index: 2;
     width: 40px;
     height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-top: -20px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    background: rgba(16, 36, 63, 0.28);
+    color: #fff;
+    font-size: 26px;
+    line-height: 1;
     cursor: pointer;
-    z-index: 10;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.3s ease;
   }
 
-  .carousel-button.left {
-    left: 10px;
+  .hero-nav--prev {
+    left: 28px;
   }
 
-  .carousel-button.right {
-    right: 10px;
+  .hero-nav--next {
+    right: 28px;
   }
 
-  .carousel:hover .carousel-button {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .carousel-button:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  /* 圆点导航 */
-  .carousel-dots {
+  .hero-dots {
     position: absolute;
-    bottom: 15px;
-    right: 15px;
+    left: 0;
+    right: 0;
+    bottom: 22px;
+    z-index: 2;
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 8px;
   }
 
   .dot {
-    width: 10px;
-    height: 10px;
-    background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 50%;
+    width: 22px;
+    height: 3px;
+    border: 0;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.45);
     cursor: pointer;
-    transition: all 0.3s ease;
   }
 
   .dot.active {
-    width: 20px;
-    border-radius: 10px;
-    background-color: #3d54a7;
+    background: #fff;
   }
 
-  .dot:hover {
-    width: 20px;
-    border-radius: 10px;
-    background-color: #3d54a7;
+  .recruit {
+    background: #fff;
+    padding: 80px 0 28px;
   }
 
-  /* 新闻区域样式 */
-  .news {
-    flex: 1;
-    max-width: calc(25% - 10px);
-    height: 400px;
-    background: linear-gradient(135deg, #3d54a7 0%, #5a6fb8 100%);
-    padding: 15px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
+  .recruit-wrap {
+    width: min(1280px, calc(100% - 80px));
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(260px, 3fr);
+    column-gap: 40px;
+    align-items: start;
+  }
+
+  .col-head {
     display: flex;
-    flex-direction: column;
-  }
-
-  /* 新闻项样式 */
-  .news-item {
-    margin-bottom: 10px;
-    padding: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 4px;
-  }
-
-  .news-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-
-  .news-item h3 {
-    width: 100%;
-    margin: 0;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color 0.3s ease;
-  }
-
-  .news-item:hover h3 {
-    color: #ffd700;
-  }
-
-  .news-item .subText {
-    display: -webkit-box;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 8px 0 0 0;
-    font-size: 13px;
-    line-height: 1.6;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
-  }
-
-  /* 查看更多按钮 */
-  .news-more {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-  }
-
-  .news-more .more-link {
-    color: white;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-  }
-
-  .news-more .more-link:hover {
-    color: #ffd700;
-  }
-
-  /* 招聘公告容器 */
-  .announcements-container {
-    max-width: 1200px;
-    margin: 20px auto 0;
-    padding: 0 20px;
-    box-sizing: border-box;
-  }
-
-  .tabs-container {
-    display: flex;
+    align-items: baseline;
     justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 10px;
-    background: linear-gradient(135deg, #3d54a7 0%, #5a6fb8 100%);
-    padding: 0 15px;
-    border-radius: 8px 8px 0 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 44px;
+    margin-bottom: 8px;
   }
 
-  .announcements-content {
-    width: 100%;
-    background-color: white;
-    border-radius: 0 0 8px 8px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .tabs {
-    display: flex;
-    list-style: none;
-    padding: 0;
+  .col-head h2 {
     margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #333333;
+    letter-spacing: 0;
   }
 
-  .tabs li {
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-    transition: all 0.3s ease;
-    padding: 12px 20px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .tab-icon {
-    margin-right: 8px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .tab-icon i {
-    font-size: 20px;
+  .notice-head h2 {
+    font-size: 24px;
+    color: #004098;
   }
 
-  .tabs li:hover,
-  .tabs li.selected {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-
-  .more-link {
+  .col-head a,
+  .category-head a {
+    color: #004098;
     font-size: 14px;
-    color: white;
     text-decoration: none;
-    cursor: pointer;
-    padding: 8px 15px;
-    transition: color 0.3s ease;
   }
 
-  .more-link:hover {
-    color: #ffd700;
+  .col-head a:hover,
+  .category-head a:hover {
+    text-decoration: underline;
   }
 
-  .recruitment-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .recruitment-list li {
-    cursor: pointer;
-    color: #333;
-    transition: all 0.3s ease;
-    margin: 8px 0;
-    padding: 10px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    position: relative;
-  }
-
-  .recruitment-list li:hover {
-    background-color: rgba(61, 84, 167, 0.05);
-    color: #3d54a7;
-  }
-  
-  .item-icon {
-    margin-right: 10px;
-    color: #3d54a7;
-    display: flex;
-    align-items: center;
-  }
-  
-  .item-icon i {
-    font-size: 16px;
-  }
-  
-  .item-arrow {
-    position: absolute;
-    right: 10px;
-    color: #999;
-    display: flex;
-    align-items: center;
-  }
-  
-  .item-arrow i {
+  .col-state,
+  .job-quiet {
+    margin: 8px 0 0;
+    color: #8a8a8a;
     font-size: 14px;
   }
-  
-  .recruitment-list li:hover .item-arrow {
-    color: #3d54a7;
+
+  .category + .category {
+    margin-top: 32px;
   }
 
-  .recruitment-list li p {
+  .category-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .category-head h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #333333;
+  }
+
+  .job-list,
+  .notice-list {
+    list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  .job-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e6e6e6;
+    cursor: pointer;
+    background: #fff;
+  }
+
+  .job-list li:nth-child(even) {
+    background: #f7f7f7;
+  }
+
+  .job-list li:hover .job-name {
+    color: #004098;
+  }
+
+  .job-name {
+    min-width: 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: #444444;
     line-height: 1.6;
-    font-size: 15px;
+  }
+
+  .job-side {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    color: #8a8a8a;
+    font-size: 14px;
+  }
+
+  .notice-list li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e6e6e6;
+    cursor: pointer;
+  }
+
+  .notice-list li:hover .notice-text {
+    color: #004098;
+  }
+
+  .notice-text {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    flex: 1;
-    padding-right: 24px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333333;
   }
 
-  /* 响应式设计 */
-  @media (max-width: 1024px) {
-    .main-content {
+  .notice-list time {
+    flex: none;
+    color: #8a8a8a;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .campus {
+    background: #f7f7f7;
+    padding: 60px 0 72px;
+    margin-top: 36px;
+  }
+
+  .campus h2 {
+    margin: 0;
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    color: #333333;
+    letter-spacing: 0;
+  }
+
+  .campus-carousel {
+    position: relative;
+    width: min(1280px, calc(100% - 80px));
+    margin: 28px auto 0;
+  }
+
+  .campus-stage {
+    position: relative;
+    height: 460px;
+    background: #e6e8ec;
+    overflow: hidden;
+  }
+
+  .campus-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    z-index: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .campus-slide.active {
+    opacity: 1;
+    z-index: 1;
+  }
+
+  .campus-nav {
+    position: absolute;
+    top: 50%;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    margin-top: -22px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(16, 36, 63, 0.45);
+    color: #fff;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .campus-nav:hover {
+    background: rgba(16, 36, 63, 0.72);
+  }
+
+  .campus-nav--prev {
+    left: 18px;
+  }
+
+  .campus-nav--next {
+    right: 18px;
+  }
+
+  .campus-dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 18px;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .campus-dot {
+    width: 28px;
+    height: 4px;
+    border: 0;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+  }
+
+  .campus-dot.active {
+    background: #fff;
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      height: 420px;
+    }
+
+    .hero-copy h1 {
+      font-size: 36px;
+    }
+
+    .recruit {
+      padding: 48px 0 16px;
+    }
+
+    .recruit-wrap,
+    .campus-carousel {
+      width: min(1280px, calc(100% - 32px));
+    }
+
+    .campus-stage {
+      height: 240px;
+    }
+
+    .recruit-wrap {
+      grid-template-columns: 1fr;
+      row-gap: 48px;
+    }
+
+    .job-list li {
       flex-direction: column;
-      gap: 20px;
-    }
-
-    .carousel,
-    .news {
-      max-width: 100%;
-      height: 300px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .main-content {
-      padding: 0 10px;
-    }
-
-    .carousel,
-    .news {
-      height: 250px;
-    }
-
-    .news-item h3 {
-      font-size: 14px;
-    }
-
-    .news-item .subText {
-      font-size: 12px;
-    }
-
-    .tabs li {
-      font-size: 16px;
-      padding: 10px 15px;
-    }
-
-    .recruitment-list li p {
-      font-size: 14px;
+      gap: 4px;
     }
   }
 </style>

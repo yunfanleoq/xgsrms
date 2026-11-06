@@ -46,7 +46,7 @@
 
 <style scoped>
   .category-content {
-    color: #24324d;
+    color: #333333;
     line-height: 1.8;
   }
 
@@ -64,19 +64,23 @@
   }
 
   .module-card {
-    border: 1px solid #e4ebf7;
-    border-radius: 10px;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
     padding: 18px 20px;
-    background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+    background: #fff;
+  }
+
+  .module-card:nth-child(even) {
+    background: #f7f7f7;
   }
 
   .module-title {
     font-size: 18px;
     font-weight: 700;
-    color: #0b2f6b;
+    color: #333333;
     margin-bottom: 12px;
     padding-bottom: 8px;
-    border-bottom: 2px solid #d7e4f8;
+    border-bottom: 1px solid #e6e6e6;
   }
 
   ul {

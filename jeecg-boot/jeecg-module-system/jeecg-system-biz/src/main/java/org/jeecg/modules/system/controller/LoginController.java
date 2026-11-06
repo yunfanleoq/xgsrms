@@ -170,6 +170,11 @@ public class LoginController {
 				}
 				sysUser.setHomePath(homePath);
 			}
+			// 没有系统管理员角色的账号只回前台
+			if (isPortalApplicant(username)) {
+				sysUser.setHomePath("/home");
+			}
+			sysUser.setRoleCodeList(sysUserService.getRole(username));
 			log.debug("2 获取用户信息耗时 (首页面配置)" + (System.currentTimeMillis() - start) + "毫秒");
 			
 			obj.put("userInfo",sysUser);
@@ -500,6 +505,22 @@ public class LoginController {
 	 * @param result
 	 * @return
 	 */
+	/** 只有系统管理员进旧后台。应聘者、部门管理员、人事处管理员都留在前台。 */
+	private static final Set<String> BACKEND_ROLE_CODES = new HashSet<>(Arrays.asList("admin"));
+
+	private boolean isPortalApplicant(String username) {
+		List<String> roles = sysUserService.getRole(username);
+		if (roles == null || roles.isEmpty()) {
+			return true;
+		}
+		for (String role : roles) {
+			if (BACKEND_ROLE_CODES.contains(role)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private Result<JSONObject> userInfo(SysUser sysUser, Result<JSONObject> result, HttpServletRequest request, String clientType) {
 		String username = sysUser.getUsername();
 		String syspassword = sysUser.getPassword();

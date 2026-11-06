@@ -123,18 +123,17 @@
 
 <style scoped>
   .category-content {
-    color: #24324d;
+    color: #333333;
     line-height: 1.8;
   }
 
   .hero-line {
-    display: inline-block;
-    background: #0b2f6b;
-    color: #fff;
-    padding: 8px 16px;
-    border-radius: 999px;
-    font-weight: 600;
+    display: block;
+    color: #004098;
+    font-size: 14px;
     margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e6e6e6;
   }
 
   .section {
@@ -143,13 +142,13 @@
 
   h3 {
     margin: 0 0 12px;
-    color: #0b2f6b;
+    color: #333333;
     font-size: 20px;
   }
 
   h4 {
     margin: 16px 0 8px;
-    color: #1a4a9a;
+    color: #004098;
     font-size: 16px;
   }
 
@@ -165,22 +164,26 @@
   }
 
   .info-card {
-    border: 1px solid #e4ebf7;
-    border-radius: 10px;
+    border: 1px solid #e6e6e6;
+    border-radius: 0;
     padding: 16px;
-    background: #f8fbff;
+    background: #fff;
+  }
+
+  .info-card:nth-child(even) {
+    background: #f7f7f7;
   }
 
   .card-title {
     font-weight: 700;
-    color: #0b2f6b;
+    color: #333333;
     margin-bottom: 8px;
   }
 
   .card-meta {
     margin-top: 10px;
     font-size: 13px;
-    color: #5b6b88;
+    color: #8a8a8a;
   }
 
   .type-list {
@@ -196,23 +199,24 @@
 
   .ladder-table th,
   .ladder-table td {
-    border: 1px solid #d9e3f2;
+    border: 1px solid #e6e6e6;
     padding: 10px 12px;
     text-align: left;
   }
 
   .ladder-table th {
-    background: #0b2f6b;
+    background: #10243f;
     color: #fff;
+    font-weight: 400;
   }
 
   .ladder-table tr:nth-child(even) td {
-    background: #f7faff;
+    background: #f7f7f7;
   }
 
   .note {
     margin-top: 10px;
-    color: #6a7893;
+    color: #8a8a8a;
     font-size: 13px;
   }
 

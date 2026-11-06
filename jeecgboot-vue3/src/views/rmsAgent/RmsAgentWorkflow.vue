@@ -1,6 +1,6 @@
 <template>
   <div class="desk">
-    <header class="mast">
+    <header v-if="!locked" class="mast">
       <p class="kicker">招聘本体 · {{ schema?.workflow.code || 'rms_hire' }}</p>
       <h1>从简历到面试邀请</h1>
       <p class="lead">
@@ -13,8 +13,8 @@
     </header>
 
     <a-spin :spinning="loading">
-      <section v-if="mode === 'flow'" class="flow">
-        <div class="rail">
+      <section v-if="mode === 'flow'" class="flow" :class="{ 'flow--single': locked }">
+        <div v-if="!locked" class="rail">
           <button
             v-for="phase in phases"
             :key="phase.key"
@@ -210,6 +210,8 @@
   const props = defineProps({
     initialPhase: { type: String, default: '' },
     myDept: { type: Boolean, default: false },
+    /** 只办当前这一段，不展示整条工作流和本体说明 */
+    locked: { type: Boolean, default: false },
   });
 
   const { createMessage } = useMessage();
@@ -253,6 +255,9 @@
   }
 
   function actionLabel(actionId: string) {
+    if (actionId === 'SendInterviewInvite') {
+      return '邀请';
+    }
     return actionOf(actionId)?.label || actionId;
   }
 
@@ -327,7 +332,9 @@
       });
       createMessage.success(`${result.agentName}：${result.message}`);
       modalOpen.value = false;
-      activePhase.value = result.phaseAfter || activePhase.value;
+      if (!props.locked) {
+        activePhase.value = result.phaseAfter || activePhase.value;
+      }
       await loadBoard();
     } finally {
       running.value = false;
@@ -349,7 +356,7 @@
     try {
       schema.value = await fetchHireSchema();
       await loadBoard();
-      if (!phases.value.some((phase) => phase.key === activePhase.value)) {
+      if (!props.locked && !phases.value.some((phase) => phase.key === activePhase.value)) {
         activePhase.value = phases.value[0]?.key || 'hr_screen';
       }
     } catch (error) {
@@ -367,7 +374,7 @@
     min-height: 100%;
     padding: 28px 32px 48px;
     background:
-      radial-gradient(circle at top left, rgba(15, 92, 86, 0.08), transparent 32%),
+      radial-gradient(circle at top left, rgba(0, 64, 152, 0.08), transparent 32%),
       #f3efe6;
     color: #1c1917;
   }
@@ -397,6 +404,7 @@
   }
   .modes button.on { background: #1c1917; color: #f6f3ec; border-color: #1c1917; }
   .flow { display: grid; grid-template-columns: 240px 1fr; gap: 22px; }
+  .flow--single { grid-template-columns: 1fr; }
   .rail { display: flex; flex-direction: column; gap: 8px; }
   .step {
     display: grid;
@@ -426,6 +434,11 @@
     border-radius: 16px;
     padding: 16px;
   }
+  .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
   .object-grid article { border-top: 4px solid var(--mark); }
   .resume { font-size: 14px; }
   .meta, .quiet, .modal-copy { color: #78716c; font-size: 13px; }
@@ -436,8 +449,10 @@
     padding: 2px 8px;
     font-size: 12px;
   }
-  .acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .solid { background: #0f5c56; color: #f6fffd; border-color: #0f5c56; }
+  .acts { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: auto; padding-top: 12px; }
+  .acts button { padding: 6px 10px; font-size: 13px; white-space: nowrap; }
+  .acts button.ghost { background: #fff; color: #1c1917; }
+  .acts button.solid { background: #004098; color: #f6fffd; border-color: #004098; }
   .empty, .denied {
     margin-top: 16px;
     padding: 28px;
