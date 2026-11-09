@@ -49,7 +49,7 @@
               <router-link :to="{ name: 'homePositions', query: { positionType: group.name } }">更多</router-link>
             </header>
             <ul v-if="group.jobs.length" class="job-list">
-              <li v-for="job in group.jobs" :key="job.id" @click="goToPosition(job.id)">
+              <li v-for="job in group.jobs" :key="job.id" tabindex="0" @click="goToPosition(job.id)" @keyup.enter="goToPosition(job.id)">
                 <span class="job-name">{{ job.positionName }}</span>
                 <span class="job-side">
                   <span v-if="job.dept">{{ job.dept }}</span>
@@ -67,7 +67,7 @@
             <router-link :to="{ name: 'homeNews' }">更多</router-link>
           </header>
           <ul v-if="notices.length" class="notice-list">
-            <li v-for="item in notices" :key="item.id" @click="goToNotice(item.id)">
+            <li v-for="item in notices" :key="item.id" tabindex="0" @click="goToNotice(item.id)" @keyup.enter="goToNotice(item.id)">
               <span class="notice-text" v-html="item.title"></span>
               <time v-if="formatDate(item.createTime)">{{ formatDate(item.createTime) }}</time>
             </li>
@@ -103,6 +103,7 @@
           ></button>
         </div>
       </div>
+      <p class="campus-caption">{{ campusPhotos[campusIndex].alt }}</p>
     </section>
   </div>
 </template>
@@ -281,6 +282,30 @@
   const categoryGroups = ref<CategoryGroup[]>([]);
   const categoriesLoading = ref(true);
   const POSITION_TYPE_ORDER = ['科研', '管理', '支撑'];
+  const JOBS_PER_CATEGORY = 2;
+  /**
+   * 岗位表和门户列表都没有热度、浏览量或排序字段。
+   * 只有接口本身带回真实计数时才按它取前两名，不编造热度。
+   */
+  const HEAT_FIELDS = ['applyCount', 'viewCount', 'hits', 'heat', 'browseCount', 'favoriteCount'] as const;
+
+  const heatValue = (job: any) => {
+    for (const key of HEAT_FIELDS) {
+      const raw = job?.[key];
+      if (raw === undefined || raw === null || raw === '') continue;
+      const value = Number(raw);
+      if (Number.isFinite(value)) return value;
+    }
+    return null;
+  };
+
+  const takeHottest = (records: any[]) => {
+    const ranked = records.map((job, index) => ({ job, index, heat: heatValue(job) }));
+    if (ranked.some((item) => item.heat !== null)) {
+      ranked.sort((a, b) => (b.heat ?? Number.NEGATIVE_INFINITY) - (a.heat ?? Number.NEGATIVE_INFINITY) || a.index - b.index);
+    }
+    return ranked.slice(0, JOBS_PER_CATEGORY).map((item) => item.job);
+  };
 
   const orderPositionTypes = (names: string[]) =>
     [...names].sort((a, b) => {
@@ -307,12 +332,12 @@
           try {
             const jobRes = await getPositionList({
               pageNo: 1,
-              pageSize: 5,
+              pageSize: 100,
               status: '招聘中',
               positionType: name,
             });
             const records = jobRes && jobRes.success && jobRes.result ? jobRes.result.records || [] : [];
-            const jobs: JobRow[] = records.map((job: any) => ({
+            const jobs: JobRow[] = takeHottest(records).map((job: any) => ({
               id: String(job.id),
               positionName: job.positionName || '',
               dept: job.dept_dictText || '',
@@ -383,6 +408,8 @@
   .hero-media {
     object-fit: cover;
     display: block;
+    transform: scale(1.04);
+    animation: hero-settle 16s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
   .hero-field {
@@ -404,7 +431,9 @@
   .hero-shade {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(8, 16, 32, 0.42), rgba(8, 16, 32, 0.16) 46%, rgba(8, 16, 32, 0.22));
+    background:
+      radial-gradient(ellipse at 50% 46%, rgba(8, 16, 32, 0.62), transparent 42%),
+      linear-gradient(to top, rgba(8, 16, 32, 0.58), rgba(8, 16, 32, 0.28) 46%, rgba(8, 16, 32, 0.34));
     pointer-events: none;
   }
 
@@ -418,6 +447,7 @@
     justify-content: center;
     color: #fff;
     text-align: center;
+    text-shadow: 0 2px 18px rgba(8, 16, 32, 0.62);
     pointer-events: none;
   }
 
@@ -453,9 +483,9 @@
     position: absolute;
     top: 50%;
     z-index: 2;
-    width: 40px;
-    height: 40px;
-    margin-top: -20px;
+    width: 44px;
+    height: 44px;
+    margin-top: -22px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.45);
     background: rgba(16, 36, 63, 0.28);
@@ -463,6 +493,11 @@
     font-size: 26px;
     line-height: 1;
     cursor: pointer;
+    transition: background-color 200ms ease;
+  }
+
+  .hero-nav:hover {
+    background: rgba(16, 36, 63, 0.62);
   }
 
   .hero-nav--prev {
@@ -508,7 +543,7 @@
     display: grid;
     grid-template-columns: minmax(0, 7fr) minmax(260px, 3fr);
     column-gap: 40px;
-    align-items: start;
+    align-items: stretch;
   }
 
   .col-head {
@@ -520,37 +555,73 @@
   }
 
   .col-head h2 {
+    position: relative;
     margin: 0;
+    padding-bottom: 10px;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-size: 32px;
     font-weight: 700;
     line-height: 1.3;
-    color: #333333;
-    letter-spacing: 0;
+    color: #1c1917;
+    letter-spacing: 0.04em;
   }
 
-  .notice-head h2 {
-    font-size: 24px;
-    color: #004098;
+  .col-head h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 36px;
+    height: 2px;
+    background: #004098;
   }
 
   .col-head a,
   .category-head a {
     color: #004098;
     font-size: 14px;
+    letter-spacing: 0.08em;
     text-decoration: none;
+    transition: color 200ms ease;
+  }
+
+  .col-head a::after,
+  .category-head a::after {
+    content: '›';
+    margin-left: 4px;
   }
 
   .col-head a:hover,
   .category-head a:hover {
-    text-decoration: underline;
+    color: #003067;
   }
 
-  .col-state,
-  .job-quiet {
-    margin: 8px 0 0;
+  .col-state {
+    margin: 0;
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
     color: #8a8a8a;
     font-size: 14px;
   }
+
+  .job-quiet {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e6e6e6;
+    color: #8a8a8a;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: calc(2 * (14px + 14px + 1.6 * 16px + 1px));
+  }
+
+  .category {
+    animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .category:nth-of-type(2) { animation-delay: 70ms; }
+  .category:nth-of-type(3) { animation-delay: 140ms; }
+  .category:nth-of-type(4) { animation-delay: 210ms; }
 
   .category + .category {
     margin-top: 32px;
@@ -565,10 +636,21 @@
   }
 
   .category-head h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin: 0;
-    font-size: 18px;
-    font-weight: 700;
-    color: #333333;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    color: #1c1917;
+  }
+
+  .category-head h3::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #004098;
   }
 
   .job-list,
@@ -578,6 +660,11 @@
     padding: 0;
   }
 
+  .job-list {
+    box-sizing: border-box;
+    min-height: calc(2 * (14px + 14px + 1.6 * 16px + 1px));
+  }
+
   .job-list li {
     display: flex;
     align-items: baseline;
@@ -585,15 +672,20 @@
     gap: 24px;
     padding: 14px 16px;
     border-bottom: 1px solid #e6e6e6;
+    border-left: 3px solid transparent;
     cursor: pointer;
     background: #fff;
+    transition: background-color 200ms ease, border-color 200ms ease;
   }
 
-  .job-list li:nth-child(even) {
-    background: #f7f7f7;
+  .job-list li:hover,
+  .job-list li:focus-visible {
+    background: #f3f6fb;
+    border-left-color: #004098;
   }
 
-  .job-list li:hover .job-name {
+  .job-list li:hover .job-name,
+  .job-list li:focus-visible .job-name {
     color: #004098;
   }
 
@@ -603,6 +695,7 @@
     font-weight: 400;
     color: #444444;
     line-height: 1.6;
+    transition: color 200ms ease;
   }
 
   .job-side {
@@ -614,6 +707,12 @@
     font-size: 14px;
   }
 
+  .notice-col {
+    background: #f7f8fa;
+    padding: 4px 22px 8px;
+    border-top: 3px solid #004098;
+  }
+
   .notice-list li {
     display: flex;
     align-items: baseline;
@@ -622,7 +721,13 @@
     padding: 14px 0;
     border-bottom: 1px solid #e6e6e6;
     cursor: pointer;
+    animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
   }
+
+  .notice-list li:nth-child(2) { animation-delay: 60ms; }
+  .notice-list li:nth-child(3) { animation-delay: 120ms; }
+  .notice-list li:nth-child(4) { animation-delay: 180ms; }
+  .notice-list li:nth-child(5) { animation-delay: 240ms; }
 
   .notice-list li:hover .notice-text {
     color: #004098;
@@ -634,8 +739,9 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;
     color: #333333;
+    transition: color 200ms ease;
   }
 
   .notice-list time {
@@ -652,12 +758,26 @@
   }
 
   .campus h2 {
+    position: relative;
     margin: 0;
+    padding-bottom: 12px;
     text-align: center;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-size: 32px;
     font-weight: 700;
-    color: #333333;
-    letter-spacing: 0;
+    color: #1c1917;
+    letter-spacing: 0.06em;
+  }
+
+  .campus h2::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 36px;
+    height: 2px;
+    margin-left: -18px;
+    background: #004098;
   }
 
   .campus-carousel {
@@ -671,6 +791,7 @@
     height: 460px;
     background: #e6e8ec;
     overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(16, 36, 63, 0.08);
   }
 
   .campus-slide {
@@ -741,6 +862,52 @@
     background: #fff;
   }
 
+  .campus-caption {
+    width: min(1280px, calc(100% - 80px));
+    margin: 12px auto 0;
+    color: #57534e;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  .hero-nav:focus-visible,
+  .dot:focus-visible,
+  .campus-nav:focus-visible,
+  .campus-dot:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+
+  .job-list li:focus-visible,
+  .notice-list li:focus-visible,
+  .col-head a:focus-visible,
+  .category-head a:focus-visible {
+    outline: 2px solid #004098;
+    outline-offset: 3px;
+  }
+
+  @keyframes hero-settle {
+    from { transform: scale(1.08); }
+    to { transform: scale(1.02); }
+  }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-media,
+    .category,
+    .notice-list li,
+    .campus-slide {
+      animation: none;
+      transform: none;
+      transition: none;
+    }
+  }
+
   @media (max-width: 900px) {
     .hero {
       height: 420px;
@@ -755,7 +922,8 @@
     }
 
     .recruit-wrap,
-    .campus-carousel {
+    .campus-carousel,
+    .campus-caption {
       width: min(1280px, calc(100% - 32px));
     }
 
@@ -771,6 +939,11 @@
     .job-list li {
       flex-direction: column;
       gap: 4px;
+    }
+
+    .job-list,
+    .job-quiet {
+      min-height: calc(2 * (14px + 14px + 1.6 * 16px + 4px + 1.6 * 14px + 1px));
     }
   }
 </style>

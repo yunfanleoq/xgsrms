@@ -3,20 +3,23 @@
     <section class="hero">
       <img src="@/assets/images/talent_hero_campus.jpg" alt="中国科学院信息工程研究所" class="hero-bg" />
       <div class="hero-overlay">
-        <h1>信息工程研究所</h1>
-        <p>诚邀海内外英才</p>
+        <div class="hero-copy">
+          <h1>信息工程研究所</h1>
+          <p>诚邀海内外英才</p>
+        </div>
       </div>
     </section>
 
-    <section class="tracks">
-      <div v-for="track in tracks" :key="track.key" class="track-card">
+    <section class="offers">
+      <article v-for="(track, index) in tracks" :key="track.key" class="offer" :class="'offer--' + track.key">
+        <p class="offer-index" aria-hidden="true">{{ ['壹', '贰', '叁'][index] }}</p>
         <h3>{{ track.title }}</h3>
         <p class="track-official">{{ track.official }}</p>
         <div class="track-actions">
-          <button class="btn-view" @click="openTrack(track)">查看</button>
-          <button class="btn-apply" @click="goApply">投递</button>
+          <button type="button" class="btn-view" :aria-label="'查看' + track.title" @click="openTrack(track)">查看</button>
+          <button type="button" class="btn-apply" :aria-label="'投递' + track.title" @click="goApply(track)">投递</button>
         </div>
-      </div>
+      </article>
     </section>
 
     <p class="source-note">
@@ -25,13 +28,13 @@
       官网按人才项目分列，未单列岗位职责；本页三类栏目与官网栏目的对应关系写在各卡片标题下方。
     </p>
 
-    <section class="benefit">
+    <section class="benefit sheet">
       <h2>岗位待遇</h2>
       <p>{{ benefitNote }}</p>
     </section>
 
     <div class="main-grid">
-      <section class="team-intro">
+      <section class="team-intro sheet">
         <h2>信工所人才队伍</h2>
         <p>
           中国科学院信息工程研究所（以下简称信工所）是网络空间安全领域的“龙头所、核心所、总体所”，是从基础研究、高技术研发到工程化开发的长链条综合性研究所。信工所围绕国家发展战略和研究所科研布局，突出“高精尖缺”和干事导向，面向海内外长期招聘引进各类高水平科技创新人才。
@@ -41,14 +44,13 @@
         </p>
 
         <h3>人才风采展示</h3>
-        <p class="gallery-note">人员尚待确认，照片与名单确定后再行展示。</p>
-        <div class="gallery-placeholder" role="status">
-          <span>人才风采</span>
-          <span>待补充</span>
-        </div>
+        <figure class="talent-gallery">
+          <img src="@/assets/images/talent_gallery_scene.jpg" alt="研究所阅览与研究场景" />
+          <figcaption>人才风采</figcaption>
+        </figure>
       </section>
 
-      <aside class="policy-side">
+      <aside class="policy-side sheet">
         <h2>人才政策资讯</h2>
         <div class="policy-group" v-for="group in policies" :key="group.title">
           <h4>{{ group.title }}</h4>
@@ -62,15 +64,17 @@
       </aside>
     </div>
 
-    <section class="contact">
+    <section class="contact sheet">
       <h2>联系我们</h2>
-      <p>联系人：人力资源处，李老师</p>
-      <p>联系方式：010-82345079，邮箱：lilin@iie.ac.cn</p>
+      <div class="contact-lines">
+        <p>联系人：人力资源处，李老师</p>
+        <p>联系方式：010-82345079，邮箱：lilin@iie.ac.cn</p>
+      </div>
     </section>
 
     <div v-if="activeTrack" class="modal-mask" @click.self="activeTrack = null">
-      <div class="modal">
-        <h3>{{ activeTrack.title }}</h3>
+      <div class="modal" role="dialog" aria-modal="true" :aria-labelledby="'track-dialog-title'">
+        <h3 id="track-dialog-title">{{ activeTrack.title }}</h3>
         <p class="modal-official">官网栏目：{{ activeTrack.official }}</p>
         <div class="modal-block">
           <h4>岗位职责</h4>
@@ -90,8 +94,8 @@
           </ul>
         </div>
         <div class="modal-actions">
-          <button class="btn-apply" @click="goApply">投递简历</button>
-          <button class="btn-view" @click="activeTrack = null">关闭</button>
+          <button type="button" class="btn-apply" @click="goApply(activeTrack)">投递简历</button>
+          <button type="button" class="btn-view" @click="activeTrack = null">关闭</button>
         </div>
       </div>
     </div>
@@ -188,8 +192,18 @@
     activeTrack.value = track;
   };
 
-  const goApply = () => {
-    router.push({ name: 'homePositions' });
+  const APPLY_PROGRAM: Record<string, string> = {
+    leader: '领军',
+    overseas: '海外优青',
+    youth: '高层次青年',
+  };
+
+  const goApply = (track: Track | null) => {
+    if (!track) return;
+    const program = APPLY_PROGRAM[track.key];
+    if (!program) return;
+    activeTrack.value = null;
+    router.push({ name: 'homeTalentApply', query: { program } });
   };
 
   const policies = [
@@ -234,19 +248,23 @@
 
 <style scoped>
   .talent-page {
-    color: #333333;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    color: #243044;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Songti SC', sans-serif;
   }
 
   .hero {
     position: relative;
-    height: 340px;
-    border-radius: 0;
+    height: 420px;
     overflow: hidden;
-    margin-bottom: 20px;
-    background: #10243f;
+    background: #071428;
   }
 
   .hero-bg {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -257,85 +275,144 @@
     position: absolute;
     inset: 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(to top, rgba(8, 16, 32, 0.55), rgba(8, 16, 32, 0.22));
+    background: linear-gradient(
+      180deg,
+      rgba(4, 16, 40, 0.58) 0%,
+      rgba(0, 28, 72, 0.84) 34%,
+      rgba(0, 28, 72, 0.84) 66%,
+      rgba(4, 16, 40, 0.52) 100%
+    );
+  }
+
+  .hero-copy {
+    padding: 0 24px;
+    text-align: center;
     color: #fff;
-    text-align: center;
   }
 
-  .hero-overlay h1 {
+  .hero-copy h1 {
     margin: 0;
-    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
-    font-size: 36px;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: clamp(34px, 4.2vw, 52px);
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.16em;
+    line-height: 1.25;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
   }
 
-  .hero-overlay p {
-    margin: 10px 0 0;
-    font-size: 22px;
+  .hero-copy p {
+    margin: 18px 0 0;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: clamp(18px, 2vw, 24px);
+    font-weight: 600;
+    letter-spacing: 0.42em;
+    line-height: 1.4;
+    text-indent: 0.42em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
   }
 
-  .tracks {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
-  .track-card {
+  .hero-copy p::before {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 2px;
+    margin: 0 auto 16px;
     background: #fff;
-    border-radius: 0;
-    border: 1px solid #e6e6e6;
-    padding: 22px 18px;
-    text-align: center;
   }
 
-  .track-card h3 {
-    margin: 0 0 8px;
-    color: #333333;
+  .offers {
+    display: grid;
+    grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.88fr) minmax(0, 1.22fr);
+    border: 1px solid #d5deea;
+    border-top: 3px solid #004098;
+    background: #fff;
+  }
+
+  .offer {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 28px 26px 24px;
+  }
+
+  .offer--leader {
+    background: #004098;
+    color: #fff;
+  }
+
+  .offer--overseas {
+    background: #fff;
+    border-left: 1px solid #d5deea;
+  }
+
+  .offer--youth {
+    background: #f4f7fb;
+    border-left: 1px solid #d5deea;
+  }
+
+  .offer-index {
+    margin: 0;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    line-height: 1;
+    color: #004098;
+  }
+
+  .offer--leader .offer-index {
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  .offer h3 {
+    margin: 14px 0 10px;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    line-height: 1.35;
+    color: #142033;
+  }
+
+  .offer--leader h3 {
+    color: #fff;
   }
 
   .track-official {
-    margin: 0 0 16px;
-    color: #666666;
-    font-size: 13px;
-    line-height: 1.5;
-    text-align: center;
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.65;
+    color: #3e4c5f;
+    text-wrap: balance;
   }
 
-  .source-note {
-    margin: 0 0 18px;
-    color: #666666;
-    font-size: 13px;
-    line-height: 1.7;
-    text-align: left;
-  }
-
-  .source-note a {
-    color: #004098;
-    text-decoration: none;
-  }
-
-  .source-note a:hover {
-    text-decoration: underline;
+  .offer--leader .track-official {
+    color: rgba(255, 255, 255, 0.92);
   }
 
   .track-actions {
     display: flex;
-    justify-content: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 24px;
   }
 
   .btn-view,
   .btn-apply {
+    min-height: 44px;
+    min-width: 88px;
+    padding: 0 18px;
     border-radius: 0;
-    padding: 8px 18px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    white-space: nowrap;
     cursor: pointer;
-    font-weight: 400;
-    font-size: 14px;
+    transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
   }
 
   .btn-view {
@@ -344,125 +421,287 @@
     border: 1px solid #004098;
   }
 
+  .btn-view:hover {
+    color: #003067;
+    border-color: #003067;
+    background: #f3f6fb;
+  }
+
   .btn-apply {
     background: #004098;
     color: #fff;
     border: 1px solid #004098;
   }
 
+  .btn-apply:hover {
+    background: #003067;
+    border-color: #003067;
+  }
+
+  .offer--leader .btn-view {
+    background: transparent;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.88);
+  }
+
+  .offer--leader .btn-view:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    border-color: #fff;
+  }
+
+  .offer--leader .btn-apply {
+    background: #fff;
+    color: #004098;
+    border-color: #fff;
+  }
+
+  .offer--leader .btn-apply:hover {
+    background: #e7eef8;
+    color: #003067;
+    border-color: #e7eef8;
+  }
+
+  .btn-view:focus-visible,
+  .btn-apply:focus-visible,
+  .source-note a:focus-visible,
+  .policy-group a:focus-visible {
+    outline: 2px solid #004098;
+    outline-offset: 3px;
+  }
+
+  .offer--leader .btn-view:focus-visible,
+  .offer--leader .btn-apply:focus-visible {
+    outline-color: #fff;
+  }
+
+  .source-note {
+    margin: 0;
+    padding: 18px 22px 18px 20px;
+    border: 1px solid #d5deea;
+    border-left: 4px solid #004098;
+    background: #fff;
+    color: #3e4c5f;
+    font-size: 15px;
+    line-height: 1.85;
+    text-align: left;
+  }
+
+  .source-note a {
+    color: #004098;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 160ms ease;
+  }
+
+  .source-note a:hover {
+    color: #003067;
+  }
+
+  .sheet {
+    background: #fff;
+    border: 1px solid #d5deea;
+    padding: 28px 32px 32px;
+  }
+
+  .talent-page h2 {
+    position: relative;
+    margin: 0 0 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e4e9f0;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.3;
+    color: #142033;
+  }
+
+  .talent-page h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 56px;
+    height: 3px;
+    background: #004098;
+  }
+
+  .benefit p,
+  .team-intro p,
+  .contact p,
+  .modal p {
+    margin: 0 0 14px;
+    font-size: 16px;
+    line-height: 1.9;
+    text-align: justify;
+    color: #243044;
+  }
+
+  .benefit p:last-child,
+  .contact p {
+    margin-bottom: 0;
+  }
+
   .main-grid {
     display: grid;
-    grid-template-columns: 1.7fr 1fr;
-    gap: 18px;
+    grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+    gap: 24px;
+    align-items: stretch;
   }
 
-  .team-intro,
-  .policy-side,
-  .contact,
-  .benefit {
-    background: #fff;
-    border-radius: 0;
-    border: 1px solid #e6e6e6;
-    padding: 22px;
-  }
-
-  .benefit {
-    margin-bottom: 18px;
-  }
-
-  h2 {
-    margin: 0 0 12px;
-    color: #333333;
-    font-size: 24px;
+  .team-intro h3 {
+    margin: 28px 0 10px;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 20px;
     font-weight: 700;
-  }
-
-  h3 {
-    margin: 20px 0 10px;
-    color: #333333;
-  }
-
-  h4 {
-    margin: 0 0 8px;
-    color: #004098;
-  }
-
-  p {
-    margin: 0 0 12px;
-    line-height: 1.8;
-    text-align: justify;
-  }
-
-  .gallery-note {
-    color: #666666;
-    font-size: 14px;
-  }
-
-  .gallery-placeholder {
-    min-height: 148px;
-    border: 1px dashed #c8c8c8;
-    background: #f7f7f7;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    color: #888888;
     letter-spacing: 0.08em;
+    color: #142033;
+  }
+
+  .talent-gallery {
+    margin: 0;
+    border: 1px solid #004098;
+    background: #fff;
+  }
+
+  .talent-gallery img {
+    display: block;
+    width: 100%;
+    height: 280px;
+    object-fit: cover;
+  }
+
+  .talent-gallery figcaption {
+    margin: 0;
+    padding: 10px 14px;
+    border-top: 3px solid #004098;
+    color: #004098;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 16px;
+    letter-spacing: 0.28em;
+    text-align: center;
   }
 
   .policy-group {
-    margin-bottom: 16px;
+    margin: 0 0 18px;
+  }
+
+  .policy-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .policy-group h4 {
+    margin: 0 0 8px;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #004098;
   }
 
   .policy-group ul {
     margin: 0;
-    padding-left: 18px;
+    padding: 0;
+    list-style: none;
   }
 
   .policy-group li {
-    margin: 6px 0;
-    line-height: 1.6;
+    position: relative;
+    margin: 0;
+    padding: 7px 0 7px 14px;
+    line-height: 1.65;
+  }
+
+  .policy-group li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.85em;
+    width: 5px;
+    height: 5px;
+    background: #004098;
   }
 
   .policy-group a {
     color: #004098;
-    text-decoration: none;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 160ms ease;
   }
 
   .policy-group a:hover {
-    text-decoration: underline;
+    color: #003067;
   }
 
-  .contact {
-    margin-top: 18px;
+  .policy-group span {
+    color: #243044;
+  }
+
+  .contact-lines {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 8px 32px;
   }
 
   .modal-mask {
     position: fixed;
     inset: 0;
-    background: rgba(10, 24, 48, 0.45);
+    z-index: 2000;
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+    padding: 24px 16px;
+    background: rgba(8, 18, 36, 0.62);
   }
 
   .modal {
-    width: min(720px, 92vw);
+    width: min(720px, 100%);
     max-height: min(86vh, 820px);
     overflow: auto;
+    padding: 28px 28px 24px;
     background: #fff;
-    border-radius: 0;
-    border: 1px solid #e6e6e6;
-    padding: 24px;
+    border: 1px solid #d5deea;
+    border-top: 3px solid #004098;
+    box-shadow: 0 16px 48px rgba(8, 22, 48, 0.28);
+  }
+
+  .modal h3 {
+    position: relative;
+    margin: 0 0 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e4e9f0;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #142033;
+  }
+
+  .modal h3::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -1px;
+    width: 56px;
+    height: 3px;
+    background: #004098;
+  }
+
+  .modal h4 {
+    margin: 0 0 8px;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #004098;
   }
 
   .modal-official,
   .fine {
-    color: #666666;
-    font-size: 13px;
-    line-height: 1.6;
+    color: #3e4c5f;
+    font-size: 14px;
+    line-height: 1.7;
     text-align: left;
   }
 
@@ -472,29 +711,75 @@
   }
 
   .modal li {
-    margin: 6px 0;
-    line-height: 1.7;
+    margin: 8px 0;
+    line-height: 1.75;
+  }
+
+  .modal li::marker {
+    color: #004098;
   }
 
   .modal-block {
-    margin: 14px 0;
+    margin: 18px 0;
   }
 
   .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 18px;
+    gap: 12px;
+    margin-top: 8px;
   }
 
-  @media (max-width: 960px) {
-    .tracks,
-    .main-grid {
+  @media (max-width: 1080px) {
+    .offers,
+    .main-grid,
+    .contact-lines {
       grid-template-columns: 1fr;
     }
 
+    .offer--overseas,
+    .offer--youth {
+      border-left: 0;
+      border-top: 1px solid #d5deea;
+    }
+  }
+
+  @media (max-width: 720px) {
     .hero {
-      height: 220px;
+      height: 280px;
+    }
+
+    .hero-copy h1 {
+      letter-spacing: 0.08em;
+    }
+
+    .hero-copy p {
+      letter-spacing: 0.22em;
+      text-indent: 0.22em;
+    }
+
+    .sheet {
+      padding: 22px 16px 24px;
+    }
+
+    .offer {
+      padding: 22px 16px 18px;
+    }
+
+    .offer h3,
+    .talent-page h2,
+    .modal h3 {
+      font-size: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .talent-page *,
+    .talent-page *::before,
+    .talent-page *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
     }
   }
 </style>

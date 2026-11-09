@@ -1,7 +1,7 @@
 <template>
-  <div class="category-content">
-    <div class="intro">
-      <p>
+  <div class="training">
+    <div class="prose">
+      <p class="lead">
         加入研究所，意味着进入一个持续学习和成长的环境。我们关注职工在不同发展阶段的能力提升，从入职启航、专业精进到管理能力提升，持续提供与岗位职责、重大任务相衔接的学习支持，帮助职工不断完善能力结构、提升综合素养，增强持续发展的能力，促进人力资本升值。
       </p>
       <p>
@@ -12,14 +12,15 @@
       </p>
     </div>
 
-    <div class="module-grid">
-      <div v-for="item in modules" :key="item.title" class="module-card">
-        <div class="module-title">{{ item.title }}</div>
+    <ol class="path">
+      <li v-for="(item, index) in modules" :key="item.title" class="paper">
+        <p class="step" aria-hidden="true">{{ String(index + 1).padStart(2, '0') }}</p>
+        <h2>{{ item.title }}</h2>
         <ul>
           <li v-for="tag in item.items" :key="tag">{{ tag }}</li>
         </ul>
-      </div>
-    </div>
+      </li>
+    </ol>
   </div>
 </template>
 
@@ -45,56 +46,126 @@
 </script>
 
 <style scoped>
-  .category-content {
-    color: #333333;
-    line-height: 1.8;
+  .training {
+    --brand: #004098;
+    --brand-deep: #003067;
+    --ink: #1a1a1a;
+    --body: #333333;
+    --paper: #fffcf7;
+    --edge: #e4ddd2;
+    --rule: #efeae3;
+    color: var(--body);
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
   }
 
-  .intro p {
+  .prose {
+    max-width: none;
+  }
+
+  .prose p {
     margin: 0 0 14px;
-    font-size: 15px;
+    font-size: 16px;
+    line-height: 1.75;
     text-align: justify;
+    text-justify: inter-character;
   }
 
-  .module-grid {
+  .prose .lead {
+    margin-bottom: 18px;
+    font-family: 'Songti SC', 'STSong', 'Songti TC', 'PingFang SC', serif;
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+
+  .path {
+    list-style: none;
+    margin: 40px 0 0;
+    padding: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    margin-top: 24px;
+    gap: 22px 24px;
   }
 
-  .module-card {
-    border: 1px solid #e6e6e6;
-    border-radius: 0;
-    padding: 18px 20px;
-    background: #fff;
+  .paper {
+    min-width: 0;
+    background: var(--paper);
+    border: 1px solid var(--edge);
+    border-top: 3px solid var(--brand);
+    padding: 22px 26px 8px;
+    transition: border-top-color 200ms ease;
   }
 
-  .module-card:nth-child(even) {
-    background: #f7f7f7;
+  .paper:hover {
+    border-top-color: var(--brand-deep);
   }
 
-  .module-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #333333;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #e6e6e6;
+  .step {
+    position: relative;
+    margin: 0 0 8px;
+    font-family: 'Songti SC', 'STSong', 'Songti TC', 'PingFang SC', serif;
+    font-size: 13px;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    color: var(--brand);
+  }
+
+  .step::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 16px);
+    width: 10px;
+    height: 1px;
+    background: var(--brand);
+    transform: translateY(-50%);
+  }
+
+  h2 {
+    margin: 0 0 16px;
+    font-family: 'Songti SC', 'STSong', 'Songti TC', 'PingFang SC', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--ink);
   }
 
   ul {
+    list-style: none;
     margin: 0;
-    padding-left: 18px;
+    padding: 0;
   }
 
-  li {
-    margin: 6px 0;
+  ul li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--body);
   }
 
-  @media (max-width: 900px) {
-    .module-grid {
+  ul li::before {
+    content: '';
+    flex: none;
+    width: 10px;
+    height: 1px;
+    background: var(--brand);
+  }
+
+  @media (max-width: 800px) {
+    .path {
       grid-template-columns: 1fr;
+      margin-top: 28px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .paper {
+      transition: none;
     }
   }
 </style>

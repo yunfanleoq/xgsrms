@@ -159,6 +159,16 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'talent/apply',
+      name: 'homeTalentApply',
+      component: () => import('/@/views/home/talentApply.vue'),
+      meta: {
+        title: '人才引进投递',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
       path: 'positions/positionDetail/:id',
       name: 'positionDetail',
       component: () => import('/@/views/home/positionDetail.vue'),

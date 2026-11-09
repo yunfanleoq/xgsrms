@@ -81,7 +81,7 @@
 
   // 岗位列表和应聘详情从「人才引进」进入，顶栏仍高亮这一项
   const talentSectionActive = computed(() =>
-    ['homeTalent', 'homePositions', 'positionDetail'].includes(String(route.name)),
+    ['homeTalent', 'homeTalentApply', 'homePositions', 'positionDetail'].includes(String(route.name)),
   );
 
   const managerEntry = computed(() => {
