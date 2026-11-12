@@ -126,6 +126,10 @@ public class XgsPositions implements Serializable {
     @Excel(name = "岗位类型", width = 15)
     @ApiModelProperty(value = "岗位类型")
     private java.lang.String positionType;
+    /**引进高层次人才子项。只在岗位类型为「引进高层次人才」时使用。*/
+    @Excel(name = "人才子项", width = 15)
+    @ApiModelProperty(value = "引进高层次人才子项")
+    private java.lang.String positionSubtype;
     /**意见*/
     @Excel(name = "意见", width = 15)
     @ApiModelProperty(value = "意见")

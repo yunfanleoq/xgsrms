@@ -21,6 +21,7 @@ import { useSso } from '/@/hooks/web/useSso';
 import { isOAuth2AppEnv } from '/@/views/sys/login/useLogin';
 import { getUrlParam } from '@/utils';
 import { encryptPasswordWithLoginRsa } from '/@/utils/encryption/loginRsa';
+import { isPortalApplicantHome, isPortalPath, PORTAL_HOME } from '/@/utils/portalApplicant';
 import { PWD_EXPIRED_KEY } from '/@/utils/helper/passwordPolicy';
 interface dictType {
   [key: string]: any;
@@ -241,7 +242,13 @@ export const useUserStore = defineStore({
         //update-end-author:liusq date:2022-5-5 for: 登录成功后缓存拖拽模块的接口前缀
 
         // update-begin-author:sunjianlei date:20230306 for: 修复登录成功后，没有正确重定向的问题
+        const homePath = (userInfo && userInfo.homePath) || PageEnum.BASE_HOME;
+        const applicant = isPortalApplicantHome(homePath);
         let redirect = router.currentRoute.value?.query?.redirect as string;
+        // 求职者登录后留在前台，不跟随后台 redirect
+        if (applicant && redirect && !isPortalPath(redirect)) {
+          redirect = '';
+        }
         // 判断是否有 redirect 重定向地址
         //update-begin---author:wangshuai ---date:20230424  for：【QQYUN-5195】登录之后直接刷新页面导致没有进入创建组织页面------------
         if (redirect && goHome) {
@@ -256,11 +263,12 @@ export const useUserStore = defineStore({
         // update-end-author:sunjianlei date:20230306 for: 修复登录成功后，没有正确重定向的问题
 
         //update-begin---author:wangshuai---date:2024-04-03---for:【issues/1102】设置单点登录后页面，进入首页提示404，也没有绘制侧边栏 #1102---
+        const landing = applicant ? PORTAL_HOME : homePath;
         const ticket = getUrlParam('ticket');
         if (ticket) {
-          goHome && window.location.replace((userInfo && userInfo.homePath) || PageEnum.BASE_HOME);
+          goHome && window.location.replace(landing);
         } else {
-          goHome && (await router.replace((userInfo && userInfo.homePath) || PageEnum.BASE_HOME));
+          goHome && (await router.replace(landing));
         }
         //update-end---author:wangshuai---date:2024-04-03---for:【issues/1102】设置单点登录后页面，进入首页提示404，也没有绘制侧边栏 #1102---
       }
@@ -302,10 +310,13 @@ export const useUserStore = defineStore({
         this.setPwdExpired(true);
       }
       if (userInfo) {
-        const { roles = [] } = userInfo;
-        if (isArray(roles)) {
+        const { roles = [], roleCodeList = [] } = userInfo;
+        if (isArray(roles) && roles.length > 0) {
           const roleList = roles.map((item) => item.value) as RoleEnum[];
           this.setRoleList(roleList);
+        } else if (isArray(roleCodeList)) {
+          userInfo.roles = roleCodeList.map((code) => ({ value: code }));
+          this.setRoleList(roleCodeList as RoleEnum[]);
         } else {
           userInfo.roles = [];
           this.setRoleList([]);

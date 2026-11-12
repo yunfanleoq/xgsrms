@@ -23,6 +23,7 @@ import { getBackMenuAndPerms } from '/@/api/sys/menu';
 
 import { useMessage } from '/@/hooks/web/useMessage';
 import { PageEnum } from '/@/enums/pageEnum';
+import { isPortalApplicantHome } from '/@/utils/portalApplicant';
 
 // 系统权限
 interface AuthItem {
@@ -274,7 +275,7 @@ export const usePermissionStore = defineStore({
           const hasAgentMenu = backMenuList.some(
             (item) => item.path === '/rms/agent-workflow' || item.children?.some((child) => child.path === '/rms/agent-workflow'),
           );
-          if (!hasAgentMenu) {
+          if (!hasAgentMenu && !isPortalApplicantHome(userStore.getUserInfo?.homePath)) {
             backMenuList.splice(Math.min(1, backMenuList.length), 0, {
               name: 'RmsAgentWorkflow',
               path: '/rms/agent-workflow',

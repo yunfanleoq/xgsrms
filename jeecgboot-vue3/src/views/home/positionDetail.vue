@@ -173,8 +173,7 @@
       </div>
     </div>
   </div>
-  <!-- 使用新的重构后的在线申请表单 -->
-  <XgsPositionApplyModalNew ref="registerModalRef" :form-data="record" :formBpm="true" @success="handleApplySuccess" />
+  <PortalPositionApply ref="registerModalRef" @success="handleApplySuccess" />
 </template>
 
 <script setup lang="ts" name="PositionDetail">
@@ -185,8 +184,8 @@
   import { useUserStore } from '@/store/modules/user';
   import { usePositionApplyStoreWithOut } from '@/store/modules/positionApply';
   import { useMessage } from '@/hooks/web/useMessage';
-  // 引入新的重构表单组件
-  import XgsPositionApplyModalNew from '@/views/positions/components/XgsPositionApplyModalNew.vue';
+  import PortalPositionApply from '@/views/home/position/PortalPositionApply.vue';
+  import { applyFormPositionType } from '@/views/home/position/seniorReviewForm';
   import { message } from 'ant-design-vue';
   import { defHttp } from '@/utils/http/axios';
   import { formatPositionContactPerson, formatPositionKtz } from '@/utils/positionContactDisplay';
@@ -284,9 +283,27 @@
       });
   }
 
+  /** 只接受站内路径，避免返回跳出本站或被 from 带去外链。 */
+  function inAppPath(value: unknown): string | null {
+    const raw = Array.isArray(value) ? value[0] : value;
+    if (typeof raw !== 'string') return null;
+    const path = raw.trim();
+    if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\') || path.includes('://')) return null;
+    return path;
+  }
+
   const goBack = async () => {
-    await router.push({ name: 'homePositions', query: { showPositionList: 'true' } });
-    // 返回列表页后滚动到顶部
+    const historyBack = inAppPath(window.history.state?.back);
+    if (historyBack) {
+      router.back();
+    } else {
+      const from = inAppPath(route.query.from);
+      if (from) {
+        await router.push(from);
+      } else {
+        await router.push({ name: 'homePositions' });
+      }
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -364,7 +381,7 @@
       positionDept: job.value.dept_dictText,
       positionId: job.value.id,
       positionName: job.value.positionName,
-      positionType: job.value.category,
+      positionType: applyFormPositionType(job.value),
       resumeId: '',
       resumeName: userStore.getUserInfo.realname + userStore.getUserInfo.username + '_' + job.value.positionName,
       status: '申请中',

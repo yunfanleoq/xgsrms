@@ -10,7 +10,7 @@
       <!-- 表单区域 -->
       <XgsFavoriteJobModal @register="registerModal" @success="handleSuccess"></XgsFavoriteJobModal>
       <!-- 在线申请表单 -->
-      <XgsPositionApplyModalNew ref="registerModalRef" :form-data="applyRecord" :formBpm="true" @success="handleApplySuccess" />
+      <PortalPositionApply ref="registerModalRef" @success="handleApplySuccess" />
   </div>
 </template>
 
@@ -20,7 +20,7 @@
   import {useModal} from '/@/components/Modal';
   import { useListPage } from '/@/hooks/system/useListPage'
   import XgsFavoriteJobModal from './components/PositionFavoriteDetail.vue'
-  import XgsPositionApplyModalNew from './components/XgsPositionApplyModalNew.vue'
+  import PortalPositionApply from '/@/views/home/position/PortalPositionApply.vue'
   import {columns, searchFormSchema} from './XgsFavoriteJob.data';
   import {list, deleteOne} from './XgsFavoriteJob.api';
   import { getJobById } from '@/api/xgsrms/home';

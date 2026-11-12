@@ -145,23 +145,38 @@
     applyPosition: '',
   })
   
-  // 分析简历
+  // 分析简历（默认本地 Tika：超时缩短；提示已填/未识别字段）
   function analysisResume() {
     confirmLoading.value = true;
     defHttp
-      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 600000, data: formData.value })
+      .post({ url: '/resume/xgsUserResumeFile/analysisResume', timeout: 60000, data: formData.value })
       .then((data) => {
         if (data && data.fileJson) {
           let resumeData = JSON.parse(data.fileJson);
           fillResumeInfo(resumeData);
-          createMessage.success('简历解析成功');
+          const filled = Array.isArray(data.filledFields) ? data.filledFields : [];
+          const missed = Array.isArray(data.missedFields) ? data.missedFields : [];
+          const mode = data.parseMode || 'tika';
+          if (data.parseSummary) {
+            createMessage.success(data.parseSummary);
+          } else if (mode === 'tika') {
+            createMessage.success(
+              `本地解析完成：已填 ${filled.length} 项` +
+                (missed.length ? `，未识别 ${missed.slice(0, 8).join('、')}${missed.length > 8 ? '…' : ''}，请手工补全` : ''),
+            );
+          } else {
+            createMessage.success('简历解析成功');
+          }
+          if (missed.length) {
+            createMessage.info(`请核对并补全：${missed.slice(0, 12).join('、')}${missed.length > 12 ? '…' : ''}`);
+          }
         } else {
           createMessage.warning('解析失败，请上传PDF格式的简历');
         }
       })
       .catch((error) => {
         console.error('简历解析失败:', error);
-        createMessage.error('简历解析失败，请重试');
+        createMessage.error('简历解析失败，请重试或手工填写');
       })
       .finally(() => {
         confirmLoading.value = false;

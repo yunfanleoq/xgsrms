@@ -5,6 +5,7 @@ import { PAGE_NOT_FOUND_ROUTE, REDIRECT_ROUTE } from '/@/router/routes/basic';
 import { mainOutRoutes } from './mainOut';
 import { PageEnum } from '/@/enums/pageEnum';
 import { t } from '/@/hooks/web/useI18n';
+import { WORK_PAGES } from '/@/views/home/mine/workPages';
 
 const modules = import.meta.glob('./modules/**/*.ts', { eager: true });
 
@@ -82,7 +83,7 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeHome',
       component: () => import('/@/views/home/home.vue'),
       meta: {
-        title: '招聘首页',
+        title: '首页',
         ignoreAuth: true,
         ignoreMenu: true,
       },
@@ -102,7 +103,17 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeCareer',
       component: () => import('/@/views/home/zhiyefazhan.vue'),
       meta: {
-        title: '职业发展',
+        title: '职业路径',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'training',
+      name: 'homeTraining',
+      component: () => import('/@/views/home/peixun.vue'),
+      meta: {
+        title: '培训发展',
         ignoreAuth: true,
         ignoreMenu: true,
       },
@@ -142,7 +153,17 @@ export const homeIndexRoute: AppRouteRecordRaw = {
       name: 'homeTalent',
       component: () => import('/@/views/home/gaocengcirencai.vue'),
       meta: {
-        title: '高层次人才引进',
+        title: '人才引进',
+        ignoreAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'talent/apply',
+      name: 'homeTalentApply',
+      component: () => import('/@/views/home/talentApply.vue'),
+      meta: {
+        title: '人才引进投递',
         ignoreAuth: true,
         ignoreMenu: true,
       },
@@ -207,6 +228,66 @@ export const homeIndexRoute: AppRouteRecordRaw = {
         ignoreMenu: true,
       },
     },
+    {
+      path: 'center',
+      name: 'homeCenter',
+      component: () => import('/@/views/home/center.vue'),
+      meta: {
+        title: '个人中心',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'resume',
+      name: 'homeResume',
+      component: () => import('/@/views/home/mine/resume.vue'),
+      meta: {
+        title: '我的简历',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'apply',
+      name: 'homeApply',
+      component: () => import('/@/views/home/mine/apply.vue'),
+      meta: {
+        title: '我的应聘',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'interview',
+      name: 'homeInterview',
+      component: () => import('/@/views/home/mine/interview.vue'),
+      meta: {
+        title: '我的面试',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    {
+      path: 'favorite',
+      name: 'homeFavorite',
+      component: () => import('/@/views/home/mine/favorite.vue'),
+      meta: {
+        title: '我的收藏',
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    },
+    ...WORK_PAGES.map((page) => ({
+      path: page.path,
+      name: page.name,
+      component: () => import('/@/views/home/work/WorkFrame.vue'),
+      meta: {
+        title: page.label,
+        portalAuth: true,
+        ignoreMenu: true,
+      },
+    })),
 
     // 添加其他子路由
   ],

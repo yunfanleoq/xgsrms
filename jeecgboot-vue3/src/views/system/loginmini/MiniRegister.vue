@@ -34,6 +34,14 @@
                     </div>
                   </a-form-item>
                   <a-form-item>
+                    <div class="aui-input-line aui-sms-line">
+                      <Icon class="aui-icon" icon="ant-design:safety-outlined" />
+                      <a-input class="fix-auto-fill" type="text" placeholder="请输入短信验证码" v-model:value="formData.smscode" />
+                      <div v-if="showInterval" class="aui-code-line" @click="getRegisterCode">获取验证码</div>
+                      <div v-else class="aui-code-line">{{ timeRunning }}秒后重发</div>
+                    </div>
+                  </a-form-item>
+                  <a-form-item>
                     <div class="aui-input-line">
                       <Icon class="aui-icon" icon="ant-design:mail-outlined" />
                       <a-input class="fix-auto-fill" type="text" placeholder="请输入邮箱地址" v-model:value="formData.email" />
@@ -95,24 +103,34 @@
       </div>
     </div>
   </div>
+  <CaptchaModal @register="captchaRegisterModal" @ok="getRegisterCode" />
 </template>
 
 <script lang="ts" setup name="mini-register">
-  import { ref, reactive, toRaw } from 'vue';
-  import { register } from '/@/api/sys/user';
+  import { ref, reactive, toRaw, unref } from 'vue';
+  import { getCaptcha, register } from '/@/api/sys/user';
   import { useMessage } from '/@/hooks/web/useMessage';
   import jeecgAdTextImg from '/@/assets/loginmini/icon/jeecg_ad_text.png';
   import eyeKImg from '/@/assets/loginmini/icon/icon-eye-k.png';
   import eyeGImg from '/@/assets/loginmini/icon/icon-eye-g.png';
   import { useI18n } from '/@/hooks/web/useI18n';
+  import { SmsEnum } from '/@/views/sys/login/useLogin';
+  import CaptchaModal from '@/components/jeecg/captcha/CaptchaModal.vue';
+  import { useModal } from '@/components/Modal';
+  import { ExceptionEnum } from '@/enums/exceptionEnum';
 
   const { t } = useI18n();
   const { notification, createMessage } = useMessage();
   const emit = defineEmits(['go-back', 'success', 'register']);
   const formRef = ref();
+  const [captchaRegisterModal, { openModal: openCaptchaModal }] = useModal();
+  const showInterval = ref(true);
+  const timeRunning = ref(60);
+  const timer = ref<any>(null);
   const formData = reactive<any>({
     username: '',
     mobile: '',
+    smscode: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -142,6 +160,14 @@
     }
     if (!formData.mobile) {
       createMessage.warn(t('sys.login.mobilePlaceholder'));
+      return;
+    }
+    if (!/^1[3-9]\d{9}$/.test(formData.mobile)) {
+      createMessage.warn('请输入正确的手机号码');
+      return;
+    }
+    if (!formData.smscode) {
+      createMessage.warn(t('sys.login.smsPlaceholder'));
       return;
     }
     if (!formData.email) {
@@ -178,6 +204,7 @@
           username: formData.username,
           password: formData.password,
           phone: formData.mobile,
+          smscode: formData.smscode,
           email: formData.email,
         })
       );
@@ -204,11 +231,45 @@
     }
   }
 
-  /**
-   * 初始化表单
-   */
+  async function getRegisterCode() {
+    if (!formData.mobile) {
+      createMessage.warn(t('sys.login.mobilePlaceholder'));
+      return;
+    }
+    if (!/^1[3-9]\d{9}$/.test(formData.mobile)) {
+      createMessage.warn('请输入正确的手机号码');
+      return;
+    }
+    const result = await getCaptcha({ mobile: formData.mobile, smsmode: SmsEnum.REGISTER }).catch((res) => {
+      if (res && res.code === ExceptionEnum.PHONE_SMS_FAIL_CODE) {
+        openCaptchaModal(true, {});
+      }
+    });
+    if (result) {
+      const timeCount = 60;
+      if (!unref(timer)) {
+        timeRunning.value = timeCount;
+        showInterval.value = false;
+        timer.value = setInterval(() => {
+          if (unref(timeRunning) > 0 && unref(timeRunning) <= timeCount) {
+            timeRunning.value = timeRunning.value - 1;
+          } else {
+            showInterval.value = true;
+            clearInterval(unref(timer));
+            timer.value = null;
+          }
+        }, 1000);
+      }
+    }
+  }
+
   function initForm() {
-    Object.assign(formData, { username: '', mobile: '', email: '', password: '', confirmPassword: '', policy: false });
+    Object.assign(formData, { username: '', mobile: '', smscode: '', email: '', password: '', confirmPassword: '', policy: false, realname: '' });
+    if (unref(timer)) {
+      clearInterval(unref(timer));
+      timer.value = null;
+      showInterval.value = true;
+    }
     formRef.value.resetFields();
   }
 
@@ -247,5 +308,13 @@
     top: 12px;
     left: 10px;
     font-size: 20px !important;
+  }
+  .aui-sms-line :deep(input) {
+    padding-right: 108px;
+  }
+  .aui-sms-line .aui-code-line {
+    color: #1b90ff;
+    z-index: 3;
+    border-left: 1px solid #adadad;
   }
 </style>

@@ -105,6 +105,10 @@ public class XgsJournalism implements Serializable {
 	@Excel(name = "类型代码", width = 15)
     @ApiModelProperty(value = "类型代码")
     private String typeCode;
+	/**来源标记。官网人才招聘同步为 iie-cas-rczp，空值表示本机历史启事*/
+	@Excel(name = "来源标记", width = 15)
+    @ApiModelProperty(value = "来源标记")
+    private String sourceCode;
 	/**图片1*/
 	@Excel(name = "图片1", width = 15)
     @ApiModelProperty(value = "图片1")

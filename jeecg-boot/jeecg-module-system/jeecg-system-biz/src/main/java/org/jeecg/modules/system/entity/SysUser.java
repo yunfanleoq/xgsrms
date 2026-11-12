@@ -196,6 +196,12 @@ public class SysUser implements Serializable {
     private String homePath;
 
     /**
+     * 角色编码，仅返回给前台，不入库
+     */
+    @TableField(exist = false)
+    private java.util.List<String> roleCodeList;
+
+    /**
      * 职位名称
      */
     @TableField(exist = false)

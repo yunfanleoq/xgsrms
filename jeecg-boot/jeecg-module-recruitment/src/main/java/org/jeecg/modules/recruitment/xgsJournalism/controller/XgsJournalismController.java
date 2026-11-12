@@ -12,6 +12,7 @@ import org.jeecg.common.system.vo.LoginUser;
 import org.jeecg.common.util.RedisUtil;
 import org.jeecg.config.shiro.IgnoreAuth;
 import org.jeecg.modules.recruitment.xgsJournalism.entity.XgsJournalism;
+import org.jeecg.modules.recruitment.xgsJournalism.sync.IieRczpSyncConstants;
 import org.jeecg.modules.recruitment.security.RecruitmentPortalAuthUtil;
 import org.jeecg.modules.recruitment.security.RecruitmentPublicDataSanitizer;
 import org.jeecg.modules.recruitment.xgsJournalism.service.IXgsJournalismService;
@@ -84,11 +85,27 @@ public class XgsJournalismController extends JeecgController<XgsJournalism, IXgs
 													   HttpServletRequest req) {
 		 Map<String, String[]> safeParams = new HashMap<>(req.getParameterMap());
 		 safeParams.remove("state");
+		 boolean officialRczp = IieRczpSyncConstants.TYPE_CODE.equals(xgsJournalism.getTypeCode());
+		 if (officialRczp) {
+			 safeParams.remove("sourceCode");
+			 xgsJournalism.setSourceCode(IieRczpSyncConstants.SOURCE_CODE);
+		 }
 		 QueryWrapper<XgsJournalism> queryWrapper = QueryGenerator.initQueryWrapper(xgsJournalism, safeParams);
 		 queryWrapper.eq("state", JOURNALISM_STATE_PUBLISHED);
+		 if (officialRczp) {
+			 queryWrapper.eq("source_code", IieRczpSyncConstants.SOURCE_CODE);
+		 }
 		 Page<XgsJournalism> page = new Page<XgsJournalism>(pageNo, pageSize);
-		 queryWrapper.orderByDesc("create_time");
-		 queryWrapper.orderByAsc("news_sort");
+		 if (officialRczp) {
+			 if (queryWrapper.getExpression().getOrderBy() != null) {
+				 queryWrapper.getExpression().getOrderBy().clear();
+			 }
+			 queryWrapper.orderByDesc("news_date");
+			 queryWrapper.orderByAsc("news_sort");
+		 } else {
+			 queryWrapper.orderByDesc("create_time");
+			 queryWrapper.orderByAsc("news_sort");
+		 }
 		 IPage<XgsJournalism> pageList = xgsJournalismService.page(page, queryWrapper);
 		 RecruitmentPublicDataSanitizer.stripXgsJournalismList(pageList.getRecords());
 		 return Result.OK(pageList);

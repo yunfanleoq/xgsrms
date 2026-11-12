@@ -4,19 +4,19 @@ overview: 先对齐招聘主流程与现有文档资产，补齐「操作文档�
 todos:
   - id: doc-master
     content: 写操作总册 + 修正 obsidian 业务域状态图与三分册角色称呼对齐
-    status: pending
+    status: completed
   - id: testcases
     content: 编写主流程测试用例与测试计划；补全 full-chain 面试结果步骤
-    status: pending
+    status: completed
   - id: prod-pdf
-    content: 正式环境跑三角色全链路并生成 PDF 测试报告
-    status: pending
+    content: 正式环境跑三角色全链路并生成 PDF 测试报告（云端无 VPN：仅交付 PDF 脚本+样例；需本机实测）
+    status: cancelled
   - id: ontology-menu
     content: sys_permission 菜单种子 + 授权 + 冒烟本体论/工作流入口
-    status: pending
+    status: completed
   - id: resume-pdf-local
     content: 精简投递页；PDF 默认 Tika 抽文本+规则填表（智谱改为可选开关）
-    status: pending
+    status: completed
 isProject: false
 ---
 

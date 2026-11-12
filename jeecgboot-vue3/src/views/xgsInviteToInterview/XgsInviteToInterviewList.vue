@@ -1,6 +1,6 @@
 <template>
   <div v-auth="'xgsInviteToInterview:xgs_invite_to_interview:list'">
-    <RmsAgentWorkflow initial-phase="invite" />
+    <RmsAgentWorkflow initial-phase="invite" locked />
   </div>
 </template>
 
