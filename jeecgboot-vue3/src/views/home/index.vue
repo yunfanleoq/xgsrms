@@ -6,6 +6,18 @@
           <img src="@/assets/images/xgs_logo_.png" alt="中国科学院信息工程研究所人才招聘" class="brand-word" />
           <img src="@/assets/images/xgs_logo01.png" alt="信工所标识" class="brand-seal" />
         </RouterLink>
+        <nav v-if="!hidePortalNav" class="portal-nav" aria-label="门户导航">
+          <RouterLink :to="{ name: 'homeHome' }" class="nav-link">首页</RouterLink>
+          <RouterLink
+            :to="{ name: 'homeTalent' }"
+            class="nav-link"
+            :class="{ 'router-link-active': talentSectionActive && route.name !== 'homeTalent' }"
+          >人才引进</RouterLink>
+          <RouterLink :to="{ name: 'homeCareer' }" class="nav-link">职业路径</RouterLink>
+          <RouterLink :to="{ name: 'homeTraining' }" class="nav-link">培训发展</RouterLink>
+          <RouterLink :to="{ name: 'homeSalary' }" class="nav-link">薪酬福利</RouterLink>
+          <RouterLink :to="{ name: 'contactUs' }" class="nav-link">联系我们</RouterLink>
+        </nav>
         <div class="header-actions">
           <div v-if="!isLoggedIn" class="auth-buttons">
             <button type="button" @click="goToLoginPage" class="text-action">登录</button>
@@ -36,18 +48,6 @@
           </div>
         </div>
       </div>
-      <nav v-if="!hidePortalNav" class="portal-nav" aria-label="门户导航">
-        <RouterLink :to="{ name: 'homeHome' }" class="nav-link">首页</RouterLink>
-        <RouterLink
-          :to="{ name: 'homeTalent' }"
-          class="nav-link"
-          :class="{ 'router-link-active': talentSectionActive && route.name !== 'homeTalent' }"
-        >人才引进</RouterLink>
-        <RouterLink :to="{ name: 'homeCareer' }" class="nav-link">职业路径</RouterLink>
-        <RouterLink :to="{ name: 'homeTraining' }" class="nav-link">培训发展</RouterLink>
-        <RouterLink :to="{ name: 'homeSalary' }" class="nav-link">薪酬福利</RouterLink>
-        <RouterLink :to="{ name: 'contactUs' }" class="nav-link">联系我们</RouterLink>
-      </nav>
     </header>
 
     <main class="portal-main" :class="{ 'portal-main--home': isHome }">
@@ -59,7 +59,7 @@
         <a href="https://www.cas.cn" target="_blank" rel="noopener noreferrer">中国科学院</a>
         <a href="http://www.nsfc.gov.cn/" target="_blank" rel="noopener noreferrer">国家自然科学基金</a>
         <a href="https://www.casjob.com/" target="_blank" rel="noopener noreferrer">中科人才网</a>
-        <a href="http://www.iie.cas.cn/" target="_blank" rel="noopener noreferrer">中科院信工所</a>
+        <a href="http://www.iie.cas.cn/" target="_blank" rel="noopener noreferrer">中国科学院信工所</a>
       </div>
       <p class="footer-text">© {{ currentYear }} 中国科学院信息工程研究所人才招聘管理系统</p>
     </footer>
@@ -171,18 +171,19 @@
   .mast-bar {
     width: min(1280px, calc(100% - 80px));
     margin: 0 auto;
-    min-height: 52px;
-    padding: 6px 0 0;
+    min-height: 64px;
+    padding: 8px 0;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 24px;
+    flex-wrap: nowrap;
+    gap: 8px 16px;
   }
 
   .brand {
     display: flex;
     align-items: center;
     gap: 14px;
+    flex: 0 1 auto;
     min-width: 0;
     text-decoration: none;
   }
@@ -202,7 +203,11 @@
   }
 
   .header-actions {
-    flex: none;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    align-self: center;
+    margin-left: auto;
   }
 
   .auth-buttons,
@@ -354,13 +359,13 @@
   .portal-nav {
     position: relative;
     z-index: 1;
-    width: min(1280px, calc(100% - 80px));
-    margin: 0 auto;
-    min-height: 36px;
+    flex: 0 1 auto;
+    min-width: 0;
     display: flex;
-    align-items: stretch;
-    justify-content: flex-end;
-    gap: 4px;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 2px;
   }
 
   .nav-link {
@@ -442,9 +447,14 @@
     color: rgba(255, 255, 255, 0.8);
   }
 
+  @media (max-width: 1180px) {
+    .nav-link {
+      padding: 8px 10px 10px;
+    }
+  }
+
   @media (max-width: 1024px) {
     .mast-bar,
-    .portal-nav,
     .friend-links {
       width: min(1280px, calc(100% - 32px));
     }
@@ -454,29 +464,38 @@
       height: 36px;
     }
 
-    .portal-nav {
-      justify-content: flex-start;
-      overflow-x: auto;
-    }
-
     .nav-link {
       font-size: 15px;
-      padding: 8px 12px 10px;
+      padding: 8px 10px 10px;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .mast-bar {
+      flex-wrap: wrap;
+      row-gap: 0;
+    }
+
+    .brand {
+      order: 0;
+      margin-right: 0;
+      flex: 1 1 auto;
+    }
+
+    .header-actions {
+      order: 1;
+      margin-left: auto;
+    }
+
+    .portal-nav {
+      order: 2;
+      flex: 1 1 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
     }
   }
 
   @media (max-width: 720px) {
-    .mast-bar {
-      align-items: flex-start;
-      padding-top: 10px;
-    }
-
-    .brand {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
-    }
-
     .brand-seal {
       display: none;
     }

@@ -15,33 +15,30 @@
 
 <style>
   .training-page.portal-page .page-head h1 {
-    font-family: 'Songti SC', 'STSong', 'Songti TC', 'PingFang SC', serif;
+    margin-bottom: 20px;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-weight: 600;
     font-size: 36px;
-    line-height: 1.25;
-    letter-spacing: 0.08em;
-    color: #10243f;
-  }
-
-  .training-page.portal-page .page-head h1::after {
-    content: '';
-    display: block;
-    width: 48px;
-    height: 2px;
-    margin-top: 16px;
-    background: #004098;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: #1a1a1a;
   }
 
   .training-page.portal-page .page-card {
-    background: transparent;
-    border: none;
-    padding: 6px 0 8px;
+    padding: 36px 40px 48px;
+    border-color: #e2e6ec;
+  }
+
+  @media (max-width: 960px) {
+    .training-page.portal-page .page-card {
+      padding: 24px 18px 32px;
+    }
   }
 
   @media (max-width: 720px) {
     .training-page.portal-page .page-head h1 {
       font-size: 28px;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.04em;
     }
   }
 </style>

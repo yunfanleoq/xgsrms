@@ -393,3 +393,11 @@ justauth:
     type: default
     prefix: 'demo::'
     timeout: 1h
+
+# 官网「人才队伍 / 人才招聘」同步到首页通知公告。只抓该列表，每天凌晨 3 点（上海）
+xgs:
+  iie-rczp-sync:
+    enabled: true
+    list-url: https://iie.cas.cn/yjdw/rczp/
+    cron: "0 0 3 * * ?"
+    zone: Asia/Shanghai

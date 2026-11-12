@@ -6,11 +6,31 @@
     <div class="page-card">
       <p class="principle">
         <span class="principle-label">原则与导向：</span>
-        <span class="principle-point">横向分类</span>
+        <span class="principle-point">
+          <svg class="principle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3.25" y="4.5" width="4.7" height="15" rx="0.6" />
+            <rect x="9.65" y="4.5" width="4.7" height="15" rx="0.6" />
+            <rect x="16.05" y="4.5" width="4.7" height="15" rx="0.6" />
+          </svg>
+          横向分类
+        </span>
         <span class="principle-sep">·</span>
-        <span class="principle-point">纵向分层</span>
+        <span class="principle-point">
+          <svg class="principle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 4.5h2.2v15H5z" />
+            <rect x="9.2" y="4.5" width="11.2" height="3.6" rx="0.5" />
+            <rect x="9.2" y="10.2" width="11.2" height="3.6" rx="0.5" />
+            <rect x="9.2" y="15.9" width="11.2" height="3.6" rx="0.5" />
+          </svg>
+          纵向分层
+        </span>
         <span class="principle-sep">·</span>
-        <span class="principle-point">贡献导向</span>
+        <span class="principle-point">
+          <svg class="principle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true">
+            <path d="m12 3.4 2.05 4.55 4.95.45-3.75 3.25 1.15 4.85L12 14.15 7.6 16.5l1.15-4.85L5 8.4l4.95-.45z" />
+          </svg>
+          贡献导向
+        </span>
       </p>
 
       <section class="overview" aria-labelledby="career-overview">
@@ -173,6 +193,7 @@
   .ladder-level,
   .step-no,
   .family-index,
+  .principle,
   .principle-label {
     font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
   }
@@ -194,32 +215,44 @@
   .principle {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0 2px;
+    align-items: center;
+    gap: 8px 6px;
     margin: 0 0 36px;
-    padding: 14px 18px;
+    padding: 16px 22px;
     background: var(--paper);
     border-left: 3px solid var(--brand);
     color: var(--ink);
-    font-size: 15px;
-    letter-spacing: 0.04em;
-    line-height: 1.6;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    line-height: 1.35;
   }
 
   .principle-label {
-    margin-right: 8px;
+    margin-right: 10px;
     color: var(--brand);
-    font-size: 16px;
     font-weight: 600;
   }
 
   .principle-point {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
     padding: 0 2px;
+    font-weight: 600;
+  }
+
+  .principle-icon {
+    flex: none;
+    width: 0.78em;
+    height: 0.78em;
+    color: var(--brand);
   }
 
   .principle-sep {
     color: var(--brand);
-    padding: 0 6px;
+    padding: 0 8px;
+    font-weight: 700;
   }
 
   .overview {
@@ -518,7 +551,8 @@
     }
 
     .overview h2,
-    .block > h2 {
+    .block > h2,
+    .principle {
       font-size: 22px;
     }
 

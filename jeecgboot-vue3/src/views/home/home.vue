@@ -36,29 +36,69 @@
     <section class="recruit" aria-label="招聘信息与通知公告">
       <div class="recruit-wrap">
         <div class="jobs-col">
+          <form class="job-search" role="search" @submit.prevent="searchJobs">
+            <label class="visually-hidden" for="portal-job-search">搜索岗位</label>
+            <input
+              id="portal-job-search"
+              v-model="jobKeyword"
+              type="search"
+              name="keyword"
+              placeholder="搜索岗位"
+              autocomplete="off"
+              enterkeyhint="search"
+            />
+            <button type="submit">搜索</button>
+          </form>
           <header class="col-head">
             <h2>招聘信息</h2>
           </header>
-          <div v-if="categoriesLoading" class="col-state">
-            <a-spin />
-          </div>
-          <p v-else-if="!categoryGroups.length" class="col-state">暂无岗位分类</p>
-          <article v-for="group in categoryGroups" :key="group.name" class="category">
-            <header class="category-head">
-              <h3>{{ group.name }}</h3>
-              <router-link :to="{ name: 'homePositions', query: { positionType: group.name } }">更多</router-link>
-            </header>
-            <ul v-if="group.jobs.length" class="job-list">
-              <li v-for="job in group.jobs" :key="job.id" tabindex="0" @click="goToPosition(job.id)" @keyup.enter="goToPosition(job.id)">
-                <span class="job-name">{{ job.positionName }}</span>
-                <span class="job-side">
-                  <span v-if="job.dept">{{ job.dept }}</span>
-                  <time v-if="job.date">{{ job.date }}</time>
-                </span>
-              </li>
-            </ul>
-            <p v-else class="job-quiet">暂无在招岗位</p>
-          </article>
+          <nav class="job-cards" aria-label="招聘分类">
+            <router-link
+              v-for="card in recruitCards"
+              :key="card.title"
+              class="job-card"
+              :class="'job-card--' + card.place"
+              :to="{ name: 'homePositions', query: { positionType: card.positionType } }"
+            >
+              <span class="job-card-body">
+              <span class="job-card-icon" aria-hidden="true">
+                <svg v-if="card.icon === 'talent'" viewBox="0 0 32 32" fill="none">
+                  <circle cx="15" cy="13.2" r="3.3" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M8 25.6c.9-3.9 3.3-5.8 7-5.8s6.1 1.9 7 5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M23.6 4.6l.8 1.6 1.8.3-1.3 1.2.3 1.8-1.6-.9-1.6.9.3-1.8-1.3-1.2 1.8-.3.8-1.6z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+                </svg>
+                <svg v-else-if="card.icon === 'campus'" viewBox="0 0 32 32" fill="none">
+                  <path d="M5 14.2 16 6.4l11 7.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M8 14.2V25.6h16V14.2" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <path d="M13.4 25.6v-5.2h5.2v5.2" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <path d="M5 25.6h22" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M12 17.2h2.3M17.7 17.2H20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+                <svg v-else-if="card.icon === 'society'" viewBox="0 0 32 32" fill="none">
+                  <circle cx="16" cy="8.4" r="2.5" stroke="currentColor" stroke-width="1.6" />
+                  <circle cx="7.2" cy="11.2" r="2.15" stroke="currentColor" stroke-width="1.6" />
+                  <circle cx="24.8" cy="11.2" r="2.15" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M11.3 25c.6-2.9 2.3-4.5 4.7-4.5s4.1 1.6 4.7 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M3.6 25c.5-2.3 1.8-3.5 3.5-3.5 1.1 0 2 .5 2.6 1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M28.4 25c-.5-2.3-1.8-3.5-3.5-3.5-1.1 0-2 .5-2.6 1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                </svg>
+                <svg v-else-if="card.icon === 'postdoc'" viewBox="0 0 32 32" fill="none">
+                  <path d="M4 14 16 8.2 28 14 16 19.8 4 14z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                  <path d="M10 16.5V22c0 1.5 2.6 3.1 6 3.1s6-1.6 6-3.1v-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                  <path d="M28 14v7.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <circle cx="28" cy="22.8" r="1.15" stroke="currentColor" stroke-width="1.4" />
+                </svg>
+                <svg v-else viewBox="0 0 32 32" fill="none">
+                  <circle cx="11" cy="11" r="3" stroke="currentColor" stroke-width="1.6" />
+                  <path d="M5.1 25c.7-3.6 2.8-5.4 5.9-5.4 1.9 0 3.4.7 4.4 1.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M17.6 16.4H27" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                  <path d="M23.2 12.5 27.2 16.4 23.2 20.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </span>
+              <span class="job-card-title">{{ card.title }}</span>
+              </span>
+            </router-link>
+          </nav>
         </div>
 
         <aside class="notice-col" aria-label="通知公告">
@@ -67,9 +107,9 @@
             <router-link :to="{ name: 'homeNews' }">更多</router-link>
           </header>
           <ul v-if="notices.length" class="notice-list">
-            <li v-for="item in notices" :key="item.id" tabindex="0" @click="goToNotice(item.id)" @keyup.enter="goToNotice(item.id)">
-              <span class="notice-text" v-html="item.title"></span>
-              <time v-if="formatDate(item.createTime)">{{ formatDate(item.createTime) }}</time>
+            <li v-for="item in notices" :key="item.id" tabindex="0" @click="openOfficialNotice(item)" @keyup.enter="openOfficialNotice(item)">
+              <span class="notice-text">{{ item.title }}</span>
+              <time v-if="formatDate(item.newsDate)">{{ formatDate(item.newsDate) }}</time>
             </li>
           </ul>
           <p v-else class="col-state">暂无通知</p>
@@ -112,7 +152,6 @@
   import { ref, onMounted, onBeforeUnmount, watchEffect } from 'vue';
   import { defHttp } from '@/utils/http/axios';
   import { router } from '@/router';
-  import { getDictItems, getPositionList } from '@/api/xgsrms/home';
   import campusGate from '@/assets/images/campus_gate.jpg';
   import campusFacade from '@/assets/images/campus_facade.jpg';
   import campusLawn from '@/assets/images/campus_lawn.jpg';
@@ -158,19 +197,8 @@
   interface NoticeItem {
     id: string;
     title: string;
-    createTime?: string;
-  }
-
-  interface JobRow {
-    id: string;
-    positionName: string;
-    dept: string;
-    date: string;
-  }
-
-  interface CategoryGroup {
-    name: string;
-    jobs: JobRow[];
+    newsDate?: string;
+    href?: string;
   }
 
   const listUrl = '/xgsJournalism/xgsJournalism/listForHomeNews';
@@ -267,7 +295,8 @@
         notices.value = response.records.map((item: any) => ({
           id: item.id,
           title: item.journalismHead,
-          createTime: item.createTime,
+          newsDate: item.newsDate,
+          href: item.href,
         }));
       }
     } catch (error) {
@@ -275,92 +304,29 @@
     }
   };
 
-  const goToNotice = (itemId: string) => {
-    router.push({ name: 'newsDetail', params: { id: itemId } });
-  };
-
-  const categoryGroups = ref<CategoryGroup[]>([]);
-  const categoriesLoading = ref(true);
-  const POSITION_TYPE_ORDER = ['科研', '管理', '支撑'];
-  const JOBS_PER_CATEGORY = 2;
-  /**
-   * 岗位表和门户列表都没有热度、浏览量或排序字段。
-   * 只有接口本身带回真实计数时才按它取前两名，不编造热度。
-   */
-  const HEAT_FIELDS = ['applyCount', 'viewCount', 'hits', 'heat', 'browseCount', 'favoriteCount'] as const;
-
-  const heatValue = (job: any) => {
-    for (const key of HEAT_FIELDS) {
-      const raw = job?.[key];
-      if (raw === undefined || raw === null || raw === '') continue;
-      const value = Number(raw);
-      if (Number.isFinite(value)) return value;
+  const openOfficialNotice = (item: NoticeItem) => {
+    const href = (item.href || '').trim();
+    if (/^https?:\/\//i.test(href)) {
+      window.open(href, '_blank', 'noopener,noreferrer');
     }
-    return null;
   };
 
-  const takeHottest = (records: any[]) => {
-    const ranked = records.map((job, index) => ({ job, index, heat: heatValue(job) }));
-    if (ranked.some((item) => item.heat !== null)) {
-      ranked.sort((a, b) => (b.heat ?? Number.NEGATIVE_INFINITY) - (a.heat ?? Number.NEGATIVE_INFINITY) || a.index - b.index);
-    }
-    return ranked.slice(0, JOBS_PER_CATEGORY).map((item) => item.job);
-  };
+  const recruitCards = [
+    { title: '校园招聘', positionType: '校园招聘', icon: 'campus', place: 'campus' },
+    { title: '社会招聘', positionType: '社会招聘', icon: 'society', place: 'society' },
+    { title: '高层次人才', positionType: '引进高层次人才', icon: 'talent', place: 'talent' },
+    { title: '博士后', positionType: '博士后招聘', icon: 'postdoc', place: 'postdoc' },
+    { title: '劳务派遣', positionType: '劳务派遣招聘', icon: 'dispatch', place: 'dispatch' },
+  ];
 
-  const orderPositionTypes = (names: string[]) =>
-    [...names].sort((a, b) => {
-      const rank = (name: string) => {
-        const index = POSITION_TYPE_ORDER.indexOf(name);
-        return index === -1 ? POSITION_TYPE_ORDER.length : index;
-      };
-      return rank(a) - rank(b);
+  const jobKeyword = ref('');
+
+  const searchJobs = () => {
+    const keyword = jobKeyword.value.trim();
+    router.push({
+      name: 'homePositions',
+      query: keyword ? { keyword } : {},
     });
-
-  const fetchCategoryGroups = async () => {
-    categoriesLoading.value = true;
-    try {
-      const res = await getDictItems({ dictCode: '岗位类型' });
-      const list = res && res.success && Array.isArray(res.result) ? res.result : [];
-      const names = orderPositionTypes(
-        list
-          .map((item: any) => String(item?.title || item?.text || item?.label || '').trim())
-          .filter((name: string) => !!name),
-      );
-
-      const groups = await Promise.all(
-        names.map(async (name: string) => {
-          try {
-            const jobRes = await getPositionList({
-              pageNo: 1,
-              pageSize: 100,
-              status: '招聘中',
-              positionType: name,
-            });
-            const records = jobRes && jobRes.success && jobRes.result ? jobRes.result.records || [] : [];
-            const jobs: JobRow[] = takeHottest(records).map((job: any) => ({
-              id: String(job.id),
-              positionName: job.positionName || '',
-              dept: job.dept_dictText || '',
-              date: formatDate(job.createTime || job.updateTime),
-            }));
-            return { name, jobs };
-          } catch (error) {
-            console.error('加载分类岗位失败:', name, error);
-            return { name, jobs: [] as JobRow[] };
-          }
-        }),
-      );
-      categoryGroups.value = groups;
-    } catch (error) {
-      console.error('getDictItems(岗位类型) failed', error);
-      categoryGroups.value = [];
-    } finally {
-      categoriesLoading.value = false;
-    }
-  };
-
-  const goToPosition = (id: string) => {
-    router.push({ name: 'positionDetail', params: { id } });
   };
 
   const formatDate = (value?: string) => {
@@ -372,7 +338,6 @@
   onMounted(() => {
     fetchCarouselImages();
     fetchNotices();
-    fetchCategoryGroups();
     startCarousel();
     startCampusCarousel();
   });
@@ -576,8 +541,7 @@
     background: #004098;
   }
 
-  .col-head a,
-  .category-head a {
+  .col-head a {
     color: #004098;
     font-size: 14px;
     letter-spacing: 0.08em;
@@ -585,15 +549,89 @@
     transition: color 200ms ease;
   }
 
-  .col-head a::after,
-  .category-head a::after {
+  .col-head a::after {
     content: '›';
     margin-left: 4px;
   }
 
-  .col-head a:hover,
-  .category-head a:hover {
+  .col-head a:hover {
     color: #003067;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .job-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 22px;
+    padding: 6px 6px 6px 22px;
+    background: #f7f6f3;
+    border: 1px solid #d5deea;
+    border-radius: 999px;
+    box-shadow: 0 10px 28px rgba(16, 36, 63, 0.06);
+  }
+
+  .job-search:focus-within {
+    border-color: #004098;
+    box-shadow: 0 0 0 4px rgba(0, 64, 152, 0.12);
+  }
+
+  .job-search input {
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #1c1917;
+    font: inherit;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    outline: none;
+  }
+
+  .job-search input::placeholder {
+    color: #8a8178;
+  }
+
+  .job-search input::-webkit-search-cancel-button,
+  .job-search input::-webkit-search-decoration {
+    display: none;
+  }
+
+  .job-search button {
+    flex: none;
+    height: 48px;
+    min-width: 108px;
+    padding: 0 28px;
+    border: 0;
+    border-radius: 999px;
+    background: #004098;
+    color: #fff;
+    font: inherit;
+    font-size: 16px;
+    letter-spacing: 0.16em;
+    cursor: pointer;
+    transition: background-color 200ms ease, transform 200ms ease;
+  }
+
+  .job-search button:hover {
+    background: #003067;
+  }
+
+  .job-search button:active {
+    transform: translateY(1px);
   }
 
   .col-state {
@@ -604,107 +642,137 @@
     font-size: 14px;
   }
 
-  .job-quiet {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 14px 16px;
-    border-bottom: 1px solid #e6e6e6;
-    color: #8a8a8a;
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: calc(2 * (14px + 14px + 1.6 * 16px + 1px));
+  .jobs-col {
+    container-type: inline-size;
   }
 
-  .category {
-    animation: rise 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  .job-cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.22fr) minmax(0, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
   }
 
-  .category:nth-of-type(2) { animation-delay: 70ms; }
-  .category:nth-of-type(3) { animation-delay: 140ms; }
-  .category:nth-of-type(4) { animation-delay: 210ms; }
+  .job-card--campus { grid-column: 1; grid-row: 1; }
+  .job-card--society { grid-column: 3; grid-row: 1; }
+  .job-card--talent { grid-column: 2; grid-row: 1 / span 2; }
+  .job-card--postdoc { grid-column: 1; grid-row: 2; }
+  .job-card--dispatch { grid-column: 3; grid-row: 2; }
 
-  .category + .category {
-    margin-top: 32px;
-  }
-
-  .category-head {
+  .job-card {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 8px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 148px;
+    padding: 22px 16px;
+    border: 1px solid #d5deea;
+    border-radius: 0;
+    background: #fff;
+    color: #142033;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
   }
 
-  .category-head h3 {
+  .job-card--society,
+  .job-card--postdoc {
+    background: #f4f7fb;
+  }
+
+  .job-card--talent {
+    min-height: 0;
+    padding: 28px 20px;
+    border-color: #004098;
+    background: #004098;
+    color: #fff;
+  }
+
+  .job-card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .job-card-icon {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin: 0;
-    font-size: 16px;
-    font-weight: 650;
-    letter-spacing: 0.08em;
-    color: #1c1917;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    background: rgba(0, 64, 152, 0.16);
+    color: #004098;
   }
 
-  .category-head h3::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    background: #004098;
+  .job-card-icon svg {
+    width: 30px;
+    height: 30px;
   }
 
-  .job-list,
+  .job-card--talent .job-card-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+  }
+
+  .job-card--talent .job-card-icon svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .job-card-title {
+    margin-top: 14px;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.35;
+    letter-spacing: 0.06em;
+    color: #142033;
+  }
+
+  .job-card--talent .job-card-title {
+    font-size: 28px;
+    color: #fff;
+  }
+
+  .job-card:hover,
+  .job-card:focus-visible {
+    border-color: #003067;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(0, 64, 152, 0.14);
+  }
+
+  .job-card--talent:hover,
+  .job-card--talent:focus-visible {
+    border-color: #003067;
+    background: #003067;
+  }
+
+  @container (max-width: 680px) {
+    .job-cards {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .job-card--talent { grid-column: 1 / -1; grid-row: 1; min-height: 148px; }
+    .job-card--campus { grid-column: 1; grid-row: 2; }
+    .job-card--society { grid-column: 2; grid-row: 2; }
+    .job-card--postdoc { grid-column: 1; grid-row: 3; }
+    .job-card--dispatch { grid-column: 2; grid-row: 3; }
+
+    .job-card--talent .job-card-title {
+      font-size: 24px;
+    }
+  }
+
   .notice-list {
     list-style: none;
     margin: 0;
     padding: 0;
-  }
-
-  .job-list {
-    box-sizing: border-box;
-    min-height: calc(2 * (14px + 14px + 1.6 * 16px + 1px));
-  }
-
-  .job-list li {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 24px;
-    padding: 14px 16px;
-    border-bottom: 1px solid #e6e6e6;
-    border-left: 3px solid transparent;
-    cursor: pointer;
-    background: #fff;
-    transition: background-color 200ms ease, border-color 200ms ease;
-  }
-
-  .job-list li:hover,
-  .job-list li:focus-visible {
-    background: #f3f6fb;
-    border-left-color: #004098;
-  }
-
-  .job-list li:hover .job-name,
-  .job-list li:focus-visible .job-name {
-    color: #004098;
-  }
-
-  .job-name {
-    min-width: 0;
-    font-size: 16px;
-    font-weight: 400;
-    color: #444444;
-    line-height: 1.6;
-    transition: color 200ms ease;
-  }
-
-  .job-side {
-    flex: none;
-    display: flex;
-    align-items: baseline;
-    gap: 16px;
-    color: #8a8a8a;
-    font-size: 14px;
   }
 
   .notice-col {
@@ -879,10 +947,10 @@
     outline-offset: 3px;
   }
 
-  .job-list li:focus-visible,
+  .job-search button:focus-visible,
+  .job-card:focus-visible,
   .notice-list li:focus-visible,
-  .col-head a:focus-visible,
-  .category-head a:focus-visible {
+  .col-head a:focus-visible {
     outline: 2px solid #004098;
     outline-offset: 3px;
   }
@@ -899,7 +967,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .hero-media,
-    .category,
+    .job-card,
     .notice-list li,
     .campus-slide {
       animation: none;
@@ -936,14 +1004,14 @@
       row-gap: 48px;
     }
 
-    .job-list li {
-      flex-direction: column;
-      gap: 4px;
+    .job-search {
+      padding-left: 16px;
     }
 
-    .job-list,
-    .job-quiet {
-      min-height: calc(2 * (14px + 14px + 1.6 * 16px + 4px + 1.6 * 14px + 1px));
+    .job-search button {
+      min-width: 84px;
+      padding: 0 18px;
+      letter-spacing: 0.08em;
     }
   }
 </style>

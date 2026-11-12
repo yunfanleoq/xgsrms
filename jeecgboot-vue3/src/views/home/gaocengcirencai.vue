@@ -1,5 +1,53 @@
 <template>
   <div class="portal-page talent-page">
+    <div class="talent-layout">
+      <nav class="cat-nav" aria-label="岗位分类">
+        <p class="cat-nav-title">岗位分类</p>
+        <ul>
+          <li v-for="item in navItems" :key="item.key">
+            <div class="cat-row">
+              <button
+                type="button"
+                class="cat-btn"
+                :class="{
+                  'is-current': selected === item.key,
+                  'is-ancestor': item.key === 'talent' && talentChildActive,
+                }"
+                :aria-current="selected === item.key ? 'page' : undefined"
+                @click="selectNav(item.key)"
+              >
+                {{ item.label }}
+              </button>
+              <button
+                v-if="item.children"
+                type="button"
+                class="cat-toggle"
+                :aria-expanded="talentOpen"
+                aria-label="展开或收起引进高层次人才"
+                @click="talentOpen = !talentOpen"
+              >
+                <span class="chevron" :class="{ open: talentOpen }" aria-hidden="true"></span>
+              </button>
+            </div>
+            <ul v-if="item.children && talentOpen" class="cat-sub">
+              <li v-for="child in item.children" :key="child.key">
+                <button
+                  type="button"
+                  class="cat-btn cat-btn--sub"
+                  :class="{ 'is-current': selected === child.key }"
+                  :aria-current="selected === child.key ? 'page' : undefined"
+                  @click="selectNav(child.key)"
+                >
+                  {{ child.label }}
+                </button>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="talent-main">
+        <template v-if="showOverview">
     <section class="hero">
       <img src="@/assets/images/talent_hero_campus.jpg" alt="中国科学院信息工程研究所" class="hero-bg" />
       <div class="hero-overlay">
@@ -11,7 +59,14 @@
     </section>
 
     <section class="offers">
-      <article v-for="(track, index) in tracks" :key="track.key" class="offer" :class="'offer--' + track.key">
+      <article
+        v-for="(track, index) in tracks"
+        :id="'talent-track-' + track.key"
+        :key="track.key"
+        class="offer"
+        :class="['offer--' + track.key, { 'offer--current': selected === track.key }]"
+      >
+        <p v-if="selected === track.key" class="offer-current-tag">当前</p>
         <p class="offer-index" aria-hidden="true">{{ ['壹', '贰', '叁'][index] }}</p>
         <h3>{{ track.title }}</h3>
         <p class="track-official">{{ track.official }}</p>
@@ -21,12 +76,6 @@
         </div>
       </article>
     </section>
-
-    <p class="source-note">
-      任职要求与支持条件引自研究所官网
-      <a :href="officialSource" target="_blank" rel="noopener noreferrer">《中国科学院信息工程研究所（国家级/院级）人才项目及岗位招聘启事（长期有效）》</a>。
-      官网按人才项目分列，未单列岗位职责；本页三类栏目与官网栏目的对应关系写在各卡片标题下方。
-    </p>
 
     <section class="benefit sheet">
       <h2>岗位待遇</h2>
@@ -43,10 +92,8 @@
           截至2025年12月，研究所共有职工1521人，其中正式聘用职工929人、在站博士后44人；正式职工中，硕士及以上学位的占93.22%，其中博士学位占41.01%。共有2人获杰青和国家级领军人才计划支持、有12人获国家“四小青”人才项目支持、29人获院级人才项目支持、13人获国务院特殊津贴等。2024年信工所荣获“网安人才培养基地”称号。
         </p>
 
-        <h3>人才风采展示</h3>
         <figure class="talent-gallery">
           <img src="@/assets/images/talent_gallery_scene.jpg" alt="研究所阅览与研究场景" />
-          <figcaption>人才风采</figcaption>
         </figure>
       </section>
 
@@ -71,6 +118,28 @@
         <p>联系方式：010-82345079，邮箱：lilin@iie.ac.cn</p>
       </div>
     </section>
+        </template>
+
+        <section v-else class="job-board">
+          <h2>{{ listTitle }}</h2>
+          <p v-if="jobsLoading" class="empty-jobs">正在加载在招岗位</p>
+          <p v-else-if="jobsFailed" class="empty-jobs">在招岗位暂时无法加载</p>
+          <p v-else-if="!listedJobs.length" class="empty-jobs">暂无在招岗位</p>
+          <ul v-else class="open-jobs">
+            <li v-for="job in listedJobs" :key="job.id" class="open-job">
+              <div class="open-job-copy">
+                <h3>{{ job.positionName }}</h3>
+                <p>{{ job.dept || '未标明部门' }}</p>
+              </div>
+              <div class="open-job-actions">
+                <button type="button" class="btn-view" :aria-label="'查看' + job.positionName" @click="goDetail(job.id)">查看</button>
+                <button type="button" class="btn-apply" :aria-label="'投递' + job.positionName" @click="goDetail(job.id)">投递</button>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
+    </div>
 
     <div v-if="activeTrack" class="modal-mask" @click.self="activeTrack = null">
       <div class="modal" role="dialog" aria-modal="true" :aria-labelledby="'track-dialog-title'">
@@ -103,12 +172,81 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { computed, nextTick, onMounted, ref } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import { message } from 'ant-design-vue';
+  import { getPositionList } from '/@/api/xgsrms/home';
 
+  const route = useRoute();
   const router = useRouter();
 
-  const officialSource = 'https://iie.cas.cn/yjdw/rczp/202512/t20251203_8021360.html';
+  type NavKey = 'talent' | 'leader' | 'overseas' | 'youth' | 'senior' | 'campus' | 'social' | 'postdoc' | 'dispatch';
+
+  type NavItem = {
+    key: NavKey;
+    label: string;
+    children?: { key: NavKey; label: string }[];
+  };
+
+  const navItems: NavItem[] = [
+    {
+      key: 'talent',
+      label: '引进高层次人才',
+      children: [
+        { key: 'leader', label: '高层次领军人才' },
+        { key: 'overseas', label: '海外优青' },
+        { key: 'youth', label: '高层次青年人才' },
+        { key: 'senior', label: '其他副高及以上岗位' },
+      ],
+    },
+    { key: 'campus', label: '校园招聘' },
+    { key: 'social', label: '社会招聘' },
+    { key: 'postdoc', label: '博士后' },
+    { key: 'dispatch', label: '劳务派遣' },
+  ];
+
+  const TALENT_PARENT = '引进高层次人才';
+  const TRACK_LABELS: Record<'leader' | 'overseas' | 'youth', string> = {
+    leader: '高层次领军人才',
+    overseas: '海外优青',
+    youth: '高层次青年人才',
+  };
+  const SENIOR_ALIASES = ['其他副高及以上岗位', '副高级以上岗位', '副高级岗位', '副高及以上岗位'];
+  const GROUP_ALIASES: Record<'campus' | 'social' | 'postdoc' | 'dispatch', string[]> = {
+    campus: ['校园招聘', '校园招聘岗位', '校招'],
+    social: ['社会招聘', '社会招聘岗位', '社招'],
+    postdoc: ['博士后招聘', '博士后岗位', '博士后'],
+    dispatch: ['劳务派遣招聘', '劳务派遣', '人才派遣岗位', '人才派遣', '派遣岗位'],
+  };
+  const LIST_TITLES: Record<'senior' | 'campus' | 'social' | 'postdoc' | 'dispatch', string> = {
+    senior: '其他副高及以上岗位',
+    campus: '校园招聘',
+    social: '社会招聘',
+    postdoc: '博士后',
+    dispatch: '劳务派遣',
+  };
+  const CLOSED_STATUS = new Set(['草稿', '审核未通过', '审核通过', '已结束', '停止招聘', '已关闭']);
+
+  const selected = ref<NavKey>('talent');
+  const talentOpen = ref(true);
+  const talentChildActive = computed(() => ['leader', 'overseas', 'youth', 'senior'].includes(selected.value));
+  const showOverview = computed(() => ['talent', 'leader', 'overseas', 'youth'].includes(selected.value));
+  const listTitle = computed(() => LIST_TITLES[selected.value as keyof typeof LIST_TITLES] || '');
+
+  const selectNav = async (key: NavKey) => {
+    selected.value = key;
+    if (key === 'talent' || key === 'leader' || key === 'overseas' || key === 'youth' || key === 'senior') {
+      talentOpen.value = true;
+    }
+    await nextTick();
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const behavior = reduce ? 'auto' : 'smooth';
+    if (key === 'leader' || key === 'overseas' || key === 'youth') {
+      document.getElementById('talent-track-' + key)?.scrollIntoView({ behavior, block: 'center' });
+      return;
+    }
+    document.querySelector('.talent-main')?.scrollIntoView({ behavior, block: 'start' });
+  };
 
   const discipline =
     '网络空间安全类，包括但不限于：密码理论与安全协议、信息智能处理、数据安全、通信与电磁安全、网络与系统技术、信息系统测评等。';
@@ -192,19 +330,184 @@
     activeTrack.value = track;
   };
 
-  const APPLY_PROGRAM: Record<string, string> = {
-    leader: '领军',
-    overseas: '海外优青',
-    youth: '高层次青年',
+  const applying = ref(false);
+
+  const talentPositionIds: Record<string, string> = {
+    高层次领军人才: '202611092350020001',
+    海外优青: '202611092350020002',
+    高层次青年人才: '202611092350020003',
   };
 
-  const goApply = (track: Track | null) => {
-    if (!track) return;
-    const program = APPLY_PROGRAM[track.key];
-    if (!program) return;
+  const goApply = async (track: Track | null) => {
+    if (!track || applying.value) return;
+    applying.value = true;
     activeTrack.value = null;
-    router.push({ name: 'homeTalentApply', query: { program } });
+    try {
+      const knownId = talentPositionIds[track.title];
+      const res = await getPositionList({
+        pageNo: 1,
+        pageSize: 20,
+        status: '招聘中',
+        positionType: '引进高层次人才',
+        positionName: track.title,
+        positionSubtype: track.title,
+      });
+      const records = res && res.success && res.result ? res.result.records || [] : [];
+      const job = records.find((item: { id?: string }) => String(item?.id) === knownId)
+        || records.find(
+          (item: { positionName?: string; positionSubtype?: string; positionType?: string }) =>
+            item?.positionName === track.title
+            && (item?.positionSubtype === track.title || item?.positionType === '引进高层次人才'),
+        );
+      const id = job?.id || knownId;
+      if (!id) {
+        message.warning('该岗位暂未开放投递');
+        return;
+      }
+      await router.push({
+        name: 'positionDetail',
+        params: { id: String(id) },
+        query: { from: route.fullPath },
+      });
+    } catch (error) {
+      const knownId = track ? talentPositionIds[track.title] : '';
+      if (knownId) {
+        await router.push({
+          name: 'positionDetail',
+          params: { id: knownId },
+          query: { from: route.fullPath },
+        });
+        return;
+      }
+      console.error('打开岗位投递失败', error);
+      message.error('打开岗位失败，请稍后再试');
+    } finally {
+      applying.value = false;
+    }
   };
+
+  type OpenJob = {
+    id: string;
+    positionName: string;
+    dept: string;
+    positionType: string;
+    positionSubtype: string;
+    category: string;
+    status: string;
+  };
+
+  const openJobs = ref<OpenJob[]>([]);
+  const jobsLoading = ref(false);
+  const jobsFailed = ref(false);
+
+  const fieldText = (value?: string) => (value || '').trim();
+
+  const matchesNamedTrack = (job: OpenJob, title: string) => {
+    const type = fieldText(job.positionType);
+    const subtype = fieldText(job.positionSubtype);
+    const category = fieldText(job.category);
+    const name = fieldText(job.positionName);
+    if (subtype === title || type === title || category === title || name === title) return true;
+    if (type === TALENT_PARENT && (subtype === title || category === title || name === title)) return true;
+    if (category === TALENT_PARENT && (type === title || subtype === title || name === title)) return true;
+    return false;
+  };
+
+  const matchesAlias = (job: OpenJob, aliases: string[]) => {
+    const type = fieldText(job.positionType);
+    const subtype = fieldText(job.positionSubtype);
+    const category = fieldText(job.category);
+    if (aliases.includes(type) || aliases.includes(subtype) || aliases.includes(category)) return true;
+    if (type === TALENT_PARENT && (aliases.includes(subtype) || aliases.includes(category))) return true;
+    if (category === TALENT_PARENT && (aliases.includes(type) || aliases.includes(subtype))) return true;
+    return false;
+  };
+
+  const classifyJob = (job: OpenJob): NavKey | null => {
+    if (matchesNamedTrack(job, TRACK_LABELS.leader)) return 'leader';
+    if (matchesNamedTrack(job, TRACK_LABELS.overseas)) return 'overseas';
+    if (matchesNamedTrack(job, TRACK_LABELS.youth)) return 'youth';
+    if (matchesAlias(job, SENIOR_ALIASES)) return 'senior';
+    if (fieldText(job.positionType) === TALENT_PARENT || fieldText(job.category) === TALENT_PARENT) return 'senior';
+    const blob = `${fieldText(job.positionType)}|${fieldText(job.positionSubtype)}|${fieldText(job.category)}`;
+    if (matchesAlias(job, GROUP_ALIASES.postdoc) || blob.includes('博士后')) return 'postdoc';
+    if (matchesAlias(job, GROUP_ALIASES.campus) || blob.includes('校园招聘') || blob.includes('校招')) return 'campus';
+    if (matchesAlias(job, GROUP_ALIASES.social) || blob.includes('社会招聘') || blob.includes('社招')) return 'social';
+    if (matchesAlias(job, GROUP_ALIASES.dispatch) || blob.includes('劳务派遣') || blob.includes('人才派遣')) return 'dispatch';
+    if (blob.includes('副高')) return 'senior';
+    return null;
+  };
+
+  const listedJobs = computed(() => {
+    const key = selected.value;
+    if (!(key in LIST_TITLES)) return [];
+    return openJobs.value.filter((job) => classifyJob(job) === key);
+  });
+
+  const toOpenJob = (item: {
+    id?: string;
+    positionName?: string;
+    dept?: string;
+    dept_dictText?: string;
+    positionType?: string;
+    positionSubtype?: string;
+    category?: string;
+    category_dictText?: string;
+    status?: string;
+    deleted?: string;
+  }): OpenJob | null => {
+    if (!item?.id || item.deleted === 'Y' || item.deleted === '1') return null;
+    const status = fieldText(item.status);
+    if (status && CLOSED_STATUS.has(status)) return null;
+    const deptName = fieldText(item.dept_dictText);
+    const rawDept = fieldText(item.dept);
+    return {
+      id: String(item.id),
+      positionName: item.positionName || '',
+      dept: deptName || (/^\d{6,}$/.test(rawDept) ? '' : rawDept),
+      positionType: item.positionType || '',
+      positionSubtype: item.positionSubtype || '',
+      category: item.category_dictText || item.category || '',
+      status,
+    };
+  };
+
+  const loadOpenJobs = async () => {
+    jobsLoading.value = true;
+    jobsFailed.value = false;
+    try {
+      const pageSize = 100;
+      const first = await getPositionList({ pageNo: 1, pageSize, status: '招聘中' });
+      const result = first && first.success ? first.result : null;
+      const records = [...((result && result.records) || [])];
+      const total = Number((result && result.total) || records.length);
+      const pages = Math.min(Math.ceil(total / pageSize) || 1, 5);
+      for (let page = 2; page <= pages; page += 1) {
+        const more = await getPositionList({ pageNo: page, pageSize, status: '招聘中' });
+        const extra = more && more.success && more.result ? more.result.records || [] : [];
+        records.push(...extra);
+      }
+      openJobs.value = records.map(toOpenJob).filter((job): job is OpenJob => !!job);
+    } catch (error) {
+      console.error('加载在招岗位失败', error);
+      jobsFailed.value = true;
+      openJobs.value = [];
+    } finally {
+      jobsLoading.value = false;
+    }
+  };
+
+  const goDetail = (id: string) => {
+    router.push({
+      name: 'positionDetail',
+      params: { id },
+      query: { from: route.fullPath },
+    });
+  };
+
+  onMounted(() => {
+    loadOpenJobs();
+  });
 
   const policies = [
     {
@@ -248,11 +551,142 @@
 
 <style scoped>
   .talent-page {
+    color: #243044;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Songti SC', sans-serif;
+  }
+
+  .talent-layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .talent-main {
     display: flex;
     flex-direction: column;
     gap: 24px;
+    min-width: 0;
+    scroll-margin-top: 112px;
+  }
+
+  .cat-nav {
+    position: sticky;
+    top: 108px;
+    z-index: 2;
+    width: 220px;
+    background: #fff;
+    border: 1px solid #d5deea;
+    border-top: 3px solid #004098;
+    padding: 16px 12px 14px;
+  }
+
+  .cat-nav-title {
+    margin: 0 8px 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e4e9f0;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #142033;
+  }
+
+  .cat-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .cat-row {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+  }
+
+  .cat-btn {
+    flex: 1;
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 0;
+    background: transparent;
     color: #243044;
-    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Songti SC', sans-serif;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.45;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .cat-btn:hover {
+    background: #f3f6fb;
+    color: #004098;
+  }
+
+  .cat-btn.is-ancestor {
+    color: #004098;
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 #004098;
+  }
+
+  .cat-btn.is-current {
+    background: #004098;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .cat-btn.is-current:hover {
+    background: #003067;
+    color: #fff;
+  }
+
+  .cat-btn--sub {
+    min-height: 38px;
+    padding-left: 22px;
+    font-size: 14px;
+    font-weight: 400;
+  }
+
+  .cat-sub {
+    margin: 2px 0 6px;
+  }
+
+  .cat-toggle {
+    flex: none;
+    width: 36px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .cat-toggle:hover {
+    background: #f3f6fb;
+  }
+
+  .chevron {
+    display: block;
+    width: 8px;
+    height: 8px;
+    margin: 0 auto;
+    border-right: 2px solid #004098;
+    border-bottom: 2px solid #004098;
+    transform: rotate(45deg);
+  }
+
+  .chevron.open {
+    transform: rotate(225deg);
+    margin-top: 4px;
+  }
+
+  .cat-btn:focus-visible,
+  .cat-toggle:focus-visible {
+    outline: 2px solid #004098;
+    outline-offset: 2px;
+  }
+
+  .cat-btn.is-current:focus-visible {
+    outline-color: #fff;
   }
 
   .hero {
@@ -331,10 +765,39 @@
   }
 
   .offer {
+    position: relative;
     display: flex;
     flex-direction: column;
     min-width: 0;
     padding: 28px 26px 24px;
+    scroll-margin-top: 128px;
+  }
+
+  .offer--current {
+    outline: 2px solid #004098;
+    outline-offset: -2px;
+  }
+
+  .offer--leader.offer--current {
+    outline-color: #fff;
+  }
+
+  .offer-current-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    margin: 0;
+    padding: 2px 8px;
+    background: #004098;
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    line-height: 1.6;
+  }
+
+  .offer--leader .offer-current-tag {
+    background: #fff;
+    color: #004098;
   }
 
   .offer--leader {
@@ -464,7 +927,6 @@
 
   .btn-view:focus-visible,
   .btn-apply:focus-visible,
-  .source-note a:focus-visible,
   .policy-group a:focus-visible {
     outline: 2px solid #004098;
     outline-offset: 3px;
@@ -473,29 +935,6 @@
   .offer--leader .btn-view:focus-visible,
   .offer--leader .btn-apply:focus-visible {
     outline-color: #fff;
-  }
-
-  .source-note {
-    margin: 0;
-    padding: 18px 22px 18px 20px;
-    border: 1px solid #d5deea;
-    border-left: 4px solid #004098;
-    background: #fff;
-    color: #3e4c5f;
-    font-size: 15px;
-    line-height: 1.85;
-    text-align: left;
-  }
-
-  .source-note a {
-    color: #004098;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: color 160ms ease;
-  }
-
-  .source-note a:hover {
-    color: #003067;
   }
 
   .sheet {
@@ -560,7 +999,7 @@
   }
 
   .talent-gallery {
-    margin: 0;
+    margin: 28px 0 0;
     border: 1px solid #004098;
     background: #fff;
   }
@@ -570,17 +1009,6 @@
     width: 100%;
     height: 280px;
     object-fit: cover;
-  }
-
-  .talent-gallery figcaption {
-    margin: 0;
-    padding: 10px 14px;
-    border-top: 3px solid #004098;
-    color: #004098;
-    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
-    font-size: 16px;
-    letter-spacing: 0.28em;
-    text-align: center;
   }
 
   .policy-group {
@@ -642,6 +1070,75 @@
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     gap: 8px 32px;
+  }
+
+  .job-board h2 {
+    margin-bottom: 20px;
+  }
+
+  .open-jobs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .open-job {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 168px;
+    padding: 22px 22px 18px;
+    background: #fff;
+    border: 1px solid #d5deea;
+    border-top: 3px solid #004098;
+  }
+
+  .open-job:nth-child(even) {
+    background: #f4f7fb;
+  }
+
+  .open-job-copy {
+    min-width: 0;
+  }
+
+  .open-job-copy h3 {
+    margin: 0 0 8px;
+    font-family: 'Songti SC', 'STSong', 'SimSun', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+    color: #142033;
+  }
+
+  .open-job-copy p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #3e4c5f;
+    text-align: left;
+  }
+
+  .open-job-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 20px;
+  }
+
+  .empty-jobs {
+    margin: 8px 0 0;
+    padding: 28px 16px;
+    border: 1px dashed #d5deea;
+    background: #f7f7f7;
+    color: #3e4c5f;
+    font-size: 16px;
+    letter-spacing: 0.08em;
+    text-align: center;
   }
 
   .modal-mask {
@@ -731,6 +1228,15 @@
   }
 
   @media (max-width: 1080px) {
+    .talent-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .cat-nav {
+      position: static;
+      width: 100%;
+    }
+
     .offers,
     .main-grid,
     .contact-lines {
@@ -770,6 +1276,10 @@
     .talent-page h2,
     .modal h3 {
       font-size: 24px;
+    }
+
+    .open-jobs {
+      grid-template-columns: 1fr;
     }
   }
 

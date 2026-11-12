@@ -14,11 +14,21 @@
 </script>
 
 <style scoped>
+  .salary-page {
+    color: #1c2430;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
+  }
+
   .salary-page.portal-page .page-head h1 {
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
+    margin-bottom: 20px;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
+    font-size: 36px;
     font-weight: 600;
-    letter-spacing: 0.06em;
-    color: #141414;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: #1a1a1a;
   }
 
   .salary-page.portal-page .page-card {
@@ -26,6 +36,11 @@
   }
 
   @media (max-width: 720px) {
+    .salary-page.portal-page .page-head h1 {
+      font-size: 28px;
+      letter-spacing: 0.04em;
+    }
+
     .salary-page.portal-page .page-card {
       padding: 22px 16px 28px;
     }

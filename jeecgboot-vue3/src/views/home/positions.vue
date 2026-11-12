@@ -13,7 +13,20 @@
         :class="{ active: selectedPositionType === typeName }"
         @click="selectPositionType(typeName)"
       >
-        {{ typeName }}
+        {{ positionTypeLabel(typeName) }}
+      </button>
+    </div>
+    <div v-if="selectedPositionType === talentParent" class="subtype-bar" role="tablist" aria-label="引进高层次人才子项">
+      <button type="button" class="subtype-link" :class="{ active: !selectedPositionSubtype }" @click="selectPositionSubtype(null)">全部</button>
+      <button
+        v-for="subName in talentSubtypes"
+        :key="subName"
+        type="button"
+        class="subtype-link"
+        :class="{ active: selectedPositionSubtype === subName }"
+        @click="selectPositionSubtype(subName)"
+      >
+        {{ subName }}
       </button>
     </div>
     <main class="content">
@@ -190,7 +203,7 @@
   import { ref, computed, onMounted, reactive, watch } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { usePositionStore } from '@/store/modules/positions';
-  import {getDictItems, getPositionList, getDeptList, getJobById} from '@/api/xgsrms/home';
+  import {getPositionList, getDeptList, getJobById} from '@/api/xgsrms/home';
   import Line from "@/views/demo/charts/Line.vue";
   import {defHttp} from "@/utils/http/axios";
   // import positionDetail from "@/views/home/positionDetail.vue"
@@ -209,7 +222,16 @@
   const router = useRouter();
   const route = useRoute();
 
-  const positionTypes = ref<string[]>([]);
+  const talentParent = '引进高层次人才';
+  const namedTalentSubtypes = ['高层次领军人才', '海外优青', '高层次青年人才'];
+  const talentSubtypes = [...namedTalentSubtypes, '其他副高及以上岗位'];
+  const portalPositionTypes = ['引进高层次人才', '校园招聘', '社会招聘', '博士后招聘', '劳务派遣招聘'];
+  const positionTypeLabels: Record<string, string> = {
+    博士后招聘: '博士后',
+    劳务派遣招聘: '劳务派遣',
+  };
+  const positionTypeLabel = (typeName: string) => positionTypeLabels[typeName] || typeName;
+  const positionTypes = ref<string[]>([...portalPositionTypes]);
   const showPositionDetail = ref(false);
   const selectedPosition = ref({});
   // 招聘公告相关数据
@@ -326,7 +348,11 @@
     showPositionDetail.value = false;
     
     // 跳转到详情页
-    await router.push({ name: 'positionDetail', params: { id: String(positionId) } });
+    await router.push({
+      name: 'positionDetail',
+      params: { id: String(positionId) },
+      query: { from: route.fullPath },
+    });
     
     // 路由跳转后立即滚动到顶部
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -334,32 +360,40 @@
     showPositionList.value = false;
   };
 
-  const LEGACY_POSITION_CATEGORIES = ['普通岗位', '副高级以上岗位', '博士后岗位', '人才派遣岗位'];
-  const POSITION_TYPE_ORDER = ['科研', '管理', '支撑'];
-  const FALLBACK_POSITION_TYPES = [...POSITION_TYPE_ORDER];
-
-  const orderPositionTypes = (names: string[]) =>
-    [...names].sort((a, b) => {
-      const rank = (name: string) => {
-        const index = POSITION_TYPE_ORDER.indexOf(name);
-        return index === -1 ? POSITION_TYPE_ORDER.length : index;
-      };
-      return rank(a) - rank(b);
-    });
+  const talentSubtypeOf = (job: { positionSubtype?: string; positionName?: string }) => {
+    const stored = String(job?.positionSubtype || '').trim();
+    if (talentSubtypes.includes(stored)) return stored;
+    const name = String(job?.positionName || '').trim();
+    if (namedTalentSubtypes.includes(name)) return name;
+    return '其他副高及以上岗位';
+  };
 
   const selectPositionType = (type: string | null) => {
     showPositionList.value = true;
     showAnnouncementList.value = false;
     selectedCategory.value = null;
     selectedPositionType.value = type;
+    selectedPositionSubtype.value = null;
     const query: Record<string, string> = {};
     if (type) query.positionType = type;
+    router.push({ name: 'homePositions', query });
+  };
+
+  const selectPositionSubtype = (subtype: string | null) => {
+    showPositionList.value = true;
+    showAnnouncementList.value = false;
+    selectedCategory.value = null;
+    selectedPositionType.value = talentParent;
+    selectedPositionSubtype.value = subtype;
+    const query: Record<string, string> = { positionType: talentParent };
+    if (subtype) query.positionSubtype = subtype;
     router.push({ name: 'homePositions', query });
   };
 
   const searchQuery = ref('');
   const selectedCategory = ref<string | null>(null);
   const selectedPositionType = ref<string | null>(null);
+  const selectedPositionSubtype = ref<string | null>(null);
   const selectedDept = ref(null); // 改为直接存储部门ID
 
   const statusFilter = ref('招聘中'); // 定义状态过滤参数，默认为空
@@ -476,8 +510,18 @@
     if (selectedCategory.value) {
       params.category = selectedCategory.value;
     }
+    const subtype = selectedPositionType.value === talentParent ? selectedPositionSubtype.value : null;
     if (selectedPositionType.value) {
       params.positionType = selectedPositionType.value;
+    }
+    if (subtype) {
+      params.positionSubtype = subtype;
+      if (namedTalentSubtypes.includes(subtype)) {
+        params.positionName = subtype;
+      } else {
+        params.pageNo = 1;
+        params.pageSize = 100;
+      }
     }
 
     // 添加部门筛选
@@ -493,9 +537,24 @@
     getPositionList(params)
       .then((res) => {
         if (res && res.success) {
-          let list = res.result;
-          positions.value = list.records;
-          totalCount.value = list.total;
+          const list = res.result || {};
+          let records = list.records || [];
+          let total = list.total || 0;
+          if (subtype) {
+            const filtered = records.filter((job) => talentSubtypeOf(job) === subtype);
+            if (namedTalentSubtypes.includes(subtype) && filtered.length === records.length) {
+              records = filtered;
+            } else if (namedTalentSubtypes.includes(subtype)) {
+              records = filtered;
+              total = filtered.length;
+            } else {
+              const start = (currentPage.value - 1) * positionsPerPage.value;
+              total = filtered.length;
+              records = filtered.slice(start, start + positionsPerPage.value);
+            }
+          }
+          positions.value = records;
+          totalCount.value = total;
         }
       })
       .catch((e) => {
@@ -505,7 +564,7 @@
 
   // 监听查询条件变化，重置到第一页并重新获取数据
   // 注意：searchQuery 不在这里监听，而是通过点击搜索按钮触发
-  watch([selectedCategory, selectedPositionType, selectedDept], () => {
+  watch([selectedCategory, selectedPositionType, selectedPositionSubtype, selectedDept], () => {
     currentPage.value = 1;
     fetchPositions();
   });
@@ -515,8 +574,9 @@
     searchQuery.value = '';
     selectedCategory.value = null;
     selectedPositionType.value = null;
+    selectedPositionSubtype.value = null;
     currentPage.value = 1;
-    if (route.query.positionType || route.query.category) {
+    if (route.query.positionType || route.query.positionSubtype || route.query.category || route.query.keyword) {
       router.replace({ name: 'homePositions' });
     }
     fetchPositions();
@@ -544,23 +604,6 @@
       });
   };
 
-  const fetchPositionTypes = () => {
-    getDictItems({ dictCode: '岗位类型' })
-      .then((res) => {
-        const list = res && res.success && Array.isArray(res.result) ? res.result : [];
-        const names = orderPositionTypes(
-          list
-            .map((item: any) => String(item?.title || item?.text || item?.label || '').trim())
-            .filter((name: string) => !!name && !LEGACY_POSITION_CATEGORIES.includes(name)),
-        );
-        positionTypes.value = names.length ? names : [...FALLBACK_POSITION_TYPES];
-      })
-      .catch((e) => {
-        console.error('getDictItems(岗位类型) failed', e);
-        positionTypes.value = [...FALLBACK_POSITION_TYPES];
-      });
-  };
-
   const categoryFromRoute = () => {
     const raw = route.query.category;
     const category = Array.isArray(raw) ? raw[0] : raw;
@@ -573,32 +616,74 @@
     return typeof positionType === 'string' && positionType ? positionType : null;
   };
 
+  const keywordFromRoute = () => {
+    const raw = route.query.keyword;
+    const keyword = Array.isArray(raw) ? raw[0] : raw;
+    return typeof keyword === 'string' ? keyword.trim() : '';
+  };
+
+  const positionSubtypeFromRoute = () => {
+    if (positionTypeFromRoute() !== talentParent) return null;
+    const raw = route.query.positionSubtype;
+    const positionSubtype = Array.isArray(raw) ? raw[0] : raw;
+    return typeof positionSubtype === 'string' && talentSubtypes.includes(positionSubtype) ? positionSubtype : null;
+  };
+
   onMounted(() => {
     const category = categoryFromRoute();
     const positionType = positionTypeFromRoute();
+    const positionSubtype = positionSubtypeFromRoute();
+    const keyword = keywordFromRoute();
+    if (keyword) {
+      searchQuery.value = keyword;
+    }
     if (category) {
       selectedCategory.value = category;
     }
     if (positionType) {
       selectedPositionType.value = positionType;
     }
+    if (positionSubtype) {
+      selectedPositionSubtype.value = positionSubtype;
+    }
     fetchDepts();
-    fetchPositionTypes();
     if (!category && !positionType) {
       fetchPositions();
     }
   });
 
   watch(
-    () => [route.query.category, route.query.positionType],
+    () => {
+      const raw = route.query.keyword;
+      const keyword = Array.isArray(raw) ? raw[0] : raw;
+      return typeof keyword === 'string' ? keyword.trim() : '';
+    },
+    (keyword) => {
+      if (!keyword || keyword === searchQuery.value) return;
+      searchQuery.value = keyword;
+      currentPage.value = 1;
+      showAnnouncementList.value = false;
+      showPositionList.value = true;
+      fetchPositions();
+    },
+  );
+
+  watch(
+    () => [route.query.category, route.query.positionType, route.query.positionSubtype],
     () => {
       const category = categoryFromRoute();
       const positionType = positionTypeFromRoute();
-      if (category !== selectedCategory.value || positionType !== selectedPositionType.value) {
+      const positionSubtype = positionSubtypeFromRoute();
+      if (
+        category !== selectedCategory.value
+        || positionType !== selectedPositionType.value
+        || positionSubtype !== selectedPositionSubtype.value
+      ) {
         showAnnouncementList.value = false;
         showPositionList.value = true;
         selectedCategory.value = category;
         selectedPositionType.value = positionType;
+        selectedPositionSubtype.value = positionSubtype;
       }
     },
   );
@@ -668,6 +753,31 @@
     bottom: 0;
     height: 2px;
     background: #004098;
+  }
+
+  .subtype-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: -8px 0 18px;
+    padding: 0 8px;
+  }
+
+  .subtype-link {
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    color: #444444;
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 4px 12px;
+    cursor: pointer;
+  }
+
+  .subtype-link:hover,
+  .subtype-link.active {
+    color: #004098;
+    border-color: #004098;
+    background: #f3f6fb;
   }
 
   .content {

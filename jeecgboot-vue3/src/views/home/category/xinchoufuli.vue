@@ -40,7 +40,74 @@
     <section class="block" aria-labelledby="benefit-heading">
       <h2 id="benefit-heading" class="section-title">福利保障要点</h2>
       <ul class="benefit-grid">
-        <li v-for="item in welfare" :key="item">{{ item }}</li>
+        <li v-for="item in welfare" :key="item">
+          <svg
+            class="benefit-icon"
+            viewBox="0 0 64 64"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <g v-if="item === '五险两金'">
+              <path d="M32 8 50 16v15c0 13-8 21-18 25-10-4-18-12-18-25V16L32 8z" />
+              <circle cx="32" cy="28" r="4.5" />
+              <path d="M23.5 43c1.4-6.2 4.4-9.2 8.5-9.2s7.1 3 8.5 9.2" />
+            </g>
+            <g v-else-if="item === '补充医疗保险'">
+              <rect x="8" y="18" width="38" height="34" rx="3" />
+              <path d="M27 28v16M19 36h16" />
+              <circle cx="48" cy="16" r="8" />
+              <path d="M48 12.5v7M44.5 16h7" />
+            </g>
+            <g v-else-if="item === '北京普惠健康保'">
+              <path d="M12 26c0-10 8.5-16 20-16s20 6 20 16" />
+              <path d="M12 26h40" />
+              <path d="M22 14.2V26M32 10v16M42 14.2V26" />
+              <path
+                d="M32 56C32 56 20 46 20 37c0-5.5 4-9 8.2-9 2.2 0 3.6 1.2 3.8 2.8.2-1.6 1.6-2.8 3.8-2.8 4.2 0 8.2 3.5 8.2 9 0 9-12 19-12 19z"
+              />
+            </g>
+            <g v-else-if="item === '年度体检'">
+              <rect x="16" y="16" width="32" height="40" rx="3" />
+              <rect x="26" y="10" width="12" height="10" rx="2" />
+              <path d="M22 36h5l4-7 5 14 4-7h6" />
+            </g>
+            <g v-else-if="item === '子女团险优惠'">
+              <path d="M32 6 44 11v7c0 6.2-4.4 10.6-12 13.2C24.4 28.6 20 24.2 20 18v-7L32 6z" />
+              <circle cx="22" cy="40" r="4.5" />
+              <path d="M13 58c.8-6.4 3.4-9.6 9-9.6s8.2 3.2 9 9.6" />
+              <circle cx="45" cy="45" r="3.2" />
+              <path d="M39 58c.5-4.4 2.3-6.6 6-6.6s5.5 2.2 6 6.6" />
+            </g>
+            <g v-else-if="item === '职工疗养'">
+              <circle cx="32" cy="18" r="6" />
+              <path d="M32 6v3.2M32 26.8V30M20 18h-3.2M47.2 18H44" />
+              <path d="M23.2 9.2 25.6 11.6M40.8 9.2 38.4 11.6M23.2 26.8 25.6 24.4M40.8 26.8 38.4 24.4" />
+              <path d="M4 52Q18 34 32 50Q46 34 60 50" />
+              <path d="M10 58q10-8 18 0" />
+            </g>
+            <g v-else-if="item === '工会重疾互助'">
+              <circle cx="14" cy="18" r="5" />
+              <path d="M6 42c1-9 3.8-13 8-13s7 4 8 13" />
+              <circle cx="50" cy="18" r="5" />
+              <path d="M42 42c1-9 3.8-13 8-13s7 4 8 13" />
+              <path
+                d="M32 46C32 46 22 38 22 31.5 22 27.2 25.2 24 29 24c1.8 0 3 1.2 3 2.6 0-1.4 1.2-2.6 3-2.6 3.8 0 7 3.2 7 7.5C42 38 32 46 32 46z"
+              />
+            </g>
+            <g v-else>
+              <path d="M32 17Q23 6 20 16Q24 22 32 17" />
+              <path d="M32 17Q41 6 44 16Q40 22 32 17" />
+              <rect x="12" y="22" width="40" height="8" rx="1" />
+              <rect x="14" y="30" width="36" height="24" rx="1.5" />
+              <path d="M32 17v37" />
+            </g>
+          </svg>
+          <span>{{ item }}</span>
+        </li>
       </ul>
     </section>
   </div>
@@ -55,25 +122,28 @@
     '子女团险优惠',
     '职工疗养',
     '工会重疾互助',
+    '各种工会福利',
   ];
 </script>
 
 <style scoped>
   .category-content {
-    color: #1c1c1c;
+    color: #1c2430;
     font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+    font-size: 16px;
+    line-height: 1.75;
   }
 
   .lead {
     margin: 0;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
-    font-size: 17px;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+    font-size: 18px;
     font-weight: 400;
-    line-height: 1.9;
-    letter-spacing: 0.01em;
+    line-height: 1.85;
+    letter-spacing: 0;
     text-align: left;
     text-wrap: pretty;
-    color: #1c1c1c;
+    color: #243040;
   }
 
   .block {
@@ -85,12 +155,12 @@
     margin: 0 0 18px;
     padding-bottom: 8px;
     border-bottom: 2px solid #004098;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
-    font-size: 22px;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
+    font-size: 26px;
     font-weight: 600;
     line-height: 1.35;
-    letter-spacing: 0.04em;
-    color: #141414;
+    letter-spacing: 0;
+    color: #1a1a1a;
   }
 
   .wage-stage {
@@ -151,19 +221,19 @@
   }
 
   .formula-name {
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-size: 22px;
-    font-weight: 700;
-    line-height: 1.2;
-    color: #8e1b1b;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #1a1a1a;
   }
 
   .formula-eq {
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
-    font-size: 28px;
-    font-weight: 700;
-    line-height: 1;
-    color: #8e1b1b;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #1a1a1a;
     animation: wage-rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
   }
 
@@ -189,11 +259,11 @@
   .joiner {
     grid-column: 3;
     grid-row: 1;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-size: 22px;
     font-weight: 600;
-    line-height: 1;
-    color: #1c1c1c;
+    line-height: 1.35;
+    color: #1a1a1a;
     animation: wage-rise 0.34s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
   }
 
@@ -203,10 +273,10 @@
     padding: 12px 18px;
     border: 1.5px dashed transparent;
     background: #fff;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-size: 18px;
     font-weight: 600;
-    line-height: 1.45;
+    line-height: 1.4;
     text-align: center;
     white-space: nowrap;
     color: #1a1a1a;
@@ -262,12 +332,12 @@
   .callout {
     margin: 8px 0 0;
     max-width: 22em;
-    font-family: 'Songti SC', 'STSong', 'SimSun', 'PingFang SC', serif;
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.55;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.7;
     text-align: center;
-    color: inherit;
+    color: #3d4a5c;
   }
 
   .benefit-grid {
@@ -280,23 +350,26 @@
   }
 
   .benefit-grid li {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     margin: 0;
-    padding: 20px 18px 18px;
+    padding: 16px 16px 18px;
     background: #f4f6f8;
-    color: #1c2836;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 1.5;
-    letter-spacing: 0.02em;
+    color: #1a1a1a;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0;
   }
 
-  .benefit-grid li::before {
-    content: '';
+  .benefit-icon {
     display: block;
-    width: 22px;
-    height: 2px;
-    margin-bottom: 12px;
-    background: #004098;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+    color: #004098;
   }
 
   @keyframes wage-settle {
@@ -418,23 +491,13 @@
     }
   }
 
-  @media (max-width: 520px) {
-    .lead {
-      font-size: 16px;
-    }
-
+  @media (max-width: 720px) {
     .section-title {
-      font-size: 20px;
+      font-size: 22px;
     }
+  }
 
-    .formula-name {
-      font-size: 20px;
-    }
-
-    .term {
-      font-size: 16px;
-    }
-
+  @media (max-width: 520px) {
     .benefit-grid {
       grid-template-columns: 1fr;
     }

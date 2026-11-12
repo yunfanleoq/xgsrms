@@ -1,73 +1,64 @@
 <template>
-  <div id="app">
-    <main>
-      <aside class="sidebar">
-        <ul>
-          <li v-for="menu in menuList" @click="setActiveMenu(menu.value)" :key="menu.value" :class="{ active: menu.value === activeMenu }">
-            {{ menu.value }}
-          </li>
-        </ul>
-      </aside>
-      <section class="content">
-        <h2>{{ activeMenu }}</h2>
+  <div class="news-page">
+    <aside class="sidebar">
+      <h2 class="sidebar-title">研究队伍</h2>
+      <ul>
+        <li class="active">人才招聘</li>
+      </ul>
+    </aside>
+    <section class="content">
+      <h2>人才招聘</h2>
+      <p v-if="loading" class="empty">加载中</p>
+      <p v-else-if="!newsList.length" class="empty">暂无招聘通知</p>
+      <ul v-else class="notice-list">
+        <li v-for="news in paginatedNews" :key="news.id">
+          <a
+            v-if="officialHref(news)"
+            class="notice-link"
+            :href="officialHref(news)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span class="head">{{ news.journalismHead }}</span>
+            <time>{{ formatDate(news.newsDate || news.createTime) }}</time>
+          </a>
+          <a v-else class="notice-link" href="" @click.prevent="openNotice(news)">
+            <span class="head">{{ news.journalismHead }}</span>
+            <time>{{ formatDate(news.newsDate || news.createTime) }}</time>
+          </a>
+        </li>
+      </ul>
 
-        <!--        主要新闻-->
-        <ul class="job-list" v-if="activeMenu === firstType">
-          <li v-for="(news, index) in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
-            <div class="top-border">
-              <span class="news-index">{{ (currentPage - 1) * jobsPerPage + index + 1 }}</span>
-              <div class="news-content">
-                <div class="head">{{ news.journalismHead }}</div>
-                <div class="news-text" v-html="truncatedText(news.shortText)"></div>
-                <span class="date-time">{{ news.createTime }}</span>
-              </div>
-            </div>
-          </li>
-        </ul>
-
-        <!--        其他新闻-->
-        <ul class="job-list-2" v-if="activeMenu != firstType">
-          <li v-for="(news, index) in paginatedNews" :key="news.type" @click="goToNewsDetail(String(news.id))">
-            <div class="top-border-2">
-              <span class="news-index-2">{{ (currentPage - 1) * jobsPerPage + index + 1 }}.</span>
-              <div class="head">{{ news.journalismHead }}</div>
-              <span class="date-time">{{ news.createTime }}</span>
-            </div>
-          </li>
-        </ul>
-
-        <!-- 分页控件 -->
-        <div class="pagination">
-          <div class="pagination-left">
-            <button class="pagination-btn" @click="goToFirstPage" :disabled="currentPage === 1">首页</button>
-            <button class="pagination-btn" @click="prevPage" :disabled="currentPage === 1">上一页</button>
-            <div class="page-numbers">
-              <button
-                v-for="page in paginationRange"
-                :key="page"
-                :class="['page-number', { active: page === currentPage, ellipsis: page === '...' }]"
-                @click="typeof page === 'number' && goToPage(page)"
-                :disabled="page === '...'"
-              >
-                {{ page }}
-              </button>
-            </div>
-            <button class="pagination-btn" @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
-            <button class="pagination-btn" @click="goToLastPage" :disabled="currentPage === totalPages">尾页</button>
+      <div class="pagination" v-if="newsList.length">
+        <div class="pagination-left">
+          <button class="pagination-btn" @click="goToFirstPage" :disabled="currentPage === 1">首页</button>
+          <button class="pagination-btn" @click="prevPage" :disabled="currentPage === 1">上一页</button>
+          <div class="page-numbers">
+            <button
+              v-for="page in paginationRange"
+              :key="page"
+              :class="['page-number', { active: page === currentPage, ellipsis: page === '...' }]"
+              @click="typeof page === 'number' && goToPage(page)"
+              :disabled="page === '...'"
+            >
+              {{ page }}
+            </button>
           </div>
-          <div class="pagination-right">
-            <label for="jobs-per-page">每页：</label>
-            <select id="jobs-per-page" v-model.number="jobsPerPage" @change="changeJobsPerPage">
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </div>
+          <button class="pagination-btn" @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+          <button class="pagination-btn" @click="goToLastPage" :disabled="currentPage === totalPages">尾页</button>
         </div>
-      </section>
-    </main>
+        <div class="pagination-right">
+          <label for="jobs-per-page">每页：</label>
+          <select id="jobs-per-page" v-model.number="jobsPerPage" @change="currentPage = 1">
+            <option :value="5">5</option>
+            <option :value="10">10</option>
+            <option :value="20">20</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
+          </select>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 <script setup lang="ts">
@@ -75,90 +66,60 @@
   import { defHttp } from '@/utils/http/axios';
   import { useRouter } from 'vue-router';
 
-  const activeMenu = ref('');
-  const menuList = ref([
-    {
-      value: '头条新闻',
-      icon: 'icon-    ',
-    },
-  ]);
-  const firstType = ref('');
+  interface NoticeRow {
+    id: string;
+    journalismHead: string;
+    newsDate?: string;
+    createTime?: string;
+    href?: string;
+  }
 
-  const newsList = ref<any[]>([
-    {
-      id: 1,
-      journalismHead: '【喜报】《Cybersecurity》入选"卓越行动计划"英文期刊',
-      updateTime: '2024-12-06',
-      image: 'path-to-image-1.jpg',
-      url: 'https://www.gizbot.com/img/2016/11/whatsapp-error-lead-image-08-1478607387.jpg',
-      type: '头条新闻',
-      journalismText: '【喜报】《Cybersecurity》入选"卓越行动计划"英文期刊',
-      shortText: '',
-      createTime: '',
-      state: '',
-    },
-  ]);
-
-  //分页
+  const newsList = ref<NoticeRow[]>([]);
+  const loading = ref(true);
   const currentPage = ref(1);
-  const itemsPerPage = ref(100);
-  const jobsPerPage = ref(10); // 每页显示的条数
+  const jobsPerPage = ref(10);
+  const router = useRouter();
 
   const paginatedNews = computed(() => {
     const start = (currentPage.value - 1) * jobsPerPage.value;
-    const end = start + jobsPerPage.value;
-    const result = filteredJobs.value.slice(start, end);
-    return result.reverse();
+    return newsList.value.slice(start, start + jobsPerPage.value);
   });
 
-  // 计算总页数
-  const totalPages = computed(() => {
-    const total = Math.ceil(filteredJobs.value.length / jobsPerPage.value);
-    return total;
-  });
+  const totalPages = computed(() => Math.max(1, Math.ceil(newsList.value.length / jobsPerPage.value)));
 
-  // 计算分页显示范围
   const paginationRange = computed(() => {
     const total = totalPages.value;
     const current = currentPage.value;
     const range: (number | string)[] = [];
 
     if (total <= 7) {
-      // 总页数小于等于7，显示所有页码
       for (let i = 1; i <= total; i++) {
         range.push(i);
       }
-    } else {
-      // 总页数大于7，显示省略号
-      if (current <= 3) {
-        // 当前页在前面
-        for (let i = 1; i <= 5; i++) {
-          range.push(i);
-        }
-        range.push('...');
-        range.push(total);
-      } else if (current >= total - 2) {
-        // 当前页在后面
-        range.push(1);
-        range.push('...');
-        for (let i = total - 4; i <= total; i++) {
-          range.push(i);
-        }
-      } else {
-        // 当前页在中间
-        range.push(1);
-        range.push('...');
-        for (let i = current - 1; i <= current + 1; i++) {
-          range.push(i);
-        }
-        range.push('...');
-        range.push(total);
+    } else if (current <= 3) {
+      for (let i = 1; i <= 5; i++) {
+        range.push(i);
       }
+      range.push('...');
+      range.push(total);
+    } else if (current >= total - 2) {
+      range.push(1);
+      range.push('...');
+      for (let i = total - 4; i <= total; i++) {
+        range.push(i);
+      }
+    } else {
+      range.push(1);
+      range.push('...');
+      for (let i = current - 1; i <= current + 1; i++) {
+        range.push(i);
+      }
+      range.push('...');
+      range.push(total);
     }
     return range;
   });
 
-  // 分页控制函数
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages.value) {
       currentPage.value = page;
@@ -185,427 +146,258 @@
     }
   };
 
-  const changeJobsPerPage = (event: Event) => {
-    const value = (event.target as HTMLSelectElement).value;
-    console.log('Changing Jobs Per Page to:', value);
-    jobsPerPage.value = parseInt(value, 10);
-    currentPage.value = 1; // 重置到第一页
+  const formatDate = (value?: string) => {
+    if (!value) return '';
+    const matched = String(value).match(/\d{4}-\d{2}-\d{2}/);
+    return matched ? matched[0] : String(value).slice(0, 10);
   };
 
-  // 计算属性：过滤后的列表
-  const filteredJobs = computed(() => {
-    let filtered = newsList.value;
-    filtered = filtered.filter((news) => news.type === activeMenu.value);
-    filtered = filtered.filter((news) => news.state === '已发布');
-    return filtered;
-  });
-
-  //更改类型
-  const setActiveMenu = (menu) => {
-    activeMenu.value = menu;
-    selectY();
+  const officialHref = (news: NoticeRow) => {
+    const href = (news.href || '').trim();
+    return /^https?:\/\//i.test(href) ? href : '';
   };
 
-  const listUrl = '/xgsJournalism/xgsJournalism/listForHomeNews';
-  const listTypeUrl = (dictCode: string) => `/sys/dict/getDictItems/${dictCode}`;
-
-  const selectTypeList = () => {
-    const dictCode = 'jour_type';
-
-    const url = listTypeUrl(dictCode);
-    defHttp.get({ url: url, params: { dictCode } }, { isTransformResponse: false }).then((res) => {
-      try {
-        if (res.success) {
-          menuList.value = res.result;
-          firstType.value = res.result[0].value;
-          setActiveMenu(res.result[0].value);
-          selectY();
-        }
-      } catch (e) {}
-    });
+  const openNotice = (news: NoticeRow) => {
+    router.push({ name: 'newsDetail', params: { id: String(news.id) } });
   };
 
-  const getList = (param) => defHttp.get({ url: listUrl, params: param }, { isTransformResponse: false });
-
-  const selectY = () => {
-    const params = { pageNo: currentPage.value, pageSize: itemsPerPage.value, type: activeMenu.value };
-
-    getList(params).then((res) => {
-      try {
-        if (res.success) {
-          newsList.value = res.result.records;
-        }
-      } catch (e) {}
-    });
-  };
-
-  onMounted(selectTypeList);
-  onMounted(selectY);
-
-  /*
-优化新闻内容信息
- */
-  function truncatedText(htmlText) {
-    const maxLength = 120;
-    if (htmlText && htmlText.length > maxLength) {
-      return htmlText.slice(0, maxLength) + '...';
+  const loadNotices = async () => {
+    loading.value = true;
+    try {
+      const response = await defHttp.get({
+        url: '/xgsJournalism/xgsJournalism/listForHomeNews',
+        params: { typeCode: 'rczp', pageNo: 1, pageSize: 100 },
+      });
+      const records = response?.records || response?.result?.records || [];
+      newsList.value = records;
+      currentPage.value = 1;
+    } catch (error) {
+      console.error('加载人才招聘通知失败:', error);
+      newsList.value = [];
+    } finally {
+      loading.value = false;
     }
-    return htmlText;
-  }
-
-  /*
-跳转到目标新闻页面
- */
-  const router = useRouter();
-  const goToNewsDetail = (newsId: string) => {
-    router.push({ name: 'newsDetail', params: { id: newsId } });
   };
+
+  onMounted(loadNotices);
 </script>
 
 <style scoped>
-  #app {
+  .news-page {
     display: flex;
-    flex-direction: column;
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-  }
-
-  main {
-    display: flex;
-    flex: 1;
-    padding: 20px;
+    align-items: flex-start;
+    gap: 24px;
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    color: #333333;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
   }
 
   .sidebar {
-    width: 250px;
-    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
-    padding: 15px;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
-    margin-right: 25px;
-    border-radius: 8px;
+    width: 220px;
+    flex: none;
+    background: #fff;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(16, 36, 63, 0.08);
+  }
+
+  .sidebar-title {
+    margin: 0;
+    padding: 16px 20px;
+    background: #004098;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    line-height: 1.4;
   }
 
   .sidebar ul {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 6px 0;
+    background: #fff;
   }
 
   .sidebar li {
-    margin: 8px 0;
-    padding: 12px 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border-radius: 6px;
+    margin: 0;
+    padding: 14px 18px;
+    border-left: 3px solid #004098;
+    color: #004098;
     font-size: 15px;
-    line-height: 1.6;
-    border-left: 3px solid transparent;
-    font-weight: 500;
-    color: #333;
-  }
-
-  .sidebar li:hover {
-    background-color: #e3e7ed;
-    border-left-color: #3d54a7;
-    transform: translateX(3px);
-  }
-
-  .sidebar li.active {
-    background: linear-gradient(135deg, #3d54a7, #5068b8);
-    color: #fff;
-    border-left-color: #2a3d7a;
-    box-shadow: 0 2px 8px rgba(61, 84, 167, 0.3);
+    font-weight: 650;
+    line-height: 1.5;
+    background: #fff;
   }
 
   .content {
     flex: 1;
-    background-color: #fff;
-    padding: 30px 40px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
+    min-width: 0;
+    background: #fff;
+    padding: 28px 36px 24px;
+    box-shadow: 0 0 0 1px rgba(16, 36, 63, 0.08);
   }
 
   .content h2 {
-    margin-bottom: 25px;
-    color: #2c3e50;
+    margin: 0 0 8px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #004098;
+    color: #1c1917;
+    font-family: 'Songti SC', 'STSong', 'Noto Serif SC', serif;
     font-size: 24px;
-    font-weight: 600;
-    padding-bottom: 15px;
-    border-bottom: 3px solid #3d54a7;
+    font-weight: 700;
+    letter-spacing: 0.06em;
   }
 
-  .job-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .job-list li {
-    margin-bottom: 0;
-    transition: background-color 0.2s ease;
-  }
-
-  .job-list li:hover {
-    background-color: #f8f9fa;
-  }
-
-  .job-list-2 {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .job-list-2 li {
-    transition: background-color 0.2s ease;
-    border-bottom: 1px solid #e9ecef;
-  }
-
-  .job-list-2 li:last-child {
-    border-bottom: none;
-  }
-
-  .job-list-2 li:hover {
-    background-color: #f8f9fa;
-  }
-
-  .pagination {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-  }
-
-  .pagination-button {
-    background-color: #00467f;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-
-  .pagination-button:hover {
-    background-color: #003a63;
-  }
-
-  .pagination-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-
-  .pagination-button i {
-    margin: 0 5px;
-  }
-
-  .top-border {
-    display: flex;
-    align-items: flex-start;
-    border-bottom: 1px solid #e9ecef;
-    padding: 20px 0;
-    cursor: pointer;
-  }
-
-  .top-border:last-child {
-    border-bottom: none;
-  }
-
-  .news-index {
-    flex-shrink: 0;
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #3d54a7, #5068b8);
-    color: #fff;
-    border-radius: 4px;
-    font-weight: 600;
+  .empty {
+    margin: 18px 0 0;
+    color: #8a8a8a;
     font-size: 14px;
-    margin-right: 15px;
-    margin-top: 3px;
   }
 
-  .news-content {
-    flex: 1;
+  .notice-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .notice-list li {
+    border-bottom: 1px solid #e6e6e6;
+  }
+
+  .notice-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 14px 4px;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .notice-link:hover .head,
+  .notice-link:focus-visible .head {
+    color: #004098;
+  }
+
+  .notice-link:focus-visible {
+    outline: 2px solid #004098;
+    outline-offset: 2px;
+  }
+
+  .head {
     min-width: 0;
-  }
-
-  .top-border .head {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 18px;
-    line-height: 1.6;
-    margin-bottom: 10px;
-    transition: color 0.2s ease;
-  }
-
-  .top-border:hover .head {
-    color: #3d54a7;
-  }
-
-  .top-border .date-time {
-    color: #999;
-    font-size: 13px;
-    display: inline-block;
-    margin-top: 8px;
-  }
-
-  .top-border .news-text {
-    color: #666;
-    line-height: 1.8;
-    font-size: 14px;
-    margin-bottom: 8px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .top-border-2 {
-    padding: 14px 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .news-index-2 {
-    flex-shrink: 0;
-    color: #3d54a7;
-    font-weight: 600;
-    font-size: 14px;
-    width: 30px;
-  }
-
-  .top-border-2 .head {
-    flex: 1;
-    font-weight: 500;
-    color: #2c3e50;
+    color: #333333;
     font-size: 15px;
+    font-weight: 400;
     line-height: 1.6;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transition: color 0.2s ease;
+    transition: color 200ms ease;
   }
 
-  .top-border-2:hover .head {
-    color: #3d54a7;
-  }
-
-  .top-border-2 .date-time {
-    flex-shrink: 0;
-    color: #999;
-    font-size: 13px;
-    margin-left: 15px;
+  .notice-link time {
+    flex: none;
+    color: #8a8a8a;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
   }
 
   .pagination {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #e9ecef;
+    gap: 16px;
+    margin-top: 22px;
+    padding-top: 16px;
   }
 
-  .pagination-left {
+  .pagination-left,
+  .pagination-right,
+  .page-numbers {
     display: flex;
     align-items: center;
     gap: 8px;
   }
 
-  .pagination-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .pagination-btn,
+  .page-number,
+  .pagination-right select {
+    border: 1px solid #d9d9d9;
+    border-radius: 2px;
+    background: #fff;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
   }
 
   .pagination-btn {
-    padding: 8px 16px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    background-color: #fff;
-    color: #333;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .pagination-btn:hover:not(:disabled) {
-    border-color: #3d54a7;
-    color: #3d54a7;
-  }
-
-  .pagination-btn:disabled {
-    background-color: #f5f5f5;
-    color: #bbb;
-    cursor: not-allowed;
-    border-color: #e0e0e0;
-  }
-
-  .page-numbers {
-    display: flex;
-    gap: 6px;
+    padding: 6px 12px;
   }
 
   .page-number {
-    min-width: 36px;
-    height: 36px;
+    min-width: 32px;
+    height: 32px;
     padding: 0 8px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    background-color: #fff;
-    color: #333;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
-  .page-number:hover:not(.active):not(.ellipsis):not(:disabled) {
-    border-color: #3d54a7;
-    color: #3d54a7;
+  .pagination-btn:hover:not(:disabled),
+  .page-number:hover:not(.active):not(.ellipsis):not(:disabled),
+  .pagination-right select:hover {
+    border-color: #004098;
+    color: #004098;
+  }
+
+  .pagination-btn:disabled {
+    background: #f5f5f5;
+    color: #bbb;
+    cursor: not-allowed;
   }
 
   .page-number.active {
-    background: linear-gradient(135deg, #3d54a7, #5068b8);
+    background: #004098;
+    border-color: #004098;
     color: #fff;
-    border-color: #3d54a7;
-    font-weight: 600;
   }
 
   .page-number.ellipsis {
     border: none;
     background: transparent;
-    cursor: default;
     color: #999;
+    cursor: default;
   }
 
   .pagination-right label {
-    font-size: 14px;
     color: #666;
+    font-size: 14px;
   }
 
   .pagination-right select {
-    padding: 6px 12px;
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    background-color: #fff;
-    font-size: 14px;
-    cursor: pointer;
-    transition: border-color 0.2s ease;
+    padding: 6px 10px;
   }
 
-  .pagination-right select:hover {
-    border-color: #3d54a7;
+  .pagination-right select:focus,
+  .pagination-btn:focus-visible,
+  .page-number:focus-visible {
+    outline: 2px solid #004098;
+    outline-offset: 2px;
   }
 
-  .pagination-right select:focus {
-    outline: none;
-    border-color: #3d54a7;
-    box-shadow: 0 0 0 2px rgba(61, 84, 167, 0.1);
+  @media (max-width: 800px) {
+    .news-page {
+      flex-direction: column;
+    }
+
+    .sidebar {
+      width: 100%;
+    }
+
+    .content {
+      padding: 20px 16px;
+    }
+
+    .notice-link {
+      flex-direction: column;
+      gap: 4px;
+    }
   }
 </style>
